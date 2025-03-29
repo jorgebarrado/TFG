@@ -1,0 +1,18 @@
+from django.db import models
+
+class IncorrectCitation(models.Model):
+    doi_original = models.CharField(max_length=255)  # DOI del artículo original
+    doi_incorrect = models.CharField(max_length=255)  # DOI del artículo que cita mal
+    incorrect_reason = models.TextField()  # Explicación del por qué está mal
+    citation_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("not said", "Not Said"),
+            ("misinterpretation", "Misinterpretation"),
+            ("contextual misattribution", "Contextual Misattribution")
+        ]
+    )
+    created_at = models.DateTimeField(auto_now_add=True)  # Fecha de registro
+
+    def __str__(self):
+        return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
