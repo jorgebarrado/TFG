@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio - Reportar Citas Incorrectas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5 text-center">
+        <h1 class="mb-4">🔍 Verificador de Citas Científicas</h1>
+        <p class="lead">Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica.</p>
+        <div class="mt-4">
+            <a href="{% url 'submit_incorrect_citation' %}" class="btn btn-primary btn-lg me-3">➕ Crear nuevo reporte</a>
+            <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 Ver lista de reportes</a>
+        </div>
+    </div>
+</body>
+</html>

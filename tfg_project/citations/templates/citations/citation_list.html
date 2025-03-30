@@ -7,11 +7,24 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 </head>
 <body class="bg-light">
     <div class="container py-5">
         <h1 class="mb-4 text-center">Reportes de Citas Incorrectas</h1>
+
+        <!-- Filtro tipo de error alineado con buscador -->
+        <div class="row mb-2">
+            <div class="col-sm-12 col-md-6 offset-md-6 text-end">
+                <label for="typeFilter" class="form-label me-2">Filtrar por tipo:</label>
+                <select id="typeFilter" class="form-select form-select-sm d-inline-block w-auto">
+                    <option value="">Todos</option>
+                    <option value="Not Said">Not Said</option>
+                    <option value="Misinterpretation">Misinterpretation</option>
+                    <option value="Contextual Misattribution">Contextual Misattribution</option>
+                </select>
+            </div>
+        </div>
 
         {% if citations %}
             <table id="citationsTable" class="table table-striped table-hover table-bordered">
@@ -27,8 +40,16 @@
                 <tbody>
                     {% for c in citations %}
                     <tr>
-                        <td><code>{{ c.doi_original }}</code></td>
-                        <td><code>{{ c.doi_incorrect }}</code></td>
+                        <td>
+                            <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
+                                <code>{{ c.doi_original }}</code>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" class="doi-link" data-doi="{{ c.doi_incorrect }}">
+                                <code>{{ c.doi_incorrect }}</code>
+                            </a>
+                        </td>
                         <td>{{ c.get_citation_type_display }}</td>
                         <td>{{ c.incorrect_reason }}</td>
                         <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
@@ -41,17 +62,69 @@
         {% endif %}
     </div>
 
-    <!-- jQuery + DataTables JS -->
+    <!-- Modal para mostrar metadatos del DOI -->
+    <div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="doiModalLabel">Metadatos del artículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="doiMetadataContent">
+                        <p>Cargando metadatos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery y DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Script DataTables + Filtro + Modal DOI -->
     <script>
         $(document).ready(function () {
-            $('#citationsTable').DataTable({
+            var table = $('#citationsTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 }
+            });
+
+            $('#typeFilter').on('change', function () {
+                var selected = $(this).val();
+                if (selected) {
+                    table.column(2).search('^' + selected + '$', true, false).draw();
+                } else {
+                    table.column(2).search('').draw();
+                }
+            });
+
+            // Manejo de clic en DOIs para mostrar metadatos
+            $(document).on('click', '.doi-link', function (e) {
+                e.preventDefault();
+                const doi = $(this).data('doi');
+                $('#doiMetadataContent').html('<p>Cargando metadatos...</p>');
+                const modal = new bootstrap.Modal(document.getElementById('doiModal'));
+                modal.show();
+
+                $.get('/citations/get_all_metadata/', { doi: doi }, function (data) {
+                    let html = `
+                        <p><strong>Título:</strong> ${data.title?.[0] || 'N/A'}</p>
+                        <p><strong>Autores:</strong> ${data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'}</p>
+                        <p><strong>Revista:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
+                        <p><strong>Año:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
+                        <p><strong>DOI:</strong> <code>${doi}</code></p>
+                        <p><strong>Enlace:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>
+                    `;
+                    $('#doiMetadataContent').html(html);
+                }).fail(function () {
+                    $('#doiMetadataContent').html('<p class="text-danger">No se pudo obtener información para este DOI.</p>');
+                });
             });
         });
     </script>
