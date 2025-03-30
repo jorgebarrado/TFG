@@ -12,12 +12,18 @@
 <body class="bg-light">
     <div class="container py-5">
         <h1 class="mb-4 text-center">Reportes de Citas Incorrectas</h1>
-
-        <!-- Filtro tipo de error alineado con buscador -->
-        <div class="row mb-2">
-            <div class="col-sm-12 col-md-6 offset-md-6 text-end">
-                <label for="typeFilter" class="form-label me-2">Filtrar por tipo:</label>
-                <select id="typeFilter" class="form-select form-select-sm d-inline-block w-auto">
+        
+        <div class="row align-items-center mb-3">
+            <div class="col-md-6 text-start mb-2 mb-md-0">
+                <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                    ⬅️ Volver al inicio
+                </a>
+            </div>
+            <div class="col-md-3 text-end">
+                <label for="typeFilter" class="form-label mb-0 me-2">Filtrar por tipo:</label>
+            </div>
+            <div class="col-md-3">
+                <select id="typeFilter" class="form-select form-select-sm">
                     <option value="">Todos</option>
                     <option value="Not Said">Not Said</option>
                     <option value="Misinterpretation">Misinterpretation</option>
