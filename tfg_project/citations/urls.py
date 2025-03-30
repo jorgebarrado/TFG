@@ -3,6 +3,7 @@ from . import views
 from .views import get_all_metadata_from_doi
 from .views import citation_list
 
+
 urlpatterns = [
     path('submit/', views.submit_incorrect_citation, name='submit_incorrect_citation'), # url para crear el registro
     path('submitted/', views.citation_submitted, name='citation_submitted'), # url despues de enciar el registro

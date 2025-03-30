@@ -6,6 +6,12 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from .models import IncorrectCitation
 
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'citations/home.html')
+
+
 def citation_list(request):
     citations = IncorrectCitation.objects.all().order_by('-created_at')
     return render(request, 'citations/citation_list.html', {'citations': citations})
