@@ -10,12 +10,10 @@
         <h1 class="mb-4">🔍 Verificador de Citas Científicas</h1>
         <p class="lead">Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica.</p>
 
-        <!-- Alerta de éxito (oculta al principio) -->
         <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
             🟢 Reporte enviado con éxito.
         </div>
 
-        <!-- Botones -->
         <div class="mt-4">
             <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#reportModal">➕ Crear nuevo reporte</button>
             <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 Ver lista de reportes</a>
@@ -32,6 +30,9 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body text-start">
+                        <!-- CSRF token -->
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
                         <div class="mb-3">
                             <label for="doi_original" class="form-label">DOI original:</label>
                             <input type="text" class="form-control" name="doi_original" required>
@@ -62,12 +63,34 @@
         </div>
     </div>
 
-    <!-- Bootstrap + jQuery -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
-    <!-- Script para enviar formulario por AJAX -->
     <script>
+        // CSRF token setup
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        // AJAX submit
         $('#reportForm').on('submit', function (e) {
             e.preventDefault();
             const formData = $(this).serialize();
