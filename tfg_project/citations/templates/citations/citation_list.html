@@ -1,26 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Listado de citas incorrectas</title>
-</head>
-<body>
-    <h1>📄 Reportes de Citas Incorrectas</h1>
+    <meta charset="UTF-8">
+    <title>Listado de Citas Incorrectas</title>
 
-    {% if citations %}
-        <ul>
-            {% for c in citations %}
-                <li>
-                    <strong>DOI original:</strong> {{ c.doi_original }}<br>
-                    <strong>DOI incorrecto:</strong> {{ c.doi_incorrect }}<br>
-                    <strong>Tipo de error:</strong> {{ c.citation_type }}<br>
-                    <strong>Explicación:</strong> {{ c.incorrect_reason }}<br>
-                    <strong>Fecha:</strong> {{ c.created_at|date:"d/m/Y H:i" }}
-                </li>
-                <hr>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No hay citas registradas aún.</p>
-    {% endif %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"/>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="mb-4 text-center">Reportes de Citas Incorrectas</h1>
+
+        {% if citations %}
+            <table id="citationsTable" class="table table-striped table-hover table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>DOI Original</th>
+                        <th>DOI Incorrecto</th>
+                        <th>Tipo de Error</th>
+                        <th>Explicación</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in citations %}
+                    <tr>
+                        <td><code>{{ c.doi_original }}</code></td>
+                        <td><code>{{ c.doi_incorrect }}</code></td>
+                        <td>{{ c.get_citation_type_display }}</td>
+                        <td>{{ c.incorrect_reason }}</td>
+                        <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info text-center">No hay citas registradas aún.</div>
+        {% endif %}
+    </div>
+
+    <!-- jQuery + DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#citationsTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                }
+            });
+        });
+    </script>
 </body>
 </html>
