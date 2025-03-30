@@ -2,9 +2,13 @@ from django.shortcuts import render, redirect
 from .forms import IncorrectCitationForm
 import requests
 from django.http import JsonResponse
-
 from django.urls import reverse
 from urllib.parse import urlencode
+from .models import IncorrectCitation
+
+def citation_list(request):
+    citations = IncorrectCitation.objects.all().order_by('-created_at')
+    return render(request, 'citations/citation_list.html', {'citations': citations})
 
 def submit_incorrect_citation(request):
     if request.method == 'POST':

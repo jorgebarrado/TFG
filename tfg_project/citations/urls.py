@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views import get_all_metadata_from_doi
+from .views import citation_list
 
 urlpatterns = [
     path('submit/', views.submit_incorrect_citation, name='submit_incorrect_citation'), # url para crear el registro
@@ -10,4 +11,8 @@ urlpatterns = [
 
 urlpatterns += [
     path('get_all_metadata/', get_all_metadata_from_doi, name='get_all_metadata'),
+]
+
+urlpatterns += [
+    path('list/', citation_list, name='citation_list'),
 ]
