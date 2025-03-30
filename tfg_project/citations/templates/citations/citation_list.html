@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listado de citas incorrectas</title>
+</head>
+<body>
+    <h1>📄 Reportes de Citas Incorrectas</h1>
+
+    {% if citations %}
+        <ul>
+            {% for c in citations %}
+                <li>
+                    <strong>DOI original:</strong> {{ c.doi_original }}<br>
+                    <strong>DOI incorrecto:</strong> {{ c.doi_incorrect }}<br>
+                    <strong>Tipo de error:</strong> {{ c.citation_type }}<br>
+                    <strong>Explicación:</strong> {{ c.incorrect_reason }}<br>
+                    <strong>Fecha:</strong> {{ c.created_at|date:"d/m/Y H:i" }}
+                </li>
+                <hr>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay citas registradas aún.</p>
+    {% endif %}
+</body>
+</html>
