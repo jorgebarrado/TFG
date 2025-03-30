@@ -8,9 +8,24 @@ from .models import IncorrectCitation
 
 from django.shortcuts import render
 
+from django.shortcuts import render
+from django.http import JsonResponse
+from .forms import IncorrectCitationForm
+from .models import IncorrectCitation
+
+# Landing page
 def home(request):
     return render(request, 'citations/home.html')
 
+# Vista AJAX para guardar el formulario desde el modal
+def ajax_submit_citation(request):
+    if request.method == 'POST':
+        form = IncorrectCitationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'errors': form.errors}, status=400)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 def citation_list(request):
     citations = IncorrectCitation.objects.all().order_by('-created_at')

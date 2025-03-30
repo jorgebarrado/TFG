@@ -9,10 +9,79 @@
     <div class="container py-5 text-center">
         <h1 class="mb-4">🔍 Verificador de Citas Científicas</h1>
         <p class="lead">Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica.</p>
+
+        <!-- Alerta de éxito (oculta al principio) -->
+        <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
+            🟢 Reporte enviado con éxito.
+        </div>
+
+        <!-- Botones -->
         <div class="mt-4">
-            <a href="{% url 'submit_incorrect_citation' %}" class="btn btn-primary btn-lg me-3">➕ Crear nuevo reporte</a>
+            <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#reportModal">➕ Crear nuevo reporte</button>
             <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 Ver lista de reportes</a>
         </div>
     </div>
+
+    <!-- Modal con el formulario -->
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="reportForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reportModalLabel">Crear nuevo reporte</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body text-start">
+                        <div class="mb-3">
+                            <label for="doi_original" class="form-label">DOI original:</label>
+                            <input type="text" class="form-control" name="doi_original" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="doi_incorrect" class="form-label">DOI incorrecto:</label>
+                            <input type="text" class="form-control" name="doi_incorrect" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incorrect_reason" class="form-label">Motivo:</label>
+                            <textarea class="form-control" name="incorrect_reason" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="citation_type" class="form-label">Tipo de error:</label>
+                            <select class="form-select" name="citation_type" required>
+                                <option value="">Seleccione...</option>
+                                <option value="not said">Not Said</option>
+                                <option value="misinterpretation">Misinterpretation</option>
+                                <option value="contextual misattribution">Contextual Misattribution</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap + jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- Script para enviar formulario por AJAX -->
+    <script>
+        $('#reportForm').on('submit', function (e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+
+            $.post('/citations/ajax_submit/', formData)
+                .done(function () {
+                    $('#successAlert').removeClass('d-none');
+                    $('#reportModal').modal('hide');
+                    $('#reportForm')[0].reset();
+                })
+                .fail(function () {
+                    alert('❌ Hubo un error al enviar el reporte.');
+                });
+        });
+    </script>
 </body>
 </html>
