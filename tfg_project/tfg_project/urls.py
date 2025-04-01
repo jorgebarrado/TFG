@@ -8,7 +8,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', register_user, name='register'),
     path('login/', login_user, name='login'),
-    path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('citations/', include('citations.urls')),
 ]
