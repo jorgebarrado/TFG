@@ -5,17 +5,46 @@ from django.http import JsonResponse
 from django.urls import reverse
 from urllib.parse import urlencode
 from .models import IncorrectCitation
+from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from django.shortcuts import render
-
-from django.shortcuts import render
-from django.http import JsonResponse
-from .forms import IncorrectCitationForm
-from .models import IncorrectCitation
 
 # Landing page
 def home(request):
-    return render(request, 'citations/home.html')
+    return render(request, 'citations/home.html', {
+        'register_form': UserCreationForm(),
+        'login_form': AuthenticationForm(),
+    })
+
+def login_user(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'citations/home.html', {
+                'login_form': form,
+                'register_form': UserCreationForm(),  # igual que el registro
+            })
+    return redirect('home')
+
+def register_user(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # login automático
+            return redirect('home')
+        else:
+            return render(request, 'citations/home.html', {
+                'register_form': form,
+                'login_form': AuthenticationForm(),  # para que no pete el login
+            })
+    return redirect('home')
 
 # Vista AJAX para guardar el formulario desde el modal
 def ajax_submit_citation(request):
