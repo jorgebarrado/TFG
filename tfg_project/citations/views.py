@@ -9,6 +9,11 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.shortcuts import get_object_or_404
+
+def citation_detail(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    return render(request, 'citations/citation_detail.html', {'citation': citation})
 
 
 # Landing page
@@ -51,7 +56,10 @@ def ajax_submit_citation(request):
     if request.method == 'POST':
         form = IncorrectCitationForm(request.POST)
         if form.is_valid():
-            form.save()
+            citation = form.save(commit=False)
+            if request.user.is_authenticated:
+                citation.user = request.user
+            citation.save()
             return JsonResponse({'success': True})
         return JsonResponse({'errors': form.errors}, status=400)
     return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -64,13 +72,15 @@ def submit_incorrect_citation(request):
     if request.method == 'POST':
         form = IncorrectCitationForm(request.POST)
         if form.is_valid():
-            saved = form.save()
-            # Redirige incluyendo el DOI original en la URL
-            params = urlencode({'doi': saved.doi_original})
-            return redirect(f"{reverse('citation_submitted')}?{params}")
+            citation = form.save(commit=False)
+            if request.user.is_authenticated:
+                citation.user = request.user
+            citation.save()
+            return redirect('citation_submitted')
     else:
         form = IncorrectCitationForm()
     return render(request, 'citations/submit_citation.html', {'form': form})
+
 
 def citation_submitted(request):
     return render(request, 'citations/citation_submitted.html')
