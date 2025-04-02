@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2>🔎 Detalles del Reporte</h2>
+    <p><strong>DOI original:</strong> <code>{{ citation.doi_original }}</code></p>
+    <p><strong>DOI incorrecto:</strong> <code>{{ citation.doi_incorrect }}</code></p>
+    <p><strong>Tipo de error:</strong> {{ citation.get_citation_type_display }}</p>
+    <p><strong>Explicación:</strong> {{ citation.incorrect_reason }}</p>
+    <p><strong>Fecha:</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
+    <p><strong>Autor:</strong> {% if citation.user %} {{ citation.user.username }} {% else %} Anónimo {% endif %}</p>
+
+    <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary mt-3">⬅️ Volver al listado</a>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     ajax_submit_citation,
     submit_incorrect_citation,
@@ -13,4 +14,5 @@ urlpatterns = [
     path('submitted/', citation_submitted, name='citation_submitted'),
     path('get_all_metadata/', get_all_metadata_from_doi, name='get_all_metadata'),
     path('ajax_submit/', ajax_submit_citation, name='ajax_submit'),
+    path('report/<int:pk>/', views.citation_detail, name='citation_detail'),
 ]
