@@ -1,14 +1,134 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container py-4">
-    <h2>🔎 Detalles del Reporte</h2>
-    <p><strong>DOI original:</strong> <code>{{ citation.doi_original }}</code></p>
-    <p><strong>DOI incorrecto:</strong> <code>{{ citation.doi_incorrect }}</code></p>
-    <p><strong>Tipo de error:</strong> {{ citation.get_citation_type_display }}</p>
-    <p><strong>Explicación:</strong> {{ citation.incorrect_reason }}</p>
-    <p><strong>Fecha:</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
-    <p><strong>Autor:</strong> {% if citation.user %} {{ citation.user.username }} {% else %} Anónimo {% endif %}</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte #{{ citation.id }} - CiteCheck</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .badge-error {
+            font-size: 0.9rem;
+        }
+        .doi-code {
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-light">
 
-    <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary mt-3">⬅️ Volver al listado</a>
+    <!-- Barra superior -->
+    <nav class="navbar navbar-light bg-white shadow-sm px-4">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+            🧠 CiteCheck
+        </a>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="me-3">👤 {{ user.username }}</span>
+                <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar sesión</button>
+                </form>
+            {% else %}
+                <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Iniciar sesión</button>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</button>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <div class="container py-5">
+    
+    <!-- Botón volver -->
+    <div class="mb-4 text-start">
+        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">
+            ⬅️ Volver al listado
+        </a>
+    </div>
+
+    <!-- Título del reporte -->
+    <div class="mb-4">
+        <h1 class="fw-bold">Reporte #{{ citation.id }}</h1>
+        <span class="badge text-bg-secondary badge-error">{{ citation.get_citation_type_display }}</span>
+    </div>
+
+    <!-- Datos principales -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Detalles del reporte</h5>
+            <p><strong>DOI original:</strong> 
+                <a href="#" class="doi-link" data-doi="{{ citation.doi_original }}">
+                    <code class="doi-code">{{ citation.doi_original }}</code>
+                </a>
+            </p>
+            <p><strong>DOI incorrecto:</strong> 
+                <a href="#" class="doi-link" data-doi="{{ citation.doi_incorrect }}">
+                    <code class="doi-code">{{ citation.doi_incorrect }}</code>
+                </a>
+            </p>
+            <p><strong>Fecha de creación:</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
+            <p><strong>Reportado por:</strong> {{ citation.author.username|default:"Anónimo" }}</p>
+        </div>
+    </div>
+
+    <!-- Explicación -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Motivo / Explicación</h5>
+            <p class="card-text">{{ citation.incorrect_reason }}</p>
+        </div>
+    </div>
+
+    <!-- Participación futura -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Participación</h5>
+            <p class="text-muted">Próximamente podrás votar o comentar este reporte.</p>
+        </div>
+    </div>
+
 </div>
-{% endblock %}
+
+<!-- Modal DOI metadata -->
+<div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="doiModalLabel">Metadatos del artículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="doiMetadataContent">
+                    <p>Cargando metadatos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+    $(document).on('click', '.doi-link', function (e) {
+        e.preventDefault();
+        const doi = $(this).data('doi');
+        $('#doiMetadataContent').html('<p>Cargando metadatos...</p>');
+        const modal = new bootstrap.Modal(document.getElementById('doiModal'));
+        modal.show();
+
+        $.get('/citations/get_all_metadata/', { doi: doi }, function (data) {
+            let html = `
+                <p><strong>Título:</strong> ${data.title?.[0] || 'N/A'}</p>
+                <p><strong>Autores:</strong> ${data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'}</p>
+                <p><strong>Revista:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
+                <p><strong>Año:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
+                <p><strong>DOI:</strong> <code>${doi}</code></p>
+                <p><strong>Enlace:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>
+            `;
+            $('#doiMetadataContent').html(html);
+        }).fail(function () {
+            $('#doiMetadataContent').html('<p class="text-danger">No se pudo obtener información para este DOI.</p>');
+        });
+    });
+</script>
+
+</body>
+</html>
