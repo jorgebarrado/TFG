@@ -1,11 +1,14 @@
 from django.urls import path
-from . import views
 from .views import (
     ajax_submit_citation,
     submit_incorrect_citation,
     citation_list,
     citation_submitted,
-    get_all_metadata_from_doi
+    get_all_metadata_from_doi,
+    citation_detail,
+    login_view,
+    register_view,
+    logout_view
 )
 
 urlpatterns = [
@@ -14,5 +17,8 @@ urlpatterns = [
     path('submitted/', citation_submitted, name='citation_submitted'),
     path('get_all_metadata/', get_all_metadata_from_doi, name='get_all_metadata'),
     path('ajax_submit/', ajax_submit_citation, name='ajax_submit'),
-    path('report/<int:pk>/', views.citation_detail, name='citation_detail'),
+    path('report/<int:pk>/', citation_detail, name='citation_detail'),
+    path('login/', login_view, name='login'),
+    path('register/', register_view, name='register'),
+    path('logout/', logout_view, name='logout'),
 ]
