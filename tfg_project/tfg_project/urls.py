@@ -1,13 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
-from citations.views import home, register_user, login_user
-from django.contrib.auth import views as auth_views
+from citations.views import home
 
 urlpatterns = [
-    path('', home, name='home'),
+    path('', home, name='home'),  # Página de inicio
     path('admin/', admin.site.urls),
-    path('register/', register_user, name='register'),
-    path('login/', login_user, name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
-    path('citations/', include('citations.urls')),
+    path('citations/', include('citations.urls')),  # Todas las rutas de tu app
 ]

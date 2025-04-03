@@ -1,0 +1,26 @@
+<div class="modal fade {% if register_form.errors %}show-register{% endif %}" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Registrarse</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    {{ register_form.as_p }}
+
+                    {% if register_form.errors %}
+                        <div class="text-danger">
+                            {{ register_form.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Crear cuenta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
