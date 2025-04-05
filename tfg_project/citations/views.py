@@ -38,17 +38,18 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect(next_url or '/')
+            return redirect(next_url or '/')  # Redirección limpia
         else:
             return render(request, 'citations/home.html', {
                 'register_form': form,
-                'login_form': LoginForm(),  # por si acaso
-                'show_register_modal': True
+                'login_form': LoginForm(),
+                'show_register_modal': True  # Solo si hay errores
             })
     else:
         form = RegisterForm()
         return render(request, 'citations/home.html', {
             'register_form': form,
+            'login_form': LoginForm(),
             'show_register_modal': True
         })
 
