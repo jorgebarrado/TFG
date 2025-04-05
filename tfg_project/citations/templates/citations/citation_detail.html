@@ -1,23 +1,19 @@
 {% extends 'base.html' %}
+
 {% block title %}Reporte #{{ citation.id }} - CiteCheck{% endblock %}
 
 {% block content %}
 <div class="container py-5">
 
-    <!-- Botón volver -->
     <div class="mb-4 text-start">
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">
-            ⬅️ Volver al listado
-        </a>
+        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">⬅️ Volver al listado</a>
     </div>
 
-    <!-- Título del reporte -->
     <div class="mb-4">
         <h1 class="fw-bold">Reporte #{{ citation.id }}</h1>
-        <span class="badge text-bg-secondary badge-error">{{ citation.get_citation_type_display }}</span>
+        <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
     </div>
 
-    <!-- Datos principales -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Detalles del reporte</h5>
@@ -32,11 +28,10 @@
                 </a>
             </p>
             <p><strong>Fecha de creación:</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
-            <p><strong>Reportado por:</strong> {{ citation.author.username|default:"Anónimo" }}</p>
+            <p><strong>Reportado por:</strong> {{ citation.user.username|default:"Anónimo" }}</p>
         </div>
     </div>
 
-    <!-- Explicación -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Motivo / Explicación</h5>
@@ -44,7 +39,6 @@
         </div>
     </div>
 
-    <!-- Participación futura -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Participación</h5>
@@ -54,7 +48,7 @@
 
 </div>
 
-<!-- Modal DOI metadata -->
+<!-- Modal para mostrar metadatos del DOI -->
 <div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -72,18 +66,7 @@
 </div>
 {% endblock %}
 
-{% block extra_styles %}
-<style>
-    .badge-error {
-        font-size: 0.9rem;
-    }
-    .doi-code {
-        word-break: break-all;
-    }
-</style>
-{% endblock %}
-
-{% block extra_scripts %}
+{% block scripts %}
 <script>
     $(document).on('click', '.doi-link', function (e) {
         e.preventDefault();
