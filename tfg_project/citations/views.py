@@ -3,10 +3,11 @@ from django.http import JsonResponse
 from django.urls import reverse
 from urllib.parse import urlencode
 import requests
-
 from django.contrib.auth import authenticate, login, logout
 from .forms import IncorrectCitationForm, LoginForm, RegisterForm
 from .models import IncorrectCitation
+from .forms import CommentForm
+from .models import Comment
 
 # Landing page
 def home(request):
@@ -50,6 +51,7 @@ def register_view(request):
             'register_form': form,
             'show_register_modal': True
         })
+
 # Logout
 def logout_view(request):
     logout(request)
@@ -76,7 +78,31 @@ def citation_list(request):
 # Página del reporte individual
 def citation_detail(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
-    return render(request, 'citations/citation_detail.html', {'citation': citation})
+    comments = citation.comments.order_by('-created_at')
+    comment_form = CommentForm()
+    # views.py (en citation_detail)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.citation = citation
+            comment.author = request.user if request.user.is_authenticated else None
+
+            parent_id = form.cleaned_data.get('parent_id')
+            if parent_id:
+                parent = Comment.objects.filter(id=parent_id).first()
+                if parent:
+                    comment.parent = parent
+
+            comment.save()
+            return redirect('citation_detail', pk=pk)
+
+
+    return render(request, 'citations/citation_detail.html', {
+        'citation': citation,
+        'comments': comments,
+        'comment_form': comment_form,
+    })
 
 # Vista alternativa (usada antes)
 def submit_incorrect_citation(request):

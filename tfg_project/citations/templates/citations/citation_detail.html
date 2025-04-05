@@ -5,26 +5,29 @@
 {% block content %}
 <div class="container py-5">
 
+    <!-- Volver -->
     <div class="mb-4 text-start">
         <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">⬅️ Volver al listado</a>
     </div>
 
+    <!-- Cabecera -->
     <div class="mb-4">
         <h1 class="fw-bold">Reporte #{{ citation.id }}</h1>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
     </div>
 
+    <!-- Detalles -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Detalles del reporte</h5>
             <p><strong>DOI original:</strong> 
                 <a href="#" class="doi-link" data-doi="{{ citation.doi_original }}">
-                    <code class="doi-code">{{ citation.doi_original }}</code>
+                    <code>{{ citation.doi_original }}</code>
                 </a>
             </p>
             <p><strong>DOI incorrecto:</strong> 
                 <a href="#" class="doi-link" data-doi="{{ citation.doi_incorrect }}">
-                    <code class="doi-code">{{ citation.doi_incorrect }}</code>
+                    <code>{{ citation.doi_incorrect }}</code>
                 </a>
             </p>
             <p><strong>Fecha de creación:</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
@@ -32,6 +35,7 @@
         </div>
     </div>
 
+    <!-- Motivo -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Motivo / Explicación</h5>
@@ -39,27 +43,76 @@
         </div>
     </div>
 
+    <!-- Comentarios -->
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Participación</h5>
-            <p class="text-muted">Próximamente podrás votar o comentar este reporte.</p>
+            <h5 class="card-title">Comentarios</h5>
+
+            {% if comments %}
+                {% for comment in comments %}
+                    {% if not comment.parent %}
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <strong>{{ comment.author.username|default:"Anónimo" }}</strong>
+                            <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+                            <p class="mb-1">{{ comment.content }}</p>
+                            <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">Responder</a>
+
+                            {% for reply in comment.replies.all %}
+                                <div class="border p-2 ms-4 mt-2 bg-white rounded">
+                                    <strong>{{ reply.author.username|default:"Anónimo" }}</strong>
+                                    <small class="text-muted">{{ reply.created_at|date:"d/m/Y H:i" }}</small>
+                                    <p class="mb-0">{{ reply.content }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Aún no hay comentarios.</p>
+            {% endif %}
+
+            <!-- Formulario comentario -->
+            <!-- Formulario comentario -->
+            <form method="post" class="mt-4" id="commentForm">
+                {% csrf_token %}
+            
+                <!-- Indicador de respuesta -->
+                <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
+                    Respondiendo a: <strong id="replyingToUser"></strong>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReply">Cancelar</button>
+                </div>
+            
+                <div class="mb-3">
+                    <label for="{{ comment_form.content.id_for_label }}" class="form-label">Comentario:</label>
+                    <textarea 
+                        name="{{ comment_form.content.name }}" 
+                        id="{{ comment_form.content.id_for_label }}" 
+                        class="form-control" 
+                        rows="3" 
+                        placeholder="Escribe tu comentario...">{{ comment_form.content.value }}</textarea>
+            
+                    {% if comment_form.content.errors %}
+                        <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
+                    {% endif %}
+                </div>
+            
+                <input type="hidden" name="parent_id" id="parent_id">
+                <button type="submit" class="btn btn-primary">Enviar comentario</button>
+            </form>
         </div>
     </div>
-
 </div>
 
-<!-- Modal para mostrar metadatos del DOI -->
+<!-- Modal metadatos DOI -->
 <div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="doiModalLabel">Metadatos del artículo</h5>
+                <h5 class="modal-title">Metadatos del artículo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body">
-                <div id="doiMetadataContent">
-                    <p>Cargando metadatos...</p>
-                </div>
+            <div class="modal-body" id="doiMetadataContent">
+                <p>Cargando metadatos...</p>
             </div>
         </div>
     </div>
@@ -68,6 +121,7 @@
 
 {% block scripts %}
 <script>
+    // Modal DOI
     $(document).on('click', '.doi-link', function (e) {
         e.preventDefault();
         const doi = $(this).data('doi');
@@ -87,6 +141,32 @@
             $('#doiMetadataContent').html(html);
         }).fail(function () {
             $('#doiMetadataContent').html('<p class="text-danger">No se pudo obtener información para este DOI.</p>');
+        });
+    });
+
+    // Responder a comentario
+    document.addEventListener('DOMContentLoaded', () => {
+        const replyLinks = document.querySelectorAll('.reply-link');
+        const parentInput = document.getElementById('parent_id');
+        const replyIndicator = document.getElementById('replyIndicator');
+        const replyingToUser = document.getElementById('replyingToUser');
+        const cancelReply = document.getElementById('cancelReply');
+
+        replyLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const parentId = this.getAttribute('data-id');
+                const user = this.closest('.mb-3').querySelector('strong')?.textContent?.trim() || 'usuario';
+
+                parentInput.value = parentId;
+                replyingToUser.textContent = user;
+                replyIndicator.classList.remove('d-none');
+            });
+        });
+
+        cancelReply.addEventListener('click', () => {
+            parentInput.value = '';
+            replyIndicator.classList.add('d-none');
         });
     });
 </script>
