@@ -6,11 +6,12 @@
 <div class="container py-5">
     <h1 class="mb-4 text-center">Lista de Citas Incorrectas</h1>
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
         <a href="{% url 'home' %}" class="btn btn-outline-primary mb-2">⬅️ Volver al inicio</a>
-        <div class="d-flex align-items-center">
-            <label for="typeFilter" class="me-2 mb-0">Filtrar por tipo:</label>
-            <select id="typeFilter" class="form-select form-select-sm">
+
+        <div class="d-flex align-items-center mb-2">
+            <label for="typeFilter" class="me-2 mb-0 fw-normal" style="white-space: nowrap;">Filtrar por tipo:</label>
+            <select id="typeFilter" class="form-select form-select-sm" style="width: auto; min-width: 180px;">
                 <option value="">Todos</option>
                 <option value="Not Said">Not Said</option>
                 <option value="Misinterpretation">Misinterpretation</option>
@@ -42,10 +43,10 @@
                         </a>
                     </td>
                     <td>{{ c.get_citation_type_display }}</td>
-                    <td>#{{ c.id }}</td>
+                    <td data-order="{{ c.id }}">#{{ c.id }}</td>
                     <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
                     <td>
-                        <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary" title="Ver todos los detalles del reporte">
+                        <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">
                             Ver reporte
                         </a>
                     </td>
@@ -75,28 +76,51 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Scripts específicos -->
-{% block extra_scripts %}
+{% block scripts %}
+<!-- DataTables -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Script personalizado -->
 <script>
     $(document).ready(function () {
-        var table = $('#citationsTable').DataTable({
+        const table = $('#citationsTable').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            order: [[4, 'desc']],
+            initComplete: function () {
+                // 🔍 Buscador alineado a la derecha
+                const filter = $('#citationsTable_filter');
+                filter.addClass('d-flex align-items-center justify-content-end gap-2');
+                filter.find('label').css('display', 'flex').addClass('mb-2 align-items-center');
+                filter.find('input')
+                    .addClass('form-control form-control-sm ms-2')
+                    .css('width', '200px');
+
+                // 🔢 Mostrar sin "registros"
+                const length = $('#citationsTable_length');
+                length.addClass('d-flex align-items-center gap-2');
+                length.find('label').css('display', 'flex').addClass('mb-2 align-items-center');
+                const label = length.find('label');
+                label.contents().filter(function () {
+                    return this.nodeType === 3 && this.nodeValue.includes('registros');
+                }).remove();
+                length.find('select')
+                    .addClass('form-select form-select-sm ms-2')
+                    .css('width', '70px');
             }
         });
 
+        // 🎯 Filtro tipo de error
         $('#typeFilter').on('change', function () {
             const selected = $(this).val();
-            if (selected) {
-                table.column(2).search('^' + selected + '$', true, false).draw();
-            } else {
-                table.column(2).search('').draw();
-            }
+            table.column(2).search(selected ? '^' + selected + '$' : '', true, false).draw();
         });
 
+        // 📚 Metadatos DOI
         $(document).on('click', '.doi-link', function (e) {
             e.preventDefault();
             const doi = $(this).data('doi');
@@ -120,5 +144,4 @@
         });
     });
 </script>
-{% endblock %}
 {% endblock %}

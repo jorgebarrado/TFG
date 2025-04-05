@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class IncorrectCitation(models.Model):
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     doi_original = models.CharField(max_length=255)  # DOI del artículo original
     doi_incorrect = models.CharField(max_length=255)  # DOI del artículo que cita mal
     incorrect_reason = models.TextField()  # Explicación del por qué está mal

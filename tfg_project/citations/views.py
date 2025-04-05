@@ -38,14 +38,18 @@ def register_view(request):
             user = form.save()
             login(request, user)
             return redirect(next_url or '/')
+        else:
+            return render(request, 'citations/home.html', {
+                'register_form': form,
+                'login_form': LoginForm(),  # por si acaso
+                'show_register_modal': True
+            })
     else:
         form = RegisterForm()
-    return render(request, 'citations/home.html', {
-        'register_form': form,
-        'login_form': LoginForm(request),
-        'show_register_modal': True
-    })
-
+        return render(request, 'citations/home.html', {
+            'register_form': form,
+            'show_register_modal': True
+        })
 # Logout
 def logout_view(request):
     logout(request)
