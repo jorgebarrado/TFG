@@ -72,7 +72,6 @@
             {% endif %}
 
             <!-- Formulario comentario -->
-            <!-- Formulario comentario -->
             <form method="post" class="mt-4" id="commentForm">
                 {% csrf_token %}
             
@@ -89,7 +88,7 @@
                         id="{{ comment_form.content.id_for_label }}" 
                         class="form-control" 
                         rows="3" 
-                        placeholder="Escribe tu comentario...">{{ comment_form.content.value }}</textarea>
+                        placeholder="Escribe tu comentario...">{% if comment_form.content.value %}{{ comment_form.content.value }}{% endif %}</textarea>
             
                     {% if comment_form.content.errors %}
                         <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
