@@ -21,6 +21,8 @@
 {% endblock %}
 
 {% block scripts %}
+
+
 <script>
     $('#reportForm').on('submit', function (e) {
         e.preventDefault();
@@ -36,4 +38,88 @@
             });
     });
 </script>
+<script>
+    $(document).ready(function () {
+        function fetchDOIMetadata(doi, type) {
+            const preview = $(`#doi${type}Preview`);
+            const error = $(`#doi${type}Error`);
+            const success = $(`#doi${type}Success`);
+            const title = $(`#doiTitle${type}`);
+            const authors = $(`#doiAuthors${type}`);
+            const journal = $(`#doiJournal${type}`);
+            const year = $(`#doiYear${type}`);
+        
+            preview.addClass('d-none');
+            error.addClass('d-none');
+            success.addClass('d-none');
+        
+            if (!doi) return;
+        
+            $.get('/citations/get_all_metadata/', { doi: doi })
+                .done(function (data) {
+                    title.text(data.title?.[0] || 'N/A');
+                    authors.text(data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A');
+                    journal.text(data['container-title']?.[0] || 'N/A');
+                    year.text(data.issued?.['date-parts']?.[0]?.[0] || 'N/A');
+        
+                    preview.removeClass('d-none');
+                    success.removeClass('d-none');
+                })
+                .fail(function () {
+                    error.removeClass('d-none');
+                });
+        }
+        
+        $('input[name="doi_original"]').on('blur', function () {
+            fetchDOIMetadata($(this).val(), 'Original');
+        });
+        
+        $('input[name="doi_incorrect"]').on('blur', function () {
+            fetchDOIMetadata($(this).val(), 'Incorrect');
+        });
+
+        $('#reportModal').on('hidden.bs.modal', function () {
+            $('#doiMetadataPreview, #doiOriginalSuccess, #doiError').addClass('d-none');
+            $('#doiIncorrectPreview, #doiIncorrectSuccess, #doiIncorrectError').addClass('d-none');
+        });
+
+        $('#toggleOriginalMetadata').on('click', function () {
+            const preview = $('#doiOriginalPreview');
+            const isVisible = !preview.hasClass('d-none');
+        
+            preview.toggleClass('d-none');
+            $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
+        });
+        
+        $('#toggleIncorrectMetadata').on('click', function () {
+            const preview = $('#doiIncorrectPreview');
+            const isVisible = !preview.hasClass('d-none');
+        
+            preview.toggleClass('d-none');
+            $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
+        });
+    });
+</script>
+
+<script>
+    $('#reportModal').on('hidden.bs.modal shown.bs.modal', function () {
+        // Limpia campos de entrada
+        $('#reportForm')[0].reset();
+
+        // Oculta y limpia metadatos y mensajes
+        $('#doiSuccess, #doiIncorrectSuccess, #doiError, #doiIncorrectError').addClass('d-none');
+        $('#doiPreview, #doiIncorrectPreview').addClass('d-none');
+
+        // Borra textos de metadatos
+        $('#doiTitle, #doiAuthors, #doiJournal, #doiYear').text('');
+        $('#doiTitleIncorrect, #doiAuthorsIncorrect, #doiJournalIncorrect, #doiYearIncorrect').text('');
+
+        // Reinicia botones
+        $('#toggleMetadata').text('Ver metadatos');
+        $('#toggleIncorrectMetadata').text('Ver metadatos');
+    });
+
+</script>
+
+
 {% endblock %}
