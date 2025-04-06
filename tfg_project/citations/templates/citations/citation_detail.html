@@ -47,39 +47,46 @@
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Comentarios</h5>
+
             {% if comments %}
                 {% for comment in comments %}
-                    {% if not comment.parent %}
-                        <div class="mb-3 border p-3 rounded bg-light">
-                            <strong>{{ comment.author.username|default:"Anónimo" }}</strong>
-                            <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
-                            <p class="mb-1">{{ comment.content }}</p>
-                            <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">Responder</a>
+                    <div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
+                        <strong>{{ comment.author.username|default:"Anónimo" }}</strong>
+                        <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
 
-                            {% for reply in comment.replies.all %}
-                                <div class="border p-2 ms-4 mt-2 bg-white rounded">
-                                    <strong>{{ reply.author.username|default:"Anónimo" }}</strong>
-                                    <small class="text-muted">{{ reply.created_at|date:"d/m/Y H:i" }}</small>
-                                    <p class="mb-0">{{ reply.content }}</p>
-                                </div>
-                            {% endfor %}
+                        {% if comment.parent %}
+                            <div class="text-muted small mb-1">
+                                💬 Respondiendo a <strong>{{ comment.parent.author.username|default:"Anónimo" }}</strong>: 
+                                “{{ comment.parent.content|truncatechars:50 }}”
+                            </div>
+                        {% endif %}
+
+                        <p class="mb-1">{{ comment.content }}</p>
+
+                        <div class="d-flex gap-2 align-items-center">
+                            <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">Responder</a>
+                            {% if user.is_authenticated and user == comment.author or user.is_superuser %}
+                            <button 
+                                class="btn btn-sm btn-link text-danger p-0 small open-delete-modal" 
+                                data-comment-id="{{ comment.id }}">
+                                Eliminar
+                            </button>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                    </div>
                 {% endfor %}
             {% else %}
                 <p class="text-muted">Aún no hay comentarios.</p>
             {% endif %}
 
-            <!-- Formulario comentario -->
+            {% if user.is_authenticated %}
             <form method="post" class="mt-4" id="commentForm">
                 {% csrf_token %}
-            
-                <!-- Indicador de respuesta -->
                 <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
                     Respondiendo a: <strong id="replyingToUser"></strong>
                     <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReply">Cancelar</button>
                 </div>
-            
+
                 <div class="mb-3">
                     <label for="{{ comment_form.content.id_for_label }}" class="form-label">Comentario:</label>
                     <textarea 
@@ -88,45 +95,73 @@
                         class="form-control" 
                         rows="3" 
                         placeholder="Escribe tu comentario...">{% if comment_form.content.value %}{{ comment_form.content.value }}{% endif %}</textarea>
-            
+
                     {% if comment_form.content.errors %}
                         <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
                     {% endif %}
                 </div>
-            
+
                 <input type="hidden" name="parent_id" id="parent_id">
                 <button type="submit" class="btn btn-primary">Enviar comentario</button>
             </form>
+            {% else %}
+            <div class="alert alert-warning mt-4">
+                <strong>Inicia sesión</strong> para añadir un comentario
+                <br>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-sm btn-outline-primary mt-2">Iniciar sesión</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" class="btn btn-sm btn-outline-secondary mt-2">Registrarse</a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <!-- Modal metadatos DOI -->
 <div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Metadatos del artículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body" id="doiMetadataContent">
-                <p>Cargando metadatos...</p>
-            </div>
-        </div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Metadatos del artículo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="doiMetadataContent">
+        <p>Cargando metadatos...</p>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- Modal confirmación eliminar -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header">
+        <h5 class="modal-title">¿Eliminar comentario?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este comentario?
+      </div>
+      <div class="modal-footer">
+        <form id="deleteCommentForm" method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Modal DOI
     $(document).on('click', '.doi-link', function (e) {
         e.preventDefault();
         const doi = $(this).data('doi');
         $('#doiMetadataContent').html('<p>Cargando metadatos...</p>');
         const modal = new bootstrap.Modal(document.getElementById('doiModal'));
         modal.show();
-
         $.get('/citations/get_all_metadata/', { doi: doi }, function (data) {
             let html = `
                 <p><strong>Título:</strong> ${data.title?.[0] || 'N/A'}</p>
@@ -142,7 +177,6 @@
         });
     });
 
-    // Responder a comentario
     document.addEventListener('DOMContentLoaded', () => {
         const replyLinks = document.querySelectorAll('.reply-link');
         const parentInput = document.getElementById('parent_id');
@@ -154,7 +188,7 @@
             link.addEventListener('click', function (e) {
                 e.preventDefault();
                 const parentId = this.getAttribute('data-id');
-                const user = this.closest('.mb-3').querySelector('strong')?.textContent?.trim() || 'usuario';
+                const user = this.closest('.border')?.querySelector('strong')?.textContent?.trim() || 'usuario';
 
                 parentInput.value = parentId;
                 replyingToUser.textContent = user;
@@ -165,6 +199,19 @@
         cancelReply.addEventListener('click', () => {
             parentInput.value = '';
             replyIndicator.classList.add('d-none');
+        });
+
+        // Confirmación eliminar
+        const deleteButtons = document.querySelectorAll('.open-delete-modal');
+        const deleteForm = document.getElementById('deleteCommentForm');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                deleteForm.setAttribute('action', `/citations/comments/delete/${commentId}/`);
+                const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                modal.show();
+            });
         });
     });
 </script>

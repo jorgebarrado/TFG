@@ -8,6 +8,13 @@ from .forms import IncorrectCitationForm, LoginForm, RegisterForm
 from .models import IncorrectCitation
 from .forms import CommentForm
 from .models import Comment
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from .models import Comment  # o el nombre de tu modelo
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import IncorrectCitation, Comment
+from .forms import CommentForm
 
 # Landing page
 def home(request):
@@ -79,30 +86,26 @@ def citation_list(request):
 # Página del reporte individual
 def citation_detail(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
-    comments = citation.comments.order_by('-created_at')
-    comment_form = CommentForm()
-    # views.py (en citation_detail)
+    comments = Comment.objects.filter(citation=citation).select_related('author', 'parent').order_by('created_at')
+
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.citation = citation
-            comment.author = request.user if request.user.is_authenticated else None
-
-            parent_id = form.cleaned_data.get('parent_id')
+            comment.author = request.user
+            parent_id = request.POST.get('parent_id')
             if parent_id:
-                parent = Comment.objects.filter(id=parent_id).first()
-                if parent:
-                    comment.parent = parent
-
+                comment.parent_id = int(parent_id)
             comment.save()
             return redirect('citation_detail', pk=pk)
-
+    else:
+        form = CommentForm()
 
     return render(request, 'citations/citation_detail.html', {
         'citation': citation,
+        'comment_form': form,
         'comments': comments,
-        'comment_form': comment_form,
     })
 
 # Vista alternativa (usada antes)
@@ -136,3 +139,13 @@ def get_all_metadata_from_doi(request):
         data = response.json().get('message', {})
         return JsonResponse(data, safe=False)
     return JsonResponse({'error': 'DOI not found or invalid'}, status=404)
+
+@login_required
+def delete_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    if request.user == comment.author or request.user.is_superuser:
+        comment.delete()
+        messages.success(request, "Comentario eliminado correctamente.")
+    else:
+        return HttpResponseForbidden("No tienes permiso para eliminar este comentario.")
+    return redirect('citation_detail', pk=comment.citation.pk)
