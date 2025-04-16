@@ -5,28 +5,39 @@
     <title>{% block title %}CiteCheck{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-
 </head>
 
 <body class="bg-light">
 
+{% load i18n %}
+
 <!-- Barra superior -->
 <nav class="navbar navbar-light bg-white shadow-sm px-4">
     <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-        🧠 CiteCheck
+        {% trans "Inicio" %}
     </a>
+
+    <form action="{% url 'set_language' %}" method="post" class="d-inline">
+        {% csrf_token %}
+        {% get_current_language as LANGUAGE_CODE %}
+        <select name="language" onchange="this.form.submit()" class="form-select form-select-sm d-inline w-auto">
+            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+            <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>Español</option>
+        </select>
+    </form>
+
     <div>
         {% if user.is_authenticated %}
             <span class="me-3">👤 {{ user.username }}</span>
             <form method="POST" action="{% url 'logout' %}" class="d-inline">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar sesión</button>
+                <button type="submit" class="btn btn-outline-danger btn-sm">{% trans "Cerrar sesión" %}</button>
             </form>
         {% else %}
-            <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Iniciar sesión</button>
-            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</button>
+            <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">{% trans "Iniciar sesión" %}</button>
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">{% trans "Registrarse" %}</button>
         {% endif %}
-    </div>
+    </div>   
 </nav>
 
 <!-- Contenido principal -->

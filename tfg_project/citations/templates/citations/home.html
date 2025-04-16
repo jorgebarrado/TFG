@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-
-{% block title %}Inicio - CiteCheck{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
 
 {% block content %}
 <div class="container text-center py-5">
-    <h1 class="mb-3">🔍 Verificador de Citas Científicas</h1>
-    <p class="lead">Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica.</p>
+    <h1>{% trans "Bienvenido a la herramienta de citas" %}</h1>
+    <p class="lead">{% trans "Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica." %}</p>
 
     <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
         🟢 Reporte enviado con éxito.

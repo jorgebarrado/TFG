@@ -3,6 +3,10 @@ from .models import IncorrectCitation
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from .models import Comment
+from django.utils.translation import gettext_lazy as _
+
+class MyForm(forms.Form):
+    name = forms.CharField(label=_("Name"))
 
 class RegisterForm(UserCreationForm):
     class Meta:
