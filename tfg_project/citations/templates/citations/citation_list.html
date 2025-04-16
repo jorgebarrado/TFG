@@ -44,7 +44,7 @@
                     </td>
                     <td>{{ c.get_citation_type_display }}</td>
                     <td data-order="{{ c.id }}">#{{ c.id }}</td>
-                    <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ c.created_at|date:"m/d/Y H:i" }}</td>
                     <td>
                         <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">
                             Ver reporte

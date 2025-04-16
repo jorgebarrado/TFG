@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-15 19:26+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: .\citations\forms.py:9
+msgid "Name"
+msgstr ""
+
+#: .\citations\templates\citations\home.html:8
+msgid "Bienvenido a la herramienta de citas"
+msgstr "Welcome to the citation tool"
+
+#: .\citations\templates\citations\home.html:9
+msgid ""
+"This tool allows you to report incorrect scientific citations. Help improve "
+"the quality of academic literature."
+msgstr ""
+
+#: templates/base.html
+msgid "Inicio"
+msgstr "Home"
+
+#: templates/base.html
+msgid "Cerrar sesión"
+msgstr "Log out"
+
+#: templates/base.html
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+#: templates/base.html
+msgid "Registrarse"
+msgstr "Sign up"
