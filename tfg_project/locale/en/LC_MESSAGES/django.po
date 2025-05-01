@@ -20,28 +20,150 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: .\citations\templates\citations\home.html:8
 msgid "Bienvenido a la herramienta de citas"
 msgstr "Welcome to the citation tool"
 
-#: .\citations\templates\citations\home.html:9
-msgid ""
-"This tool allows you to report incorrect scientific citations. Help improve "
-"the quality of academic literature."
-msgstr ""
-
-#: templates/base.html
 msgid "Inicio"
 msgstr "Home"
 
-#: templates/base.html
 msgid "Cerrar sesión"
 msgstr "Log out"
 
-#: templates/base.html
 msgid "Iniciar sesión"
 msgstr "Log in"
 
-#: templates/base.html
 msgid "Registrarse"
 msgstr "Sign up"
+
+msgid "Cerrar"
+msgstr "Close"
+
+msgid "Usuario:"
+msgstr "Username:"
+
+msgid "Contraseña:"
+msgstr "Password:"
+
+msgid "Entrar"
+msgstr "Sign in"
+
+msgid "Crear cuenta"
+msgstr "Create account"
+
+msgid "Por favor, introduzca un nombre de usuario y una contraseña correctos."
+msgstr "Please enter a correct username and password."
+
+msgid "Este campo es obligatorio."
+msgstr "This field is required."
+
+msgid "Crear nuevo reporte"
+msgstr "Create new report"
+
+msgid "DOI original:"
+msgstr "Original DOI:"
+
+msgid "DOI incorrecto:"
+msgstr "Incorrect DOI:"
+
+msgid "Motivo:"
+msgstr "Reason:"
+
+msgid "Tipo de error:"
+msgstr "Type of error:"
+
+msgid "Seleccione..."
+msgstr "Select..."
+
+msgid "Not Said"
+msgstr "Not Said"
+
+msgid "Misinterpretation"
+msgstr "Misinterpretation"
+
+msgid "Contextual Misattribution"
+msgstr "Contextual Misattribution"
+
+msgid "Enviar"
+msgstr "Submit"
+
+msgid "DOI válido"
+msgstr "Valid DOI"
+
+msgid "No se pudieron obtener metadatos del DOI."
+msgstr "Could not fetch DOI metadata."
+
+msgid "Ver metadatos"
+msgstr "Show metadata"
+
+msgid "Ocultar metadatos"
+msgstr "Hide metadata"
+
+msgid "Título"
+msgstr "Title"
+
+msgid "Autores"
+msgstr "Authors"
+
+msgid "Revista"
+msgstr "Journal"
+
+msgid "Año"
+msgstr "Year"
+
+msgid "Volver al listado"
+msgstr "Back to list"
+
+msgid "Detalles del reporte"
+msgstr "Report details"
+
+msgid "Fecha de creación:"
+msgstr "Creation date:"
+
+msgid "Reportado por:"
+msgstr "Reported by:"
+
+msgid "Motivo / Explicación"
+msgstr "Reason / Explanation"
+
+msgid "Comentarios"
+msgstr "Comments"
+
+msgid "Responder"
+msgstr "Reply"
+
+msgid "Eliminar"
+msgstr "Delete"
+
+msgid "Respondiendo a:"
+msgstr "Replying to:"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Comentario:"
+msgstr "Comment:"
+
+msgid "Enviar comentario"
+msgstr "Submit comment"
+
+msgid "para añadir un comentario"
+msgstr "to add a comment"
+
+msgid "¿Eliminar comentario?"
+msgstr "Delete comment?"
+
+msgid "Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este comentario?"
+msgstr "This action cannot be undone. Are you sure you want to delete this comment?"
+
+msgid "Metadatos del artículo"
+msgstr "Article metadata"
+
+msgid "Cargando metadatos..."
+msgstr "Loading metadata..."
+
+msgid "Enlace"
+msgstr "Link"
+
+msgid "No se pudo obtener información para este DOI."
+msgstr "Could not retrieve information for this DOI."
+
