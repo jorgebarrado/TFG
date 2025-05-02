@@ -8,12 +8,12 @@
     <p class="lead">{% trans "Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica." %}</p>
 
     <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
-        🟢 Reporte enviado con éxito.
+        🟢 {% trans "Reporte enviado con éxito." %}
     </div>
 
     <div class="mt-4">
-        <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#reportModal">➕ Crear nuevo reporte</button>
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 Ver lista de reportes</a>
+        <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#reportModal">➕ {% trans "Crear nuevo reporte" %}</button>
+        <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 {% trans "Ver lista de reportes" %}</a>
     </div>
 </div>
 {% include 'citations/modals/report_modal.html' %}
@@ -34,7 +34,7 @@
                 $('#reportForm')[0].reset();
             })
             .fail(function () {
-                alert('❌ Hubo un error al enviar el reporte.');
+                alert('❌ {% trans "Hubo un error al enviar el reporte." %} ');
             });
     });
 </script>

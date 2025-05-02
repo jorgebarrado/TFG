@@ -13,7 +13,7 @@
             
             <!-- DOI original -->
             <div class="mb-3">
-              <label for="doi_original" class="form-label">{% trans "DOI original" %}:</label>
+              <label for="doi_original" class="form-label">{% trans "DOI original:" %}</label>
               <input type="text" class="form-control" name="doi_original" required>
               
               <div id="doiOriginalPreview" class="mt-3 p-2 border rounded bg-light d-none">
@@ -26,7 +26,7 @@
               <div id="doiOriginalSuccess" class="text-success mt-2 d-none">✅ {% trans "DOI válido" %}</div>
             </div>
             <div class="mb-3">
-              <label for="doi_incorrect" class="form-label">{% trans "DOI incorrecto" %}:</label>
+              <label for="doi_incorrect" class="form-label">{% trans "DOI incorrecto:" %}</label>
               <input type="text" class="form-control" name="doi_incorrect" required>
               <div id="doiIncorrectPreview" class="mt-3 p-2 border rounded bg-light d-none">
                 <p><strong>{% trans "Título" %}:</strong> <span id="doiTitleIncorrect"></span></p>
@@ -38,11 +38,11 @@
               <div id="doiIncorrectSuccess" class="text-success mt-2 d-none">✅ {% trans "DOI válido" %}</div>
             </div>
             <div class="mb-3">
-              <label for="incorrect_reason" class="form-label">{% trans "Motivo" %}:</label>
+              <label for="incorrect_reason" class="form-label">{% trans "Motivo:" %}</label>
               <textarea class="form-control" name="incorrect_reason" rows="3" required></textarea>
             </div>
             <div class="mb-3">
-              <label for="citation_type" class="form-label">{% trans "Tipo de error" %}:</label>
+              <label for="citation_type" class="form-label">{% trans "Tipo de error:" %}</label>
               <select class="form-select" name="citation_type" required>
                 <option value="">{% trans "Seleccione..." %}</option>
                 <option value="not said">{% trans "Not Said" %}</option>
