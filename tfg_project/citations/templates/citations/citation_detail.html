@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Reporte #{{ citation.id }} - CiteCheck{% endblock %}
+{% block title %} {% trans "Reporte" %} #{{ citation.id }} - CiteCheck{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -13,7 +13,7 @@
 
     <!-- Cabecera -->
     <div class="mb-4">
-        <h1 class="fw-bold">Reporte #{{ citation.id }}</h1>
+        <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
     </div>
 
@@ -32,7 +32,7 @@
                 </a>
             </p>
             <p><strong>{% trans "Fecha de creación:" %}</strong> {{ citation.created_at|date:"d/m/Y H:i" }}</p>
-            <p><strong>{% trans "Reportado por:" %}</strong> {{ citation.user.username|default:"Anónimo" }}</p>
+            <p><strong>{% trans "Reportado por:" %}</strong> {{ citation.user.username|default:"Anonymous" }}</p>
         </div>
     </div>
 
@@ -52,12 +52,12 @@
             {% if comments %}
                 {% for comment in comments %}
                     <div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
-                        <strong>{{ comment.author.username|default:"Anónimo" }}</strong>
+                        <strong>{{ comment.author.username|default:"Anonymous" }}</strong>
                         <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
 
                         {% if comment.parent %}
                             <div class="text-muted small mb-1">
-                                💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anónimo" }}</strong>: 
+                                💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>: 
                                 “{{ comment.parent.content|truncatechars:50 }}”
                             </div>
                         {% endif %}
