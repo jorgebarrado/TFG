@@ -1,6 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 
+AREA_CHOICES = [
+    ('ENG', _('Engineering')),
+    ('PHY', _('Physical Sciences')),
+    ('ENV', _('Environmental Sciences')),
+    ('MAT', _('Mathematics')),
+    ('CIS', _('Computer and Information Sciences')),
+    ('LIF', _('Life Sciences')),
+    ('PSY', _('Psychology')),
+    ('SOC', _('Social Sciences')),
+    ('OTH', _('Other Sciences')),
+    ('EDU', _('Education')),
+    ('LAW', _('Law')),
+    ('HUM', _('Humanities')),
+    ('ART', _('Visual and Performing Arts')),
+    ('BUS', _('Business and Management')),
+    ('COM', _('Communication and Journalism')),
+    ('SWK', _('Social Work')),
+    ('NON', _('Other Non-Science & Engineering Fields')),
+]
 
 class IncorrectCitation(models.Model):
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -14,6 +34,11 @@ class IncorrectCitation(models.Model):
             ("misinterpretation", "Misinterpretation"),
             ("contextual misattribution", "Contextual Misattribution")
         ]
+    )
+    publication_area = models.CharField(
+        max_length=4,
+        choices=AREA_CHOICES,
+        verbose_name=_("Área de publicación")
     )
     created_at = models.DateTimeField(auto_now_add=True)  # Fecha de registro
 

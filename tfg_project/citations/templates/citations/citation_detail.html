@@ -14,9 +14,9 @@
     <!-- Cabecera -->
     <div class="mb-4">
         <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
+        <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
     </div>
-
     <!-- Detalles -->
     <div class="card mb-4">
         <div class="card-body">

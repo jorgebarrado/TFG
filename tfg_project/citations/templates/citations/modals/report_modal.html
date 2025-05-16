@@ -50,6 +50,29 @@
                 <option value="contextual misattribution">{% trans "Contextual Misattribution" %}</option>
               </select>
             </div>
+            <div class="mb-3">
+              <label for="publication_area" class="form-label">{% trans "Área de publicación" %}:</label>
+              <select class="form-select" name="publication_area" required>
+                  <option value="">{% trans "Seleccione área..." %}</option>
+                  <option value="ENG">{% trans "Engineering" %}</option>
+                  <option value="PHY">{% trans "Physical Sciences" %}</option>
+                  <option value="ENV">{% trans "Environmental Sciences" %}</option>
+                  <option value="MAT">{% trans "Mathematics" %}</option>
+                  <option value="CIS">{% trans "Computer and Information Sciences" %}</option>
+                  <option value="LIF">{% trans "Life Sciences" %}</option>
+                  <option value="PSY">{% trans "Psychology" %}</option>
+                  <option value="SOC">{% trans "Social Sciences" %}</option>
+                  <option value="OTH">{% trans "Other Sciences" %}</option>
+                  <option value="EDU">{% trans "Education" %}</option>
+                  <option value="LAW">{% trans "Law" %}</option>
+                  <option value="HUM">{% trans "Humanities" %}</option>
+                  <option value="ART">{% trans "Visual and Performing Arts" %}</option>
+                  <option value="BUS">{% trans "Business and Management" %}</option>
+                  <option value="COM">{% trans "Communication and Journalism" %}</option>
+                  <option value="SWK">{% trans "Social Work" %}</option>
+                  <option value="NON">{% trans "Other Non-Science & Engineering Fields" %}</option>
+              </select>
+          </div>          
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-success">{% trans "Enviar" %}</button>

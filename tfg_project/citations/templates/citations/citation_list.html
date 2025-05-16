@@ -28,6 +28,7 @@
                     <th>{% trans "Reportado por" %}</th>
                     <th>{% trans "DOI original" %}</th>
                     <th>{% trans "Tipo de error" %}</th>
+                    <th>{% trans "Area" %}</th>
                     <th>ID</th>
                     <th>{% trans "Fecha" %} </th>
                     <th></th>
@@ -43,6 +44,7 @@
                         </a>
                     </td>
                     <td>{{ c.get_citation_type_display }}</td>
+                    <td>{{ c.get_publication_area_display }}</td>
                     <td data-order="{{ c.id }}">#{{ c.id }}</td>
                     <td>{{ c.created_at|date:"m/d/Y H:i" }}</td>
                     <td>
@@ -137,12 +139,12 @@
 
       $.get('/citations/get_all_metadata/', { doi: doi }, function (data) {
         let html = `
-            <p><strong>Título:</strong> ${data.title?.[0] || 'N/A'}</p>
-            <p><strong>Autores:</strong> ${data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'}</p>
-            <p><strong>Revista:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
-            <p><strong>Año:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
-            <p><strong>DOI:</strong> <code>${doi}</code></p>
-            <p><strong>Enlace:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>
+            <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || 'N/A'}</p>
+                <p><strong>{% trans "Autores" %}:</strong> ${data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'}</p>
+                <p><strong>{% trans "Revista" %}:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
+                <p><strong>{% trans "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
+                <p><strong>DOI:</strong> <code>${doi}</code></p>
+                <p><strong>{% trans "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>
         `;
         $('#doiMetadataContent').html(html);
       }).fail(function () {

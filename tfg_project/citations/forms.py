@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Comment
 from django.utils.translation import gettext_lazy as _
 
+
 class MyForm(forms.Form):
     name = forms.CharField(label=_("Name"))
 
@@ -20,11 +21,11 @@ class LoginForm(AuthenticationForm):
 class IncorrectCitationForm(forms.ModelForm):
     class Meta:
         model = IncorrectCitation
-        fields = ['doi_original', 'doi_incorrect', 'incorrect_reason', 'citation_type']
-        widgets = {
-            'incorrect_reason': forms.Textarea(attrs={'rows': 4}),
+        fields = ['doi_original', 'doi_incorrect', 'incorrect_reason', 'citation_type', 'publication_area']
+        labels = {
+            'publication_area': _('Área de publicación'),
         }
-
+    
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
