@@ -217,3 +217,12 @@ msgstr "There was an error sending the report."
 
 msgid "Aún no hay comentarios." 
 msgstr "No comments yet."
+
+msgid "Escribe tu comentario..."
+msgstr "Write a comment..."
+
+msgid "Área de publicación"
+msgstr "Publication area"
+
+msgid "Seleccione área..."
+msgstr "Select area..."
