@@ -15,6 +15,11 @@ from .models import Comment  # o el nombre de tu modelo
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import IncorrectCitation, Comment
 from .forms import CommentForm
+from django.shortcuts import get_object_or_404
+from .models import IncorrectCitation
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import Vote, IncorrectCitation
 
 # Landing page
 def home(request):
@@ -87,6 +92,8 @@ def citation_list(request):
 def citation_detail(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     comments = Comment.objects.filter(citation=citation).select_related('author', 'parent').order_by('created_at')
+    upvotes = citation.votes.filter(value=1).count()
+    downvotes = citation.votes.filter(value=-1).count()
 
     if request.method == 'POST':
         form = CommentForm(request.POST)
@@ -106,6 +113,8 @@ def citation_detail(request, pk):
         'citation': citation,
         'comment_form': form,
         'comments': comments,
+        'upvotes': upvotes,
+        'downvotes': downvotes,
     })
 
 # Vista alternativa (usada antes)
@@ -149,3 +158,34 @@ def delete_comment(request, pk):
     else:
         return HttpResponseForbidden("No tienes permiso para eliminar este comentario.")
     return redirect('citation_detail', pk=comment.citation.pk)
+
+@require_POST
+def vote_view(request):
+    citation_id = request.POST.get('citation_id')
+    vote_value = int(request.POST.get('vote'))  # 1 o -1
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'not_authenticated'}, status=403)
+
+    citation = IncorrectCitation.objects.get(id=citation_id)
+
+    # Busca si el usuario ya votó
+    existing_vote = Vote.objects.filter(citation=citation, user=request.user).first()
+
+    if existing_vote:
+        if existing_vote.value == vote_value:
+            existing_vote.delete()  # desmarcar voto
+        else:
+            existing_vote.value = vote_value
+            existing_vote.save()
+    else:
+        Vote.objects.create(citation=citation, user=request.user, value=vote_value)
+
+    # Conteos actualizados
+    upvotes = citation.votes.filter(value=1).count()
+    downvotes = citation.votes.filter(value=-1).count()
+
+    return JsonResponse({
+        'upvotes': upvotes,
+        'downvotes': downvotes,
+    })
