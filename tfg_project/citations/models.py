@@ -55,3 +55,15 @@ class Comment(models.Model):
 
     def is_reply(self):
         return self.parent is not None
+    
+class Vote(models.Model):
+    VOTE_CHOICES = (
+        (1, 'Upvote'),
+        (-1, 'Downvote'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    citation = models.ForeignKey(IncorrectCitation, on_delete=models.CASCADE, related_name='votes')
+    value = models.IntegerField(choices=VOTE_CHOICES)
+
+    class Meta:
+        unique_together = ('user', 'citation')

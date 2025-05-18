@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load i18n %}
 
@@ -16,6 +17,21 @@
         <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
         <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+        <button 
+            class="btn btn-sm btn-outline-success vote-btn" 
+            data-value="1" 
+            id="btn-upvote"
+            >
+        👍 <span id="count-up">{{ upvotes }}</span>
+        </button>
+
+        <button 
+            class="btn btn-sm btn-outline-danger vote-btn" 
+            data-value="-1" 
+            id="btn-downvote"
+            >
+            👎 <span id="count-down">{{ downvotes }}</span>
+            </button>
     </div>
     <!-- Detalles -->
     <div class="card mb-4">
@@ -35,6 +51,10 @@
             <p><strong>{% trans "Reportado por:" %}</strong> {{ citation.user.username|default:"Anonymous" }}</p>
         </div>
     </div>
+
+
+
+
 
     <!-- Motivo -->
     <div class="card mb-4">
@@ -216,4 +236,42 @@
         });
     });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const voteButtons = document.querySelectorAll('.vote-btn');
+
+  voteButtons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const voteValue = this.getAttribute('data-value');
+      const citationId = {{ citation.id }};
+
+      fetch("{% url 'vote' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `citation_id=${citationId}&vote=${voteValue}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.upvotes !== undefined) {
+          document.getElementById('count-up').textContent = data.upvotes;
+          document.getElementById('count-down').textContent = data.downvotes;
+
+          // Toggle visual button state
+          voteButtons.forEach(btn => btn.classList.remove('active'));
+          if (voteValue == 1 && data.upvotes > 0) {
+            document.getElementById('btn-upvote').classList.add('active');
+          } else if (voteValue == -1 && data.downvotes > 0) {
+            document.getElementById('btn-downvote').classList.add('active');
+          }
+        }
+      });
+    });
+  });
+});
+</script>
+
 {% endblock %}

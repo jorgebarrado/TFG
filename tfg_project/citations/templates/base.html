@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% load static %}
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -12,32 +14,43 @@
 {% load i18n %}
 
 <!-- Barra superior -->
-<nav class="navbar navbar-light bg-white shadow-sm px-4">
+<nav class="navbar navbar-light bg-white shadow-sm px-4 justify-content-between align-items-center">
     <a class="navbar-brand fw-bold" href="{% url 'home' %}">
         {% trans "Inicio" %}
     </a>
 
-    <form action="{% url 'set_language' %}" method="post" class="d-inline">
+    <div class="d-flex align-items-center gap-3">
+    <form id="languageForm" action="{% url 'set_language' %}" method="post" class="d-inline">
         {% csrf_token %}
         {% get_current_language as LANGUAGE_CODE %}
-        <select name="language" onchange="this.form.submit()" class="form-select form-select-sm d-inline w-auto">
-            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
-            <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>Español</option>
-        </select>
+        <input type="hidden" name="next" value="{{ request.path }}">
+        {% if LANGUAGE_CODE == 'en' %}
+            <input type="hidden" name="language" value="es">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <img src="{% static 'citations/img/flag_es.png' %}" alt="Español" style="height: 16px; margin-top: -2px;">
+            </button>
+        {% else %}
+            <input type="hidden" name="language" value="en">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <img src="{% static 'citations/img/flag_en.png' %}" alt="English" style="height: 16px; margin-top: -2px;">
+            </button>
+        {% endif %}
     </form>
 
-    <div>
-        {% if user.is_authenticated %}
-            <span class="me-3">👤 {{ user.username }}</span>
-            <form method="POST" action="{% url 'logout' %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm">{% trans "Cerrar sesión" %}</button>
-            </form>
-        {% else %}
-            <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">{% trans "Iniciar sesión" %}</button>
-            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">{% trans "Registrarse" %}</button>
-        {% endif %}
-    </div>   
+
+        <div>
+            {% if user.is_authenticated %}
+                <span class="me-3">👤 {{ user.username }}</span>
+                <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">{% trans "Cerrar sesión" %}</button>
+                </form>
+            {% else %}
+                <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">{% trans "Iniciar sesión" %}</button>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">{% trans "Registrarse" %}</button>
+            {% endif %}
+        </div>
+    </div>
 </nav>
 
 <!-- Contenido principal -->

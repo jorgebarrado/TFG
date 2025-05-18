@@ -29,3 +29,7 @@ urlpatterns = [
     # Comentarios
     path('comments/delete/<int:pk>/', delete_comment, name='delete_comment'),
 ]
+
+urlpatterns += [
+    path('vote/', views.vote_view, name='vote'),
+]
