@@ -109,12 +109,19 @@ def citation_detail(request, pk):
     else:
         form = CommentForm()
 
+    user_vote = None
+    if request.user.is_authenticated:
+        vote = Vote.objects.filter(citation=citation, user=request.user).first()
+        if vote:
+            user_vote = vote.value
+        
     return render(request, 'citations/citation_detail.html', {
         'citation': citation,
         'comment_form': form,
         'comments': comments,
         'upvotes': upvotes,
         'downvotes': downvotes,
+        'user_vote': user_vote,
     })
 
 # Vista alternativa (usada antes)
@@ -185,7 +192,12 @@ def vote_view(request):
     upvotes = citation.votes.filter(value=1).count()
     downvotes = citation.votes.filter(value=-1).count()
 
+    # Obtener el voto actual del usuario (puede ser None si lo borró)
+    current_vote = Vote.objects.filter(citation=citation, user=request.user).first()
+    user_vote = current_vote.value if current_vote else 0
+
     return JsonResponse({
         'upvotes': upvotes,
         'downvotes': downvotes,
+        'user_vote': user_vote,  # Esto es lo que faltaba
     })

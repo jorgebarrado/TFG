@@ -18,20 +18,19 @@
         <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
         <button 
-            class="btn btn-sm btn-outline-success vote-btn" 
+            class="btn btn-sm vote-btn {% if user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}" 
             data-value="1" 
-            id="btn-upvote"
-            >
-        👍 <span id="count-up">{{ upvotes }}</span>
+            id="btn-upvote">
+            ▲ <span id="count-up">{{ upvotes }}</span>
         </button>
 
         <button 
-            class="btn btn-sm btn-outline-danger vote-btn" 
+            class="btn btn-sm vote-btn {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}" 
             data-value="-1" 
-            id="btn-downvote"
-            >
-            👎 <span id="count-down">{{ downvotes }}</span>
-            </button>
+            id="btn-downvote">
+            ▼ <span id="count-down">{{ downvotes }}</span>
+        </button>
+
     </div>
     <!-- Detalles -->
     <div class="card mb-4">
@@ -256,18 +255,24 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(response => response.json())
       .then(data => {
-        if (data.upvotes !== undefined) {
-          document.getElementById('count-up').textContent = data.upvotes;
-          document.getElementById('count-down').textContent = data.downvotes;
+      if (data.upvotes !== undefined) {
+        document.getElementById('count-up').textContent = data.upvotes;
+        document.getElementById('count-down').textContent = data.downvotes;
 
-          // Toggle visual button state
-          voteButtons.forEach(btn => btn.classList.remove('active'));
-          if (voteValue == 1 && data.upvotes > 0) {
-            document.getElementById('btn-upvote').classList.add('active');
-          } else if (voteValue == -1 && data.downvotes > 0) {
-            document.getElementById('btn-downvote').classList.add('active');
-          }
+        // Quitar clases activas previas
+        document.getElementById('btn-upvote').classList.remove('btn-success');
+        document.getElementById('btn-upvote').classList.add('btn-outline-success');
+        document.getElementById('btn-downvote').classList.remove('btn-danger');
+        document.getElementById('btn-downvote').classList.add('btn-outline-danger');
+
+        if (data.user_vote == 1) {
+          document.getElementById('btn-upvote').classList.remove('btn-outline-success');
+          document.getElementById('btn-upvote').classList.add('btn-success');
+        } else if (data.user_vote == -1) {
+          document.getElementById('btn-downvote').classList.remove('btn-outline-danger');
+          document.getElementById('btn-downvote').classList.add('btn-danger');
         }
+      }
       });
     });
   });
