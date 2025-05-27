@@ -200,9 +200,6 @@ msgstr "ID"
 msgid "Fecha"
 msgstr "Date"
 
-msgid "Ver reporte"
-msgstr "View report"
-
 msgid "No hay reportes aún."
 msgstr "There are no reports yet."
 
@@ -215,7 +212,7 @@ msgstr "Report sent successfully."
 msgid "Hubo un error al enviar el reporte."
 msgstr "There was an error sending the report."
 
-msgid "Aún no hay comentarios." 
+msgid "Aún no hay comentarios."
 msgstr "No comments yet."
 
 msgid "Escribe tu comentario..."
@@ -226,3 +223,33 @@ msgstr "Publication area"
 
 msgid "Seleccione área..."
 msgstr "Select area..."
+
+msgid "Mis reportes"
+msgstr "My reports"
+
+msgid "Mis comentarios"
+msgstr "My comments"
+
+msgid "Guardados"
+msgstr "Saved"
+
+msgid "Aún no has creado ningún reporte."
+msgstr "You haven't created any reports yet."
+
+msgid "Aún no has comentado ningún reporte."
+msgstr "You haven't commented on any reports yet."
+
+msgid "No has guardado ningún reporte."
+msgstr "You haven't saved any reports yet."
+
+msgid "Ver"
+msgstr "View"
+
+msgid "Ver reporte"
+msgstr "View report"
+
+msgid "En reporte #%s"
+msgstr "On report #%s"
+
+msgid "Guardar para más tarde"
+msgstr "Save for later"

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">🔖 {% trans "Guardados" %}</h2>
+  {% if saved %}
+    <ul class="list-group">
+      {% for entry in saved %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {% trans "Reporte" %} #{{ id }} – {{ tipo }}{{ entry.citation.id }} – {{ entry.citation.get_citation_type_display }}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'citation_detail' entry.citation.id %}">{% trans "Ver" %}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">{% trans "No has guardado ningún reporte." %}</p>
+  {% endif %}
+</div>
+{% endblock %}
