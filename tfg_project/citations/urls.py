@@ -28,8 +28,17 @@ urlpatterns = [
 
     # Comentarios
     path('comments/delete/<int:pk>/', delete_comment, name='delete_comment'),
+
+    path('citations/toggle_saved/', views.toggle_saved, name='toggle_saved'),
+
+    path('perfil/mis-reportes/', views.my_reports, name='my_reports'),
+    path('perfil/mis-comentarios/', views.my_comments, name='my_comments'),
+    path('perfil/guardados/', views.my_saved, name='my_saved'),
+
 ]
 
 urlpatterns += [
     path('vote/', views.vote_view, name='vote'),
 ]
+
+

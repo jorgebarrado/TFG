@@ -31,6 +31,14 @@
             ▼ <span id="count-down">{{ downvotes }}</span>
         </button>
 
+        <button 
+            id="btn-save" 
+            class="btn btn-sm border-0 {% if is_saved %}text-warning{% else %}text-secondary{% endif %}" 
+            title="{% trans 'Guardar para más tarde' %}">
+            <i class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} fs-4"></i>
+        </button>
+
+
     </div>
     <!-- Detalles -->
     <div class="card mb-4">
@@ -278,5 +286,39 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const saveBtn = document.getElementById('btn-save');
+      if (saveBtn) {
+          saveBtn.addEventListener('click', function () {
+              fetch("{% url 'toggle_saved' %}", {
+                  method: 'POST',
+                  headers: {
+                      'X-CSRFToken': '{{ csrf_token }}',
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: `citation_id={{ citation.id }}`
+              })
+              .then(response => response.json())
+              .then(data => {
+                  const icon = saveBtn.querySelector('i');
+                  if (data.is_saved) {
+                      icon.classList.remove('bi-bookmark');
+                      icon.classList.add('bi-bookmark-fill');
+                      saveBtn.classList.remove('text-secondary');
+                      saveBtn.classList.add('text-warning');
+                  } else {
+                      icon.classList.remove('bi-bookmark-fill');
+                      icon.classList.add('bi-bookmark');
+                      saveBtn.classList.remove('text-warning');
+                      saveBtn.classList.add('text-secondary');
+                  }
+              });
+          });
+      }
+  });
+</script>
+
 
 {% endblock %}

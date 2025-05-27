@@ -20,6 +20,9 @@ from .models import IncorrectCitation
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Vote, IncorrectCitation
+from .models import SavedCitation
+from django.contrib.auth.decorators import login_required
+from .models import IncorrectCitation, Comment, SavedCitation
 
 # Landing page
 def home(request):
@@ -114,7 +117,11 @@ def citation_detail(request, pk):
         vote = Vote.objects.filter(citation=citation, user=request.user).first()
         if vote:
             user_vote = vote.value
-        
+
+    is_saved = False
+    if request.user.is_authenticated:
+        is_saved = SavedCitation.objects.filter(user=request.user, citation=citation).exists()
+
     return render(request, 'citations/citation_detail.html', {
         'citation': citation,
         'comment_form': form,
@@ -122,6 +129,7 @@ def citation_detail(request, pk):
         'upvotes': upvotes,
         'downvotes': downvotes,
         'user_vote': user_vote,
+        'is_saved': is_saved,
     })
 
 # Vista alternativa (usada antes)
@@ -201,3 +209,34 @@ def vote_view(request):
         'downvotes': downvotes,
         'user_vote': user_vote,  # Esto es lo que faltaba
     })
+
+@require_POST
+@login_required
+def toggle_saved(request):
+    citation_id = request.POST.get('citation_id')
+    citation = get_object_or_404(IncorrectCitation, id=citation_id)
+
+    saved, created = SavedCitation.objects.get_or_create(user=request.user, citation=citation)
+
+    if not created:
+        saved.delete()
+        is_saved = False
+    else:
+        is_saved = True
+
+    return JsonResponse({'is_saved': is_saved})
+
+@login_required
+def my_reports(request):
+    reports = IncorrectCitation.objects.filter(author=request.user).order_by('-created_at')
+    return render(request, 'citations/my_reports.html', {'reports': reports})
+
+@login_required
+def my_comments(request):
+    comments = Comment.objects.filter(author=request.user).select_related('citation').order_by('-created_at')
+    return render(request, 'citations/my_comments.html', {'comments': comments})
+
+@login_required
+def my_saved(request):
+    saved = SavedCitation.objects.filter(user=request.user).select_related('citation').order_by('-created_at')
+    return render(request, 'citations/my_saved.html', {'saved': saved})

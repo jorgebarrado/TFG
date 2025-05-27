@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">💬 {% trans "Mis comentarios" %}</h2>
+  {% if comments %}
+    <ul class="list-group">
+      {% for comment in comments %}
+        <li class="list-group-item">
+          <div class="mb-1">
+            <div class="mb-1"><strong>{% trans "En reporte"%} #{{ comment.citation.id }}</strong></div>
+          </div>
+          <div>{{ comment.content }}</div>
+          <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+          <a href="{% url 'citation_detail' comment.citation.id %}" class="btn btn-sm btn-link">{% trans "Ver reporte" %}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">{% trans "Aún no has comentado ningún reporte." %}</p>
+  {% endif %}
+</div>
+{% endblock %}

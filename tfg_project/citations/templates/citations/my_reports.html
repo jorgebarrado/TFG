@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">📝 {% trans "Mis reportes" %}</h2>
+  {% if reports %}
+    <ul class="list-group">
+      {% for citation in reports %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {% trans "Reporte"%} #{{ citation.id }} – {{ citation.get_citation_type_display }}
+          <a href="{% url 'citation_detail' citation.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">{% trans "Aún no has creado ningún reporte." %}</p>
+  {% endif %}
+</div>
+{% endblock %}
