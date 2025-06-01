@@ -1,5 +1,6 @@
 <!-- Modal: Iniciar Sesión -->
 {% load i18n %}
+{% load socialaccount %}
 <div class="modal fade {% if login_form.errors %}show-login{% endif %}" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -32,6 +33,19 @@
               {% endfor %}
             </div>
           {% endif %}
+
+          <!-- Botón de login con Google -->
+          <div class="text-center mt-4">
+            <a href="{% url 'google_direct_login' %}" class="btn btn-outline-danger w-100">
+             <a href="{% provider_login_url 'google' %}">Iniciar sesión con Google</a>
+
+            
+          </div>
+          <div class="text-center mt-4">
+            <a href="{% provider_login_url 'orcid' %}" class="btn btn-outline-success w-100 mt-2">
+              <i class="bi bi-person-vcard"></i> Iniciar sesión con ORCID
+            </a>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">{% trans "Entrar" %}</button>

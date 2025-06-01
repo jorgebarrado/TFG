@@ -10,10 +10,20 @@ from .views import (
     login_view,
     register_view,
     logout_view,
-    delete_comment
+    delete_comment,
+    google_direct_login
 )
 
+from django.urls import path
+from citations.views import google_direct_login
+
 urlpatterns = [
+    path('login/google-direct/', google_direct_login, name='google_direct_login'),
+]
+
+urlpatterns = [
+    path('citations/login/google-direct/', google_direct_login, name='google_direct_login'),
+    path('login/google-direct/', google_direct_login, name='google_direct_login'),
     path('submit/', submit_incorrect_citation, name='submit_incorrect_citation'),
     path('list/', citation_list, name='citation_list'),
     path('submitted/', citation_submitted, name='citation_submitted'),
