@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Conectando con Google...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            border: 6px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <p>Conectando con Google...</p>
+
+    <!-- Este formulario es importante -->
+    <form method="post" action=".">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Redirigir</button>
+    </form>
+
+    <script>
+        document.forms[0].submit();
+    </script>
+</body>
+</html>

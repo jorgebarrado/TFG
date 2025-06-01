@@ -5,9 +5,10 @@ from django.conf.urls.i18n import i18n_patterns
 from citations import views
 
 urlpatterns = [
+    path('accounts/', include('allauth.urls')),
     path('', home, name='home'),  # Página de inicio
     path('admin/', admin.site.urls),
-    path('citations/', include('citations.urls')),  # Todas las rutas de tu app
+    path('citations/', include('citations.urls')),  
 ]
 
 urlpatterns += [
