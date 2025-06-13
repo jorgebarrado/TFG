@@ -44,7 +44,7 @@ urlpatterns = [
     path('perfil/mis-reportes/', views.my_reports, name='my_reports'),
     path('perfil/mis-comentarios/', views.my_comments, name='my_comments'),
     path('perfil/guardados/', views.my_saved, name='my_saved'),
-
+    path('perfil/ajustes/', views.account_settings, name='account_settings'),
 ]
 
 urlpatterns += [

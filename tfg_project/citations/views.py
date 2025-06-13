@@ -27,12 +27,61 @@ from allauth.socialaccount.models import SocialApp
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.shortcuts import redirect
-
 from django.shortcuts import redirect
 from django.conf import settings
 from allauth.socialaccount.models import SocialApp
 from allauth.socialaccount.providers.google.provider import GoogleProvider
 from urllib.parse import urlencode
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth import login
+from citations.forms import LoginForm
+
+def login_view(request):
+    next_url = request.POST.get("next", request.GET.get("next", "/"))
+
+    if request.method == "POST":
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()                 
+            login(request, user)
+            return redirect(next_url or "/")
+    else:
+        form = LoginForm(request)
+
+    return render(
+        request,
+        "citations/home.html",
+        {
+            "login_form": form,
+            "register_form": RegisterForm(),
+            "show_login_modal": True,
+        },
+    )
+
+User = get_user_model()
+
+@login_required
+def account_settings(request):
+    user = request.user
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        username = request.POST.get('username', '').strip()
+
+        if not first_name or not username:
+            messages.error(request, "Rellena ambos campos.")
+        elif User.objects.filter(username=username).exclude(pk=user.pk).exists():
+            messages.error(request, "Ese nombre de usuario ya existe.")
+        else:
+            user.first_name = first_name
+            user.username = username
+            user.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect('account_settings')
+
+    return render(request, 'citations/account_settings.html', {'user': user})
 
 def google_direct_login(request):
     app = SocialApp.objects.get(provider='google')
@@ -60,7 +109,7 @@ def home(request):
 def login_view(request):
     next_url = request.POST.get('next', request.GET.get('next', '/'))
     if request.method == 'POST':
-        form = LoginForm(request, data=request.POST)
+        form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
