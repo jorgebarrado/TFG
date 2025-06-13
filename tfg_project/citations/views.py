@@ -1,42 +1,42 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.urls import reverse
-from urllib.parse import urlencode
+from urllib.parse import urlencode  
 import requests
-from django.contrib.auth import authenticate, login, logout
-from .forms import IncorrectCitationForm, LoginForm, RegisterForm
-from .models import IncorrectCitation
-from .forms import CommentForm
-from .models import Comment
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from .models import Comment  # o el nombre de tu modelo
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import IncorrectCitation, Comment
-from .forms import CommentForm
-from django.shortcuts import get_object_or_404
-from .models import IncorrectCitation
-from django.http import JsonResponse
+
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
+from django.http import (
+    JsonResponse,
+    HttpResponseForbidden,
+)
+from django.urls import reverse
 from django.views.decorators.http import require_POST
-from .models import Vote, IncorrectCitation
-from .models import SavedCitation
-from django.contrib.auth.decorators import login_required
-from .models import IncorrectCitation, Comment, SavedCitation
-from allauth.socialaccount.models import SocialApp
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from django.shortcuts import redirect
-from django.shortcuts import redirect
-from django.conf import settings
-from allauth.socialaccount.models import SocialApp
-from allauth.socialaccount.providers.google.provider import GoogleProvider
-from urllib.parse import urlencode
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth import login
-from citations.forms import LoginForm
+from django.contrib.auth import (
+    authenticate,
+    login,
+    logout,
+    get_user_model,
+)
+from django.contrib.auth.decorators import login_required
+
+# Formularios propios
+from .forms import (
+    IncorrectCitationForm,
+    LoginForm,
+    RegisterForm,
+    CommentForm,
+)
+
+# Modelos propios
+from .models import (
+    IncorrectCitation,
+    Comment,
+    Vote,
+    SavedCitation,
+)
+
 
 def login_view(request):
     next_url = request.POST.get("next", request.GET.get("next", "/"))
@@ -82,24 +82,6 @@ def account_settings(request):
             return redirect('account_settings')
 
     return render(request, 'citations/account_settings.html', {'user': user})
-
-def google_direct_login(request):
-    app = SocialApp.objects.get(provider='google')
-
-    base_url = "https://accounts.google.com/o/oauth2/auth"
-    callback_uri = request.build_absolute_uri('/accounts/google/login/callback/')
-
-    params = {
-        "client_id": app.client_id,
-        "redirect_uri": callback_uri,
-        "response_type": "code",
-        "scope": "openid email profile",
-        "access_type": "online",
-        "prompt": "consent",
-    }
-
-    url = f"{base_url}?{urlencode(params)}"
-    return redirect(url)
 
 # Landing page
 def home(request):
