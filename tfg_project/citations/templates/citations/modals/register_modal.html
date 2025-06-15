@@ -1,4 +1,8 @@
 {% load i18n %}
+{% load static %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
 <div class="modal fade {% if register_form.errors %}show-register{% endif %}" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

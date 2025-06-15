@@ -7,6 +7,37 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from .models import IncorrectCitation, Comment
 
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "username")
+        widgets = {
+            "first_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Nombre"
+            }),
+            "username": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Nombre de usuario"
+            }),
+        }
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    """
+    Igual que PasswordChangeForm pero con Bootstrap.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                "class": "form-control",
+                "placeholder": field.label
+            })
 
 class LoginForm(AuthenticationForm):
     """Login con placeholders y clase Bootstrap."""

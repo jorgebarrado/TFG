@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2>Ajustes de cuenta</h2>
+<div class="container py-4">
+  <h2 class="mb-4">Ajustes de cuenta</h2>
 
   {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }}">{{ m }}</div>
     {% endfor %}
   {% endif %}
 
-  <form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-      <label for="first_name" class="form-label">Nombre:</label>
-      <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <h4 class="mb-3">Datos de perfil</h4>
+      <form method="post">
+        {% csrf_token %}
+        {{ profile_form.as_p }}
+        <button name="save_profile" class="btn btn-primary w-100">Guardar cambios</button>
+      </form>
     </div>
 
-    <div class="mb-3">
-      <label for="username" class="form-label">Nombre de usuario:</label>
-      <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+    <div class="col-md-6 mb-4">
+      <h4 class="mb-3">Cambiar contraseña</h4>
+      <form method="post">
+        {% csrf_token %}
+        {{ pwd_form.as_p }}
+        <button name="change_password" class="btn btn-warning w-100">Actualizar contraseña</button>
+      </form>
     </div>
-
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-  </form>
+  </div>
 </div>
 {% endblock %}
