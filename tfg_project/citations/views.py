@@ -37,6 +37,40 @@ from .models import (
     SavedCitation,
 )
 
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from citations.forms import ProfileForm, CustomPasswordChangeForm
+
+@login_required
+def account_settings(request):
+    user = request.user
+
+    # --- instanciar formularios ---
+    profile_form = ProfileForm(instance=user)
+    pwd_form      = CustomPasswordChangeForm(user)
+
+    # --- procesar envío ---
+    if request.method == "POST":
+        if "save_profile" in request.POST:
+            profile_form = ProfileForm(request.POST, instance=user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Perfil actualizado.")
+                return redirect("account_settings")
+
+        elif "change_password" in request.POST:
+            pwd_form = CustomPasswordChangeForm(user, request.POST)
+            if pwd_form.is_valid():
+                pwd_form.save()
+                update_session_auth_hash(request, pwd_form.user)  # ← sigues logueado
+                messages.success(request, "Contraseña cambiada.")
+                return redirect("account_settings")
+
+    context = {
+        "profile_form": profile_form,
+        "pwd_form": pwd_form,
+    }
+    return render(request, "citations/account_settings.html", context)
 
 def login_view(request):
     next_url = request.POST.get("next", request.GET.get("next", "/"))
@@ -62,26 +96,6 @@ def login_view(request):
 
 User = get_user_model()
 
-@login_required
-def account_settings(request):
-    user = request.user
-
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name', '').strip()
-        username = request.POST.get('username', '').strip()
-
-        if not first_name or not username:
-            messages.error(request, "Rellena ambos campos.")
-        elif User.objects.filter(username=username).exclude(pk=user.pk).exists():
-            messages.error(request, "Ese nombre de usuario ya existe.")
-        else:
-            user.first_name = first_name
-            user.username = username
-            user.save()
-            messages.success(request, "Perfil actualizado correctamente.")
-            return redirect('account_settings')
-
-    return render(request, 'citations/account_settings.html', {'user': user})
 
 # Landing page
 def home(request):
