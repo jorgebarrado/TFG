@@ -1,31 +1,106 @@
 {% load i18n %}
-{% load static %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+</style>
+<div class="modal fade {% if register_form.errors %}show-register{% endif %}"
+     id="registerModal"
+     tabindex="-1"
+     aria-labelledby="registerModalLabel"
+     aria-hidden="true">
 
-<div class="modal fade {% if register_form.errors %}show-register{% endif %}" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="{% url 'register' %}">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="registerModalLabel">{% trans "Registrarse" %}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    {{ register_form.as_p }}
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4 shadow-sm border-0">
 
-                    {% if register_form.errors %}
-                        <div class="text-danger">
-                            {{ register_form.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">{% trans "Crear cuenta" %}</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal-header border-0">
+        <h4 class="modal-title w-100 text-center fw-bold">{% trans "Registrarse" %}</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+      <div class="modal-body">
+        <form id="registerForm" method="POST" action="{% url 'register_ajax' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+
+          <div class="mb-3">
+            {{ register_form.username }}
+            {% if register_form.username.errors %}
+              <div class="text-danger small">{{ register_form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            {{ register_form.password1 }}
+            {% if register_form.password1.errors %}
+              <div class="text-danger small">{{ register_form.password1.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ register_form.password2 }}
+            {% if register_form.password2.errors %}
+              <div class="text-danger small">{{ register_form.password2.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          {% if register_form.password1.help_text %}
+            <div class="small text-muted mb-3">
+              {{ register_form.password1.help_text|safe }}
+            </div>
+          {% endif %}
+
+          {% if register_form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in register_form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">{% trans "Crear cuenta" %}</button>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0">
+        <span class="small">{% trans "¿Ya tienes cuenta?" %}</span>
+        <a href="#" class="ms-2" data-bs-toggle="modal"
+           data-bs-target="#loginModal">{% trans "Iniciar sesión" %}</a>
+      </div>
     </div>
+  </div>
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
+  const modalEl = document.getElementById("registerModal");
+  const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    form.querySelectorAll(".text-danger.small").forEach(el => el.remove());
+
+    const resp = await fetch(form.action, {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      body: new FormData(form),
+    });
+
+    if (resp.ok) {
+      modalInstance.hide();
+      location.reload();
+    } else {
+      const data = await resp.json();
+      for (const [field, errs] of Object.entries(data.errors)) {
+        const input = form.querySelector(`[name="${field}"]`);
+        if (!input) continue;
+        const div = document.createElement("div");
+        div.className = "text-danger small mt-1";
+        div.textContent = errs[0].message;
+        input.parentNode.appendChild(div);
+      }
+    }
+  });
+});
+</script>

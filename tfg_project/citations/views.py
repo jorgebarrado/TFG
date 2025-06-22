@@ -1,6 +1,7 @@
 from urllib.parse import urlencode  
 import requests
-
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import (
     render,
     redirect,
@@ -41,15 +42,15 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from citations.forms import ProfileForm, CustomPasswordChangeForm
 
+User = get_user_model()
+
 @login_required
 def account_settings(request):
     user = request.user
 
-    # --- instanciar formularios ---
     profile_form = ProfileForm(instance=user)
     pwd_form      = CustomPasswordChangeForm(user)
 
-    # --- procesar envío ---
     if request.method == "POST":
         if "save_profile" in request.POST:
             profile_form = ProfileForm(request.POST, instance=user)
@@ -94,9 +95,6 @@ def login_view(request):
         },
     )
 
-User = get_user_model()
-
-
 # Landing page
 def home(request):
     return render(request, 'citations/home.html')
@@ -118,29 +116,41 @@ def login_view(request):
         'show_login_modal': True
     })
 
-# Vista de registro con soporte para `next`
+
+
 def register_view(request):
-    next_url = request.POST.get('next', request.GET.get('next', '/'))
-    if request.method == 'POST':
+    next_url = request.POST.get("next", request.GET.get("next", "/"))
+
+    if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
+            # ① Crear el usuario en la BD
             user = form.save()
-            login(request, user)
-            return redirect(next_url or '/')  # Redirección limpia
-        else:
-            return render(request, 'citations/home.html', {
-                'register_form': form,
-                'login_form': LoginForm(),
-                'show_register_modal': True  # Solo si hay errores
-            })
+
+            # ② Autenticarlo de nuevo con las credenciales recién creadas
+            auth_user = authenticate(
+                request,
+                username=user.username,
+                password=form.cleaned_data["password1"],
+            )
+
+            # ③ Iniciar sesión (login) con el backend correcto
+            if auth_user is not None:
+                login(request, auth_user)
+
+            return redirect(next_url or "/")
     else:
         form = RegisterForm()
-        return render(request, 'citations/home.html', {
-            'register_form': form,
-            'login_form': LoginForm(),
-            'show_register_modal': True
-        })
 
+    return render(
+        request,
+        "citations/home.html",
+        {
+            "register_form": form,
+            "login_form": LoginForm(),
+            "show_register_modal": True,
+        },
+    )
 # Logout
 def logout_view(request):
     logout(request)
@@ -313,3 +323,24 @@ def my_comments(request):
 def my_saved(request):
     saved = SavedCitation.objects.filter(user=request.user).select_related('citation').order_by('-created_at')
     return render(request, 'citations/my_saved.html', {'saved': saved})
+
+@require_POST
+def register_ajax(request):
+    """
+    Recibe el formulario de registro vía fetch/AJAX
+    y devuelve JSON en lugar de redirección.
+    """
+    form = RegisterForm(request.POST)
+    if form.is_valid():
+        user = form.save()
+        auth_user = authenticate(
+            request,
+            username=user.username,
+            password=form.cleaned_data["password1"],
+        )
+        if auth_user:
+            login(request, auth_user)
+        return JsonResponse({"success": True})
+
+    errors = {field: errs.get_json_data() for field, errs in form.errors.items()}
+    return JsonResponse({"success": False, "errors": errors}, status=400)

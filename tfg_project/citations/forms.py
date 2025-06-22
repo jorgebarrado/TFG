@@ -12,6 +12,28 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+class RegisterForm(UserCreationForm):
+    class Meta:
+        model  = User
+        fields = ("username", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["username"].widget.attrs.update({
+            "placeholder": "Usuario",
+            "class": "form-control",
+        })
+        self.fields["password1"].widget.attrs.update({
+            "placeholder": "Contraseña",
+            "class": "form-control",
+        })
+        self.fields["password2"].widget.attrs.update({
+            "placeholder": "Confirmar contraseña",
+            "class": "form-control",
+        })
+
+
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
@@ -46,7 +68,7 @@ class LoginForm(AuthenticationForm):
 
         # Usuario / email
         self.fields["username"].widget.attrs.update({
-            "placeholder": _("Usuario o email"),
+            "placeholder": _("Usuario"),
             "class": "form-control",
         })
 
@@ -55,12 +77,6 @@ class LoginForm(AuthenticationForm):
             "placeholder": _("Contraseña"),
             "class": "form-control",
         })
-
-
-class RegisterForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ("username", "password1", "password2")
 
 
 class IncorrectCitationForm(forms.ModelForm):
@@ -76,7 +92,6 @@ class IncorrectCitationForm(forms.ModelForm):
         labels = {
             "publication_area": _("Área de publicación"),
         }
-
 
 
 class CommentForm(forms.ModelForm):

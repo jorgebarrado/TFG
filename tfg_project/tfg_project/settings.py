@@ -46,9 +46,9 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
 ACCOUNT_FORMS = {
-    'login': 'citations.forms.LoginForm',
+    "login":  "citations.forms.LoginForm",
+    "signup": "citations.forms.RegisterForm",
 }
 
 MIDDLEWARE = [
