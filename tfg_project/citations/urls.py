@@ -35,6 +35,7 @@ urlpatterns = [
     path('perfil/ajustes/', views.account_settings, name='account_settings'),
     path('vote/', views.vote_view, name='vote'),
     path("account/settings/", views.account_settings, name="account_settings"),
+    path("ajax/register/", views.register_ajax, name="register_ajax"),
 ]
 
 
