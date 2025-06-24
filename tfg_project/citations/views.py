@@ -1,6 +1,5 @@
-from urllib.parse import urlencode  
+from urllib.parse import urlencode
 import requests
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import (
     render,
@@ -12,7 +11,6 @@ from django.http import (
     HttpResponseForbidden,
 )
 from django.urls import reverse
-from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import (
     authenticate,
@@ -73,27 +71,6 @@ def account_settings(request):
     }
     return render(request, "citations/account_settings.html", context)
 
-def login_view(request):
-    next_url = request.POST.get("next", request.GET.get("next", "/"))
-
-    if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()                 
-            login(request, user)
-            return redirect(next_url or "/")
-    else:
-        form = LoginForm(request)
-
-    return render(
-        request,
-        "citations/home.html",
-        {
-            "login_form": form,
-            "register_form": RegisterForm(),
-            "show_login_modal": True,
-        },
-    )
 
 # Landing page
 def home(request):
