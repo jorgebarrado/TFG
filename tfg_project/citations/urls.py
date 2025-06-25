@@ -1,5 +1,4 @@
 from django.urls import path
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from . import views
 from .views import (
     ajax_submit_citation,
@@ -13,9 +12,6 @@ from .views import (
     logout_view,
     delete_comment,
 )
-
-from django.urls import path
-
 
 urlpatterns = [
     path('submit/', submit_incorrect_citation, name='submit_incorrect_citation'),
@@ -35,6 +31,7 @@ urlpatterns = [
     path('perfil/ajustes/', views.account_settings, name='account_settings'),
     path('vote/', views.vote_view, name='vote'),
     path("ajax/register/", views.register_ajax, name="register_ajax"),
+    path("search_suggest/", views.citation_suggest, name="citation_suggest"),
 ]
 
 

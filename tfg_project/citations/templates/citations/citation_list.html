@@ -1,82 +1,96 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load i18n %}
-{% block title %} {% trans "Listado de Reportes" %} {% endblock %}
+
+{% block title %}{% trans "Listado de reportes" %}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <h1 class="mb-4 text-center"> {% trans "Lista de Citas Incorrectas" %}</h1>
+  <h1 class="mb-4 text-center">{% trans "Lista de citas incorrectas" %}</h1>
 
-    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
-        <a href="{% url 'home' %}" class="btn btn-outline-primary mb-2">⬅️ {% trans "Volver al inicio" %} </a> 
+  <a href="{% url 'home' %}" class="btn btn-outline-primary mb-3">
+    ⬅️ {% trans "Volver al inicio" %}
+  </a>
 
-        <div class="d-flex align-items-center mb-2">
-            <label for="typeFilter" class="me-2 mb-0 fw-normal" style="white-space: nowrap;"> {% trans "Filtrar por tipo:" %}</label>
-            <select id="typeFilter" class="form-select form-select-sm" style="width: auto; min-width: 180px;">
-                <option value=""> {% trans "Todos" %}</option>
-                <option value="Not Said">Not Said</option>
-                <option value="Misinterpretation">Misinterpretation</option>
-                <option value="Contextual Misattribution">Contextual Misattribution</option>
-            </select>
-        </div>
+  <!-- ▸ FILTROS ------------------------------------------------------------ -->
+  <form id="filtersForm" class="row g-3 mb-4">
+    <div class="col-md-5">
+      <input id="id_q" type="text" class="form-control"
+             placeholder="{% trans 'Buscar DOI, título o autor' %}">
     </div>
 
-    {% if citations %}
-    <div class="table-responsive">
-        <table id="citationsTable" class="table table-striped table-hover table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>{% trans "Reportado por" %}</th>
-                    <th>{% trans "DOI original" %}</th>
-                    <th>{% trans "Tipo de error" %}</th>
-                    <th>{% trans "Area" %}</th>
-                    <th>ID</th>
-                    <th>{% trans "Fecha" %} </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in citations %}
-                <tr>
-                    <td>{{ c.author.username|default:"Anonymous" }}</td>
-                    <td>
-                        <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
-                            <code>{{ c.doi_original }}</code>
-                        </a>
-                    </td>
-                    <td>{{ c.get_citation_type_display }}</td>
-                    <td>{{ c.get_publication_area_display }}</td>
-                    <td data-order="{{ c.id }}">#{{ c.id }}</td>
-                    <td>{{ c.created_at|date:"m/d/Y H:i" }}</td>
-                    <td>
-                        <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">
-                            {% trans "Ver reporte" %}
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="col-md-3">
+      <select id="areaFilter" class="form-select">
+        <option value="">{% trans "Área (todas)" %}</option>
+        {% for code,label in areas %}
+          <option value="{{ label }}">{{ label }}</option>
+        {% endfor %}
+      </select>
     </div>
-    {% else %}
-    <div class="alert alert-info text-center">{% trans "No hay reportes aún." %} </div>
-    {% endif %}
+
+    <div class="col-md-2">
+      <select id="ctypeFilter" class="form-select">
+        <option value="">{% trans "Tipo (todos)" %}</option>
+        {% for code,label in citation_types %}
+          <option value="{{ label }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <select id="yearFilter" class="form-select">
+        <option value="">{% trans "Año" %}</option>
+        {% for y in years %}
+          <option value="{{ y }}">{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <!-- ▸ TABLA -------------------------------------------------------------- -->
+  <div class="table-responsive">
+    <table id="citationsTable"
+           class="table table-striped table-hover table-bordered align-middle w-100">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Reportado por" %}</th>      <!-- col-0 -->
+          <th>DOI</th>                               <!-- col-1 -->
+          <th>{% trans "Tipo de error" %}</th>       <!-- col-2 -->
+          <th>{% trans "Área" %}</th>                <!-- col-3 -->
+          <th>#</th>                                 <!-- col-4 -->
+          <th>{% trans "Fecha" %}</th>               <!-- col-5 -->
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in page_obj %}
+        <tr>
+          <td>{{ c.author.username|default:"Anonymous" }}</td>
+          <td><a href="#" class="doi-link" data-doi="{{ c.doi_original }}"><code>{{ c.doi_original }}</code></a></td>
+          <td>{{ c.get_citation_type_display }}</td>
+          <td>{{ c.get_publication_area_display }}</td>
+          <td data-order="{{ c.id }}">#{{ c.id }}</td>
+          <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+          <td><a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "citations/includes/pagination.html" with page_obj=page_obj %}
 </div>
 
-<!-- Modal para mostrar metadatos del DOI -->
-<div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="doiModalLabel">{% trans "Metadatos del artículo" %} </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label={% trans "Cerrar" %}></button>
-            </div>
-            <div class="modal-body">
-                <div id="doiMetadataContent">
-                    <p>{% trans "Cargando metadatos..." %}</p>
-                </div>
-            </div>
-        </div>
+<!-- ▸ MODAL DOI ----------------------------------------------------------- -->
+<div class="modal fade" id="doiModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Metadatos del artículo" %}</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body"><div id="doiMetadataContent"></div></div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -85,72 +99,54 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-<!-- Script dinámico multilenguaje -->
 <script>
-  $(document).ready(function () {
-    const languageMap = {
+$(function () {
+  /* ────── 1. DataTables con idioma dinámico ───────────────────────────── */
+  const langURL = {
       es: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
-      en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
-    };
+      en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json'
+  }["{{ LANGUAGE_CODE|default:'en' }}"] || "";
+  const table = $('#citationsTable').DataTable({
+      language: {url: langURL},
+      order: [[4,'desc']]
+  });
 
-    const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
+  /* ────── 2. BÚSQUEDA EN TIEMPO REAL ──────────────────────────────────── */
+  $('#id_q').on('keyup', function () {
+      table.search(this.value).draw();
+  });
 
-    const table = $('#citationsTable').DataTable({
-      language: {
-        url: languageMap[userLang] || languageMap.en
-      },
-      order: [[4, 'desc']],
-      initComplete: function () {
-        // 🔍 Buscador alineado a la derecha
-        const filter = $('#citationsTable_filter');
-        filter.addClass('d-flex align-items-center justify-content-end gap-2');
-        filter.find('label').css('display', 'flex').addClass('mb-2 align-items-center');
-        filter.find('input')
-          .addClass('form-control form-control-sm ms-2')
-          .css('width', '200px');
+  /* ────── 3. FILTROS POR SELECTS ─────────────────────────────────────── */
+  $('#areaFilter').on('change', function(){
+      table.column(3).search(this.value).draw();
+  });
+  $('#ctypeFilter').on('change', function(){
+      // ^...$ para coincidencia exacta
+      const v = this.value ? '^'+this.value+'$' : '';
+      table.column(2).search(v, true, false).draw();
+  });
+  $('#yearFilter').on('change', function(){
+      table.column(5).search(this.value).draw();
+  });
 
-        // 🔢 Mostrar sin "registros"
-        const length = $('#citationsTable_length');
-        length.addClass('d-flex align-items-center gap-2');
-        length.find('label').css('display', 'flex').addClass('mb-2 align-items-center');
-        const label = length.find('label');
-        label.contents().filter(function () {
-          return this.nodeType === 3 && this.nodeValue.includes('registros');
-        }).remove();
-        length.find('select')
-          .addClass('form-select form-select-sm ms-2')
-          .css('width', '70px');
-      }
-    });
+  /* ────── 4. (Opcional) recargar al cambiar filtros ──────────────────── */
+  // $('#filtersForm select').on('change', () => document.getElementById('filtersForm').submit());
 
-    // 🎯 Filtro tipo de error
-    $('#typeFilter').on('change', function () {
-      const selected = $(this).val();
-      table.column(2).search(selected ? '^' + selected + '$' : '', true, false).draw();
-    });
-
-    // 📚 Metadatos DOI
-    $(document).on('click', '.doi-link', function (e) {
+  /* ────── 5. Modal con metadatos DOI ─────────────────────────────────── */
+  $(document).on('click','.doi-link',function(e){
       e.preventDefault();
       const doi = $(this).data('doi');
-      $('#doiMetadataContent').html('<p>Cargando metadatos...</p>');
-      const modal = new bootstrap.Modal(document.getElementById('doiModal'));
-      modal.show();
-
-      $.get('/citations/get_all_metadata/', { doi: doi }, function (data) {
-        let html = `
-            <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || 'N/A'}</p>
-                <p><strong>{% trans "Autores" %}:</strong> ${data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'}</p>
-                <p><strong>{% trans "Revista" %}:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
-                <p><strong>{% trans "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
-                <p><strong>DOI:</strong> <code>${doi}</code></p>
-                <p><strong>{% trans "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>
-        `;
-        $('#doiMetadataContent').html(html);
-      }).fail(function () {
-        $('#doiMetadataContent').html('<p class="text-danger">No se pudo obtener información para este DOI.</p>');
-      });
-    });
+      $('#doiMetadataContent').html('<p>Loading…</p>');
+      new bootstrap.Modal('#doiModal').show();
+      $.get('/citations/get_all_metadata/',{doi})
+        .done(d=>{
+          $('#doiMetadataContent').html(`
+            <p><strong>Título:</strong> ${d.title?.[0]||'N/A'}</p>
+            <p><strong>Autores:</strong> ${d.author?.map(a=>a.given+' '+a.family).join(', ')||'N/A'}</p>
+          `);
+        })
+        .fail(()=>$('#doiMetadataContent').text('Error'));
   });
+});
 </script>
 {% endblock %}
