@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+from django.core.paginator import Paginator
 import requests
 from django.views.decorators.http import require_POST
 from django.shortcuts import (
@@ -31,6 +32,7 @@ from .forms import (
 # Modelos propios
 from .models import (
     IncorrectCitation,
+    AREA_CHOICES,
     Comment,
     Vote,
     SavedCitation,
@@ -39,7 +41,58 @@ from .models import (
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from citations.forms import ProfileForm, CustomPasswordChangeForm
+from django.db.models import Q, Value
+from django.db.models.functions import ExtractYear
 
+def citation_suggest(request):
+    term = request.GET.get("term","")
+    qs = IncorrectCitation.objects.filter(
+        Q(doi_original__icontains=term) |
+        Q(metadata__title__icontains=term)
+    ).values("doi_original","metadata__title")[:5]
+
+    return JsonResponse(list(qs), safe=False)
+
+def citation_list(request):
+    qs = IncorrectCitation.objects.all()
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        qs = qs.filter(
+            Q(doi_original__icontains=q) |
+            Q(doi_incorrect__icontains=q)
+        )
+
+    area = request.GET.get("area")
+    if area:
+        qs = qs.filter(publication_area=area)
+
+    ctype = request.GET.get("ctype")
+    if ctype:
+        qs = qs.filter(citation_type=ctype)
+
+    year = request.GET.get("year")
+    if year and year.isdigit():
+        qs = qs.filter(created_at__year=year)
+
+    areas = AREA_CHOICES  
+    citation_types = IncorrectCitation._meta\
+        .get_field("citation_type").choices
+    years = (IncorrectCitation.objects
+             .annotate(y=ExtractYear("created_at"))
+             .values_list("y", flat=True)
+             .distinct()
+             .order_by("-y"))
+
+    paginator = Paginator(qs.order_by("-created_at"), 25)
+    page_obj  = paginator.get_page(request.GET.get("page"))
+
+    return render(request, "citations/citation_list.html", {
+        "page_obj": page_obj,
+        "areas": areas,
+        "citation_types": citation_types,
+        "years": years,
+    })
 User = get_user_model()
 
 @login_required
@@ -146,10 +199,6 @@ def ajax_submit_citation(request):
         return JsonResponse({'errors': form.errors}, status=400)
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-# Lista de citas reportadas
-def citation_list(request):
-    citations = IncorrectCitation.objects.all().order_by('-created_at')
-    return render(request, 'citations/citation_list.html', {'citations': citations})
 
 # Página del reporte individual
 def citation_detail(request, pk):
@@ -321,3 +370,4 @@ def register_ajax(request):
 
     errors = {field: errs.get_json_data() for field, errs in form.errors.items()}
     return JsonResponse({"success": False, "errors": errors}, status=400)
+
