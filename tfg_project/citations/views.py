@@ -1,5 +1,4 @@
 from urllib.parse import urlencode
-from django.core.paginator import Paginator
 import requests
 from django.views.decorators.http import require_POST
 from django.shortcuts import (
@@ -54,45 +53,45 @@ def citation_suggest(request):
     return JsonResponse(list(qs), safe=False)
 
 def citation_list(request):
-    qs = IncorrectCitation.objects.all()
+    qs = IncorrectCitation.objects.all().order_by("-created_at")
 
+    # -------------------- búsqueda libre --------------------
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
             Q(doi_original__icontains=q) |
-            Q(doi_incorrect__icontains=q)
+            Q(doi_incorrect__icontains=q) |
+            Q(metadata__title__icontains=q) |
+            Q(metadata__authors__icontains=q)
         )
 
-    area = request.GET.get("area")
+    area  = request.GET.get("area")
+    ctype = request.GET.get("ctype")
+    year  = request.GET.get("year")
+
     if area:
         qs = qs.filter(publication_area=area)
-
-    ctype = request.GET.get("ctype")
     if ctype:
         qs = qs.filter(citation_type=ctype)
-
-    year = request.GET.get("year")
     if year and year.isdigit():
         qs = qs.filter(created_at__year=year)
 
-    areas = AREA_CHOICES  
-    citation_types = IncorrectCitation._meta\
-        .get_field("citation_type").choices
+    areas = AREA_CHOICES
+    citation_types = IncorrectCitation._meta.get_field("citation_type").choices
     years = (IncorrectCitation.objects
              .annotate(y=ExtractYear("created_at"))
              .values_list("y", flat=True)
              .distinct()
              .order_by("-y"))
 
-    paginator = Paginator(qs.order_by("-created_at"), 25)
-    page_obj  = paginator.get_page(request.GET.get("page"))
-
-    return render(request, "citations/citation_list.html", {
-        "page_obj": page_obj,
+    context = {
+        "citations": qs,
         "areas": areas,
         "citation_types": citation_types,
         "years": years,
-    })
+    }
+    return render(request, "citations/citation_list.html", context)
+
 User = get_user_model()
 
 @login_required

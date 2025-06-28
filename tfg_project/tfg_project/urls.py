@@ -6,7 +6,7 @@ from citations import views
 
 urlpatterns = [
     path('accounts/', include('allauth.urls')),
-    path('', home, name='home'),  # Página de inicio
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('citations/', include('citations.urls')),  
 ]
