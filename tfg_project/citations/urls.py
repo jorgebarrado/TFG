@@ -32,6 +32,7 @@ urlpatterns = [
     path('vote/', views.vote_view, name='vote'),
     path("ajax/register/", views.register_ajax, name="register_ajax"),
     path("search_suggest/", views.citation_suggest, name="citation_suggest"),
+    path("api/doi/", views.fetch_doi_metadata, name="fetch_doi"),
 ]
 
 

@@ -52,6 +52,17 @@ def citation_suggest(request):
 
     return JsonResponse(list(qs), safe=False)
 
+def fetch_doi_metadata(request):
+    doi = request.GET.get("doi")
+    if not doi:
+        return JsonResponse({"error": "No DOI"}, status=400)
+
+    url = f"https://api.crossref.org/works/{doi}"
+    r = requests.get(url, timeout=6)
+    if r.status_code == 200:
+        return JsonResponse(r.json()["message"])
+    return JsonResponse({"error": "Not found"}, status=404)
+
 def citation_list(request):
     qs = IncorrectCitation.objects.all().order_by("-created_at")
 

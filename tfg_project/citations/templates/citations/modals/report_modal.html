@@ -6,40 +6,27 @@
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form id="reportForm">
+        <form method="post" id="reportForm">
+          {% csrf_token %}
           <div class="modal-header">
             <h5 class="modal-title" id="reportModalLabel">{% trans "Crear nuevo reporte" %}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
           </div>
           <div class="modal-body text-start">
             <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            
-            <!-- DOI original -->
-            <div class="mb-3">
-              <label for="doi_original" class="form-label">{% trans "DOI original:" %}</label>
-              <input type="text" class="form-control" name="doi_original" required>
-              
-              <div id="doiOriginalPreview" class="mt-3 p-2 border rounded bg-light d-none">
-                <p><strong>{% trans "Título" %}:</strong> <span id="doiTitleOriginal"></span></p>
-                <p><strong>{% trans "Autores" %}:</strong> <span id="doiAuthorsOriginal"></span></p>
-                <p><strong>{% trans "Revista" %}:</strong> <span id="doiJournalOriginal"></span></p>
-                <p><strong>{% trans "Año" %}:</strong> <span id="doiYearOriginal"></span></p>
+              <!-- DOI original -->
+              <div class="mb-3">
+                <label for="id_doi_original" class="form-label">{% trans "DOI original:" %}</label>
+                <input id="id_doi_original" type="text" class="form-control" name="doi_original" required>
+                <div id="meta_original"></div>
               </div>
-              <div id="doiOriginalError" class="text-danger mt-2 d-none">⚠️ {% trans "No se pudieron obtener metadatos del DOI." %}</div>
-              <div id="doiOriginalSuccess" class="text-success mt-2 d-none">✅ {% trans "DOI válido" %}</div>
-            </div>
-            <div class="mb-3">
-              <label for="doi_incorrect" class="form-label">{% trans "DOI incorrecto:" %}</label>
-              <input type="text" class="form-control" name="doi_incorrect" required>
-              <div id="doiIncorrectPreview" class="mt-3 p-2 border rounded bg-light d-none">
-                <p><strong>{% trans "Título" %}:</strong> <span id="doiTitleIncorrect"></span></p>
-                <p><strong>{% trans "Autores" %}:</strong> <span id="doiAuthorsIncorrect"></span></p>
-                <p><strong>{% trans "Revista" %}:</strong> <span id="doiJournalIncorrect"></span></p>
-                <p><strong>{% trans "Año" %}:</strong> <span id="doiYearIncorrect"></span></p>
+
+              <!-- DOI incorrecto -->
+              <div class="mb-3">
+                <label for="id_doi_incorrect" class="form-label">{% trans "DOI incorrecto:" %}</label>
+                <input id="id_doi_incorrect" type="text" class="form-control" name="doi_incorrect" required>
+                <div id="meta_incorrect"></div>
               </div>
-              <div id="doiIncorrectError" class="text-danger mt-2 d-none">⚠️ {% trans "No se pudieron obtener metadatos del DOI." %}</div>
-              <div id="doiIncorrectSuccess" class="text-success mt-2 d-none">✅ {% trans "DOI válido" %}</div>
-            </div>
             <div class="mb-3">
               <label for="incorrect_reason" class="form-label">{% trans "Motivo:" %}</label>
               <textarea class="form-control" name="incorrect_reason" rows="3" required></textarea>
@@ -85,3 +72,33 @@
     </div>
   </div>
   
+<script>
+  function attachDoiListener(id, targetCard) {
+  const input = document.getElementById(id);
+  let timer;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const doi = input.value.trim();
+    if (doi.length < 5) { document.getElementById(targetCard).innerHTML = ''; return; }
+    timer = setTimeout(() => {
+      fetch(`/citations/api/doi/?doi=${encodeURIComponent(doi)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+          document.getElementById(targetCard).innerHTML = `
+            <div class="card mt-2">
+              <div class="card-body p-2">
+                <strong>${data.title?.[0] || '—'}</strong><br>
+                <small>${(data.author||[]).map(a=>a.given+' '+a.family).join(', ')}</small><br>
+                <span class="badge bg-light text-dark">
+                  ${data['container-title']?.[0] || ''} • ${data.issued?.['date-parts']?.[0]?.[0] || ''}
+                </span>
+              </div>
+            </div>`;
+        });
+    }, 800);
+  });
+}
+attachDoiListener('id_doi_original',  'meta_original');
+attachDoiListener('id_doi_incorrect', 'meta_incorrect');
+</script>

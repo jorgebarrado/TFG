@@ -27,6 +27,8 @@ class IncorrectCitation(models.Model):
     doi_original = models.CharField(max_length=255)  # DOI del artículo original
     doi_incorrect = models.CharField(max_length=255)  # DOI del artículo que cita mal
     incorrect_reason = models.TextField()  # Explicación del por qué está mal
+    metadata_original  = models.JSONField(null=True, blank=True)
+    metadata_incorrect = models.JSONField(null=True, blank=True)
     citation_type = models.CharField(
         max_length=50,
         choices=[
