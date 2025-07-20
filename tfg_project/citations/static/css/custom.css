@@ -58,3 +58,16 @@ body {
 /* 6) Links */
 a { text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+.toggle-details {
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+.toggle-details:hover {
+    transform: scale(1.1);
+}
+.text-center.mt-2 {
+    margin-top: 1rem;
+}
+
