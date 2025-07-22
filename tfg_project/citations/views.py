@@ -39,9 +39,13 @@ from .models import (
 
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from citations.forms import ProfileForm, CustomPasswordChangeForm
 from django.db.models import Q, Value
 from django.db.models.functions import ExtractYear
+from .models import UserProfile
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileForm, CustomPasswordChangeForm, UserProfileForm
+
+
 
 def citation_suggest(request):
     term = request.GET.get("term","")
@@ -108,9 +112,10 @@ User = get_user_model()
 @login_required
 def account_settings(request):
     user = request.user
-
     profile_form = ProfileForm(instance=user)
-    pwd_form      = CustomPasswordChangeForm(user)
+    pwd_form = CustomPasswordChangeForm(user)
+    userprofile, _ = UserProfile.objects.get_or_create(user=user)
+    dblp_form = UserProfileForm(instance=userprofile)
 
     if request.method == "POST":
         if "save_profile" in request.POST:
@@ -124,20 +129,32 @@ def account_settings(request):
             pwd_form = CustomPasswordChangeForm(user, request.POST)
             if pwd_form.is_valid():
                 pwd_form.save()
-                update_session_auth_hash(request, pwd_form.user)  # ← sigues logueado
+                update_session_auth_hash(request, pwd_form.user)
                 messages.success(request, "Contraseña cambiada.")
+                return redirect("account_settings")
+
+        elif "save_dblp" in request.POST:
+            dblp_form = UserProfileForm(request.POST, instance=userprofile)
+            if dblp_form.is_valid():
+                dblp_form.save()
+                messages.success(request, "URL de DBLP actualizada.")
                 return redirect("account_settings")
 
     context = {
         "profile_form": profile_form,
         "pwd_form": pwd_form,
+        "dblp_form": dblp_form,
     }
     return render(request, "citations/account_settings.html", context)
 
-
 # Landing page
 def home(request):
-    return render(request, 'citations/home.html')
+    show_login_modal = request.GET.get('show_login_modal') == '1'
+    return render(request, 'citations/home.html', {
+        'show_login_modal': show_login_modal,
+        'login_form': LoginForm(),
+        'register_form': RegisterForm(),
+    })
 
 # Vista de login con soporte para `next`
 def login_view(request):

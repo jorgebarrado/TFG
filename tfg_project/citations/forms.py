@@ -5,12 +5,23 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import IncorrectCitation, Comment
+from .models import IncorrectCitation, Comment, UserProfile
 
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['dblp_url']
+        widgets = {
+            'dblp_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://dblp.org/pid/...'
+            })
+        }
 
 class RegisterForm(UserCreationForm):
     class Meta:

@@ -22,6 +22,14 @@
 
 {% block scripts %}
 
+{% if show_login_modal %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginModalTrigger = document.querySelector('[data-bs-target="#loginModal"]');
+    if (loginModalTrigger) loginModalTrigger.click();
+  });
+</script>
+{% endif %}
 
 <script>
     $('#reportForm').on('submit', function (e) {
