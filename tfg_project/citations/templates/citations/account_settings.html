@@ -10,23 +10,44 @@
     {% endfor %}
   {% endif %}
 
-  <div class="row">
-    <div class="col-md-6 mb-4">
-      <h4 class="mb-3">Datos de perfil</h4>
-      <form method="post">
-        {% csrf_token %}
-        {{ profile_form.as_p }}
-        <button name="save_profile" class="btn btn-primary w-100">Guardar cambios</button>
-      </form>
+  <div class="row align-items-stretch">
+    <!-- Columna izquierda: Perfil y DBLP -->
+    <div class="col-md-6 mb-4 d-flex flex-column">
+      <div class="card mb-4 flex-fill">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Datos de perfil</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ profile_form.as_p }}
+            <button name="save_profile" class="btn btn-primary w-100">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card flex-fill">
+        <div class="card-body">
+          <h4 class="card-title mb-3">DBLP URL</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ dblp_form.as_p }}
+            <button type="submit" name="save_dblp" class="btn btn-secondary w-100">Guardar URL DBLP</button>
+          </form>
+        </div>
+      </div>
     </div>
 
-    <div class="col-md-6 mb-4">
-      <h4 class="mb-3">Cambiar contraseña</h4>
-      <form method="post">
-        {% csrf_token %}
-        {{ pwd_form.as_p }}
-        <button name="change_password" class="btn btn-warning w-100">Actualizar contraseña</button>
-      </form>
+    <!-- Columna derecha: Contraseña -->
+    <div class="col-md-6 mb-4 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Cambiar contraseña</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ pwd_form.as_p }}
+            <button name="change_password" class="btn btn-warning w-100">Actualizar contraseña</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>
