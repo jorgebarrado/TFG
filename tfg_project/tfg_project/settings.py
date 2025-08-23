@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"true", "1", "yes"}
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",") if h.strip()]
 
 INSTALLED_APPS = [
     # Django apps
@@ -46,6 +46,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
 ACCOUNT_FORMS = {
     "login":  "citations.forms.LoginForm",
     "signup": "citations.forms.RegisterForm",
@@ -63,16 +64,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/'
-
 ROOT_URLCONF = 'tfg_project.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
         'DIRS': [BASE_DIR / 'citations' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -100,7 +96,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -119,23 +114,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'es'
-
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
-
 LANGUAGES = [
     ('en', 'English'),
     ('es', 'Español'),
 ]
-
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
+USE_I18N = True
+USE_TZ = True
 TIME_ZONE = 'Europe/Madrid'
 
 # Static files (CSS, JavaScript, Images)
@@ -147,3 +137,23 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CSRF de desarrollo
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# Endurecer cookies en producción automáticamente
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "tfg-cache",
+        "TIMEOUT": 60 * 60,  # 1h por defecto
+    }
+}

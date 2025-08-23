@@ -14,6 +14,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path('perfil/semantic-citations/', views.semantic_citations_view, name='semantic_citations'),
+    path('perfil/dblp-articulos/', views.dblp_articles_view, name='dblp_articles'),
     path('submit/', submit_incorrect_citation, name='submit_incorrect_citation'),
     path('list/', citation_list, name='citation_list'),
     path('submitted/', citation_submitted, name='citation_submitted'),

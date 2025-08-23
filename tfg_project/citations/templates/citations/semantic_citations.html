@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Citas en Semantic Scholar</h2>
+  <p><strong>Artículo consultado (DOI):</strong> {{ doi }}</p>
+
+  {% if citation_count > 0 %}
+    {% if citations %}
+      <div class="list-group mb-4">
+        {% for c in citations %}
+          <div class="list-group-item">
+            <h5 class="mb-1">{{ c.title }}</h5>
+            <small class="text-muted">{{ c.authors }} – {{ c.year }}</small><br>
+            {% if c.doi %}
+              <a href="https://doi.org/{{ c.doi }}" target="_blank">Ver cita</a>
+            {% elif c.url %}
+              <a href="{{ c.url }}" target="_blank">Ver cita</a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-warning">
+        Este artículo tiene {{ citation_count }} citas registradas, pero la API no proporciona los detalles.  
+        Puedes consultarlas directamente aquí:
+        <a href="https://www.semanticscholar.org/search?q={{ doi }}" target="_blank">Semantic Scholar</a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">
+      Este artículo no tiene citas registradas en Semantic Scholar.
+    </div>
+  {% endif %}
+
+  <a href="{% url 'dblp_articles' %}" class="btn btn-secondary mt-3">Volver a artículos</a>
+</div>
+{% endblock %}
+

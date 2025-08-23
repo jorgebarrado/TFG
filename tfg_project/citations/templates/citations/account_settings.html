@@ -31,11 +31,14 @@
             {% csrf_token %}
             {{ dblp_form.as_p }}
             <button type="submit" name="save_dblp" class="btn btn-secondary w-100">Guardar URL DBLP</button>
+            <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary mt-3 w-100">
+              Ver mis artículos en DBLP
+            </a>
           </form>
         </div>
       </div>
     </div>
-
+    
     <!-- Columna derecha: Contraseña -->
     <div class="col-md-6 mb-4 d-flex">
       <div class="card flex-fill w-100">
