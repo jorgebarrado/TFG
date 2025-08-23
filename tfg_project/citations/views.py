@@ -19,6 +19,7 @@ from django.contrib.auth import (
     get_user_model,
 )
 from django.contrib.auth.decorators import login_required
+from .utils import get_articles_from_dblp, check_doi_has_citations
 
 # Formularios propios
 from .forms import (
@@ -45,6 +46,48 @@ from .models import UserProfile
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm, CustomPasswordChangeForm, UserProfileForm
 
+from .models import UserProfile
+
+from .utils import get_citing_articles
+
+from django.core.paginator import Paginator
+from .utils import get_citation_count
+@login_required
+def dblp_articles_view(request):
+    user = request.user
+    profile = UserProfile.objects.get(user=user)
+    all_articles = get_articles_from_dblp(profile.dblp_url) if profile.dblp_url else []
+
+    tipo = request.GET.get('tipo', '').strip()
+    busqueda = request.GET.get('q', '').strip().lower()
+    tipos_disponibles = sorted(set(a['type'] for a in all_articles))
+
+    # Aplicar filtros
+    articles = all_articles
+    if tipo:
+        articles = [a for a in articles if a['type'] == tipo]
+    if busqueda:
+        articles = [a for a in articles if busqueda in a['title'].lower()]
+
+    # Paginación (10 por página)
+    paginator = Paginator(articles, 10)
+    page_number = request.GET.get("page")
+    page = paginator.get_page(page_number)
+
+    # Verificar si tienen citas (solo para artículos de esta página)
+    for article in page:
+        if article.get("doi"):
+            article["has_citations"] = check_doi_has_citations(article["doi"])
+        else:
+            article["has_citations"] = False
+
+    return render(request, "citations/dblp_articles.html", {
+        "articles": page,
+        "dblp_url": profile.dblp_url,
+        "tipo_actual": tipo,
+        "tipos_disponibles": tipos_disponibles,
+        "busqueda": busqueda,
+    })
 
 
 def citation_suggest(request):
@@ -117,6 +160,12 @@ def account_settings(request):
     userprofile, _ = UserProfile.objects.get_or_create(user=user)
     dblp_form = UserProfileForm(instance=userprofile)
 
+    # Obtener artículos si hay URL DBLP
+    articles = []
+    if userprofile.dblp_url:
+        articles = get_articles_from_dblp(userprofile.dblp_url)
+
+    # Procesar formularios
     if request.method == "POST":
         if "save_profile" in request.POST:
             profile_form = ProfileForm(request.POST, instance=user)
@@ -144,6 +193,7 @@ def account_settings(request):
         "profile_form": profile_form,
         "pwd_form": pwd_form,
         "dblp_form": dblp_form,
+        "articles": articles,
     }
     return render(request, "citations/account_settings.html", context)
 
@@ -398,3 +448,18 @@ def register_ajax(request):
     errors = {field: errs.get_json_data() for field, errs in form.errors.items()}
     return JsonResponse({"success": False, "errors": errors}, status=400)
 
+
+@login_required
+def semantic_citations_view(request):
+    doi = request.GET.get("doi")
+    if not doi:
+        return redirect("account_settings")
+    
+    citation_count = get_citation_count(doi)
+    citations = get_citing_articles(doi)
+
+    return render(request, "citations/semantic_citations.html", {
+        "citations": citations,
+        "doi": doi,
+        "citation_count": citation_count
+    })
