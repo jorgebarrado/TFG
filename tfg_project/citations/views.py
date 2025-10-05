@@ -362,13 +362,25 @@ def delete_comment(request, pk):
 
 @require_POST
 def vote_view(request):
-    citation_id = request.POST.get('citation_id')
-    vote_value = int(request.POST.get('vote'))  # 1 o -1
-
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'not_authenticated'}, status=403)
 
-    citation = IncorrectCitation.objects.get(id=citation_id)
+    citation_id_str = request.POST.get('citation_id')
+    vote_value_str = request.POST.get('vote')
+
+    if not citation_id_str or not vote_value_str:
+        return JsonResponse({'error': 'Missing parameters'}, status=400)
+
+    try:
+        citation_id = int(citation_id_str)
+        vote_value = int(vote_value_str)
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid input'}, status=400)
+
+    if vote_value not in [1, -1]:
+        return JsonResponse({'error': 'Invalid vote value'}, status=400)
+
+    citation = get_object_or_404(IncorrectCitation, id=citation_id)
 
     # Busca si el usuario ya votó
     existing_vote = Vote.objects.filter(citation=citation, user=request.user).first()
@@ -393,7 +405,7 @@ def vote_view(request):
     return JsonResponse({
         'upvotes': upvotes,
         'downvotes': downvotes,
-        'user_vote': user_vote,  # Esto es lo que faltaba
+        'user_vote': user_vote,
     })
 
 @require_POST
