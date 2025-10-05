@@ -8,13 +8,20 @@
     {% if citations %}
       <div class="list-group mb-4">
         {% for c in citations %}
-          <div class="list-group-item">
-            <h5 class="mb-1">{{ c.title }}</h5>
-            <small class="text-muted">{{ c.authors }} – {{ c.year }}</small><br>
-            {% if c.doi %}
-              <a href="https://doi.org/{{ c.doi }}" target="_blank">Ver cita</a>
-            {% elif c.url %}
-              <a href="{{ c.url }}" target="_blank">Ver cita</a>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">{{ c.title }}</h5>
+              <small class="text-muted">{{ c.authors }} – {{ c.year }}</small><br>
+              {% if c.doi %}
+                <a href="https://doi.org/{{ c.doi }}" target="_blank">Ver cita en fuente original</a>
+              {% elif c.url %}
+                <a href="{{ c.url }}" target="_blank">Ver cita en fuente original</a>
+              {% endif %}
+            </div>
+            {% if c.is_registered %}
+              <a href="{% url 'citation_detail' pk=c.report_id %}" class="btn btn-sm btn-warning">
+                Ya reportado
+              </a>
             {% endif %}
           </div>
         {% endfor %}

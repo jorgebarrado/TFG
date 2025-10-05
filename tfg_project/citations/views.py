@@ -466,9 +466,30 @@ def semantic_citations_view(request):
     doi = request.GET.get("doi")
     if not doi:
         return redirect("account_settings")
-    
+
     citation_count = get_citation_count(doi)
     citations = get_citing_articles(doi)
+
+    # Obtener los DOIs de las citas recuperadas
+    citing_dois = [c.get("doi") for c in citations if c.get("doi")]
+
+    # Comprobar cuáles ya están registrados como incorrectos para este artículo
+    registered_citations = IncorrectCitation.objects.filter(
+        doi_original=doi,
+        doi_incorrect__in=citing_dois
+    ).values('doi_incorrect', 'id')
+
+    # Crear un mapa para búsqueda rápida
+    registered_map = {item['doi_incorrect']: item['id'] for item in registered_citations}
+
+    # Anotar las citas con el estado de registro
+    for c in citations:
+        citing_doi = c.get("doi")
+        if citing_doi and citing_doi in registered_map:
+            c["is_registered"] = True
+            c["report_id"] = registered_map[citing_doi]
+        else:
+            c["is_registered"] = False
 
     return render(request, "citations/semantic_citations.html", {
         "citations": citations,
