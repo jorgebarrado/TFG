@@ -74,12 +74,26 @@ def dblp_articles_view(request):
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
 
+    # Obtener los DOIs de los artículos de la página actual
+    page_dois = [article.get("doi") for article in page if article.get("doi")]
+
+    # Comprobar qué DOIs tienen citas incorrectas registradas en nuestro sistema
+    registered_dois = set(
+        IncorrectCitation.objects
+        .filter(doi_original__in=page_dois)
+        .values_list('doi_original', flat=True)
+        .distinct()
+    )
+
     # Verificar si tienen citas (solo para artículos de esta página)
     for article in page:
-        if article.get("doi"):
+        doi = article.get("doi")
+        if doi:
             article["has_citations"] = check_doi_has_citations(article["doi"])
+            article["has_registered_citations"] = doi in registered_dois
         else:
             article["has_citations"] = False
+            article["has_registered_citations"] = False
 
     return render(request, "citations/dblp_articles.html", {
         "articles": page,
@@ -123,6 +137,11 @@ def citation_list(request):
             Q(metadata__authors__icontains=q)
         )
 
+    # -------------------- filtros específicos --------------------
+    doi_original = request.GET.get("doi_original", "").strip()
+    if doi_original:
+        qs = qs.filter(doi_original=doi_original)
+
     area  = request.GET.get("area")
     ctype = request.GET.get("ctype")
     year  = request.GET.get("year")
@@ -147,6 +166,7 @@ def citation_list(request):
         "areas": areas,
         "citation_types": citation_types,
         "years": years,
+        "doi_original": doi_original,
     }
     return render(request, "citations/citation_list.html", context)
 

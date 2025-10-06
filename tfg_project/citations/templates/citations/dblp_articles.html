@@ -53,6 +53,11 @@
           {% else %}
             <span class="badge bg-secondary mt-2">Sin citas</span>
           {% endif %}
+          {% if article.has_registered_citations %}
+            <a href="{% url 'citation_list' %}?doi_original={{ article.doi }}" class="btn btn-sm btn-outline-info mt-2">
+              Ver citas reportadas
+            </a>
+          {% endif %}
 
         </li>
       {% endfor %}
