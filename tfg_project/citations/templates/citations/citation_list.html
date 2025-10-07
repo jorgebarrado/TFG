@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% trans "Listado de reportes" %}{% endblock %}
 
@@ -29,7 +30,7 @@
     </a>
     {% endif %}
   </div>
-  <form class="row g-3 mb-4" method="get">
+  <div class="row g-3 mb-4">
     <div class="col-md-5">
       <input id="searchInput" type="text"
             class="form-control"
@@ -70,7 +71,7 @@
       </select>
 
     </div>
-  </form>
+  </div>
 
   {% if citations %}
   <div class="table-responsive">
@@ -143,7 +144,7 @@
 <script>
 $(function () {
   const languageMap = {
-    es: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
+    es: "{% static 'vendor/datatables/i18n/es-ES.json' %}",
     en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
   };
   const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
@@ -151,18 +152,11 @@ $(function () {
   const table = $('#citationsTable').DataTable({
     language: { url: languageMap[userLang] || languageMap.en },
     order: [[4, 'desc']],
-    dom: 'lrtip'
+    dom: 'lrtip',
     pageLength: 10
   });
 
-
-  $('#typeFilter').on('change', function () {
-    const sel = $(this).val();
-    table.column(2).search(sel ? '^' + sel + '$' : '', true, false).draw();
-  });
-
-
-  $('#searchInput').on('keyup', function () {
+  $('#searchInput').on('input', function () {
     table.search(this.value).draw();
   });
   $('#areaFilter').on('change', e => table.column(3).search(e.target.value).draw());
