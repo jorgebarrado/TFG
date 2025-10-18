@@ -61,11 +61,11 @@
            class="table table-striped table-hover table-bordered align-middle w-100">
       <thead class="table-light">
         <tr>
-          <th>{% trans "Reportado por" %}</th>
-          <th>DOI</th>
+          <th>{% trans "Reportado por" %}</th>          
+          <th>{% trans "DOI" %}</th>
           <th>{% trans "Tipo de error" %}</th>
           <th>{% trans "Área" %}</th>
-          <th>#</th>
+          <th>{% trans "ID" %}</th>
           <th>{% trans "Fecha" %}</th>
           <th></th>
         </tr>
@@ -73,7 +73,11 @@
       <tbody>
         {% for c in citations %}
           <tr>
-            <td>{{ c.author.username|default:"Anonymous" }}</td>
+            <td>
+              {% if c.author %}
+                {{ c.author.username }}
+              {% else %}
+                {% trans "Anónimo" %}{% endif %}</td>
             <td>
               <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
                 <code>{{ c.doi_original }}</code>
@@ -134,25 +138,21 @@ $(function () {
   const table = $('#citationsTable').DataTable({
     language: { url: languageMap[userLang] || languageMap.en },
     order: [[4, 'desc']],
-    dom: 'lrtip'
+    dom: 'lrtip',
     pageLength: 10
   });
-
-
-  $('#typeFilter').on('change', function () {
-    const sel = $(this).val();
-    table.column(2).search(sel ? '^' + sel + '$' : '', true, false).draw();
-  });
-
 
   $('#searchInput').on('keyup', function () {
     table.search(this.value).draw();
   });
+
   $('#areaFilter').on('change', e => table.column(3).search(e.target.value).draw());
+
   $('#ctypeFilter').on('change', e => {
     const v = e.target.value ? '^' + e.target.value + '$' : '';
     table.column(2).search(v, true, false).draw();
   });
+
   $('#yearFilter').on('change', e => table.column(5).search(e.target.value).draw());
 
   $(document).on('click', '.doi-link', function (e) {
@@ -164,19 +164,19 @@ $(function () {
     $.get('/citations/get_all_metadata/', { doi })
       .done(function (data) {
         const html = `
-          <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || 'N/A'}</p>
-          <p><strong>{% trans "Autores" %}:</strong> ${
+          <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
+          <p><strong>{% {% trans "" %} "Autores" %}:</strong> ${
             data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'
           }</p>
-          <p><strong>{% trans "Revista" %}:</strong> ${data['container-title']?.[0] || 'N/A'}</p>
-          <p><strong>{% trans "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || 'N/A'}</p>
+          <p><strong>{% translate "Revista" %}:</strong> ${data['container-title']?.[0] || '{% translate "N/A" %}'}</p>
+          <p><strong>{% translate "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
           <p><strong>DOI:</strong> <code>${doi}</code></p>
-          <p><strong>{% trans "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>`;
+          <p><strong>{% translate "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>`;
         $('#doiMetadataContent').html(html);
       })
       .fail(() => {
         $('#doiMetadataContent').html(
-          '<p class="text-danger">{% trans "No se pudo obtener información para este DOI." %}</p>'
+          '<p class="text-danger">{% translate "No se pudo obtener información para este DOI." %}</p>'
         );
       });
   });

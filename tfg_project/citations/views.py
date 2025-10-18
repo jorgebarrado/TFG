@@ -49,6 +49,7 @@ from .forms import ProfileForm, CustomPasswordChangeForm, UserProfileForm
 from .models import UserProfile
 
 from .utils import get_citing_articles
+from django.core.paginator import Paginator
 
 from django.core.paginator import Paginator
 from .utils import get_citation_count
@@ -111,7 +112,7 @@ def fetch_doi_metadata(request):
     return JsonResponse({"error": "Not found"}, status=404)
 
 def citation_list(request):
-    qs = IncorrectCitation.objects.all().order_by("-created_at")
+    qs = IncorrectCitation.objects.select_related('author').order_by("-created_at")
 
     # -------------------- búsqueda libre --------------------
     q = request.GET.get("q", "").strip()
@@ -142,8 +143,12 @@ def citation_list(request):
              .distinct()
              .order_by("-y"))
 
+    paginator = Paginator(qs, 25)  # Muestra 25 reportes por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        "citations": qs,
+        "citations": page_obj, # Pasamos el objeto de página a la plantilla
         "areas": areas,
         "citation_types": citation_types,
         "years": years,

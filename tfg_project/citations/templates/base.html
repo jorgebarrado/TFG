@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 {% load static %}
+{% load i18n %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
 <html lang="es">
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}CiteCheck{% endblock %}</title>
