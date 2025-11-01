@@ -7,19 +7,36 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='IncorrectCitation',
+            name="IncorrectCitation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('doi_original', models.CharField(max_length=255)),
-                ('doi_incorrect', models.CharField(max_length=255)),
-                ('incorrect_reason', models.TextField()),
-                ('citation_type', models.CharField(choices=[('not said', 'Not Said'), ('misinterpretation', 'Misinterpretation'), ('contextual misattribution', 'Contextual Misattribution')], max_length=50)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("doi_original", models.CharField(max_length=255)),
+                ("doi_incorrect", models.CharField(max_length=255)),
+                ("incorrect_reason", models.TextField()),
+                (
+                    "citation_type",
+                    models.CharField(
+                        choices=[
+                            ("not said", "Not Said"),
+                            ("misinterpretation", "Misinterpretation"),
+                            ("contextual misattribution", "Contextual Misattribution"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

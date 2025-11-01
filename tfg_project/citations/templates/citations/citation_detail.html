@@ -17,23 +17,23 @@
         <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
         <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
-        <button 
-            class="btn btn-sm vote-btn {% if user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}" 
-            data-value="1" 
+        <button
+            class="btn btn-sm vote-btn {% if user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}"
+            data-value="1"
             id="btn-upvote">
             ▲ <span id="count-up">{{ upvotes }}</span>
         </button>
 
-        <button 
-            class="btn btn-sm vote-btn {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}" 
-            data-value="-1" 
+        <button
+            class="btn btn-sm vote-btn {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}"
+            data-value="-1"
             id="btn-downvote">
             ▼ <span id="count-down">{{ downvotes }}</span>
         </button>
 
-        <button 
-            id="btn-save" 
-            class="btn btn-sm border-0 {% if is_saved %}text-warning{% else %}text-secondary{% endif %}" 
+        <button
+            id="btn-save"
+            class="btn btn-sm border-0 {% if is_saved %}text-warning{% else %}text-secondary{% endif %}"
             title="{% trans 'Guardar para más tarde' %}">
             <i class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} fs-4"></i>
         </button>
@@ -86,7 +86,7 @@
 
                         {% if comment.parent %}
                             <div class="text-muted small mb-1">
-                                💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>: 
+                                💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>:
                                 “{{ comment.parent.content|truncatechars:50 }}”
                             </div>
                         {% endif %}
@@ -96,8 +96,8 @@
                         <div class="d-flex gap-2 align-items-center">
                             <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">{% trans "Responder" %}</a>
                             {% if user.is_authenticated and user == comment.author or user.is_superuser %}
-                            <button 
-                                class="btn btn-sm btn-link text-danger p-0 small open-delete-modal" 
+                            <button
+                                class="btn btn-sm btn-link text-danger p-0 small open-delete-modal"
                                 data-comment-id="{{ comment.id }}">
                                 {% trans "Eliminar" %}
                             </button>
@@ -119,11 +119,11 @@
 
                 <div class="mb-3">
                     <label for="{{ comment_form.content.id_for_label }}" class="form-label">{% trans "Comentario:" %}</label>
-                    <textarea 
-                        name="{{ comment_form.content.name }}" 
-                        id="{{ comment_form.content.id_for_label }}" 
-                        class="form-control" 
-                        rows="3" 
+                    <textarea
+                        name="{{ comment_form.content.name }}"
+                        id="{{ comment_form.content.id_for_label }}"
+                        class="form-control"
+                        rows="3"
                         placeholder="{% trans 'Escribe tu comentario...' %}">{% if comment_form.content.value %}{{ comment_form.content.value }}{% endif %}</textarea>
 
                     {% if comment_form.content.errors %}
@@ -347,7 +347,7 @@ function renderMetadata(doi, elementId) {
                     (typeof value === "string" || typeof value === "number")
                 )
                 .map(([key, value]) => `<div><strong>${key}</strong>: ${value}</div>`)
-                .join("");           
+                .join("");
 
             const hasExtras = extraMetadata.trim() !== "";
 

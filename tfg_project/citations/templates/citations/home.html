@@ -56,20 +56,20 @@
             const authors = $(`#doiAuthors${type}`);
             const journal = $(`#doiJournal${type}`);
             const year = $(`#doiYear${type}`);
-        
+
             preview.addClass('d-none');
             error.addClass('d-none');
             success.addClass('d-none');
-        
+
             if (!doi) return;
-        
+
             $.get('/citations/get_all_metadata/', { doi: doi })
                 .done(function (data) {
                     title.text(data.title?.[0] || 'N/A');
                     authors.text(data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A');
                     journal.text(data['container-title']?.[0] || 'N/A');
                     year.text(data.issued?.['date-parts']?.[0]?.[0] || 'N/A');
-        
+
                     preview.removeClass('d-none');
                     success.removeClass('d-none');
                 })
@@ -77,11 +77,11 @@
                     error.removeClass('d-none');
                 });
         }
-        
+
         $('input[name="doi_original"]').on('blur', function () {
             fetchDOIMetadata($(this).val(), 'Original');
         });
-        
+
         $('input[name="doi_incorrect"]').on('blur', function () {
             fetchDOIMetadata($(this).val(), 'Incorrect');
         });
@@ -94,15 +94,15 @@
         $('#toggleOriginalMetadata').on('click', function () {
             const preview = $('#doiOriginalPreview');
             const isVisible = !preview.hasClass('d-none');
-        
+
             preview.toggleClass('d-none');
             $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
         });
-        
+
         $('#toggleIncorrectMetadata').on('click', function () {
             const preview = $('#doiIncorrectPreview');
             const isVisible = !preview.hasClass('d-none');
-        
+
             preview.toggleClass('d-none');
             $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
         });
