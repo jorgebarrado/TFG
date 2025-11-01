@@ -1,74 +1,73 @@
-from urllib.parse import urlencode
+"""Views for citations app."""
+
 import requests
-from django.views.decorators.http import require_POST
-from django.shortcuts import (
-    render,
-    redirect,
-    get_object_or_404,
-)
-from django.http import (
-    JsonResponse,
-    HttpResponseForbidden,
-)
-from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import (
     authenticate,
+    get_user_model,
     login,
     logout,
-    get_user_model,
+    update_session_auth_hash,
 )
 from django.contrib.auth.decorators import login_required
-from .utils import get_articles_from_dblp, check_doi_has_citations
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db.models.functions import ExtractYear
+from django.http import HttpResponseForbidden, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 # Formularios propios
 from .forms import (
+    CommentForm,
+    CustomPasswordChangeForm,
     IncorrectCitationForm,
     LoginForm,
+    ProfileForm,
     RegisterForm,
-    CommentForm,
+    UserProfileForm,
 )
 
 # Modelos propios
 from .models import (
-    IncorrectCitation,
     AREA_CHOICES,
     Comment,
-    Vote,
+    IncorrectCitation,
     SavedCitation,
+    UserProfile,
+    Vote,
+)
+from .utils import (
+    check_doi_has_citations,
+    get_articles_from_dblp,
+    get_citation_count,
+    get_citing_articles,
 )
 
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.db.models import Q, Value
-from django.db.models.functions import ExtractYear
-from .models import UserProfile
-from django.contrib.auth.decorators import login_required
-from .forms import ProfileForm, CustomPasswordChangeForm, UserProfileForm
 
-from .models import UserProfile
-
-from .utils import get_citing_articles
-from django.core.paginator import Paginator
-
-from django.core.paginator import Paginator
-from .utils import get_citation_count
 @login_required
 def dblp_articles_view(request):
+    """dblp_articles_view.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     user = request.user
     profile = UserProfile.objects.get(user=user)
     all_articles = get_articles_from_dblp(profile.dblp_url) if profile.dblp_url else []
 
-    tipo = request.GET.get('tipo', '').strip()
-    busqueda = request.GET.get('q', '').strip().lower()
-    tipos_disponibles = sorted(set(a['type'] for a in all_articles))
+    tipo = request.GET.get("tipo", "").strip()
+    busqueda = request.GET.get("q", "").strip().lower()
+    tipos_disponibles = sorted(set(a["type"] for a in all_articles))
 
     # Aplicar filtros
     articles = all_articles
     if tipo:
-        articles = [a for a in articles if a['type'] == tipo]
+        articles = [a for a in articles if a["type"] == tipo]
     if busqueda:
-        articles = [a for a in articles if busqueda in a['title'].lower()]
+        articles = [a for a in articles if busqueda in a["title"].lower()]
 
     # Paginación (10 por página)
     paginator = Paginator(articles, 10)
@@ -82,25 +81,58 @@ def dblp_articles_view(request):
         else:
             article["has_citations"] = False
 
-    return render(request, "citations/dblp_articles.html", {
-        "articles": page,
-        "dblp_url": profile.dblp_url,
-        "tipo_actual": tipo,
-        "tipos_disponibles": tipos_disponibles,
-        "busqueda": busqueda,
-    })
+    return render(
+        request,
+        "citations/dblp_articles.html",
+        {
+            "articles": page,
+            "dblp_url": profile.dblp_url,
+            "tipo_actual": tipo,
+            "tipos_disponibles": tipos_disponibles,
+            "busqueda": busqueda,
+        },
+    )
 
 
 def citation_suggest(request):
-    term = request.GET.get("term","")
+    """citation_suggest.
+
+
+
+    Args:
+
+
+        # TODO: describe parameters
+
+
+    Returns:
+
+
+        # TODO: describe return value
+
+
+    """
+    term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
-        Q(doi_original__icontains=term) |
-        Q(metadata__title__icontains=term)
-    ).values("doi_original","metadata__title")[:5]
+        Q(doi_original__icontains=term) | Q(metadata__title__icontains=term)
+    ).values("doi_original", "metadata__title")[:5]
 
     return JsonResponse(list(qs), safe=False)
 
+
 def fetch_doi_metadata(request):
+    """fetch_doi_metadata.
+
+
+    Args:
+
+        # TODO: describe parameters
+
+    Returns:
+
+        # TODO: describe return value
+
+    """
     doi = request.GET.get("doi")
     if not doi:
         return JsonResponse({"error": "No DOI"}, status=400)
@@ -111,22 +143,35 @@ def fetch_doi_metadata(request):
         return JsonResponse(r.json()["message"])
     return JsonResponse({"error": "Not found"}, status=404)
 
+
 def citation_list(request):
-    qs = IncorrectCitation.objects.select_related('author').order_by("-created_at")
+    """citation_list.
+
+
+    Args:
+
+        # TODO: describe parameters
+
+    Returns:
+
+        # TODO: describe return value
+
+    """
+    qs = IncorrectCitation.objects.select_related("author").order_by("-created_at")
 
     # -------------------- búsqueda libre --------------------
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
-            Q(doi_original__icontains=q) |
-            Q(doi_incorrect__icontains=q) |
-            Q(metadata__title__icontains=q) |
-            Q(metadata__authors__icontains=q)
+            Q(doi_original__icontains=q)
+            | Q(doi_incorrect__icontains=q)
+            | Q(metadata__title__icontains=q)
+            | Q(metadata__authors__icontains=q)
         )
 
-    area  = request.GET.get("area")
+    area = request.GET.get("area")
     ctype = request.GET.get("ctype")
-    year  = request.GET.get("year")
+    year = request.GET.get("year")
 
     if area:
         qs = qs.filter(publication_area=area)
@@ -137,28 +182,38 @@ def citation_list(request):
 
     areas = AREA_CHOICES
     citation_types = IncorrectCitation._meta.get_field("citation_type").choices
-    years = (IncorrectCitation.objects
-             .annotate(y=ExtractYear("created_at"))
-             .values_list("y", flat=True)
-             .distinct()
-             .order_by("-y"))
+    years = (
+        IncorrectCitation.objects.annotate(y=ExtractYear("created_at"))
+        .values_list("y", flat=True)
+        .distinct()
+        .order_by("-y")
+    )
 
     paginator = Paginator(qs, 25)  # Muestra 25 reportes por página
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "citations": page_obj, # Pasamos el objeto de página a la plantilla
+        "citations": page_obj,  # Pasamos el objeto de página a la plantilla
         "areas": areas,
         "citation_types": citation_types,
         "years": years,
     }
     return render(request, "citations/citation_list.html", context)
 
+
 User = get_user_model()
+
 
 @login_required
 def account_settings(request):
+    """account_settings.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     user = request.user
     profile_form = ProfileForm(instance=user)
     pwd_form = CustomPasswordChangeForm(user)
@@ -202,35 +257,76 @@ def account_settings(request):
     }
     return render(request, "citations/account_settings.html", context)
 
+
 # Landing page
 def home(request):
-    show_login_modal = request.GET.get('show_login_modal') == '1'
-    return render(request, 'citations/home.html', {
-        'show_login_modal': show_login_modal,
-        'login_form': LoginForm(),
-        'register_form': RegisterForm(),
-    })
+    """home.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    show_login_modal = request.GET.get("show_login_modal") == "1"
+    return render(
+        request,
+        "citations/home.html",
+        {
+            "show_login_modal": show_login_modal,
+            "login_form": LoginForm(),
+            "register_form": RegisterForm(),
+        },
+    )
+
 
 # Vista de login con soporte para `next`
 def login_view(request):
-    next_url = request.POST.get('next', request.GET.get('next', '/'))
-    if request.method == 'POST':
+    """login_view.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    next_url = request.POST.get("next", request.GET.get("next", "/"))
+    if request.method == "POST":
         form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect(next_url or '/')
+            return redirect(next_url or "/")
     else:
         form = LoginForm(request)
-    return render(request, 'citations/home.html', {
-        'login_form': form,
-        'register_form': RegisterForm(),
-        'show_login_modal': True
-    })
-
+    return render(
+        request,
+        "citations/home.html",
+        {"login_form": form, "register_form": RegisterForm(), "show_login_modal": True},
+    )
 
 
 def register_view(request):
+    """register_view.
+
+
+
+
+    Args:
+
+
+
+        # TODO: describe parameters
+
+
+
+    Returns:
+
+
+
+        # TODO: describe return value
+
+
+
+    """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
 
     if request.method == "POST":
@@ -263,43 +359,71 @@ def register_view(request):
             "show_register_modal": True,
         },
     )
+
+
 # Logout
 def logout_view(request):
+    """logout_view.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     logout(request)
-    return redirect(request.GET.get('next', '/'))
+    return redirect(request.GET.get("next", "/"))
+
 
 # Vista AJAX para guardar el reporte
 def ajax_submit_citation(request):
-    if request.method == 'POST':
+    """ajax_submit_citation.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    if request.method == "POST":
         form = IncorrectCitationForm(request.POST)
         if form.is_valid():
             citation = form.save(commit=False)
             if request.user.is_authenticated:
                 citation.author = request.user
             citation.save()
-            return JsonResponse({'success': True})
-        return JsonResponse({'errors': form.errors}, status=400)
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
+            return JsonResponse({"success": True})
+        return JsonResponse({"errors": form.errors}, status=400)
+    return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
 # Página del reporte individual
 def citation_detail(request, pk):
+    """citation_detail.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
-    comments = Comment.objects.filter(citation=citation).select_related('author', 'parent').order_by('created_at')
+    comments = (
+        Comment.objects.filter(citation=citation)
+        .select_related("author", "parent")
+        .order_by("created_at")
+    )
     upvotes = citation.votes.filter(value=1).count()
     downvotes = citation.votes.filter(value=-1).count()
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.citation = citation
             comment.author = request.user
-            parent_id = request.POST.get('parent_id')
+            parent_id = request.POST.get("parent_id")
             if parent_id:
                 comment.parent_id = int(parent_id)
             comment.save()
-            return redirect('citation_detail', pk=pk)
+            return redirect("citation_detail", pk=pk)
     else:
         form = CommentForm()
 
@@ -311,79 +435,125 @@ def citation_detail(request, pk):
 
     is_saved = False
     if request.user.is_authenticated:
-        is_saved = SavedCitation.objects.filter(user=request.user, citation=citation).exists()
+        is_saved = SavedCitation.objects.filter(
+            user=request.user, citation=citation
+        ).exists()
 
-    return render(request, 'citations/citation_detail.html', {
-        'citation': citation,
-        'comment_form': form,
-        'comments': comments,
-        'upvotes': upvotes,
-        'downvotes': downvotes,
-        'user_vote': user_vote,
-        'is_saved': is_saved,
-    })
+    return render(
+        request,
+        "citations/citation_detail.html",
+        {
+            "citation": citation,
+            "comment_form": form,
+            "comments": comments,
+            "upvotes": upvotes,
+            "downvotes": downvotes,
+            "user_vote": user_vote,
+            "is_saved": is_saved,
+        },
+    )
+
 
 # Vista alternativa (usada antes)
 def submit_incorrect_citation(request):
-    if request.method == 'POST':
+    """submit_incorrect_citation.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    if request.method == "POST":
         form = IncorrectCitationForm(request.POST)
         if form.is_valid():
             citation = form.save(commit=False)
             if request.user.is_authenticated:
                 citation.author = request.user
             citation.save()
-            return redirect('citation_submitted')
+            return redirect("citation_submitted")
     else:
         form = IncorrectCitationForm()
-    return render(request, 'citations/submit_citation.html', {'form': form})
+    return render(request, "citations/submit_citation.html", {"form": form})
+
 
 # Página de confirmación tras reporte
 def citation_submitted(request):
-    return render(request, 'citations/citation_submitted.html')
+    """citation_submitted.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    return render(request, "citations/citation_submitted.html")
+
 
 # Obtener metadatos del DOI
 def get_all_metadata_from_doi(request):
-    doi = request.GET.get('doi')
-    if not doi:
-        return JsonResponse({'error': 'No DOI provided'}, status=400)
+    """get_all_metadata_from_doi.
 
-    url = f'https://api.crossref.org/works/{doi}'
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    doi = request.GET.get("doi")
+    if not doi:
+        return JsonResponse({"error": "No DOI provided"}, status=400)
+
+    url = f"https://api.crossref.org/works/{doi}"
     response = requests.get(url)
 
     if response.status_code == 200:
-        data = response.json().get('message', {})
+        data = response.json().get("message", {})
         return JsonResponse(data, safe=False)
-    return JsonResponse({'error': 'DOI not found or invalid'}, status=404)
+    return JsonResponse({"error": "DOI not found or invalid"}, status=404)
+
 
 @login_required
 def delete_comment(request, pk):
+    """delete_comment.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
         comment.delete()
         messages.success(request, "Comentario eliminado correctamente.")
     else:
         return HttpResponseForbidden("No tienes permiso para eliminar este comentario.")
-    return redirect('citation_detail', pk=comment.citation.pk)
+    return redirect("citation_detail", pk=comment.citation.pk)
+
 
 @require_POST
 def vote_view(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'not_authenticated'}, status=403)
+    """vote_view.
 
-    citation_id_str = request.POST.get('citation_id')
-    vote_value_str = request.POST.get('vote')
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "not_authenticated"}, status=403)
+
+    citation_id_str = request.POST.get("citation_id")
+    vote_value_str = request.POST.get("vote")
 
     if not citation_id_str or not vote_value_str:
-        return JsonResponse({'error': 'Missing parameters'}, status=400)
+        return JsonResponse({"error": "Missing parameters"}, status=400)
 
     try:
         citation_id = int(citation_id_str)
         vote_value = int(vote_value_str)
     except (ValueError, TypeError):
-        return JsonResponse({'error': 'Invalid input'}, status=400)
+        return JsonResponse({"error": "Invalid input"}, status=400)
 
     if vote_value not in [1, -1]:
-        return JsonResponse({'error': 'Invalid vote value'}, status=400)
+        return JsonResponse({"error": "Invalid vote value"}, status=400)
 
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
 
@@ -407,19 +577,31 @@ def vote_view(request):
     current_vote = Vote.objects.filter(citation=citation, user=request.user).first()
     user_vote = current_vote.value if current_vote else 0
 
-    return JsonResponse({
-        'upvotes': upvotes,
-        'downvotes': downvotes,
-        'user_vote': user_vote,
-    })
+    return JsonResponse(
+        {
+            "upvotes": upvotes,
+            "downvotes": downvotes,
+            "user_vote": user_vote,
+        }
+    )
+
 
 @require_POST
 @login_required
 def toggle_saved(request):
-    citation_id = request.POST.get('citation_id')
+    """toggle_saved.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
 
-    saved, created = SavedCitation.objects.get_or_create(user=request.user, citation=citation)
+    saved, created = SavedCitation.objects.get_or_create(
+        user=request.user, citation=citation
+    )
 
     if not created:
         saved.delete()
@@ -427,22 +609,57 @@ def toggle_saved(request):
     else:
         is_saved = True
 
-    return JsonResponse({'is_saved': is_saved})
+    return JsonResponse({"is_saved": is_saved})
+
 
 @login_required
 def my_reports(request):
-    reports = IncorrectCitation.objects.filter(author=request.user).order_by('-created_at')
-    return render(request, 'citations/my_reports.html', {'reports': reports})
+    """my_reports.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    reports = IncorrectCitation.objects.filter(author=request.user).order_by(
+        "-created_at"
+    )
+    return render(request, "citations/my_reports.html", {"reports": reports})
+
 
 @login_required
 def my_comments(request):
-    comments = Comment.objects.filter(author=request.user).select_related('citation').order_by('-created_at')
-    return render(request, 'citations/my_comments.html', {'comments': comments})
+    """my_comments.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    comments = (
+        Comment.objects.filter(author=request.user)
+        .select_related("citation")
+        .order_by("-created_at")
+    )
+    return render(request, "citations/my_comments.html", {"comments": comments})
+
 
 @login_required
 def my_saved(request):
-    saved = SavedCitation.objects.filter(user=request.user).select_related('citation').order_by('-created_at')
-    return render(request, 'citations/my_saved.html', {'saved': saved})
+    """my_saved.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
+    saved = (
+        SavedCitation.objects.filter(user=request.user)
+        .select_related("citation")
+        .order_by("-created_at")
+    )
+    return render(request, "citations/my_saved.html", {"saved": saved})
+
 
 @require_POST
 def register_ajax(request):
@@ -468,6 +685,13 @@ def register_ajax(request):
 
 @login_required
 def semantic_citations_view(request):
+    """semantic_citations_view.
+
+    Args:
+        # TODO: describe parameters
+    Returns:
+        # TODO: describe return value
+    """
     doi = request.GET.get("doi")
     if not doi:
         return redirect("account_settings")
@@ -480,12 +704,13 @@ def semantic_citations_view(request):
 
     # Comprobar cuáles ya están registrados como incorrectos para este artículo
     registered_citations = IncorrectCitation.objects.filter(
-        doi_original=doi,
-        doi_incorrect__in=citing_dois
-    ).values('doi_incorrect', 'id')
+        doi_original=doi, doi_incorrect__in=citing_dois
+    ).values("doi_incorrect", "id")
 
     # Crear un mapa para búsqueda rápida
-    registered_map = {item['doi_incorrect']: item['id'] for item in registered_citations}
+    registered_map = {
+        item["doi_incorrect"]: item["id"] for item in registered_citations
+    }
 
     # Anotar las citas con el estado de registro
     for c in citations:
@@ -496,8 +721,8 @@ def semantic_citations_view(request):
         else:
             c["is_registered"] = False
 
-    return render(request, "citations/semantic_citations.html", {
-        "citations": citations,
-        "doi": doi,
-        "citation_count": citation_count
-    })
+    return render(
+        request,
+        "citations/semantic_citations.html",
+        {"citations": citations, "doi": doi, "citation_count": citation_count},
+    )

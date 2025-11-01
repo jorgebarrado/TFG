@@ -1,0 +1,19 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.py]
+# Mantén alineado con Black
+max_line_length = 88
+
+[*.md]
+# No recortar espacios al final en Markdown (afecta a saltos de línea intencionales)
+trim_trailing_whitespace = false

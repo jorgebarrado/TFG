@@ -1,48 +1,57 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
     AuthenticationForm,
+    PasswordChangeForm,
     UserCreationForm,
 )
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import IncorrectCitation, Comment, UserProfile
 
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import get_user_model
+from .models import Comment, IncorrectCitation, UserProfile
 
 User = get_user_model()
+
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['dblp_url']
+        fields = ["dblp_url"]
         widgets = {
-            'dblp_url': forms.URLInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'https://dblp.org/pid/...'
-            })
+            "dblp_url": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "https://dblp.org/pid/...",
+                }
+            )
         }
+
 
 class RegisterForm(UserCreationForm):
     class Meta:
-        model  = User
+        model = User
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["username"].widget.attrs.update({
-            "placeholder": "Usuario",
-            "class": "form-control",
-        })
-        self.fields["password1"].widget.attrs.update({
-            "placeholder": "Contraseña",
-            "class": "form-control",
-        })
-        self.fields["password2"].widget.attrs.update({
-            "placeholder": "Confirmar contraseña",
-            "class": "form-control",
-        })
+        self.fields["username"].widget.attrs.update(
+            {
+                "placeholder": "Usuario",
+                "class": "form-control",
+            }
+        )
+        self.fields["password1"].widget.attrs.update(
+            {
+                "placeholder": "Contraseña",
+                "class": "form-control",
+            }
+        )
+        self.fields["password2"].widget.attrs.update(
+            {
+                "placeholder": "Confirmar contraseña",
+                "class": "form-control",
+            }
+        )
 
 
 class ProfileForm(forms.ModelForm):
@@ -50,44 +59,49 @@ class ProfileForm(forms.ModelForm):
         model = User
         fields = ("first_name", "username")
         widgets = {
-            "first_name": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Nombre"
-            }),
-            "username": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Nombre de usuario"
-            }),
+            "first_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre"}
+            ),
+            "username": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre de usuario"}
+            ),
         }
+
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
     Igual que PasswordChangeForm pero con Bootstrap.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.widget.attrs.update({
-                "class": "form-control",
-                "placeholder": field.label
-            })
+            field.widget.attrs.update(
+                {"class": "form-control", "placeholder": field.label}
+            )
+
 
 class LoginForm(AuthenticationForm):
     """Login con placeholders y clase Bootstrap."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Usuario / email
-        self.fields["username"].widget.attrs.update({
-            "placeholder": _("Usuario"),
-            "class": "form-control",
-        })
+        self.fields["username"].widget.attrs.update(
+            {
+                "placeholder": _("Usuario"),
+                "class": "form-control",
+            }
+        )
 
         # Contraseña
-        self.fields["password"].widget.attrs.update({
-            "placeholder": _("Contraseña"),
-            "class": "form-control",
-        })
+        self.fields["password"].widget.attrs.update(
+            {
+                "placeholder": _("Contraseña"),
+                "class": "form-control",
+            }
+        )
 
 
 class IncorrectCitationForm(forms.ModelForm):

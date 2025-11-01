@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('citations', '0008_savedcitation'),
+        ("citations", "0008_savedcitation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='incorrectcitation',
-            name='metadata_incorrect',
+            model_name="incorrectcitation",
+            name="metadata_incorrect",
             field=models.JSONField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='incorrectcitation',
-            name='metadata_original',
+            model_name="incorrectcitation",
+            name="metadata_original",
             field=models.JSONField(blank=True, null=True),
         ),
     ]

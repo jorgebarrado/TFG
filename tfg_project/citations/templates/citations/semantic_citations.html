@@ -28,7 +28,7 @@
       </div>
     {% else %}
       <div class="alert alert-warning">
-        Este artículo tiene {{ citation_count }} citas registradas, pero la API no proporciona los detalles.  
+        Este artículo tiene {{ citation_count }} citas registradas, pero la API no proporciona los detalles.
         Puedes consultarlas directamente aquí:
         <a href="https://www.semanticscholar.org/search?q={{ doi }}" target="_blank">Semantic Scholar</a>
       </div>
@@ -42,4 +42,3 @@
   <a href="{% url 'dblp_articles' %}" class="btn btn-secondary mt-3">Volver a artículos</a>
 </div>
 {% endblock %}
-

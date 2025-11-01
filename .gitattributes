@@ -1,0 +1,27 @@
+# Normaliza terminadores de línea a LF en el repositorio
+* text=auto eol=lf
+
+# Scripts por plataforma
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Archivos de código/plantillas
+*.py  text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js  text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.po  text eol=lf
+*.svg text eol=lf
+
+# Binarios (sin normalización de EOL)
+*.mo  binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary

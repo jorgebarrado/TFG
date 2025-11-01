@@ -1,12 +1,14 @@
-import requests
 import xml.etree.ElementTree as ET
+
 import requests
+
+
 def get_articles_from_dblp(dblp_url):
     try:
         # Convertir la URL HTML en URL XML
-        if dblp_url.endswith('.html'):
-            dblp_xml_url = dblp_url.replace('.html', '.xml')
-        elif dblp_url.endswith('.xml'):
+        if dblp_url.endswith(".html"):
+            dblp_xml_url = dblp_url.replace(".html", ".xml")
+        elif dblp_url.endswith(".xml"):
             dblp_xml_url = dblp_url
         else:
             return []
@@ -17,24 +19,26 @@ def get_articles_from_dblp(dblp_url):
         root = ET.fromstring(response.content)
 
         publications = []
-        for publ in root.findall('r'):
-            entry = publ[0] 
+        for publ in root.findall("r"):
+            entry = publ[0]
 
-            title_elem = entry.find('title')
-            doi_elem = entry.find('ee')
+            title_elem = entry.find("title")
+            doi_elem = entry.find("ee")
 
             title = title_elem.text if title_elem is not None else "Sin título"
             doi = doi_elem.text if doi_elem is not None else None
-            if doi_elem is not None and doi_elem.text and 'doi.org/' in doi_elem.text:
-                doi = doi_elem.text.split('doi.org/')[-1].strip()
+            if doi_elem is not None and doi_elem.text and "doi.org/" in doi_elem.text:
+                doi = doi_elem.text.split("doi.org/")[-1].strip()
             else:
                 doi = None
 
-            publications.append({
-                "title": title,
-                "doi": doi,
-                "type": entry.tag,
-            })
+            publications.append(
+                {
+                    "title": title,
+                    "doi": doi,
+                    "type": entry.tag,
+                }
+            )
 
         return publications
 
@@ -43,11 +47,16 @@ def get_articles_from_dblp(dblp_url):
         return []
 
 
-
 def get_citing_articles(doi):
     try:
         headers = {"User-Agent": "Django-App"}
-        url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=title,citationCount,citations.title,citations.authors,citations.year,citations.doi,citations.url"
+        url = (
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
+            f"{doi}"
+            "?fields=title,citationCount,"
+            "citations.title,citations.authors,"
+            "citations.year,citations.doi,citations.url"
+        )
         response = requests.get(url, headers=headers, timeout=10)
 
         if response.status_code != 200:
@@ -58,13 +67,15 @@ def get_citing_articles(doi):
 
         result = []
         for c in citations:
-            result.append({
-                "title": c.get("title"),
-                "authors": ", ".join(a["name"] for a in c.get("authors", [])),
-                "year": c.get("year"),
-                "doi": c.get("doi"),
-                "url": c.get("url"),
-            })
+            result.append(
+                {
+                    "title": c.get("title"),
+                    "authors": ", ".join(a["name"] for a in c.get("authors", [])),
+                    "year": c.get("year"),
+                    "doi": c.get("doi"),
+                    "url": c.get("url"),
+                }
+            )
 
         return result
 
@@ -72,10 +83,15 @@ def get_citing_articles(doi):
         print("Error en Semantic Scholar:", e)
         return []
 
+
 def check_doi_has_citations(doi):
     try:
         headers = {"User-Agent": "Django-App"}
-        url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=citationCount"
+        url = (
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
+            f"{doi}"
+            "?fields=citationCount"
+        )
         response = requests.get(url, headers=headers, timeout=10)
 
         print("→ Consultando DOI:", doi)
@@ -93,10 +109,15 @@ def check_doi_has_citations(doi):
         print(f"Error consultando DOI {doi}: {e}")
         return False
 
+
 def get_citation_count(doi):
     try:
         headers = {"User-Agent": "Django-App"}
-        url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=citationCount"
+        url = (
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
+            f"{doi}"
+            "?fields=citationCount"
+        )
         response = requests.get(url, headers=headers, timeout=10)
 
         if response.status_code != 200:
