@@ -4,8 +4,8 @@
 {% block content %}
 <div class="container py-4">
 
-  <h2 class="mb-4">Citas en Semantic Scholar</h2>
-  <p><strong>Artículo consultado (DOI):</strong> {{ doi }}</p>
+  <h2 class="mb-3">Citas en Semantic Scholar</h2>
+  <p class="mb-4"><strong>Artículo consultado (DOI):</strong> {{ doi }}</p>
 
   {% if citations %}
     {% if source == "crossref" %}
@@ -43,47 +43,40 @@
       Este artículo no tiene citas registradas en Semantic Scholar.
     </div>
   {% endif %}
-  {% include "citations/_extract_citations_form.html" %}
- <script>
-    // Fallback: función inline por si el JS externo no carga
-    async function uploadAndExtract(urlName) {
-      const fileInput = document.getElementById("manuscript");
-      const results = document.getElementById("results");
-      results.textContent = "Processing...";
-      const fd = new FormData();
-      if (!fileInput.files[0]) {
-        results.textContent = "Please choose a file / Por favor selecciona un archivo";
-        return;
-      }
-      fd.append("manuscript", fileInput.files[0]);
-      const res = await fetch(urlName, { method: "POST", body: fd });
-      const text = await res.text();
-      try { results.textContent = JSON.stringify(JSON.parse(text), null, 2); }
-      catch { results.textContent = "Respuesta no-JSON (" + res.status + "):\n\n" + text; }
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("extract-form");
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        uploadAndExtract("{% url 'api_extract_citations' %}");
-      });
-    });
-  </script>
-<script src="{% static 'js/citation_extractor.js' %}?v=2"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("extract-form");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (typeof uploadAndExtract !== "function") {
-        alert("Error: el script citation_extractor.js no se ha cargado correctamente.");
-        return;
-      }
-      uploadAndExtract("{% url 'api_extract_citations' %}");
-    });
-  });
-</script>
+  <!-- ========= Bloque: Extractor desde PDF ========= -->
+  <div class="ce my-4">
+    <div class="card p-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <input id="manuscript" name="manuscript" type="file"
+                 class="form-control" accept=".pdf,.txt" />
+        </div>
+        <div class="col-md-6 text-md-end">
+          <button id="btn-extract" class="btn btn-primary">
+            Extraer citas / Extract citations
+          </button>
+          <button id="btn-export-json" class="btn btn-outline-primary ms-2" disabled>
+            Exportar JSON
+          </button>
+          <button id="btn-export-csv" class="btn btn-outline-primary ms-1" disabled>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
 
+      <div class="mt-3">
+        <small class="text-muted" id="count-label" hidden>0 citas detectadas</small>
+      </div>
+    </div>
 
+    <!-- Aquí renderiza el JS las tarjetas de resultados -->
+    <div id="results" class="mt-3"></div>
+  </div>
+  <!-- ============================================== -->
+
+</div>
+
+<!-- JS del extractor (sin inline) -->
+<script src="{% static 'js/citation_extractor.js' %}"></script>
 {% endblock %}

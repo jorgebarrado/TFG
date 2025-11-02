@@ -1,144 +1,198 @@
-// -------------------------------------------------------------
-// citation_extractor.js
-// EN/ES: Uploads manuscript (PDF or TXT) and displays results
-// in a clean, interactive format with highlights and cards.
-// -------------------------------------------------------------
+/* EN/ES: Extract citations UI renderer (PDF or TXT)
+   - No inline JS. This file owns the whole behavior. */
 
-console.log("citation_extractor.js LOADED");
-window.uploadAndExtract = uploadAndExtract;
+(() => {
+  const BTN_EXTRACT = document.getElementById('btn-extract');
+  const BTN_JSON    = document.getElementById('btn-export-json');
+  const BTN_CSV     = document.getElementById('btn-export-csv');
+  const INPUT_FILE  = document.getElementById('manuscript');
+  const RESULTS     = document.getElementById('results');
+  const COUNT_LABEL = document.getElementById('count-label');
 
-// Helper: Normalize extracted text (remove line breaks, fix hyphens)
-function normalizeText(s) {
-  if (!s) return "";
-  s = s.replace(/(\w)-\s*\n\s*(\w)/g, "$1$2"); // join broken words
-  s = s.replace(/\s*\n+\s*/g, " "); // remove newlines
-  s = s.replace(/\s{2,}/g, " "); // collapse spaces
-  return s.trim();
-}
+  let lastData = []; // estructura aplanada para exportar
 
-// Helper: Highlight a snippet inside text
-function highlightOnce(text, start, end) {
-  if (typeof start !== "number" || typeof end !== "number") return text;
-  const before = text.slice(0, start);
-  const mid = text.slice(start, end);
-  const after = text.slice(end);
-  return `${before}<mark>${mid}</mark>${after}`;
-}
+  const EXTRACT_URL = '/citations/api/extract-citations/';
 
-// Render extracted citations as cards
-function renderResults(data) {
-  const panel = document.getElementById("results-panel");
-  panel.innerHTML = "";
-
-  if (!data || Object.keys(data).length === 0) {
-    panel.innerHTML = `
-      <div class="alert alert-warning">
-        No se han encontrado citas reconocibles en el documento.<br>
-        It was not possible to detect recognizable citations in this file.
-      </div>`;
-    return;
+  function toFlatArray(data) {
+    // A) dict con keys "1","2",...  -> aplanamos
+    if (data && !Array.isArray(data) && typeof data === 'object') {
+      const flat = [];
+      Object.keys(data).forEach((key) => {
+        const arr = Array.isArray(data[key]) ? data[key] : [];
+        arr.forEach((item, i) => {
+          flat.push({
+            ref: Number(key),
+            idx: i + 1,
+            snippet: item.snippet ?? item.fragment ?? '',
+            paragraph: item.paragraph ?? '',
+            start: item.start ?? null,
+            end: item.end ?? null,
+            raw: item
+          });
+        });
+      });
+      return flat;
+    }
+    // B) ya viene como lista
+    if (Array.isArray(data)) return data;
+    return [];
   }
 
-  // Count total matches
-  let total = 0;
-  Object.values(data).forEach(list => (total += (list?.length || 0)));
+  function escapeHTML(s) {
+    return (s ?? '').toString()
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
+  }
 
-  const header = document.createElement("div");
-  header.className = "alert alert-info";
-  header.textContent = `Citas detectadas / Citations found: ${total}`;
-  panel.appendChild(header);
+  function highlightRefs(str) {
+    // resalta [n] – super simple y efectivo
+    return escapeHTML(str).replace(/\[(\d+)\]/g, '<mark>[$1]</mark>');
+  }
 
-  // For each citation group ([1], [2], (Smith, 2020), etc.)
-  for (const [key, items] of Object.entries(data)) {
-    const card = document.createElement("div");
-    card.className = "card mb-3 shadow-sm";
+  function cardHTML(item) {
+    const header = `Ref [${item.ref}] · Fragmento ${item.idx}`;
+    const snippet = highlightRefs(item.snippet || '');
+    const paragraph = escapeHTML(item.paragraph || '');
 
-    const body = document.createElement("div");
-    body.className = "card-body";
+    return `
+      <div class="ce-card">
+        <div class="ce-header fw-semibold mb-2">${header}</div>
 
-    const title = document.createElement("h5");
-    title.className = "card-title";
-    title.textContent = key;
-    body.appendChild(title);
+        <div class="ce-snippet">${snippet}</div>
 
-    (items || []).forEach((it, idx) => {
-      const paraClean = normalizeText(it.paragraph || "");
-      const snippetClean = normalizeText(it.snippet || "");
+        <div class="ce-actions mt-2 d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-secondary btn-sm" data-action="copy-snippet">
+            Copiar fragmento
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" data-action="copy-paragraph">
+            Copiar párrafo completo
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" data-action="view-json">
+            Ver JSON
+          </button>
+        </div>
 
-      // Highlight if possible
-      let htmlSnippet = snippetClean;
-      if (typeof it.start === "number" && typeof it.end === "number") {
-        htmlSnippet = highlightOnce(paraClean, it.start, it.end);
-      }
+        <div class="mt-2">
+          <a href="#" class="ce-toggle small" data-action="toggle-paragraph">
+            ► Ver párrafo completo
+          </a>
+          <div class="mt-2" data-target="paragraph" hidden>
+            <div class="ce-snippet">${paragraph}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-      // Snippet visible
-      const pSnippet = document.createElement("p");
-      pSnippet.className = "mb-2";
-      pSnippet.innerHTML = htmlSnippet;
+  function render(list) {
+    RESULTS.innerHTML = '';
+    if (!list.length) {
+      COUNT_LABEL.hidden = false;
+      COUNT_LABEL.textContent = '0 citas detectadas';
+      BTN_JSON.disabled = BTN_CSV.disabled = true;
+      return;
+    }
 
-      // Collapsible full paragraph
-      const details = document.createElement("details");
-      details.className = "mt-1";
-      const summary = document.createElement("summary");
-      summary.textContent = `Ver párrafo completo / View full paragraph (${idx + 1})`;
-      const pFull = document.createElement("p");
-      pFull.className = "mt-2 mb-0";
-      pFull.textContent = paraClean;
-      details.appendChild(summary);
-      details.appendChild(pFull);
-
-      body.appendChild(pSnippet);
-      body.appendChild(details);
-
-      if (idx < items.length - 1) {
-        const hr = document.createElement("hr");
-        body.appendChild(hr);
-      }
+    const frag = document.createDocumentFragment();
+    list.forEach(item => {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = cardHTML(item);
+      // Guarda datos por si el usuario pulsa “Ver JSON”
+      wrapper.firstElementChild.dataset.payload = JSON.stringify(item.raw ?? item);
+      frag.appendChild(wrapper.firstElementChild);
     });
+    RESULTS.appendChild(frag);
 
-    card.appendChild(body);
-    panel.appendChild(card);
-  }
-}
-
-// Upload and process file
-async function uploadAndExtract(urlName) {
-  const fileInput = document.getElementById("manuscript");
-  const panel = document.getElementById("results-panel");
-  panel.innerHTML = '<div class="alert alert-secondary">Procesando... / Processing...</div>';
-
-  if (!fileInput.files[0]) {
-    panel.innerHTML = `
-      <div class="alert alert-warning">
-        Selecciona un archivo antes de continuar.<br>
-        Please choose a file before continuing.
-      </div>`;
-    return;
+    COUNT_LABEL.hidden = false;
+    COUNT_LABEL.textContent = `${list.length} citas detectadas`;
+    BTN_JSON.disabled = BTN_CSV.disabled = false;
   }
 
-  const fd = new FormData();
-  fd.append("manuscript", fileInput.files[0]);
+  function copyToClipboard(txt) {
+    navigator.clipboard?.writeText(txt).catch(() => {});
+  }
 
-  try {
-    const res = await fetch(urlName, { method: "POST", body: fd });
-    const text = await res.text();
+  RESULTS.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button, a');
+    if (!btn) return;
+
+    const card = btn.closest('.ce-card');
+    if (!card) return;
+
+    const payload = (() => {
+      try { return JSON.parse(card.dataset.payload || '{}'); }
+      catch { return {}; }
+    })();
+
+    if (btn.dataset.action === 'copy-snippet') {
+      copyToClipboard(payload.snippet ?? payload.fragment ?? '');
+    }
+    if (btn.dataset.action === 'copy-paragraph') {
+      copyToClipboard(payload.paragraph ?? '');
+    }
+    if (btn.dataset.action === 'view-json') {
+      alert(JSON.stringify(payload, null, 2));
+    }
+    if (btn.dataset.action === 'toggle-paragraph') {
+      ev.preventDefault();
+      const box = card.querySelector('[data-target="paragraph"]');
+      const opened = !box.hasAttribute('hidden');
+      if (opened) {
+        box.setAttribute('hidden','');
+        btn.textContent = '► Ver párrafo completo';
+      } else {
+        box.removeAttribute('hidden');
+        btn.textContent = '▼ Ocultar párrafo completo';
+      }
+    }
+  });
+
+  BTN_EXTRACT?.addEventListener('click', async () => {
+    const file = INPUT_FILE?.files?.[0];
+    if (!file) {
+      alert('Selecciona un archivo PDF o TXT.');
+      return;
+    }
+    BTN_EXTRACT.disabled = true;
+    BTN_EXTRACT.textContent = 'Procesando…';
 
     try {
-      const data = JSON.parse(text);
-      renderResults(data);
-    } catch (parseErr) {
-      panel.innerHTML = `
-        <div class="alert alert-danger">
-          Error al interpretar la respuesta del servidor.<br>
-          Could not parse server response (${res.status}).<br>
-          <pre class="mt-2 mb-0" style="white-space:pre-wrap">${text}</pre>
-        </div>`;
+      const fd = new FormData();
+      fd.append('manuscript', file);
+      const res = await fetch(EXTRACT_URL, { method: 'POST', body: fd });
+      const data = await res.json();
+      lastData = toFlatArray(data);
+      render(lastData);
+    } catch (e) {
+      alert('Error procesando el archivo.');
+    } finally {
+      BTN_EXTRACT.disabled = false;
+      BTN_EXTRACT.textContent = 'Extraer citas / Extract citations';
     }
-  } catch (err) {
-    panel.innerHTML = `
-      <div class="alert alert-danger">
-        Error de red: ${err.message || err}.<br>
-        Network error while sending the file.
-      </div>`;
-  }
-}
+  });
+
+  // Exportar
+  BTN_JSON?.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(lastData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'citations.json' });
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  BTN_CSV?.addEventListener('click', () => {
+    if (!lastData.length) return;
+    const header = ['ref','idx','snippet','paragraph','start','end'];
+    const rows = lastData.map(x => [
+      x.ref, x.idx,
+      (x.snippet || '').replaceAll('\n',' '),
+      (x.paragraph || '').replaceAll('\n',' '),
+      x.start ?? '', x.end ?? ''
+    ]);
+    const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'citations.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+})();
