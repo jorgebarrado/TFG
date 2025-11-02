@@ -39,6 +39,51 @@
     </div>
   {% endif %}
 
+  {% load static %}
+  {% include "citations/_extract_citations_form.html" %}
+  <script>
+    // Fallback: función inline por si el JS externo no carga
+    async function uploadAndExtract(urlName) {
+      const fileInput = document.getElementById("manuscript");
+      const results = document.getElementById("results");
+      results.textContent = "Processing...";
+      const fd = new FormData();
+      if (!fileInput.files[0]) {
+        results.textContent = "Please choose a file / Por favor selecciona un archivo";
+        return;
+      }
+      fd.append("manuscript", fileInput.files[0]);
+      const res = await fetch(urlName, { method: "POST", body: fd });
+      const text = await res.text();
+      try { results.textContent = JSON.stringify(JSON.parse(text), null, 2); }
+      catch { results.textContent = "Respuesta no-JSON (" + res.status + "):\n\n" + text; }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("extract-form");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        uploadAndExtract("{% url 'api_extract_citations' %}");
+      });
+    });
+  </script>
+  <!-- 💡 Aquí añadimos el bloque JS con el listener corregido -->
+  <script src="{% static 'js/citation_extractor.js' %}"></script>
+  <script>
+    // Esperar a que el DOM y el JS estén cargados
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("extract-form");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (typeof uploadAndExtract !== "function") {
+          alert("Error: el script citation_extractor.js no se ha cargado correctamente.");
+          return;
+        }
+        uploadAndExtract("{% url 'api_extract_citations' %}");
+      });
+    });
+  </script>
+
   <a href="{% url 'dblp_articles' %}" class="btn btn-secondary mt-3">Volver a artículos</a>
 </div>
 {% endblock %}
