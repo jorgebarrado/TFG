@@ -37,12 +37,8 @@ from .models import (
     UserProfile,
     Vote,
 )
-from .utils import (
-    check_doi_has_citations,
-    get_articles_from_dblp,
-    get_citation_count,
-    get_citing_articles,
-)
+from .services.semantic_fetch import get_citations_with_fallback
+from .utils import check_doi_has_citations, get_articles_from_dblp
 
 
 @login_required
@@ -685,34 +681,26 @@ def register_ajax(request):
 
 @login_required
 def semantic_citations_view(request):
-    """semantic_citations_view.
-
-    Args:
-        # TODO: describe parameters
-    Returns:
-        # TODO: describe return value
-    """
+    """Muestra las citas recuperadas para un DOI desde Semantic Scholar o Crossref."""
     doi = request.GET.get("doi")
     if not doi:
         return redirect("account_settings")
 
-    citation_count = get_citation_count(doi)
-    citations = get_citing_articles(doi)
+    # 🔹 Recuperar citas y conteo (usa Semantic Scholar, con fallback a Crossref)
+    citation_count, citations, source = get_citations_with_fallback(doi)
 
-    # Obtener los DOIs de las citas recuperadas
+    # 🔹 Obtener los DOIs de las citas recuperadas
     citing_dois = [c.get("doi") for c in citations if c.get("doi")]
 
-    # Comprobar cuáles ya están registrados como incorrectos para este artículo
+    # 🔹 Comprobar cuáles ya están registrados como incorrectos
     registered_citations = IncorrectCitation.objects.filter(
         doi_original=doi, doi_incorrect__in=citing_dois
     ).values("doi_incorrect", "id")
 
-    # Crear un mapa para búsqueda rápida
     registered_map = {
         item["doi_incorrect"]: item["id"] for item in registered_citations
     }
 
-    # Anotar las citas con el estado de registro
     for c in citations:
         citing_doi = c.get("doi")
         if citing_doi and citing_doi in registered_map:
@@ -724,5 +712,10 @@ def semantic_citations_view(request):
     return render(
         request,
         "citations/semantic_citations.html",
-        {"citations": citations, "doi": doi, "citation_count": citation_count},
+        {
+            "doi": doi,
+            "citation_count": citation_count,
+            "citations": citations,
+            "source": source,
+        },
     )
