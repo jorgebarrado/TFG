@@ -1,72 +1,137 @@
-/* Paleta de la app  */
+/* ========= Paleta base del sitio ========= */
 :root {
-    --primary: #0066ff;         /* azul principal */
-    --primary-light: #e6f0ff;   /* azul muy claro */
-    --secondary: #00c58e;       /* verde acento  */
-    --gray-100: #f8f9fa;
-    --gray-200: #e9ecef;
-    --gray-700: #495057;
+  --primary: #0066ff;
+  --primary-light: #e6f0ff;
+  --secondary: #00c58e;
+
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+  --gray-700: #495057;
 }
 
-/* 1) Tipografía base */
+/* Tipografía y layout base */
 body {
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    color: var(--gray-700);
-    background-color: var(--gray-100);
-    line-height: 1.55;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: var(--gray-700);
+  background-color: var(--gray-100);
+  line-height: 1.55;
 }
 
-/* 2) Tarjetas (cards) */
+/* Cards */
 .card {
-    border: 0;
-    border-radius: 0.75rem;
-    box-shadow: 0 6px 24px rgba(0,0,0,.06);
+  border: 0;
+  border-radius: .75rem;
+  box-shadow: 0 6px 24px rgba(0,0,0,.06);
 }
 
-/* 3) Botones */
+/* Botones principales */
 .btn-primary {
-    --bs-btn-bg: var(--primary);
-    --bs-btn-hover-bg: #0052cc;
-    --bs-btn-border-color: var(--primary);
-    --bs-btn-hover-border-color: #0052cc;
-    border-radius: .5rem;
-    font-weight: 600;
+  --bs-btn-bg: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: #0052cc;
+  --bs-btn-hover-border-color: #0052cc;
+  border-radius: .5rem;
+  font-weight: 600;
 }
 .btn-outline-primary {
-    --bs-btn-color: var(--primary);
-    --bs-btn-border-color: var(--primary);
-    --bs-btn-hover-bg: var(--primary-light);
-    border-radius: .5rem;
-    font-weight: 600;
+  --bs-btn-color: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary-light);
+  border-radius: .5rem;
+  font-weight: 600;
 }
 
-/* 4) Formularios simples (inputs con borde) */
+/* Inputs */
 .form-control {
-    border-radius: .5rem;
-    border-color: var(--gray-200);
-    padding: .65rem .9rem;
+  border-radius: .5rem;
+  border-color: var(--gray-200);
+  padding: .65rem .9rem;
 }
 .form-control:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 .15rem rgba(0, 102, 255, .25);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 .15rem rgba(0,102,255,.25);
 }
 
-/* 5) Badges de área y tipo */
+/* Badges de contexto (si los usas) */
 .badge-area   { background: var(--primary-light); color: var(--primary); }
 .badge-type   { background: var(--gray-200);     color: var(--gray-700); }
 
-/* 6) Links */
+/* Links */
 a { text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-.toggle-details {
-    cursor: pointer;
-    display: inline-block;
-    transition: transform 0.2s;
+/* Pequeñas utilidades */
+.toggle-details { cursor: pointer; display: inline-block; transition: transform .2s; }
+.toggle-details:hover { transform: scale(1.1); }
+
+/* ========= Estilo del módulo de “Citation Extractor” =========
+   Todo va bajo el namespace .ce para no interferir con otras vistas. */
+.ce {
+  /* nada especial; sirve para namespacing */
 }
-.toggle-details:hover {
-    transform: scale(1.1);
+
+/* Paleta suave para tarjetas y fragmentos */
+.ce {
+  --ce-card-bg: #ffffff;
+  --ce-card-border: #e5e7eb;
+  --ce-card-shadow: 0 .15rem .6rem rgba(0,0,0,.06);
+
+  --ce-text: #212529;
+  --ce-muted: #6c757d;
+
+  --ce-snippet-bg: #f8fafc;
+  --ce-snippet-border: #e5e7eb;
+
+  --ce-hit-bg: #fff3cd;   /* resaltado tipo “warning” claro */
+  --ce-hit-border: #ffe69c;
 }
-.text-center.mt-2 {
-    margin-top: 1rem;
+
+/* Tarjeta de resultado */
+.ce .ce-card {
+  background: var(--ce-card-bg);
+  border: 1px solid var(--ce-card-border);
+  box-shadow: var(--ce-card-shadow);
+  border-radius: .75rem;
+  color: var(--ce-text);
+  padding: 1rem 1rem .75rem;
 }
+
+.ce .ce-card + .ce-card { margin-top: 1rem; }
+
+/* Cabecera y meta */
+.ce .ce-header,
+.ce .ce-meta,
+.ce .ce-actions .btn-outline-secondary {
+  color: var(--ce-muted);
+}
+
+/* Área de snippet (sin scroll horizontal, con saltos) */
+.ce .ce-snippet {
+  background: var(--ce-snippet-bg);
+  border: 1px solid var(--ce-snippet-border);
+  color: var(--ce-text);
+  border-radius: .5rem;
+  padding: .75rem 1rem;
+  margin-top: .5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}
+
+/* Resaltado [1], [2], etc. */
+.ce .ce-snippet mark,
+.ce .ce-hit {
+  background: var(--ce-hit-bg);
+  border: 1px solid var(--ce-hit-border);
+  color: inherit;
+  border-radius: .25rem;
+  padding: 0 .15rem;
+}
+
+/* Acciones */
+.ce .ce-actions .btn { border-radius: .5rem; }
+.ce .ce-toggle { color: var(--bs-primary); font-weight: 500; }
+
+/* Hover sutil */
+.ce .ce-card:hover { box-shadow: 0 .25rem 1rem rgba(0,0,0,.08); }
