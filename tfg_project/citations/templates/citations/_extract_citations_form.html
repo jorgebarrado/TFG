@@ -1,0 +1,15 @@
+{# EN/ES: Minimal form to test the extractor. Include in your page. #}
+{% load static %}
+<form id="extract-form" onsubmit="event.preventDefault(); uploadAndExtract(EXTRACT_URL);">
+  <input type="file" id="manuscript" name="manuscript" accept=".pdf,.txt" required />
+  <button type="submit" class="btn btn-primary">Extraer citas / Extract citations</button>
+</form>
+
+<pre id="results" class="mt-3" style="white-space: pre-wrap;"></pre>
+
+<script>
+  // Replace with Django {% url 'api_extract_citations' %} in templates
+  const EXTRACT_URL = "{% url 'api_extract_citations' %}";
+</script>
+{% load static %}
+<script src="{% static 'js/citation_extractor.js' %}"></script>

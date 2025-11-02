@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import views
+from . import views, views_api
 from .views import (
     ajax_submit_citation,
     citation_detail,
@@ -42,4 +42,9 @@ urlpatterns = [
     path("ajax/register/", views.register_ajax, name="register_ajax"),
     path("search_suggest/", views.citation_suggest, name="citation_suggest"),
     path("api/doi/", views.fetch_doi_metadata, name="fetch_doi"),
+    path(
+        "api/extract-citations/",
+        views_api.api_extract_citations,
+        name="api_extract_citations",
+    ),
 ]
