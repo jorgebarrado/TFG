@@ -47,4 +47,9 @@ urlpatterns = [
         views_api.api_extract_citations,
         name="api_extract_citations",
     ),
+    path(
+        "api/get-citation-context/",
+        views_api.get_citation_context,
+        name="get_citation_context",
+    ),
 ]

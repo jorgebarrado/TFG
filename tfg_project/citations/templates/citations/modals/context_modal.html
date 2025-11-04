@@ -1,0 +1,38 @@
+<!-- Modal a S.S. -->
+<div class="modal fade" id="contextModal" tabindex="-1" aria-labelledby="contextModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contextModalLabel">Contexto de la Cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Zona de resultados -->
+                <div id="context-results">
+                    <!-- Los resultados se inyectarán aquí -->
+                </div>
+
+                <!-- Fallback: no hay PDF o error -->
+                <div id="context-fallback" class="d-none">
+                    <p>No se pudo obtener el contexto de la cita.</p>
+                    <div class="mb-3">
+                        <label for="pdf-url" class="form-label">URL directa al PDF</label>
+                        <input type="url" id="pdf-url" class="form-control" placeholder="https://ejemplo.com/articulo.pdf">
+                    </div>
+                    <button id="extract-from-url" class="btn btn-primary">Extraer de URL</button>
+                </div>
+
+                <!-- Loading spinner -->
+                <div id="context-loading" class="d-none text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="create-report-btn" disabled>Crear reporte</button>
+            </div>
+        </div>
+    </div>
+</div>

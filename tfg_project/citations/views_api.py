@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import tempfile
 
+import requests
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +16,22 @@ from django.views.decorators.http import require_POST
 
 # Adjust import to your project structure:
 from .services.citation_extractor import process_manuscript  # type: ignore
+
+
+def get_citation_context(request):
+    doi = request.GET.get("doi")
+    if not doi:
+        return JsonResponse({"error": "DOI is required"}, status=400)
+
+    try:
+        url = f"https://api.semanticscholar.org/v1/paper/{doi}"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        contexts = data.get("contexts", [])
+        return JsonResponse({"contexts": contexts})
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt

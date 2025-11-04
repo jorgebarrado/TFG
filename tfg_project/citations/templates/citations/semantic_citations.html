@@ -27,6 +27,7 @@
             {% elif c.url %}
               <a href="{{ c.url }}" target="_blank">Ver cita en fuente original</a>
             {% endif %}
+            <button class="btn btn-sm btn-outline-secondary ms-2" data-doi="{{ c.doi }}">View context</button>
           </div>
         </div>
       {% endfor %}
@@ -79,4 +80,6 @@
 
 <!-- JS del extractor (sin inline) -->
 <script src="{% static 'js/citation_extractor.js' %}"></script>
+<script src="{% static 'js/citation_context.js' %}"></script>
+{% include 'citations/modals/context_modal.html' %}
 {% endblock %}
