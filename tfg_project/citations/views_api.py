@@ -21,8 +21,20 @@ from .services.citation_extractor import process_manuscript  # type: ignore
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
     """
-    EN: Accepts a file upload ('manuscript') and returns JSON with citation snippets.
-    ES: Acepta un archivo ('manuscript') y devuelve JSON con fragmentos de citación.
+    Handles manuscript uploads to extract citation snippets.
+
+    This API endpoint accepts a POST request with a file upload (PDF or TXT)
+    named 'manuscript'. It processes the file to identify and extract
+    citation contexts and returns them in a JSON format.
+
+    Args:
+        request: The HttpRequest object, expected to contain the uploaded
+                 file in `request.FILES['manuscript']`.
+
+    Returns:
+        A JsonResponse containing the extracted citation data, which includes
+        the citation marker, the surrounding context, and section titles.
+        If no file is uploaded, it returns a 400 error.
     """
     f: UploadedFile | None = request.FILES.get("manuscript")
     if not f:

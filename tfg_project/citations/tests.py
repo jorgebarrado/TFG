@@ -11,7 +11,16 @@ from .models import IncorrectCitation
 
 @override_settings(SITE_ID=1)
 class SocialAppTestCase(TestCase):
+    """
+    Base test case for views that require SocialApp instances.
+
+    This class sets up the necessary `Site` and `SocialApp` objects for
+    providers like Google and ORCID, which are required for rendering
+    templates with social authentication links.
+    """
+
     def setUp(self):
+        """Set up the test environment."""
         super().setUp()
         self.client = Client()
         site, _ = Site.objects.get_or_create(
@@ -31,13 +40,19 @@ class SocialAppTestCase(TestCase):
 
 
 class HomePageTests(SocialAppTestCase):
+    """Test suite for the home page."""
+
     def test_home_status_code(self):
+        """Test that the home page returns a 200 OK status code."""
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
 
 
 class RegisterTests(TestCase):
+    """Test suite for user registration."""
+
     def test_register_user(self):
+        """Test that a new user can be registered successfully."""
         response = self.client.post(
             reverse("register"),
             {
@@ -51,10 +66,14 @@ class RegisterTests(TestCase):
 
 
 class LoginTests(TestCase):
+    """Test suite for user login."""
+
     def setUp(self):
+        """Set up a user for login tests."""
         self.user = User.objects.create_user(username="jorge", password="test1234")
 
     def test_login_user(self):
+        """Test that an existing user can log in."""
         response = self.client.post(
             reverse("login"), {"username": "jorge", "password": "test1234"}
         )
@@ -62,11 +81,15 @@ class LoginTests(TestCase):
 
 
 class ReportTests(TestCase):
+    """Test suite for submitting incorrect citation reports."""
+
     def setUp(self):
+        """Set up a logged-in user for report submission tests."""
         self.user = User.objects.create_user(username="jorge", password="test1234")
         self.client.login(username="jorge", password="test1234")
 
     def test_create_report(self):
+        """Test that an authenticated user can submit a new report."""
         response = self.client.post(
             reverse("ajax_submit"),
             {
@@ -83,13 +106,19 @@ class ReportTests(TestCase):
 
 
 class MetadataTests(TestCase):
+    """Test suite for the metadata fetching endpoint."""
+
     def test_get_metadata_without_doi(self):
+        """Test that the endpoint returns a 400 Bad Request if no DOI is provided."""
         response = self.client.get(reverse("get_all_metadata"))
         self.assertEqual(response.status_code, 400)
 
 
 class VoteViewTests(TestCase):
+    """Test suite for the voting functionality."""
+
     def setUp(self):
+        """Set up a user and a citation report for voting tests."""
         self.user = User.objects.create_user(username="testuser", password="password")
         self.citation = IncorrectCitation.objects.create(
             doi_original="10.1000/orig",
@@ -100,6 +129,7 @@ class VoteViewTests(TestCase):
         )
 
     def test_vote_unauthenticated(self):
+        """Test that an unauthenticated user cannot vote."""
         response = self.client.post(
             reverse("vote"), {"citation_id": self.citation.id, "vote": 1}
         )
@@ -107,18 +137,21 @@ class VoteViewTests(TestCase):
         self.assertEqual(response.json()["error"], "not_authenticated")
 
     def test_vote_missing_parameters(self):
+        """Test that the endpoint returns an error if parameters are missing."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"vote": 1})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"], "Missing parameters")
 
     def test_vote_invalid_input(self):
+        """Test that the endpoint returns an error for invalid input."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"citation_id": "abc", "vote": 1})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"], "Invalid input")
 
     def test_vote_invalid_vote_value(self):
+        """Test that the endpoint returns an error for an invalid vote value."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(
             reverse("vote"), {"citation_id": self.citation.id, "vote": 5}
@@ -127,11 +160,13 @@ class VoteViewTests(TestCase):
         self.assertEqual(response.json()["error"], "Invalid vote value")
 
     def test_vote_nonexistent_citation(self):
+        """Test that the endpoint returns a 404 for a non-existent citation."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"citation_id": 999, "vote": 1})
         self.assertEqual(response.status_code, 404)
 
     def test_upvote_citation(self):
+        """Test that a user can successfully upvote a citation."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(
             reverse("vote"), {"citation_id": self.citation.id, "vote": 1}
@@ -143,7 +178,10 @@ class VoteViewTests(TestCase):
 
 
 class SemanticCitationsViewTests(SocialAppTestCase):
+    """Test suite for the semantic citations view."""
+
     def setUp(self):
+        """Set up a user and test data for the semantic citations view."""
         super().setUp()
         self.user = User.objects.create_user(username="testuser", password="password")
         self.client.login(username="testuser", password="password")
@@ -161,27 +199,33 @@ class SemanticCitationsViewTests(SocialAppTestCase):
             author=self.user,
         )
 
-    @patch("citations.views.get_citation_count")
-    @patch("citations.views.get_citing_articles")
+    @patch("citations.views.get_citations_with_fallback")
     def test_semantic_citations_view_marks_registered(
-        self, mock_get_citing_articles, mock_get_citation_count
+        self, mock_get_citations_with_fallback
     ):
+        """
+        Test that the view correctly identifies and marks citations that have
+        already been reported as incorrect.
+        """
         # Configurar los mocks
-        mock_get_citation_count.return_value = 2
-        mock_get_citing_articles.return_value = [
-            {
-                "doi": self.citing_doi_registered,
-                "title": "Registered Article",
-                "authors": "Author A",
-                "year": 2023,
-            },
-            {
-                "doi": self.citing_doi_unregistered,
-                "title": "Unregistered Article",
-                "authors": "Author B",
-                "year": 2024,
-            },
-        ]
+        mock_get_citations_with_fallback.return_value = (
+            2,
+            [
+                {
+                    "doi": self.citing_doi_registered,
+                    "title": "Registered Article",
+                    "authors": "Author A",
+                    "year": 2023,
+                },
+                {
+                    "doi": self.citing_doi_unregistered,
+                    "title": "Unregistered Article",
+                    "authors": "Author B",
+                    "year": 2024,
+                },
+            ],
+            "s2",
+        )
 
         # Realizar la petición
         response = self.client.get(

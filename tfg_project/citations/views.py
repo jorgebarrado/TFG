@@ -43,12 +43,20 @@ from .utils import check_doi_has_citations, get_articles_from_dblp
 
 @login_required
 def dblp_articles_view(request):
-    """dblp_articles_view.
+    """
+    Displays a list of articles from the user's DBLP profile.
+
+    This view fetches articles from the DBLP URL stored in the user's profile,
+    allows filtering by publication type and a search query, and paginates the
+    results. For each article on the current page, it also checks if there are
+    any known citations via the Semantic Scholar API.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'dblp_articles.html' template
+        with the filtered and paginated list of articles.
     """
     user = request.user
     profile = UserProfile.objects.get(user=user)
@@ -91,22 +99,18 @@ def dblp_articles_view(request):
 
 
 def citation_suggest(request):
-    """citation_suggest.
+    """
+    Provides suggestions for citations based on a search term.
 
-
+    This view is used for autocomplete functionality. It searches for incorrect
+    citations where the original DOI or title contains the provided search term
+    and returns a JSON response with the top 5 matches.
 
     Args:
-
-
-        # TODO: describe parameters
-
+        request: The HttpRequest object, containing the 'term' GET parameter.
 
     Returns:
-
-
-        # TODO: describe return value
-
-
+        A JsonResponse with a list of matching citations.
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
@@ -117,17 +121,15 @@ def citation_suggest(request):
 
 
 def fetch_doi_metadata(request):
-    """fetch_doi_metadata.
-
+    """
+    Fetches metadata for a given DOI from the CrossRef API.
 
     Args:
-
-        # TODO: describe parameters
+        request: The HttpRequest object, containing the 'doi' GET parameter.
 
     Returns:
-
-        # TODO: describe return value
-
+        A JsonResponse with the DOI's metadata if found, otherwise an error
+        message.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -141,17 +143,19 @@ def fetch_doi_metadata(request):
 
 
 def citation_list(request):
-    """citation_list.
+    """
+    Displays a paginated list of all incorrect citation reports.
 
+    This view allows users to browse through all submitted reports, with
+    options to filter by publication area, citation type, and year. It also
+    supports a free-text search across DOIs, titles, and authors.
 
     Args:
-
-        # TODO: describe parameters
+        request: The HttpRequest object.
 
     Returns:
-
-        # TODO: describe return value
-
+        An HttpResponse object rendering the 'citation_list.html' template
+        with the filtered and paginated list of reports.
     """
     qs = IncorrectCitation.objects.select_related("author").order_by("-created_at")
 
@@ -203,12 +207,20 @@ User = get_user_model()
 
 @login_required
 def account_settings(request):
-    """account_settings.
+    """
+    Manages user account settings.
+
+    This view handles three forms: one for updating the user's profile
+    (first name, username), one for changing the password, and one for
+    setting the DBLP profile URL. It processes the submitted form and
+    displays success messages upon successful updates.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'account_settings.html'
+        template with the profile, password change, and DBLP forms.
     """
     user = request.user
     profile_form = ProfileForm(instance=user)
@@ -256,12 +268,17 @@ def account_settings(request):
 
 # Landing page
 def home(request):
-    """home.
+    """
+    Renders the home page.
+
+    Also handles showing the login modal if the 'show_login_modal' GET
+    parameter is set.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'home.html' template.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
     return render(
@@ -277,12 +294,19 @@ def home(request):
 
 # Vista de login con soporte para `next`
 def login_view(request):
-    """login_view.
+    """
+    Handles user login.
+
+    If the login is successful, the user is redirected to the URL specified
+    in the 'next' parameter, or to the home page if 'next' is not provided.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object, either redirecting on successful login or
+        rendering the home page with the login form and an error message on
+        failure.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -301,27 +325,20 @@ def login_view(request):
 
 
 def register_view(request):
-    """register_view.
+    """
+    Handles user registration.
 
-
-
+    On successful registration, the new user is automatically logged in and
+    redirected to the URL specified in the 'next' parameter, or to the home
+    page if 'next' is not provided.
 
     Args:
-
-
-
-        # TODO: describe parameters
-
-
+        request: The HttpRequest object.
 
     Returns:
-
-
-
-        # TODO: describe return value
-
-
-
+        An HttpResponse object, either redirecting on successful registration
+        or rendering the home page with the registration form and validation
+        errors.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
 
@@ -359,12 +376,17 @@ def register_view(request):
 
 # Logout
 def logout_view(request):
-    """logout_view.
+    """
+    Logs the user out.
+
+    Redirects to the URL specified in the 'next' parameter, or to the home
+    page if 'next' is not provided.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponseRedirect to the 'next' URL or the home page.
     """
     logout(request)
     return redirect(request.GET.get("next", "/"))
@@ -372,12 +394,15 @@ def logout_view(request):
 
 # Vista AJAX para guardar el reporte
 def ajax_submit_citation(request):
-    """ajax_submit_citation.
+    """
+    Handles the submission of an incorrect citation report via AJAX.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        A JsonResponse indicating success or failure. On failure, it includes
+        a dictionary of form errors.
     """
     if request.method == "POST":
         form = IncorrectCitationForm(request.POST)
@@ -393,12 +418,18 @@ def ajax_submit_citation(request):
 
 # Página del reporte individual
 def citation_detail(request, pk):
-    """citation_detail.
+    """
+    Displays the details of a single incorrect citation report.
+
+    This view shows the information about the incorrect citation, its comments,
+    and vote counts. It also handles the submission of new comments.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+        pk (int): The primary key of the incorrect citation report.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'citation_detail.html' template.
     """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     comments = (
@@ -452,12 +483,17 @@ def citation_detail(request, pk):
 
 # Vista alternativa (usada antes)
 def submit_incorrect_citation(request):
-    """submit_incorrect_citation.
+    """
+    Handles the submission of an incorrect citation report (non-AJAX).
+
+    This is an older view that renders a dedicated page for submitting a report.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object, either redirecting on success or rendering the
+        'submit_citation.html' template with the form.
     """
     if request.method == "POST":
         form = IncorrectCitationForm(request.POST)
@@ -474,24 +510,30 @@ def submit_incorrect_citation(request):
 
 # Página de confirmación tras reporte
 def citation_submitted(request):
-    """citation_submitted.
+    """
+    Displays a confirmation page after a report has been submitted.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'citation_submitted.html'
+        template.
     """
     return render(request, "citations/citation_submitted.html")
 
 
 # Obtener metadatos del DOI
 def get_all_metadata_from_doi(request):
-    """get_all_metadata_from_doi.
+    """
+    Fetches all available metadata for a given DOI from the CrossRef API.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object, containing the 'doi' GET parameter.
+
     Returns:
-        # TODO: describe return value
+        A JsonResponse with the DOI's metadata if found, otherwise an error
+        message.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -508,12 +550,19 @@ def get_all_metadata_from_doi(request):
 
 @login_required
 def delete_comment(request, pk):
-    """delete_comment.
+    """
+    Deletes a comment.
+
+    Only the author of the comment or a superuser can delete it.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+        pk (int): The primary key of the comment to be deleted.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponseRedirect to the detail page of the citation the
+        comment belonged to, or an HttpResponseForbidden if the user is not
+        authorized.
     """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
@@ -526,12 +575,18 @@ def delete_comment(request, pk):
 
 @require_POST
 def vote_view(request):
-    """vote_view.
+    """
+    Handles user votes on incorrect citation reports.
+
+    A user can upvote (1) or downvote (-1). Voting again with the same value
+    removes the vote. Voting with a different value changes the vote.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        A JsonResponse with the updated vote counts and the current user's
+        vote status.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -585,12 +640,16 @@ def vote_view(request):
 @require_POST
 @login_required
 def toggle_saved(request):
-    """toggle_saved.
+    """
+    Toggles the saved status of an incorrect citation report for the user.
+
+    If the report is already saved, it will be unsaved, and vice-versa.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        A JsonResponse indicating the new saved status (`is_saved`).
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -610,12 +669,14 @@ def toggle_saved(request):
 
 @login_required
 def my_reports(request):
-    """my_reports.
+    """
+    Displays a list of the current user's incorrect citation reports.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'my_reports.html' template.
     """
     reports = IncorrectCitation.objects.filter(author=request.user).order_by(
         "-created_at"
@@ -625,12 +686,14 @@ def my_reports(request):
 
 @login_required
 def my_comments(request):
-    """my_comments.
+    """
+    Displays a list of the current user's comments.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'my_comments.html' template.
     """
     comments = (
         Comment.objects.filter(author=request.user)
@@ -642,12 +705,14 @@ def my_comments(request):
 
 @login_required
 def my_saved(request):
-    """my_saved.
+    """
+    Displays a list of the current user's saved citation reports.
 
     Args:
-        # TODO: describe parameters
+        request: The HttpRequest object.
+
     Returns:
-        # TODO: describe return value
+        An HttpResponse object rendering the 'my_saved.html' template.
     """
     saved = (
         SavedCitation.objects.filter(user=request.user)
@@ -660,8 +725,18 @@ def my_saved(request):
 @require_POST
 def register_ajax(request):
     """
-    Recibe el formulario de registro vía fetch/AJAX
-    y devuelve JSON en lugar de redirección.
+    Handles user registration via AJAX.
+
+    This view receives the registration form data via a POST request and
+    returns a JSON response, which is useful for single-page applications or
+    when registering from a modal without a full page reload.
+
+    Args:
+        request: The HttpRequest object.
+
+    Returns:
+        A JsonResponse indicating success or failure. On failure, it includes
+        a dictionary of form errors.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -681,7 +756,20 @@ def register_ajax(request):
 
 @login_required
 def semantic_citations_view(request):
-    """Muestra las citas recuperadas para un DOI desde Semantic Scholar o Crossref."""
+    """
+    Displays citations for a given DOI from Semantic Scholar or Crossref.
+
+    This view fetches the citations for a specified DOI, checks which of them
+    have already been reported as incorrect in the database, and displays the
+    list to the user.
+
+    Args:
+        request: The HttpRequest object.
+
+    Returns:
+        An HttpResponse object rendering the 'semantic_citations.html'
+        template with the citation data.
+    """
     doi = request.GET.get("doi")
     if not doi:
         return redirect("account_settings")

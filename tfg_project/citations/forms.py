@@ -13,6 +13,14 @@ User = get_user_model()
 
 
 class UserProfileForm(forms.ModelForm):
+    """
+    A form for updating a user's DBLP profile URL.
+
+    This form is linked to the `UserProfile` model and specifically targets the
+    `dblp_url` field, providing a URL input widget with appropriate styling
+    and a placeholder.
+    """
+
     class Meta:
         model = UserProfile
         fields = ["dblp_url"]
@@ -27,6 +35,14 @@ class UserProfileForm(forms.ModelForm):
 
 
 class RegisterForm(UserCreationForm):
+    """
+    A user registration form with Bootstrap styling.
+
+    Inherits from Django's `UserCreationForm` and customizes the widgets for
+    the username and password fields to include placeholders and Bootstrap's
+    'form-control' class.
+    """
+
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -55,6 +71,13 @@ class RegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    """
+    A form for updating a user's first name and username.
+
+    This form is linked to the `User` model and provides styled text inputs
+    for the `first_name` and `username` fields.
+    """
+
     class Meta:
         model = User
         fields = ("first_name", "username")
@@ -70,7 +93,11 @@ class ProfileForm(forms.ModelForm):
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
-    Igual que PasswordChangeForm pero con Bootstrap.
+    A password change form with Bootstrap styling.
+
+    Inherits from `PasswordChangeForm` and applies the 'form-control' class
+    and a placeholder to each field for a consistent look and feel with the
+    rest of the application.
     """
 
     def __init__(self, *args, **kwargs):
@@ -82,7 +109,12 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 
 class LoginForm(AuthenticationForm):
-    """Login con placeholders y clase Bootstrap."""
+    """
+    An authentication form with Bootstrap styling and placeholders.
+
+    Inherits from `AuthenticationForm` and customizes the username and
+    password fields with placeholders and the 'form-control' class.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,6 +137,14 @@ class LoginForm(AuthenticationForm):
 
 
 class IncorrectCitationForm(forms.ModelForm):
+    """
+    A form for reporting incorrect citations.
+
+    This form is linked to the `IncorrectCitation` model and includes fields
+    for the original and incorrect DOIs, the reason for the error, citation
+    type, and publication area.
+    """
+
     class Meta:
         model = IncorrectCitation
         fields = [
@@ -120,6 +160,13 @@ class IncorrectCitationForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    """
+    A form for creating and replying to comments.
+
+    This form is linked to the `Comment` model and includes a `content`
+    textarea and a hidden `parent_id` field to support threaded comments.
+    """
+
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
     class Meta:

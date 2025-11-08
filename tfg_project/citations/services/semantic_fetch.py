@@ -5,6 +5,18 @@ CR_BASE = "https://api.crossref.org"
 
 
 def _safe_get(url, params=None, timeout=12):
+    """
+    Performs a GET request with error handling.
+
+    Args:
+        url: The URL to request.
+        params: A dictionary of URL parameters.
+        timeout: The request timeout in seconds.
+
+    Returns:
+        The JSON response as a dictionary, or None if the request fails or
+        does not return a 200 status code.
+    """
     headers = {"User-Agent": "CiteCheck/1.0 (mailto:you@example.com)"}
     try:
         r = requests.get(url, params=params or {}, headers=headers, timeout=timeout)
@@ -16,7 +28,15 @@ def _safe_get(url, params=None, timeout=12):
 
 
 def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
-    """Devuelve (paperId, citationCount) o (None, 0)."""
+    """
+    Gets the Semantic Scholar paperId and citation count for a DOI.
+
+    Args:
+        doi: The DOI of the paper.
+
+    Returns:
+        A tuple containing the paperId (or None) and the citation count.
+    """
     url = f"{S2_BASE}/paper/DOI:{doi}"
     data = _safe_get(url, params={"fields": "paperId,citationCount"})
     if not data:
@@ -25,7 +45,20 @@ def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
 
 
 def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
-    """Usa el endpoint específico /citations con paginado."""
+    """
+    Fetches citations for a DOI from Semantic Scholar's /citations endpoint.
+
+    This function handles pagination to retrieve a list of papers that cite
+    the given DOI.
+
+    Args:
+        doi: The DOI of the paper.
+        limit: The maximum number of citations to retrieve.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a citing
+        paper.
+    """
     paper_id, count = get_s2_paperid_and_count(doi)
     if not paper_id or count == 0:
         return []
@@ -65,9 +98,19 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
 
 
 def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
-    """Fallback:
-    Crossref devuelve works que incluyen reference.doi = DOI dado
-    (citan al artículo)."""
+    """
+    Fetches citations for a DOI from Crossref as a fallback.
+
+    This function finds works that have the given DOI in their reference list.
+
+    Args:
+        doi: The DOI of the paper.
+        rows: The maximum number of citations to retrieve.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a citing
+        paper.
+    """
     url = f"{CR_BASE}/works"
     # Nota: rows máx ~1000; aquí 100 es razonable para UI
     params = {
@@ -106,8 +149,17 @@ def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
 
 def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
     """
-    Devuelve: (citation_count_estimado, lista_citas, fuente_usada)
-    fuente_usada ∈ {"s2","crossref","none"}
+    Gets citations for a DOI, using Semantic Scholar first and falling back
+    to Crossref.
+
+    Args:
+        doi: The DOI of the paper.
+
+    Returns:
+        A tuple containing:
+        - The estimated citation count.
+        - A list of citing papers.
+        - The source of the data ('s2', 'crossref', or 'none').
     """
     s2_list = get_s2_citations(doi)
     if s2_list:
