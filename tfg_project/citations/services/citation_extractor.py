@@ -1,161 +1,133 @@
+# -*- coding: utf-8 -*-
 """
-EN: Citation extractor utility
-------------------------------
-Given a manuscript (plain text or PDF),
-detect in-text citations (numeric like [1] or author–year like (Smith, 2020)),
-and return for each citation one or more occurrences with paragraph,
-snippet (±window), and character positions.
-
-ES: Utilidad para extraer citas
--------------------------------
-Dado un manuscrito (texto plano o PDF),
-detecta citas en el texto (numéricas tipo [1] o autor–año tipo (Smith, 2020)),
-y devuelve para cada cita una o más ocurrencias con párrafo, fragmento (±ventana)
-y posiciones de caracteres.
+Extractor de citas desde PDF o TXT.
+Devuelve JSON con:
+- total: nº de citas detectadas
+- items: lista de dicts con {style, raw, paragraph, snippet, start, end}
 """
 
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List
 
+# Preferimos PyPDF2 (ya lo tienes instalado). Si no, intenta pypdf.
 try:
-    # pypdf is lightweight and built-in text extractor is enough for many PDFs
-    from pypdf import PdfReader  # type: ignore
+    from PyPDF2 import PdfReader
 except Exception:  # pragma: no cover
-    PdfReader = None  # Fallback handled later
-
-
-# EN: Patterns for numeric and author–year citations (more tolerant).
-# ES: Patrones para citas numéricas y autor–año (más tolerantes).
-NUMERIC = r"\[\s*\d+(?:\s*[,;-]\s*\d+)*\s*\]"  # [1], [1, 2], [1-3]
-AUTHOR = r"[A-Z][A-Za-z'`\-]+(?:\s+[A-Z][A-Za-z'`\-]+)*(?:\s+Jr\.)?"
-AUTHORS_LIST = rf"{AUTHOR}(?:\s*(?:,|;|&)\s*{AUTHOR})*(?:\s+et al\.)?"
-YEAR = r"\d{4}[a-z]?"
-AUTHOR_YEAR = rf"\(\s*{AUTHORS_LIST}\s*,\s*{YEAR}\s*\)"
-CITATION = re.compile(rf"({NUMERIC}|{AUTHOR_YEAR})")
-
-
-def _normalize_key(raw: str) -> str:
-    """EN: Normalize keys so '(Smith, 2020)' and '(Smith et al., 2020)' group together.
-    ES: Normaliza claves para agrupar '(Smith, 2020)' y '(Smith et al., 2020)'.
-    """
-    k = raw.strip()
-    if k.startswith("(") and k.endswith(")"):
-        k = k[1:-1].strip()
-    k = re.sub(r"\bet al\.\b", "", k, flags=re.I)
-    k = re.sub(r"\s+", " ", k)
-    return k.strip()
-
-
-def extract_text_from_pdf(pdf_path: str) -> tuple[str, List[Tuple[int, int]]]:
-    """EN: Return (full_text, page_spans). page_spans = [(start, end), ...].
-    ES: Devuelve (texto, rangos_por_página). rangos_por_página = [(inicio, fin), ...].
-    """
-    if PdfReader is None:
-        return "", []
     try:
-        reader = PdfReader(pdf_path)  # type: ignore
-        text, spans = "", []
-        pos = 0
-        for page in reader.pages:
-            t = page.extract_text() or ""
-            start, end = pos, pos + len(t)
-            spans.append((start, end))
-            text += t
-            pos = end
-        return text, spans
-    except Exception:
-        # If PDF fails, return empty so caller can decide
-        return "", []
+        from pypdf import PdfReader  # type: ignore
+    except Exception:  # pragma: no cover
+        PdfReader = None  # type: ignore
 
 
-def _page_from_offset(offset: int, page_spans: List[Tuple[int, int]]) -> int | None:
-    """EN: Get 1-based page number for a given char offset.
-    ES: Obtiene el número de página (base 1) para un offset de caracteres.
-    """
-    for i, (s, e) in enumerate(page_spans, start=1):
-        if s <= offset < e:
-            return i
-    return None
+# Patrones de citación: numérico [1], [2–5], (1), etc. y autor-año (Smith, 2021)
+NUMERIC_CITATION = re.compile(
+    r"""
+    (?:\[(?:\d+[\s,\-–]*?)+\])      # [1], [2,5], [2–5], [2-5]
+    |                               # o
+    (?:\((?:\d+[\s,\-–]*?)+\))      # (1), (2,5), (2–5), (2-5)
+    """,
+    re.VERBOSE,
+)
+
+AUTHOR_YEAR_CITATION = re.compile(
+    r"""
+    \(
+      (?:
+        [A-Z][A-Za-z\-']+(?:\s+et\s+al\.)?   # Apellido o 'X et al.'
+        (?:\s*&\s*[A-Z][A-Za-z\-']+)?        # opcional '& Apellido'
+      )
+      \s*,\s*
+      (?:19|20)\d{2}                         # año 19xx o 20xx
+      (?:[a-z])?                             # letra opcional 2021a
+    \)
+    """,
+    re.VERBOSE,
+)
+
+SNIPPET_RADIUS = 120  # caracteres a cada lado
 
 
-def _paragraphs(text: str) -> List[str]:
-    """EN: Split by blank lines. ES: Divide por líneas en blanco."""
-    parts = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-    return parts or ([text.strip()] if text.strip() else [])
+def _split_paragraphs(text: str) -> List[str]:
+    # Divide en párrafos por líneas en blanco
+    parts = re.split(r"\n\s*\n", text.strip())
+    return [p.strip() for p in parts if p.strip()]
 
 
-def _find_matches_in_paragraph(para: str) -> List[Tuple[str, Tuple[int, int]]]:
-    """EN: Find citations in paragraph and return [(raw_key, (start, end))].
-    ES: Encuentra citas en el párrafo y devuelve [(clave_cruda, (inicio, fin))].
-    """
-    hits: List[Tuple[str, Tuple[int, int]]] = []
-    for m in CITATION.finditer(para):
-        hits.append((m.group(0), m.span()))
-    return hits
+def _find_citations_in_paragraph(paragraph: str) -> List[Dict]:
+    items: List[Dict] = []
 
-
-def _snippet(para: str, span: Tuple[int, int], window: int = 120) -> str:
-    """EN: Return ±window chars around the match; single-line.
-    ES: Devuelve ±window caracteres alrededor del match; en una sola línea.
-    """
-    s, e = span
-    start = max(0, s - window)
-    end = min(len(para), e + window)
-    frag = para[start:end].replace("\n", " ")
-    return re.sub(r"\s+", " ", frag).strip()
-
-
-def process_manuscript(path_or_text: str) -> Dict[str, List[Dict[str, Any]]]:
-    """
-    Main entry.
-    Accept a file path (.pdf/.txt) or raw text; return JSON-like dict.
-
-    Entrada principal.
-    Acepta ruta de archivo (.pdf/.txt) o texto; devuelve dict tipo JSON.
-
-    Returns:
-        {
-          "Smith 2020": [
-              {"paragraph": "...", "snippet": "...", "start": 123, "end": 130}
-          ],
-          "[1]": [...]
-        }
-    """
-    text: str = ""
-    page_spans: List[Tuple[int, int]] = []
-
-    # If looks like a file path
-    if any(path_or_text.lower().endswith(ext) for ext in (".pdf", ".txt")):
-        if path_or_text.lower().endswith(".pdf"):
-            text, page_spans = extract_text_from_pdf(path_or_text)
-        else:
-            try:
-                with open(path_or_text, "r", encoding="utf-8", errors="ignore") as fh:
-                    text = fh.read()
-            except Exception:
-                text = ""
-    else:
-        # Raw text
-        text = path_or_text or ""
-
-    if not text:
-        return {}
-
-    result: Dict[str, List[Dict[str, Any]]] = {}
-    for para in _paragraphs(text):
-        for raw_key, span in _find_matches_in_paragraph(para):
-            key = _normalize_key(raw_key)
-            s, e = span
-            snippet = _snippet(para, span)
-            item = {
-                "paragraph": para,
+    for m in NUMERIC_CITATION.finditer(paragraph):
+        start, end = m.span()
+        raw = m.group(0)
+        left = max(0, start - SNIPPET_RADIUS)
+        right = min(len(paragraph), end + SNIPPET_RADIUS)
+        snippet = paragraph[left:right]
+        items.append(
+            {
+                "style": "numeric",
+                "raw": raw,
+                "paragraph": paragraph,
                 "snippet": snippet,
-                "start": s,
-                "end": e,
+                "start": start,
+                "end": end,
             }
-            result.setdefault(key, [])
-            if item not in result[key]:
-                result[key].append(item)
-    return result
+        )
+
+    for m in AUTHOR_YEAR_CITATION.finditer(paragraph):
+        start, end = m.span()
+        raw = m.group(0)
+        left = max(0, start - SNIPPET_RADIUS)
+        right = min(len(paragraph), end + SNIPPET_RADIUS)
+        snippet = paragraph[left:right]
+        items.append(
+            {
+                "style": "author-year",
+                "raw": raw,
+                "paragraph": paragraph,
+                "snippet": snippet,
+                "start": start,
+                "end": end,
+            }
+        )
+
+    return items
+
+
+def _extract_text_from_pdf(path: str) -> str:
+    if PdfReader is None:
+        raise RuntimeError(
+            "No se encontró PdfReader. Instala PyPDF2 (recomendado) o pypdf."
+        )
+    reader = PdfReader(path)
+    chunks: List[str] = []
+    for page in reader.pages:
+        try:
+            chunks.append(page.extract_text() or "")
+        except Exception:
+            # Algunos PDFs pueden fallar en una página suelta; sigue con el resto
+            continue
+    return "\n".join(chunks)
+
+
+def process_manuscript(path: str) -> Dict:
+    """
+    Devuelve un dict JSON-serializable:
+    {
+      "total": int,
+      "items": [ {style, raw, paragraph, snippet, start, end}, ... ]
+    }
+    """
+    path_lower = path.lower()
+    if path_lower.endswith(".pdf"):
+        text = _extract_text_from_pdf(path)
+    else:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
+
+    items: List[Dict] = []
+    for para in _split_paragraphs(text):
+        items.extend(_find_citations_in_paragraph(para))
+
+    return {"total": len(items), "items": items}

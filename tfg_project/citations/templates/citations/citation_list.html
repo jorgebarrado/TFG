@@ -165,7 +165,7 @@ $(function () {
       .done(function (data) {
         const html = `
           <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
-          <p><strong>{% {% trans "" %} "Autores" %}:</strong> ${
+          <p><strong>{% trans "Autores" %}:</strong> ${
             data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'
           }</p>
           <p><strong>{% translate "Revista" %}:</strong> ${data['container-title']?.[0] || '{% translate "N/A" %}'}</p>

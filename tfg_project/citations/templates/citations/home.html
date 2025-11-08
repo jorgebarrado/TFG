@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
-{% load i18n %}
 {% block content %}
 <div class="container text-center py-5">
     <h1>{% trans "Bienvenido a la herramienta de citas" %}</h1>
@@ -11,13 +10,26 @@
         🟢 {% trans "Reporte enviado con éxito." %}
     </div>
 
-    <div class="mt-4">
-        <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#reportModal">➕ {% trans "Crear nuevo reporte" %}</button>
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">📄 {% trans "Ver lista de reportes" %}</a>
+    <!-- Botones de acción -->
+    <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
+        <button class="btn btn-primary btn-lg"
+                data-bs-toggle="modal"
+                data-bs-target="#reportModal">
+            ➕ {% trans "Crear nuevo reporte" %}
+        </button>
+
+        <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">
+            📄 {% trans "Ver lista de reportes" %}
+        </a>
+
+        <!-- NUEVO: acceso directo a DBLP -->
+        <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary btn-lg">
+            📚 {% trans "Ver artículos de DBLP" %}
+        </a>
     </div>
 </div>
-{% include 'citations/modals/report_modal.html' %}
 
+{% include 'citations/modals/report_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -46,6 +58,7 @@
             });
     });
 </script>
+
 <script>
     $(document).ready(function () {
         function fetchDOIMetadata(doi, type) {
@@ -96,7 +109,7 @@
             const isVisible = !preview.hasClass('d-none');
 
             preview.toggleClass('d-none');
-            $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
+            $(this).text(isVisible ? '{% trans "Ver metadatos" %}' : '{% trans "Ocultar metadatos" %}');
         });
 
         $('#toggleIncorrectMetadata').on('click', function () {
@@ -104,7 +117,7 @@
             const isVisible = !preview.hasClass('d-none');
 
             preview.toggleClass('d-none');
-            $(this).text(isVisible ? 'Ver metadatos' : 'Ocultar metadatos');
+            $(this).text(isVisible ? '{% trans "Ver metadatos" %}' : '{% trans "Ocultar metadatos" %}');
         });
     });
 </script>
@@ -123,11 +136,8 @@
         $('#doiTitleIncorrect, #doiAuthorsIncorrect, #doiJournalIncorrect, #doiYearIncorrect').text('');
 
         // Reinicia botones
-        $('#toggleMetadata').text('Ver metadatos');
-        $('#toggleIncorrectMetadata').text('Ver metadatos');
+        $('#toggleMetadata').text('{% trans "Ver metadatos" %}');
+        $('#toggleIncorrectMetadata').text('{% trans "Ver metadatos" %}');
     });
-
 </script>
-
-
 {% endblock %}
