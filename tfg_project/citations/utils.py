@@ -128,3 +128,25 @@ def get_citation_count(doi):
     except Exception as e:
         print(f"Error al obtener citationCount para {doi}: {e}")
         return 0
+
+
+from typing import List, Dict, Any
+from papermage.recipes.core_recipe import CoreRecipe
+
+def extract_augmented_snippets_with_papermage(pdf_path: str) -> List[Dict[str, Any]]:
+    """
+    Extracts citation snippets and their bounding box coordinates from a PDF using papermage.
+    """
+    recipe = CoreRecipe()
+    doc = recipe.run(pdf_path)
+
+    results = []
+
+    if hasattr(doc, 'bibliographies'):
+        for bib in doc.bibliographies:
+            results.append({
+                "text": bib.text,
+                "boxes": [box.to_json() for box in bib.boxes]
+            })
+
+    return results

@@ -44,39 +44,92 @@
     </div>
   {% endif %}
 
-  <!-- ========= Bloque: Extractor desde PDF ========= -->
-  <div class="ce my-4">
-    <div class="card p-3">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-6">
-          <input id="manuscript" name="manuscript" type="file"
-                 class="form-control" accept=".pdf,.txt" />
-        </div>
-        <div class="col-md-6 text-md-end">
-          <button id="btn-extract" class="btn btn-primary">
-            Extraer citas / Extract citations
-          </button>
-          <button id="btn-export-json" class="btn btn-outline-primary ms-2" disabled>
-            Exportar JSON
-          </button>
-          <button id="btn-export-csv" class="btn btn-outline-primary ms-1" disabled>
-            Exportar CSV
-          </button>
-        </div>
-      </div>
-
-      <div class="mt-3">
-        <small class="text-muted" id="count-label" hidden>0 citas detectadas</small>
-      </div>
-    </div>
-
-    <!-- Aquí renderiza el JS las tarjetas de resultados -->
-    <div id="results" class="mt-3"></div>
-  </div>
-  <!-- ============================================== -->
-
+  <!-- PaperCraft container -->
+  <div id="papercraft-container"></div>
 </div>
 
-<!-- JS del extractor (sin inline) -->
-<script src="{% static 'js/citation_extractor.js' %}"></script>
+<!-- React and PaperCraft scripts -->
+<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@allenai/papercraft@0.0.8/dist/index.js"></script>
+
+<!-- Babel for JSX compilation -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+{% verbatim %}
+  const { BoundingBox, Overlay, PDFPage } = papercraft;
+
+  const App = () => {
+    const [pdf, setPdf] = React.useState(null);
+    const [citations, setCitations] = React.useState([]);
+
+    const handleFileChange = (event) => {
+      setPdf(event.target.files[0]);
+    };
+
+    const handleExtract = async () => {
+      if (!pdf) {
+        alert("Please select a PDF file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("manuscript", pdf);
+
+      try {
+        const response = await fetch("/citations/api/extract-citations/", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        setCitations(data);
+      } catch (error) {
+        console.error("Error extracting citations:", error);
+        alert("An error occurred while extracting citations.");
+      }
+    };
+
+    return (
+      <div>
+        <div className="card p-3">
+          <div className="row g-2 align-items-center">
+            <div className="col-md-6">
+              <input
+                type="file"
+                className="form-control"
+                accept=".pdf"
+                onChange={handleFileChange}
+              />
+            </div>
+            <div className="col-md-6 text-md-end">
+              <button className="btn btn-primary" onClick={handleExtract}>
+                Extract Citations
+              </button>
+            </div>
+          </div>
+        </div>
+        {pdf && (
+          <div style={{ position: 'relative', marginTop: '20px' }}>
+            <PDFPage pdf={pdf}>
+              <Overlay>
+                {citations.map((citation, index) => (
+                  <BoundingBox
+                    key={index}
+                    page={citation.boxes[0].page}
+                    box={citation.boxes[0]}
+                    style={{ backgroundColor: 'rgba(255, 255, 0, 0.3)' }}
+                  />
+                ))}
+              </Overlay>
+            </PDFPage>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  ReactDOM.render(<App />, document.getElementById("papercraft-container"));
+{% endverbatim %}
+</script>
 {% endblock %}

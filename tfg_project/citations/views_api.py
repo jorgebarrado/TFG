@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 # Adjust import to your project structure:
-from .services.citation_extractor import process_manuscript  # type: ignore
+from .utils import extract_augmented_snippets_with_papermage
 
 
 @csrf_exempt
@@ -35,8 +35,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         temp_path = tmp.name
 
     try:
-        data = process_manuscript(temp_path)
-        return JsonResponse(data, status=200, safe=True)
+        data = extract_augmented_snippets_with_papermage(temp_path)
+        return JsonResponse(data, status=200, safe=False)
     finally:
         try:
             os.remove(temp_path)
