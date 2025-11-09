@@ -17,7 +17,7 @@
     <div class="list-group mb-4">
       {% for c in citations %}
         <div class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
+          <div class="me-3">
             <h5 class="mb-1">{{ c.title }}</h5>
             <small class="text-muted">
               {{ c.authors }}{% if c.year %} – {{ c.year }}{% endif %}
@@ -28,6 +28,21 @@
               <a href="{{ c.url }}" target="_blank">Ver cita en fuente original</a>
             {% endif %}
           </div>
+
+          {% if c.doi %}
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            data-action="view-context"
+            data-citing-doi="{{ c.doi }}"
+            data-target-doi="{{ doi|default:'' }}"
+            data-target-title="{{ target_title|default:'' }}"
+            data-target-first-author="{{ target_first_author|default:'' }}"
+            data-target-year="{{ target_year|default:'' }}"
+          >
+            View context
+          </button>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
@@ -44,39 +59,15 @@
     </div>
   {% endif %}
 
-  <!-- ========= Bloque: Extractor desde PDF ========= -->
-  <div class="ce my-4">
-    <div class="card p-3">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-6">
-          <input id="manuscript" name="manuscript" type="file"
-                 class="form-control" accept=".pdf,.txt" />
-        </div>
-        <div class="col-md-6 text-md-end">
-          <button id="btn-extract" class="btn btn-primary">
-            Extraer citas / Extract citations
-          </button>
-          <button id="btn-export-json" class="btn btn-outline-primary ms-2" disabled>
-            Exportar JSON
-          </button>
-          <button id="btn-export-csv" class="btn btn-outline-primary ms-1" disabled>
-            Exportar CSV
-          </button>
-        </div>
-      </div>
-
-      <div class="mt-3">
-        <small class="text-muted" id="count-label" hidden>0 citas detectadas</small>
-      </div>
-    </div>
-
-    <!-- Aquí renderiza el JS las tarjetas de resultados -->
-    <div id="results" class="mt-3"></div>
-  </div>
-  <!-- ============================================== -->
+  {# ——— Bloque de extractor local (tu flujo actual) ——— #}
+  {% include "citations/_extract_citations_form.html" %}
 
 </div>
 
-<!-- JS del extractor (sin inline) -->
+{# ÚNICO modal centralizado #}
+{% include "citations/modals/context_modal.html" %}
+
+{# JS #}
 <script src="{% static 'js/citation_extractor.js' %}"></script>
+<script src="{% static 'js/citation_context.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,26 @@
+{# templates/citations/modals/context_modal.html #}
+<div class="modal fade" id="contextModal" tabindex="-1" aria-labelledby="contextModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="contextModalLabel" class="modal-title">Contexto de la cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="ctx-loading" class="d-none text-center my-3">
+          <div class="spinner-border" role="status"><span class="visually-hidden">Cargando…</span></div>
+        </div>
+
+        <div id="ctx-error" class="alert alert-danger d-none"></div>
+
+        <div id="ctx-results" class="vstack gap-3">
+          <div class="text-muted">Pulsa “View context” en una cita para cargar los párrafos…</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="ctx-create-report" class="btn btn-primary d-none" href="#">Crear reporte</a>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
