@@ -1,29 +1,80 @@
-"""
-EN/ES: API endpoint to extract citation snippets from an uploaded manuscript.
-Place this file as `citations/views_api.py` or merge the view into your `views.py`.
-"""
-
+# citations/views_api.py
 from __future__ import annotations
 
 import os
 import tempfile
+from typing import Optional
 
+import requests
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-# Adjust import to your project structure:
-from .services.citation_extractor import process_manuscript  # type: ignore
+from .services.papermage_extractor import extract_contexts_from_pdf
+from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
 
 
+def get_citation_context(request: HttpRequest) -> JsonResponse:
+    """
+    /citations/api/get-citation-context/?citing_doi=...&target_title=...&target_first_author=...&target_year=...&target_doi=...
+
+    Devuelve:
+    {
+      "ok": true,
+      "source": "semanticscholar",
+      "pdf": "openAccess",
+      "contexts": [ { paragraph, snippet, start, end }, ... ]
+    }
+    """
+    citing_doi = request.GET.get("citing_doi")  # paper B
+    target_title = request.GET.get("target_title")  # paper A
+    target_first_author = request.GET.get("target_first_author")
+    target_year = request.GET.get("target_year")
+    target_doi = request.GET.get("target_doi")  # opcional: DOI de A (mejora matching)
+
+    if not citing_doi:
+        return JsonResponse({"ok": False, "error": "Missing 'citing_doi'"}, status=400)
+
+    pdf_url = get_openaccess_pdf_url(citing_doi)
+    if not pdf_url:
+        return JsonResponse({"ok": False, "error": "No openAccessPdf for citing DOI"}, status=404)
+
+    tmp_path: Optional[str] = download_pdf_to_temp(pdf_url)
+    if not tmp_path:
+        return JsonResponse({"ok": False, "error": "Failed to download PDF"}, status=502)
+
+    try:
+        contexts = extract_contexts_from_pdf(
+            tmp_path,
+            target_title=target_title,
+            target_first_author=target_first_author,
+            target_year=target_year,
+            target_doi=target_doi,
+        )
+        return JsonResponse(
+            {
+                "ok": True,
+                "source": "semanticscholar",
+                "pdf": "openAccess",
+                "count": len(contexts),
+                "contexts": contexts,
+            },
+            status=200,
+        )
+    finally:
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
+
+
+# ========= TU endpoint existente para subir manuscritos =========
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
-    """
-    EN: Accepts a file upload ('manuscript') and returns JSON with citation snippets.
-    ES: Acepta un archivo ('manuscript') y devuelve JSON con fragmentos de citación.
-    """
+    from .services.citation_extractor import process_manuscript  # keep your current flow
+
     f: UploadedFile | None = request.FILES.get("manuscript")
     if not f:
         return JsonResponse({"error": "No file uploaded"}, status=400)

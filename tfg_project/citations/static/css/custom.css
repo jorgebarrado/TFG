@@ -135,3 +135,10 @@ a:hover { text-decoration: underline; }
 
 /* Hover sutil */
 .ce .ce-card:hover { box-shadow: 0 .25rem 1rem rgba(0,0,0,.08); }
+
+
+/* Evita scroll horizontal en párrafos largos del contexto */
+.ce-paragraph {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
