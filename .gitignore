@@ -14,5 +14,4 @@ __pycache__/
 
 # --- OTROS ---
 *.sqlite3
-/staticfiles/
 /media/
