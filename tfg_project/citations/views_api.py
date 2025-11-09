@@ -56,7 +56,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
             {
                 "ok": True,
                 "source": "semanticscholar",
-                "pdf": "openAccess",
+                "pdf_url": pdf_url,
                 "count": len(contexts),
                 "contexts": contexts,
             },

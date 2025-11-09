@@ -161,27 +161,27 @@ class SemanticCitationsViewTests(SocialAppTestCase):
             author=self.user,
         )
 
-    @patch("citations.views.get_citation_count")
-    @patch("citations.views.get_citing_articles")
-    def test_semantic_citations_view_marks_registered(
-        self, mock_get_citing_articles, mock_get_citation_count
-    ):
-        # Configurar los mocks
-        mock_get_citation_count.return_value = 2
-        mock_get_citing_articles.return_value = [
-            {
-                "doi": self.citing_doi_registered,
-                "title": "Registered Article",
-                "authors": "Author A",
-                "year": 2023,
-            },
-            {
-                "doi": self.citing_doi_unregistered,
-                "title": "Unregistered Article",
-                "authors": "Author B",
-                "year": 2024,
-            },
-        ]
+    @patch("citations.views.get_citations_with_fallback")
+    def test_semantic_citations_view_marks_registered(self, mock_get_citations):
+        # Configurar el mock
+        mock_get_citations.return_value = (
+            2,
+            [
+                {
+                    "doi": self.citing_doi_registered,
+                    "title": "Registered Article",
+                    "authors": "Author A",
+                    "year": 2023,
+                },
+                {
+                    "doi": self.citing_doi_unregistered,
+                    "title": "Unregistered Article",
+                    "authors": "Author B",
+                    "year": 2024,
+                },
+            ],
+            "semantic_scholar",
+        )
 
         # Realizar la petición
         response = self.client.get(

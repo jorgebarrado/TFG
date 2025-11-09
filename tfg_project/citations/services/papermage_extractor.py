@@ -9,7 +9,8 @@ from typing import List, Optional
 try:
     # PaperMage API (simplificado: CoreRecipe produce texto estructurado)
     # Documentación: https://github.com/allenai/papermage
-    from papermage.recipes.core import CoreRecipe  # type: ignore
+    from papermage.magelib import Span
+    from papermage.recipes.core import CoreRecipe
     PAPERMAGE_AVAILABLE = True
 except Exception:
     PAPERMAGE_AVAILABLE = False
@@ -27,6 +28,11 @@ class CitationHit:
     snippet: str
     start_char: int
     end_char: int
+    boxes: Optional[List[List[float]]] = None
+
+
+def _spans_overlap(span1: Span, span2: Span) -> bool:
+    return span1.start < span2.end and span2.start < span1.end
 
 
 def _build_patterns(
@@ -95,7 +101,11 @@ def _hits_from_text(
                 left = max(0, s - window)
                 right = min(len(text), e + window)
                 snippet = text[left:right].replace("\n", " ")
-                hits.append(CitationHit(paragraph=p, snippet=snippet, start_char=s, end_char=e))
+                hits.append(
+                    CitationHit(
+                        paragraph=p, snippet=snippet, start_char=s, end_char=e, boxes=None
+                    )
+                )
         cursor = p_end + 2  # aprox: suma salto de párrafo
     return hits
 
@@ -122,57 +132,79 @@ def extract_contexts_from_pdf(
     target_year: Optional[str],
     target_doi: Optional[str],
     max_hits: int = 12,
+    window: int = 120,
 ) -> List[dict]:
     """
     Devuelve una lista de dicts con:
     - paragraph
     - snippet (±120)
     - start / end
+    - boxes (coordenadas en el PDF)
     """
-
     patterns = _build_patterns(target_title, target_first_author, target_year, target_doi)
+    hits: List[CitationHit] = []
 
-    # 1) Intento con PaperMage (texto estructurado)
+    # 1) Intento con PaperMage (texto estructurado + coordenadas)
     if PAPERMAGE_AVAILABLE:
         try:
-            doc = CoreRecipe().run(pdf_path)  # produce un objeto con secciones/paragraphs
-            # Extraemos texto "lógico" por párrafo; fallback si no hay estructura
-            paragraphs: List[str] = []
+            doc = CoreRecipe().run(pdf_path)
+            doc_text = doc.text
+            tokens = doc.tokens
+
             if hasattr(doc, "paragraphs") and doc.paragraphs:
                 for para in doc.paragraphs:
-                    txt = getattr(para, "text", None) or ""
-                    txt = re.sub(r"[ \t]+", " ", txt).strip()
-                    if txt:
-                        paragraphs.append(txt)
-            else:
-                # fallback a lectura plana si la receta no devolvió estructura
-                plain = _extract_with_pypdf2(pdf_path)
-                paragraphs = _paragraphs_from_text(plain)
+                    para_text = para.text
+                    for pat in patterns:
+                        for m in pat.finditer(para_text):
+                            match_span_in_para = Span(m.start(), m.end())
+                            match_span_in_doc = Span(
+                                start=para.spans[0].start + match_span_in_para.start,
+                                end=para.spans[0].start + match_span_in_para.end,
+                            )
+                            # Bounding boxes de los tokens que se solapan con el match
+                            match_boxes = [
+                                tok.box.to_list()
+                                for tok in tokens
+                                if _spans_overlap(tok.spans[0], match_span_in_doc)
+                            ]
+                            # Snippet con ventana
+                            left = max(0, match_span_in_doc.start - window)
+                            right = min(len(doc_text), match_span_in_doc.end + window)
+                            snippet = doc_text[left:right].replace("\n", " ")
 
-            full_text = "\n\n".join(paragraphs)
-            hits = _hits_from_text(full_text, patterns)
-            return [
-                {
-                    "paragraph": h.paragraph,
-                    "snippet": h.snippet,
-                    "start": h.start_char,
-                    "end": h.end_char,
-                }
-                for h in hits[:max_hits]
-            ]
+                            hits.append(
+                                CitationHit(
+                                    paragraph=para_text,
+                                    snippet=snippet,
+                                    start_char=match_span_in_doc.start,
+                                    end_char=match_span_in_doc.end,
+                                    boxes=match_boxes,
+                                )
+                            )
+            if hits:
+                return [
+                    {
+                        "paragraph": h.paragraph,
+                        "snippet": h.snippet,
+                        "start": h.start_char,
+                        "end": h.end_char,
+                        "boxes": h.boxes,
+                    }
+                    for h in hits[:max_hits]
+                ]
         except Exception:
-            # cae al fallback
-            pass
+            pass  # Fallback a PyPDF2
 
-    # 2) Fallback: PyPDF2 + regex
-    plain = _extract_with_pypdf2(pdf_path)
-    hits = _hits_from_text(plain, patterns)
+    # 2) Fallback: PyPDF2 + regex (sin coordenadas)
+    plain_text = _extract_with_pypdf2(pdf_path)
+    text_hits = _hits_from_text(plain_text, patterns)
     return [
         {
             "paragraph": h.paragraph,
             "snippet": h.snippet,
             "start": h.start_char,
             "end": h.end_char,
+            "boxes": None,  # No hay coordenadas en este modo
         }
-        for h in hits[:max_hits]
+        for h in text_hits[:max_hits]
     ]

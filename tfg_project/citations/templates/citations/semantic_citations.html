@@ -70,4 +70,50 @@
 {# JS #}
 <script src="{% static 'js/citation_extractor.js' %}"></script>
 <script src="{% static 'js/citation_context.js' %}"></script>
+
+{# PDF Viewer #}
+<link rel="stylesheet" href="https://unpkg.com/papercraft-js@1.1.0/dist/papercraft.min.css">
+<script src="https://unpkg.com/papercraft-js@1.1.0/dist/papercraft.min.js"></script>
+
+<div id="pdf-viewer-container" class="mt-4" style="height: 600px; border: 1px solid #ccc; display: none;"></div>
+
+<script>
+document.addEventListener('citecheck:view-pdf', (ev) => {
+  const { pdfUrl, boxes } = ev.detail;
+  const container = document.getElementById('pdf-viewer-container');
+
+  if (!pdfUrl) return;
+
+  container.style.display = 'block';
+  container.innerHTML = ''; // Limpiar
+
+  const viewer = new PaperCraft.default(container, {
+    pdf: pdfUrl,
+    showToolbar: true,
+  });
+
+  viewer.on('render', () => {
+    if (boxes && boxes.length > 0) {
+      // Crear overlays para resaltar
+      const overlays = boxes.map(box => ({
+        page: box[0], // Asumiendo que el primer elemento es la página
+        type: 'highlight',
+        bounds: [box[1], box[2], box[3], box[4]], // Coordenadas
+        className: 'highlight-overlay',
+      }));
+      viewer.addOverlays(overlays);
+
+      // Scroll al primer overlay
+      const firstBox = boxes[0];
+      viewer.scrollTo(firstBox[0], { top: firstBox[2], behavior: 'smooth' });
+    }
+  });
+});
+</script>
+<style>
+.highlight-overlay {
+  background-color: rgba(255, 255, 0, 0.3);
+  border: 1px solid #ffc107;
+}
+</style>
 {% endblock %}
