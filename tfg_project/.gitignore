@@ -40,7 +40,6 @@ db.sqlite3
 *.sqlite3
 media/
 staticfiles/
-static/
 tmp/
 logs/
 
