@@ -17,15 +17,18 @@ from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_te
 
 def get_citation_context(request: HttpRequest) -> JsonResponse:
     """
-    /citations/api/get-citation-context/?citing_doi=...&target_title=...&target_first_author=...&target_year=...&target_doi=...
+    Extrae y devuelve los contextos de una cita de un artículo en formato PDF.
 
-    Devuelve:
-    {
-      "ok": true,
-      "source": "semanticscholar",
-      "pdf": "openAccess",
-      "contexts": [ { paragraph, snippet, start, end }, ... ]
-    }
+    Args:
+        request (HttpRequest): La solicitud HTTP. Debe contener los siguientes parámetros GET:
+            'citing_doi' (str): El DOI del artículo que contiene la cita.
+            'target_title' (str): El título del artículo citado.
+            'target_first_author' (str): El primer autor del artículo citado.
+            'target_year' (str): El año de publicación del artículo citado.
+            'target_doi' (str, opcional): El DOI del artículo citado.
+
+    Returns:
+        JsonResponse: Un objeto JSON con los contextos de la cita o un mensaje de error.
     """
     citing_doi = request.GET.get("citing_doi")  # paper B
     target_title = request.GET.get("target_title")  # paper A
@@ -73,6 +76,15 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
+    """
+    Extrae las citas de un manuscrito subido (PDF o TXT).
+
+    Args:
+        request (HttpRequest): La solicitud HTTP. Debe contener un archivo adjunto con la clave 'manuscript'.
+
+    Returns:
+        JsonResponse: Un objeto JSON con las citas extraídas o un mensaje de error.
+    """
     from .services.citation_extractor import process_manuscript  # keep your current flow
 
     f: UploadedFile | None = request.FILES.get("manuscript")

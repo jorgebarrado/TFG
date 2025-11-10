@@ -13,6 +13,9 @@ User = get_user_model()
 
 
 class UserProfileForm(forms.ModelForm):
+    """
+    Formulario para actualizar la URL de DBLP de un perfil de usuario.
+    """
     class Meta:
         model = UserProfile
         fields = ["dblp_url"]
@@ -27,6 +30,9 @@ class UserProfileForm(forms.ModelForm):
 
 
 class RegisterForm(UserCreationForm):
+    """
+    Formulario de registro de nuevos usuarios.
+    """
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -55,6 +61,9 @@ class RegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    """
+    Formulario para actualizar el nombre y nombre de usuario de un usuario.
+    """
     class Meta:
         model = User
         fields = ("first_name", "username")
@@ -70,7 +79,7 @@ class ProfileForm(forms.ModelForm):
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
-    Igual que PasswordChangeForm pero con Bootstrap.
+    Formulario de cambio de contraseña con estilos de Bootstrap.
     """
 
     def __init__(self, *args, **kwargs):
@@ -82,7 +91,9 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 
 class LoginForm(AuthenticationForm):
-    """Login con placeholders y clase Bootstrap."""
+    """
+    Formulario de inicio de sesión con placeholders y estilos de Bootstrap.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,6 +116,9 @@ class LoginForm(AuthenticationForm):
 
 
 class IncorrectCitationForm(forms.ModelForm):
+    """
+    Formulario para reportar una cita incorrecta.
+    """
     class Meta:
         model = IncorrectCitation
         fields = [
@@ -120,6 +134,9 @@ class IncorrectCitationForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    """
+    Formulario para crear y responder a comentarios.
+    """
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
