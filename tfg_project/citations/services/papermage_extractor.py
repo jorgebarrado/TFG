@@ -23,6 +23,15 @@ except Exception:
 
 @dataclass
 class CitationHit:
+    """
+    Representa una coincidencia de cita encontrada en el texto.
+
+    Atributos:
+        paragraph (str): El párrafo donde se encontró la cita.
+        snippet (str): Un fragmento de texto alrededor de la cita.
+        start_char (int): El índice del caracter de inicio de la cita.
+        end_char (int): El índice del caracter de fin de la cita.
+    """
     paragraph: str
     snippet: str
     start_char: int
@@ -36,10 +45,16 @@ def _build_patterns(
     target_doi: Optional[str],
 ) -> List[re.Pattern]:
     """
-    Construye patrones razonables para encontrar la cita en texto:
-    - DOI (si hay)
-    - estilo autor-año: 'Apellido, 2020' o '(Apellido 2020)'
-    - fragmento del título (3-6 palabras iniciales)
+    Construye una lista de patrones de expresiones regulares para encontrar citas en el texto.
+
+    Args:
+        target_title (Optional[str]): El título del artículo citado.
+        target_first_author (Optional[str]): El primer autor del artículo citado.
+        target_year (Optional[str]): El año de publicación del artículo citado.
+        target_doi (Optional[str]): El DOI del artículo citado.
+
+    Returns:
+        List[re.Pattern]: Una lista de patrones de expresiones regulares.
     """
     patterns: List[re.Pattern] = []
 
@@ -71,6 +86,15 @@ def _build_patterns(
 
 
 def _paragraphs_from_text(text: str) -> List[str]:
+    """
+    Divide un texto en párrafos y limpia los espacios en blanco.
+
+    Args:
+        text (str): El texto a procesar.
+
+    Returns:
+        List[str]: Una lista de párrafos limpios.
+    """
     # División robusta por párrafos
     parts = re.split(r"\n\s*\n+", text.strip())
     # Limpieza de espacios
@@ -82,6 +106,17 @@ def _hits_from_text(
     patterns: List[re.Pattern],
     window: int = 120,
 ) -> List[CitationHit]:
+    """
+    Encuentra todas las coincidencias de citas en un texto, utilizando una lista de patrones.
+
+    Args:
+        text (str): El texto en el que buscar.
+        patterns (List[re.Pattern]): La lista de patrones de expresiones regulares a utilizar.
+        window (int, optional): El número de caracteres a cada lado de la coincidencia para crear el snippet. Defaults to 120.
+
+    Returns:
+        List[CitationHit]: Una lista de objetos CitationHit con las coincidencias encontradas.
+    """
     hits: List[CitationHit] = []
     paragraphs = _paragraphs_from_text(text)
     cursor = 0
@@ -101,6 +136,15 @@ def _hits_from_text(
 
 
 def _extract_with_pypdf2(pdf_path: str) -> str:
+    """
+    Extrae el texto de un archivo PDF utilizando PyPDF2.
+
+    Args:
+        pdf_path (str): La ruta al archivo PDF.
+
+    Returns:
+        str: El texto extraído del PDF.
+    """
     if not PYPDF2_AVAILABLE:
         return ""
     reader = PdfReader(pdf_path)
@@ -124,10 +168,19 @@ def extract_contexts_from_pdf(
     max_hits: int = 12,
 ) -> List[dict]:
     """
-    Devuelve una lista de dicts con:
-    - paragraph
-    - snippet (±120)
-    - start / end
+    Extrae los contextos de una cita de un archivo PDF, utilizando PaperMage si está disponible,
+    o PyPDF2 como alternativa.
+
+    Args:
+        pdf_path (str): La ruta al archivo PDF.
+        target_title (Optional[str]): El título del artículo citado.
+        target_first_author (Optional[str]): El primer autor del artículo citado.
+        target_year (Optional[str]): El año de publicación del artículo citado.
+        target_doi (Optional[str]): El DOI del artículo citado.
+        max_hits (int, optional): El número máximo de coincidencias a devolver. Defaults to 12.
+
+    Returns:
+        List[dict]: Una lista de diccionarios, cada uno representando un contexto de cita.
     """
 
     patterns = _build_patterns(target_title, target_first_author, target_year, target_doi)

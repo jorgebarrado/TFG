@@ -13,7 +13,14 @@ S2_GRAPH = "https://api.semanticscholar.org/graph/v1"
 
 def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
     """
-    Devuelve la URL directa al PDF open access del paper con ese DOI usando Graph API.
+    Obtiene la URL de un PDF de acceso abierto desde Semantic Scholar usando el DOI del artículo.
+
+    Args:
+        doi (str): El DOI del artículo.
+        timeout (int, optional): El tiempo de espera para la solicitud. Defaults to 15.
+
+    Returns:
+        Optional[str]: La URL del PDF si se encuentra, de lo contrario None.
     """
     # Nota: DOI debe ir con el prefijo DOI:
     url = f"{S2_GRAPH}/paper/DOI:{doi}?fields=openAccessPdf"
@@ -27,7 +34,14 @@ def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
 
 def download_pdf_to_temp(url: str, timeout: int = 30) -> Optional[str]:
     """
-    Descarga un PDF a un fichero temporal y devuelve su ruta.
+    Descarga un archivo PDF desde una URL a un archivo temporal.
+
+    Args:
+        url (str): La URL del PDF a descargar.
+        timeout (int, optional): El tiempo de espera para la solicitud. Defaults to 30.
+
+    Returns:
+        Optional[str]: La ruta al archivo temporal si la descarga es exitosa, de lo contrario None.
     """
     try:
         with requests.get(url, stream=True, timeout=timeout, headers={"User-Agent": "CiteCheck/1.0"}) as r:
