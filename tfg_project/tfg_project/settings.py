@@ -171,3 +171,33 @@ CACHES = {
         "TIMEOUT": 60 * 60,  # 1h por defecto
     }
 }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "()": "citations.logging_formatters.JsonFormatter",
+        },
+    },
+    "handlers": {
+        "citations_context": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "citations_context.log",
+            "maxBytes": 1024 * 1024 * 5,  # 5 MB
+            "backupCount": 2,
+            "formatter": "json",
+        },
+    },
+    "loggers": {
+        "citations.context": {
+            "handlers": ["citations_context"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
