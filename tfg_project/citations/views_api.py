@@ -14,62 +14,94 @@ from django.views.decorators.http import require_POST
 from .services.papermage_extractor import extract_contexts_from_pdf
 from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
 from .trace_logger import TraceLogger
+import logging, os, json
+from django.views.decorators.http import require_http_methods
+from .trace import Trace
 
+logger = logging.getLogger("citations.context")
+INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
-def get_citation_context(request: HttpRequest, trace_logger_instance=None) -> JsonResponse:
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def get_citation_context(request: HttpRequest) -> JsonResponse:
     """
-    Extrae y devuelve los contextos de una cita de un artículo en formato PDF.
-
-    Args:
-        request (HttpRequest): La solicitud HTTP. Debe contener los siguientes parámetros GET:
-            'citing_doi' (str): El DOI del artículo que contiene la cita.
-            'target_title' (str): El título del artículo citado.
-            'target_first_author' (str): El primer autor del artículo citado.
-            'target_year' (str): El año de publicación del artículo citado.
-            'target_doi' (str, opcional): El DOI del artículo citado.
-        trace_logger_instance (TraceLogger, optional): Una instancia de TraceLogger para usar en las pruebas. Defaults to None.
-
-    Returns:
-        JsonResponse: Un objeto JSON con los contextos de la cita o un mensaje de error.
+    /citations/api/get-citation-context/
+    GET o POST(JSON) con:
+      - citing_doi (paper B) [OBLIGATORIO]
+      - target_title / target_first_author / target_year / target_doi (paper A) [opcionales]
     """
-    trace = trace_logger_instance or TraceLogger(request)
-    debug_mode = request.GET.get("debug") == "1" or request.headers.get("X-Debug") == "1"
-    tmp_path = None
+    # Compat: GET querystring o POST JSON
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body or "{}")
+        except Exception:
+            payload = {}
+    else:
+        payload = request.GET.dict()
 
-    try:
-        citing_doi = request.GET.get("citing_doi")
-        target_title = request.GET.get("target_title")
-        target_first_author = request.GET.get("target_first_author")
-        target_year = request.GET.get("target_year")
-        target_doi = request.GET.get("target_doi")
+    citing_doi = (payload.get("citing_doi") or "").strip()  # paper B
+    target_title = (payload.get("target_title") or "").strip() or None
+    target_first_author = (payload.get("target_first_author") or "").strip() or None
+    target_year = (payload.get("target_year") or "").strip() or None
+    target_doi = (payload.get("target_doi") or "").strip() or None
 
-        trace.trace_data["citing_doi"] = citing_doi
-        trace.trace_data["target"] = {
+    trace = Trace(
+        citing_doi=citing_doi,
+        target={
+            "doi": target_doi,
             "title": target_title,
             "first_author": target_first_author,
             "year": target_year,
-            "doi": target_doi,
-        }
+        },
+    )
+    trace.add("payload", "ok", f"method={request.method}; keys={list(payload.keys())}")
 
-        if not citing_doi:
-            trace.add_step("params", "error", "Missing 'citing_doi'")
-            return JsonResponse({"ok": False, "error": "Missing 'citing_doi'"}, status=400)
-        trace.add_step("params", "ok")
+    if not citing_doi:
+        trace.add("params", "error", "missing citing_doi")
+        logger.info(trace.as_log_line())
+        resp = {"ok": False, "error": "Missing 'citing_doi'"}
+        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
+            resp["trace"] = trace.as_public_trace()
+        return JsonResponse(resp, status=400)
 
+    trace.add("params", "ok", f"citing_doi={citing_doi}; target_doi={target_doi or '-'}")
+
+    # 1) OpenAccess PDF (Semantic Scholar)
+    pdf_url = None
+    try:
         pdf_url = get_openaccess_pdf_url(citing_doi)
-        if not pdf_url:
-            trace.add_step("openaccess", "miss", "No openAccessPdf for citing DOI")
-            return JsonResponse({"ok": False, "error": "No openAccessPdf for citing DOI"}, status=404)
-        trace.add_step("openaccess", "ok", pdf_url)
-        trace.trace_data["pdf_url"] = pdf_url
+    except Exception as e:
+        trace.add("openaccess", "error", str(e))
+        trace.error = str(e)
+        logger.info(trace.as_log_line("ERROR"))
+        resp = {"ok": False, "error": "Semantic Scholar error"}
+        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
+            resp["trace"] = trace.as_public_trace()
+        return JsonResponse(resp, status=502)
 
-        tmp_path: Optional[str] = download_pdf_to_temp(pdf_url)
-        if not tmp_path:
-            trace.add_step("download", "error", "Failed to download PDF")
-            return JsonResponse({"ok": False, "error": "Failed to download PDF"}, status=502)
-        trace.add_step("download", "ok", f"{os.path.getsize(tmp_path)} bytes")
-        trace.trace_data["pdf_size"] = os.path.getsize(tmp_path)
+    if not pdf_url:
+        trace.add("openaccess", "miss", "no openAccessPdf")
+        logger.info(trace.as_log_line())
+        resp = {"ok": False, "error": "No openAccessPdf for citing DOI"}
+        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
+            resp["trace"] = trace.as_public_trace()
+        return JsonResponse(resp, status=404)
+    else:
+        trace.pdf_url = pdf_url
+        trace.add("openaccess", "ok", pdf_url)
 
+    # 2) Descarga
+    tmp_path: Optional[str] = download_pdf_to_temp(pdf_url)
+    if not tmp_path:
+        trace.add("download", "error", "failed to download")
+        logger.info(trace.as_log_line("ERROR"))
+        resp = {"ok": False, "error": "Failed to download PDF"}
+        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
+            resp["trace"] = trace.as_public_trace()
+        return JsonResponse(resp, status=502)
+
+    try:
+        # 3) Extracción / matching
         contexts = extract_contexts_from_pdf(
             tmp_path,
             target_title=target_title,
@@ -77,31 +109,30 @@ def get_citation_context(request: HttpRequest, trace_logger_instance=None) -> Js
             target_year=target_year,
             target_doi=target_doi,
         )
-        trace.add_step("extract", "ok", f"{len(contexts)} hits")
-        trace.trace_data["hit_count"] = len(contexts)
+        trace.hit_count = len(contexts)
+        try:
+            trace.pdf_size = os.path.getsize(tmp_path)
+        except Exception:
+            pass
+        trace.add("download", "ok", f"{trace.pdf_size or 0} bytes")
+        trace.add("extract", "ok", f"hits={len(contexts)}")
 
-        response_data = {
+        resp = {
             "ok": True,
             "source": "semanticscholar",
             "pdf": "openAccess",
             "count": len(contexts),
             "contexts": contexts,
         }
-        if debug_mode:
-            response_data["trace"] = trace.get_trace()
-        return JsonResponse(response_data, status=200)
-
-    except Exception as e:
-        trace.add_step("error", "error", str(e))
-        response_data = {"ok": False, "error": str(e)}
-        if debug_mode:
-            response_data["trace"] = trace.get_trace()
-        return JsonResponse(response_data, status=500)
-
+        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
+            resp["trace"] = trace.as_public_trace()
+        logger.info(trace.as_log_line())
+        return JsonResponse(resp, status=200)
     finally:
-        trace.log()
-        if "tmp_path" in locals() and tmp_path and os.path.exists(tmp_path):
+        try:
             os.remove(tmp_path)
+        except Exception:
+            pass
 
 
 # ========= TU endpoint existente para subir manuscritos =========
