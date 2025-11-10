@@ -1,60 +1,18 @@
-# ===============================
-# 🐍 ENTORNOS VIRTUALES
-# ===============================
+# --- ENTORNOS VIRTUALES ---
 .venv/
 .venv311/
 myenv/
 
-# ===============================
-# ⚙️ ARCHIVOS TEMPORALES / COMPILADOS
-# ===============================
+# --- PYTHON CACHE ---
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
 
-# ===============================
-# 🧰 CONFIGURACIÓN LOCAL
-# ===============================
+# --- ARCHIVOS DE ENTORNO ---
 .env
 *.env
-*.ini
-*.cfg
-*.toml
-.vscode/
-.idea/
-.DS_Store
 
-# ===============================
-# 🗂️ DJANGO / SQLITE / MIGRACIONES
-# ===============================
-db.sqlite3
-*.db
-*.sqlite
+# --- OTROS ---
 *.sqlite3
-media/
-staticfiles/
-static/
-tmp/
-logs/
-
-# ===============================
-# 🧪 TESTS Y COVERAGE
-# ===============================
-.coverage
-.tox/
-pytest_cache/
-htmlcov/
-
-# ===============================
-# 🔧 OTRAS HERRAMIENTAS
-# ===============================
-.pre-commit-config.yaml
-__pypackages__/
-celerybeat-schedule
+/staticfiles/
+/media/

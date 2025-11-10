@@ -15,6 +15,9 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 load_dotenv()
 
@@ -172,32 +175,45 @@ CACHES = {
     }
 }
 
+# === Logging de contexto de citas ===
+LOG_CITATIONS = os.getenv("LOG_CITATIONS", "1") == "1"
+LOG_CITATIONS_LEVEL = os.getenv("LOG_CITATIONS_LEVEL", "INFO")
+
+# Carpeta de logs (asegurar que existe)
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "json": {
-            "()": "citations.logging_formatters.JsonFormatter",
+        "json_line": {
+            # Una sola línea por evento (el payload ya viene serializado en JSON)
+            "format": "%(message)s"
         },
+        "simple": {"format": "%(levelname)s %(name)s: %(message)s"},
     },
     "handlers": {
-        "citations_context": {
-            "level": "INFO",
+        "citations_context_file": {
+            "level": LOG_CITATIONS_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "citations_context.log",
-            "maxBytes": 1024 * 1024 * 5,  # 5 MB
-            "backupCount": 2,
-            "formatter": "json",
+            "filename": str(LOGS_DIR / "citations_context.log"),
+            "maxBytes": 10_000_000,  # ~10MB
+            "backupCount": 5,
+            "encoding": "utf-8",
+            "formatter": "json_line",
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "formatter": "simple",
         },
     },
     "loggers": {
         "citations.context": {
-            "handlers": ["citations_context"],
-            "level": "INFO",
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "level": LOG_CITATIONS_LEVEL,
             "propagate": False,
         },
     },
 }
-
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
