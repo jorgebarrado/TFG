@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static i18n %}
 {% load i18n %}
 {% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
 {% block content %}
@@ -26,14 +27,21 @@
         <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary btn-lg">
             📚 {% trans "Ver artículos de DBLP" %}
         </a>
+        <button class="btn btn-outline-secondary ms-2"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#extractModal">
+            <span class="me-1">📄</span> {% trans "Extraer citas (PDF)" %}
+        </button>
     </div>
 </div>
 
 {% include 'citations/modals/report_modal.html' %}
+{% include "citations/modals/extract_modal.html" %}
+
 {% endblock %}
-
 {% block scripts %}
-
+<script src="{% static 'js/extract_modal.js' %}"></script>
 {% if show_login_modal %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {

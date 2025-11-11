@@ -1,165 +1,194 @@
-# -*- coding: utf-8 -*-
-"""
-Extractor de citas desde PDF o TXT.
-Devuelve JSON con:
-- total: nº de citas detectadas
-- items: lista de dicts con {style, raw, paragraph, snippet, start, end}
-"""
-
 from __future__ import annotations
-
+from typing import Any, List
 import re
-from typing import Dict, List
 
-# Preferimos PyPDF2 (ya lo tienes instalado). Si no, intenta pypdf.
 try:
-    from PyPDF2 import PdfReader
-except Exception:  # pragma: no cover
+    from .papermage_extractor import pm_extract_paragraphs
+except Exception:
+    pm_extract_paragraphs = None
+# ====== Imports de extractores específicos (opcionales) ======
+# PaperMage (si tu módulo actual está orientado a "target matching", NO lo uses aquí)
+try:
+    from .papermage_extractor import extract_contexts_from_pdf as pm_ctx  # puede requerir params extra
+except Exception:
+    pm_ctx = None
+
+# PaperCraft (si no existe, quedará None)
+try:
+    from .papercraft_extractor import extract_contexts_from_pdf as pc_extract  # type: ignore
+except Exception:
+    pc_extract = None
+
+# ====== Dependencia ligera para el extractor genérico ======
+try:
+    import PyPDF2
+except Exception:
+    PyPDF2 = None
+
+# ====== Regex básicos: [n] y Autor (Año) ======
+NUMERIC_CITE = re.compile(r"\[(\d+)\]")
+AUTHOR_YEAR  = re.compile(
+    r"\b([A-Z][A-Za-z-]+(?:\s(?:and|&)\s[A-Z][A-Za-z-]+|(?:\s+et al\.)?)?)\s*\(((?:19|20)\d{2})\)"
+)
+
+def _extract_text_from_pdf_generic(path: str) -> str:
+    if PyPDF2 is None:
+        return ""
+    text_parts: list[str] = []
     try:
-        from pypdf import PdfReader  # type: ignore
-    except Exception:  # pragma: no cover
-        PdfReader = None  # type: ignore
+        with open(path, "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                try:
+                    text_parts.append(page.extract_text() or "")
+                except Exception:
+                    pass
+    except Exception:
+        return ""
+    return "\n".join(text_parts)
 
-
-# Patrones de citación: numérico [1], [2–5], (1), etc. y autor-año (Smith, 2021)
-NUMERIC_CITATION = re.compile(
-    r"""
-    (?:\[(?:\d+[\s,\-–]*?)+\])      # [1], [2,5], [2–5], [2-5]
-    |                               # o
-    (?:\((?:\d+[\s,\-–]*?)+\))      # (1), (2,5), (2–5), (2-5)
-    """,
-    re.VERBOSE,
-)
-
-AUTHOR_YEAR_CITATION = re.compile(
-    r"""
-    \(
-      (?:
-        [A-Z][A-Za-z\-']+(?:\s+et\s+al\.)?   # Apellido o 'X et al.'
-        (?:\s*&\s*[A-Z][A-Za-z\-']+)?        # opcional '& Apellido'
-      )
-      \s*,\s*
-      (?:19|20)\d{2}                         # año 19xx o 20xx
-      (?:[a-z])?                             # letra opcional 2021a
-    \)
-    """,
-    re.VERBOSE,
-)
-
-SNIPPET_RADIUS = 120  # caracteres a cada lado
-
-
-def _split_paragraphs(text: str) -> List[str]:
-    """
-    Divide un texto en párrafos basándose en líneas en blanco.
-
-    Args:
-        text (str): El texto a dividir.
-
-    Returns:
-        List[str]: Una lista de párrafos.
-    """
-    # Divide en párrafos por líneas en blanco
-    parts = re.split(r"\n\s*\n", text.strip())
-    return [p.strip() for p in parts if p.strip()]
-
-
-def _find_citations_in_paragraph(paragraph: str) -> List[Dict]:
-    """
-    Encuentra todas las citas (numéricas y de autor-año) en un párrafo.
-
-    Args:
-        paragraph (str): El párrafo en el que buscar citas.
-
-    Returns:
-        List[Dict]: Una lista de diccionarios, cada uno representando una cita encontrada.
-    """
-    items: List[Dict] = []
-
-    for m in NUMERIC_CITATION.finditer(paragraph):
-        start, end = m.span()
-        raw = m.group(0)
-        left = max(0, start - SNIPPET_RADIUS)
-        right = min(len(paragraph), end + SNIPPET_RADIUS)
-        snippet = paragraph[left:right]
-        items.append(
-            {
-                "style": "numeric",
-                "raw": raw,
-                "paragraph": paragraph,
-                "snippet": snippet,
-                "start": start,
-                "end": end,
-            }
-        )
-
-    for m in AUTHOR_YEAR_CITATION.finditer(paragraph):
-        start, end = m.span()
-        raw = m.group(0)
-        left = max(0, start - SNIPPET_RADIUS)
-        right = min(len(paragraph), end + SNIPPET_RADIUS)
-        snippet = paragraph[left:right]
-        items.append(
-            {
-                "style": "author-year",
-                "raw": raw,
-                "paragraph": paragraph,
-                "snippet": snippet,
-                "start": start,
-                "end": end,
-            }
-        )
-
-    return items
-
-
-def _extract_text_from_pdf(path: str) -> str:
-    """
-    Extrae el texto de un archivo PDF.
-
-    Args:
-        path (str): La ruta al archivo PDF.
-
-    Returns:
-        str: El texto extraído del PDF.
-
-    Raises:
-        RuntimeError: Si no se encuentra una librería para leer PDFs.
-    """
-    if PdfReader is None:
-        raise RuntimeError(
-            "No se encontró PdfReader. Instala PyPDF2 (recomendado) o pypdf."
-        )
-    reader = PdfReader(path)
-    chunks: List[str] = []
-    for page in reader.pages:
-        try:
-            chunks.append(page.extract_text() or "")
-        except Exception:
-            # Algunos PDFs pueden fallar en una página suelta; sigue con el resto
+def _split_paragraphs(text: str) -> list[str]:
+    # separa por doble salto o líneas largas
+    raw = re.split(r"\n\s*\n", text)
+    paras: list[str] = []
+    for p in raw:
+        p = p.strip()
+        if not p:
             continue
-    return "\n".join(chunks)
+        # une líneas cortadas
+        p = re.sub(r"[ \t]*\n[ \t]*", " ", p).strip()
+        if p:
+            paras.append(p)
+    return paras
 
+def _find_citations_in_paragraph(p: str) -> list[dict]:
+    out: list[dict] = []
+    # [n]
+    for m in NUMERIC_CITE.finditer(p):
+        s, e = m.span()
+        snippet = p[max(0, s-80): min(len(p), e+80)]
+        out.append({
+            "ref": int(m.group(1)),
+            "snippet": snippet,
+            "paragraph": p,
+            "start": s, "end": e,
+            "pattern": "numeric"
+        })
+    # Autor (Año)
+    for m in AUTHOR_YEAR.finditer(p):
+        s, e = m.span()
+        snippet = p[max(0, s-80): min(len(p), e+80)]
+        out.append({
+            "ref": 0,
+            "snippet": snippet,
+            "paragraph": p,
+            "start": s, "end": e,
+            "pattern": "author-year",
+            "author": m.group(1),
+            "year": m.group(2),
+        })
+    return out
 
-def process_manuscript(path: str) -> Dict:
+def _generic_extract_contexts(path: str) -> list[dict]:
+    text = _extract_text_from_pdf_generic(path)
+    if not text:
+        return []
+    contexts: list[dict] = []
+    for p in _split_paragraphs(text):
+        hits = _find_citations_in_paragraph(p)
+        if hits:
+            contexts.extend(hits)
+    return contexts
+
+def _pm_loose_extract(path: str) -> list[dict]:
+    if pm_extract_paragraphs is None:
+        return []
+    try:
+        paragraphs = pm_extract_paragraphs(path) or []
+        out = []
+        for p in paragraphs:
+            out.extend(_find_citations_in_paragraph(p))
+        return out
+    except Exception:
+        return []
+
+def process_manuscript(path: str, *, engine: str = "auto", debug: bool = False) -> dict[str, Any]:
     """
-    Procesa un manuscrito (PDF o TXT) para extraer todas las citas.
-
-    Args:
-        path (str): La ruta al archivo del manuscrito.
-
-    Returns:
-        Dict: Un diccionario con el número total de citas y una lista de las citas encontradas.
+    Salida:
+    {
+      ok: bool,
+      engine_used: "papermage"|"papercraft"|"generic"|None,
+      count: int,
+      contexts: [ { paragraph, snippet, start, end, ... }, ... ],
+      error?: str,
+      trace?: [{step,status,detail}]
+    }
     """
-    path_lower = path.lower()
-    if path_lower.endswith(".pdf"):
-        text = _extract_text_from_pdf(path)
+    trace: list[dict] = []
+    def add(step: str, status: str = "ok", detail: str = ""):
+        trace.append({"step": step, "status": status, "detail": detail})
+
+    engine = (engine or "auto").lower().strip()
+    contexts: list[dict] = []
+    engine_used: str | None = None
+
+    # Selección explícita
+    if engine == "papercraft":
+        if pc_extract is None:
+            add("papercraft.start", "error", "not installed/implemented")
+            out = {"ok": False, "error": "PaperCraft extractor not installed", "engine_used": None, "count": 0, "contexts": []}
+            if debug: out["trace"] = trace
+            return out
+        add("papercraft.start")
+        try:
+            contexts = pc_extract(path) or []
+        except Exception as e:
+            add("papercraft.error", "error", str(e))
+            out = {"ok": False, "error": "PaperCraft failed", "engine_used": None, "count": 0, "contexts": []}
+            if debug: out["trace"] = trace
+            return out
+        engine_used = "papercraft"
+        add("papercraft.done", detail=f"hits={len(contexts)}")
+
+    elif engine == "papermage":
+        # Si tu pm requiere deps/argumentos, avisamos si está indisponible
+        if pm_ctx is None:
+            add("papermage.start", "error", "not available")
+            out = {"ok": False, "error": "PaperMage extractor not available", "engine_used": None, "count": 0, "contexts": []}
+            if debug: out["trace"] = trace
+            return out
+        add("papermage.start")
+        contexts = _pm_loose_extract(path)  # intenta usar tu impl; si no sirve, devuelve []
+        engine_used = "papermage"
+        add("papermage.done", detail=f"hits={len(contexts)}")
+
+        # Si no hubo hits, caemos al genérico para no dejarte sin resultados
+        if not contexts:
+            add("fallback.generic.start")
+            contexts = _generic_extract_contexts(path)
+            engine_used = "generic"
+            add("fallback.generic.done", detail=f"hits={len(contexts)}")
+
     else:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            text = f.read()
+        # AUTO → intenta papermage y, si no, genérico; luego (si existe) papercraft
+        add("auto.papermage.start")
+        pm_hits = _pm_loose_extract(path)
+        if pm_hits:
+            contexts = pm_hits
+            engine_used = "papermage"
+            add("auto.papermage.done", detail=f"hits={len(contexts)}")
+        else:
+            add("auto.generic.start")
+            contexts = _generic_extract_contexts(path)
+            engine_used = "generic"
+            add("auto.generic.done", detail=f"hits={len(contexts)}")
+            # Si aún quisieras probar papercraft al final:
+            # if not contexts and pc_extract is not None:
+            #     add("auto.papercraft.start")
+            #     contexts = pc_extract(path) or []
+            #     engine_used = "papercraft" if contexts else engine_used
+            #     add("auto.papercraft.done", detail=f"hits={len(contexts)}")
 
-    items: List[Dict] = []
-    for para in _split_paragraphs(text):
-        items.extend(_find_citations_in_paragraph(para))
-
-    return {"total": len(items), "items": items}
+    out = {"ok": True, "engine_used": engine_used, "count": len(contexts), "contexts": contexts}
+    if debug: out["trace"] = trace
+    return out

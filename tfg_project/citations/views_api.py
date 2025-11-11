@@ -11,7 +11,13 @@ from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .services.papermage_extractor import extract_contexts_from_pdf
+# --- PaperMage "context" (targeted) import, tolerante si no existe aún
+try:
+    from .services.papermage_extractor import extract_contexts_from_pdf
+except Exception:
+    def extract_contexts_from_pdf(*args, **kwargs):
+        # Fallback vacío para no romper el arranque; la vista seguirá viva.
+        return []
 from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
 from .trace_logger import TraceLogger
 import logging, os, json
@@ -139,20 +145,13 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
-    """
-    Extrae las citas de un manuscrito subido (PDF o TXT).
-
-    Args:
-        request (HttpRequest): La solicitud HTTP. Debe contener un archivo adjunto con la clave 'manuscript'.
-
-    Returns:
-        JsonResponse: Un objeto JSON con las citas extraídas o un mensaje de error.
-    """
-    from .services.citation_extractor import process_manuscript  # keep your current flow
-
-    f: UploadedFile | None = request.FILES.get("manuscript")
+    from .services.citation_extractor import process_manuscript
+    f = request.FILES.get("manuscript")
     if not f:
         return JsonResponse({"error": "No file uploaded"}, status=400)
+
+    engine = (request.POST.get("engine") or "auto").lower().strip()
+    debug  = (request.POST.get("debug") == "1")
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -161,10 +160,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         temp_path = tmp.name
 
     try:
-        data = process_manuscript(temp_path)
+        data = process_manuscript(temp_path, engine=engine, debug=debug)
         return JsonResponse(data, status=200, safe=True)
     finally:
-        try:
-            os.remove(temp_path)
-        except Exception:
-            pass
+        try: os.remove(temp_path)
+        except Exception: pass
