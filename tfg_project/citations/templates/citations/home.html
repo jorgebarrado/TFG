@@ -42,6 +42,27 @@
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/extract_modal.js' %}"></script>
+<script>
+  const extractModalEl = document.getElementById('extractModal');
+  if (extractModalEl) {
+    extractModalEl.addEventListener('show.bs.modal', () => {
+      const alertBox   = document.getElementById('extract-alert');
+      const summaryBox = document.getElementById('extract-summary');
+      const resultsBox = document.getElementById('extract-results');
+      const tracePre   = document.getElementById('extract-trace');
+      alertBox?.classList.add('d-none');
+      summaryBox?.classList.add('d-none');
+      resultsBox?.classList.add('d-none');
+      tracePre?.classList.add('d-none');
+      alertBox && (alertBox.textContent = '');
+      summaryBox && (summaryBox.textContent = '');
+      resultsBox && (resultsBox.innerHTML = '');
+      tracePre && (tracePre.textContent = '');
+      // reset form (opcional):
+      document.getElementById('extract-form')?.reset();
+    });
+  }
+</script>
 {% if show_login_modal %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
