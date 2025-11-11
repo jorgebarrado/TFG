@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Any, List
+from typing import Any, Dict, List, Tuple
 import re
+from .engines import run_engine
 
 try:
     from .papermage_extractor import pm_extract_paragraphs
@@ -31,6 +32,17 @@ AUTHOR_YEAR  = re.compile(
     r"\b([A-Z][A-Za-z-]+(?:\s(?:and|&)\s[A-Z][A-Za-z-]+|(?:\s+et al\.)?)?)\s*\(((?:19|20)\d{2})\)"
 )
 
+CIT_NUMERIC = re.compile(r"\[(\d{1,3})\]")
+CIT_AUTHORYEAR = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
+
+def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
+    hits: List[Dict[str, Any]] = []
+    for m in CIT_NUMERIC.finditer(paragraph):
+        hits.append({"type": "numeric", "match": m.group(0), "start": m.start(), "end": m.end()})
+    for m in CIT_AUTHORYEAR.finditer(paragraph):
+        hits.append({"type": "authoryear", "match": m.group(0), "start": m.start(), "end": m.end()})
+    return hits
+
 def _extract_text_from_pdf_generic(path: str) -> str:
     if PyPDF2 is None:
         return ""
@@ -46,6 +58,26 @@ def _extract_text_from_pdf_generic(path: str) -> str:
     except Exception:
         return ""
     return "\n".join(text_parts)
+
+def _build_results(paragraphs: List[str]) -> Tuple[List[Dict[str, Any]], int]:
+    flat: List[Dict[str, Any]] = []
+    total = 0
+    for ref, p in enumerate(paragraphs, start=1):
+        hs = _find_hits(p)
+        if not hs:
+            continue
+        total += len(hs)
+        for i, h in enumerate(hs, start=1):
+            flat.append({
+                "ref": ref,
+                "idx": i,
+                "snippet": h["match"],
+                "paragraph": p,
+                "start": h["start"],
+                "end": h["end"],
+                "raw": h,
+            })
+    return flat, total
 
 def _split_paragraphs(text: str) -> list[str]:
     # separa por doble salto o líneas largas
@@ -112,83 +144,30 @@ def _pm_loose_extract(path: str) -> list[dict]:
     except Exception:
         return []
 
-def process_manuscript(path: str, *, engine: str = "auto", debug: bool = False) -> dict[str, Any]:
-    """
-    Salida:
-    {
-      ok: bool,
-      engine_used: "papermage"|"papercraft"|"generic"|None,
-      count: int,
-      contexts: [ { paragraph, snippet, start, end, ... }, ... ],
-      error?: str,
-      trace?: [{step,status,detail}]
+def process_manuscript(pdf_path: str, *, engine: str = "auto", debug: bool = False) -> Dict[str, Any]:
+    engine_used, paragraphs, attempts, err = run_engine(engine, pdf_path)
+
+    # Si NO estamos en 'auto' y hubo error → NO hay fallback, devolvemos error
+    if engine.lower() in ("papermage", "papercraft") and err:
+        payload: Dict[str, Any] = {
+            "ok": False,
+            "engine_requested": engine,
+            "engine_used": None,
+            "error": err,
+        }
+        if debug:
+            payload["trace"] = {"engines": attempts}
+        return payload
+
+    # AUTO (o motor explícito sin error): construimos resultados (aunque paragraphs pueda estar vacío)
+    results, total = _build_results(paragraphs)
+    payload = {
+        "ok": True,
+        "engine_requested": engine,
+        "engine_used": engine_used,
+        "summary": {"paragraphs": len(paragraphs), "count": total},
+        "results": results,
     }
-    """
-    trace: list[dict] = []
-    def add(step: str, status: str = "ok", detail: str = ""):
-        trace.append({"step": step, "status": status, "detail": detail})
-
-    engine = (engine or "auto").lower().strip()
-    contexts: list[dict] = []
-    engine_used: str | None = None
-
-    # Selección explícita
-    if engine == "papercraft":
-        if pc_extract is None:
-            add("papercraft.start", "error", "not installed/implemented")
-            out = {"ok": False, "error": "PaperCraft extractor not installed", "engine_used": None, "count": 0, "contexts": []}
-            if debug: out["trace"] = trace
-            return out
-        add("papercraft.start")
-        try:
-            contexts = pc_extract(path) or []
-        except Exception as e:
-            add("papercraft.error", "error", str(e))
-            out = {"ok": False, "error": "PaperCraft failed", "engine_used": None, "count": 0, "contexts": []}
-            if debug: out["trace"] = trace
-            return out
-        engine_used = "papercraft"
-        add("papercraft.done", detail=f"hits={len(contexts)}")
-
-    elif engine == "papermage":
-        # Si tu pm requiere deps/argumentos, avisamos si está indisponible
-        if pm_ctx is None:
-            add("papermage.start", "error", "not available")
-            out = {"ok": False, "error": "PaperMage extractor not available", "engine_used": None, "count": 0, "contexts": []}
-            if debug: out["trace"] = trace
-            return out
-        add("papermage.start")
-        contexts = _pm_loose_extract(path)  # intenta usar tu impl; si no sirve, devuelve []
-        engine_used = "papermage"
-        add("papermage.done", detail=f"hits={len(contexts)}")
-
-        # Si no hubo hits, caemos al genérico para no dejarte sin resultados
-        if not contexts:
-            add("fallback.generic.start")
-            contexts = _generic_extract_contexts(path)
-            engine_used = "generic"
-            add("fallback.generic.done", detail=f"hits={len(contexts)}")
-
-    else:
-        # AUTO → intenta papermage y, si no, genérico; luego (si existe) papercraft
-        add("auto.papermage.start")
-        pm_hits = _pm_loose_extract(path)
-        if pm_hits:
-            contexts = pm_hits
-            engine_used = "papermage"
-            add("auto.papermage.done", detail=f"hits={len(contexts)}")
-        else:
-            add("auto.generic.start")
-            contexts = _generic_extract_contexts(path)
-            engine_used = "generic"
-            add("auto.generic.done", detail=f"hits={len(contexts)}")
-            # Si aún quisieras probar papercraft al final:
-            # if not contexts and pc_extract is not None:
-            #     add("auto.papercraft.start")
-            #     contexts = pc_extract(path) or []
-            #     engine_used = "papercraft" if contexts else engine_used
-            #     add("auto.papercraft.done", detail=f"hits={len(contexts)}")
-
-    out = {"ok": True, "engine_used": engine_used, "count": len(contexts), "contexts": contexts}
-    if debug: out["trace"] = trace
-    return out
+    if debug:
+        payload["trace"] = {"engines": attempts}
+    return payload

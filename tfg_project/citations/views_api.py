@@ -10,7 +10,12 @@ from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.http import HttpRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.core.files.uploadedfile import UploadedFile
 
+from .services.citation_extractor import process_manuscript
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
     from .services.papermage_extractor import extract_contexts_from_pdf
@@ -145,13 +150,12 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
-    from .services.citation_extractor import process_manuscript
-    f = request.FILES.get("manuscript")
+    f: UploadedFile | None = request.FILES.get("manuscript")
     if not f:
-        return JsonResponse({"error": "No file uploaded"}, status=400)
+        return JsonResponse({"ok": False, "error": "No file uploaded"}, status=400)
 
     engine = (request.POST.get("engine") or "auto").lower().strip()
-    debug  = (request.POST.get("debug") == "1")
+    debug = (request.POST.get("debug") in ("1", "true", "True", "yes", "on"))
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -161,7 +165,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
     try:
         data = process_manuscript(temp_path, engine=engine, debug=debug)
-        return JsonResponse(data, status=200, safe=True)
+        status = 200 if data.get("ok", False) else 422
+        return JsonResponse(data, status=status, safe=True)
     finally:
         try: os.remove(temp_path)
         except Exception: pass

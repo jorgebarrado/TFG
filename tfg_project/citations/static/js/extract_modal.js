@@ -1,23 +1,31 @@
-// Minimal JS for the "extractModal" (engine + debug + render)
+// citations/static/js/extract_modal.js
 (() => {
-  const FORM      = document.getElementById('extract-form');
-  const FILE      = document.getElementById('extract-file');
-  const ENGINE    = document.getElementById('extract-engine');
-  const DEBUG     = document.getElementById('extract-debug');
+  // --- Elementos del DOM (IDs según tu modal) ---
+  const form       = document.getElementById('extract-form');
+  const fileInput  = document.getElementById('extract-file');
+  const engineSel  = document.getElementById('extract-engine');
+  const debugChk   = document.getElementById('extract-debug');
+  const btnSubmit  = document.getElementById('extract-btn');
 
-  const BTN       = document.getElementById('extract-btn');
-  const ALERT     = document.getElementById('extract-alert');
-  const SUMMARY   = document.getElementById('extract-summary');
-  const RESULTS   = document.getElementById('extract-results');
-  const TRACEPRE  = document.getElementById('extract-trace');
+  const alertBox   = document.getElementById('extract-alert');
+  const summaryBox = document.getElementById('extract-summary');
+  const resultsBox = document.getElementById('extract-results');
+  const tracePre   = document.getElementById('extract-trace');
 
-  const EXTRACT_URL = '/citations/api/extract-citations/';
+  const ENDPOINT = '/citations/api/extract-citations/';
 
-  function showAlert(msg) {
-    ALERT.textContent = msg || 'Error';
-    ALERT.classList.remove('d-none');
+  if (!form) return; // por si la modal no está en esta vista
+
+  function hideAllFeedback() {
+    alertBox.classList.add('d-none');
+    summaryBox.classList.add('d-none');
+    resultsBox.classList.add('d-none');
+    tracePre.classList.add('d-none');
+    alertBox.textContent = '';
+    summaryBox.textContent = '';
+    resultsBox.innerHTML = '';
+    tracePre.textContent = '';
   }
-  function hideAlert() { ALERT.classList.add('d-none'); }
 
   function escapeHTML(s) {
     return (s ?? '').toString()
@@ -25,155 +33,147 @@
       .replaceAll('<','&lt;')
       .replaceAll('>','&gt;');
   }
+
   function highlightRefs(str) {
     return escapeHTML(str).replace(/\[(\d+)\]/g, '<mark>[$1]</mark>');
   }
 
-  function toFlatArray(data) {
-    // Soporta {"contexts":[...]}, dict {"1":[...]}, o lista ya plana
-    if (data && Array.isArray(data.contexts)) {
-      return data.contexts.map((raw, i) => ({
-        ref: Number(raw.ref ?? raw.reference ?? 0),
-        idx: i + 1,
-        snippet: raw.snippet ?? raw.fragment ?? '',
-        paragraph: raw.paragraph ?? '',
-        start: raw.start ?? null,
-        end: raw.end ?? null,
-        raw
-      }));
-    }
-    if (data && !Array.isArray(data) && typeof data === 'object') {
-      const flat = [];
-      Object.keys(data).forEach((k) => {
-        const arr = Array.isArray(data[k]) ? data[k] : [];
-        arr.forEach((item, i) => {
-          flat.push({
-            ref: Number(k),
-            idx: i + 1,
-            snippet: item.snippet ?? item.fragment ?? '',
-            paragraph: item.paragraph ?? '',
-            start: item.start ?? null,
-            end: item.end ?? null,
-            raw: item
-          });
-        });
-      });
-      return flat;
-    }
-    if (Array.isArray(data)) return data;
-    return [];
-  }
+  function cardHTML(item) {
+    const header    = `Ref [${item.ref}] · Fragmento ${item.idx}`;
+    const snippet   = highlightRefs(item.snippet || '');
+    const paragraph = escapeHTML(item.paragraph || '');
+    return `
+      <div class="ce-card border rounded p-2 mb-2">
+        <div class="fw-semibold mb-1">${header}</div>
+        <div class="ce-snippet">${snippet}</div>
 
-  function render(list) {
-    RESULTS.innerHTML = '';
-    if (!list.length) {
-      RESULTS.classList.add('d-none');
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    list.forEach((item) => {
-      const div = document.createElement('div');
-      div.className = 'border rounded p-3';
-      div.innerHTML = `
-        <div class="fw-semibold mb-1">Ref [${item.ref}] · Fragmento ${item.idx}</div>
-        <div class="mb-2" style="white-space:pre-wrap">${highlightRefs(item.snippet || '')}</div>
-
-        <a href="#" class="small" data-action="toggle-paragraph">► Ver párrafo completo</a>
-        <div class="mt-2" data-target="paragraph" hidden>
-          <div style="white-space:pre-wrap">${escapeHTML(item.paragraph || '')}</div>
-        </div>
-
-        <div class="mt-2 d-flex gap-2 flex-wrap">
+        <div class="mt-2 d-flex flex-wrap gap-2">
           <button class="btn btn-outline-secondary btn-sm" data-action="copy-snippet">Copiar fragmento</button>
           <button class="btn btn-outline-secondary btn-sm" data-action="copy-paragraph">Copiar párrafo</button>
           <button class="btn btn-outline-secondary btn-sm" data-action="view-json">Ver JSON</button>
         </div>
-      `;
-      div.dataset.payload = JSON.stringify(item.raw ?? item);
-      frag.appendChild(div);
-    });
-    RESULTS.appendChild(frag);
-    RESULTS.classList.remove('d-none');
+
+        <div class="mt-2">
+          <a href="#" class="small" data-action="toggle-paragraph">► Ver párrafo completo</a>
+          <div class="mt-2" data-target="paragraph" hidden>
+            <div class="ce-snippet">${paragraph}</div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  RESULTS?.addEventListener('click', (e) => {
-    const el = e.target.closest('button,a');
-    if (!el) return;
-    const card = el.closest('.border.rounded.p-3');
-    const payload = (() => {
-      try { return JSON.parse(card?.dataset?.payload || '{}'); } catch { return {}; }
-    })();
+  function renderResults(data) {
+    // data.results es una lista aplanada [{ref, idx, snippet, paragraph, ...}, ...]
+    const list = Array.isArray(data.results) ? data.results : [];
+    if (!list.length) {
+      summaryBox.textContent = `0 citas detectadas (motor: ${data.engine_used || '—'})`;
+      summaryBox.classList.remove('d-none');
+      return;
+    }
 
-    if (el.dataset.action === 'toggle-paragraph') {
-      e.preventDefault();
-      const box = card.querySelector('[data-target="paragraph"]');
-      const opened = !box.hasAttribute('hidden');
-      if (opened) {
-        box.setAttribute('hidden', '');
-        el.textContent = '► Ver párrafo completo';
-      } else {
-        box.removeAttribute('hidden');
-        el.textContent = '▼ Ocultar párrafo completo';
+    const frag = document.createDocumentFragment();
+    list.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = cardHTML(item);
+      // Guarda el payload crudo por si el usuario pulsa “Ver JSON”
+      wrap.firstElementChild.dataset.payload = JSON.stringify(item.raw ?? item);
+      frag.appendChild(wrap.firstElementChild);
+    });
+    resultsBox.appendChild(frag);
+
+    summaryBox.textContent = `${list.length} citas detectadas · motor: ${data.engine_used || '—'}`;
+    summaryBox.classList.remove('d-none');
+    resultsBox.classList.remove('d-none');
+  }
+
+  function wireCardActions() {
+    resultsBox.addEventListener('click', (ev) => {
+      const el = ev.target.closest('button, a');
+      if (!el) return;
+
+      const card = el.closest('.ce-card');
+      const payload = (() => {
+        try { return JSON.parse(card?.dataset.payload || '{}'); } catch { return {}; }
+      })();
+
+      if (el.dataset.action === 'copy-snippet') {
+        const t = payload.snippet ?? payload.fragment ?? '';
+        navigator.clipboard?.writeText(t).catch(() => {});
       }
-    }
-    if (el.dataset.action === 'copy-snippet') {
-      navigator.clipboard?.writeText(payload.snippet ?? payload.fragment ?? '');
-    }
-    if (el.dataset.action === 'copy-paragraph') {
-      navigator.clipboard?.writeText(payload.paragraph ?? '');
-    }
-    if (el.dataset.action === 'view-json') {
-      alert(JSON.stringify(payload, null, 2));
-    }
-  });
+      if (el.dataset.action === 'copy-paragraph') {
+        const t = payload.paragraph ?? '';
+        navigator.clipboard?.writeText(t).catch(() => {});
+      }
+      if (el.dataset.action === 'view-json') {
+        alert(JSON.stringify(payload, null, 2));
+      }
+      if (el.dataset.action === 'toggle-paragraph') {
+        ev.preventDefault();
+        const box = card.querySelector('[data-target="paragraph"]');
+        const opened = !box.hasAttribute('hidden');
+        if (opened) {
+          box.setAttribute('hidden', '');
+          el.textContent = '► Ver párrafo completo';
+        } else {
+          box.removeAttribute('hidden');
+          el.textContent = '▼ Ocultar párrafo completo';
+        }
+      }
+    }, { once: true }); // nos suscribimos una vez por apertura de modal
+  }
 
-  FORM?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideAlert();
-    SUMMARY.classList.add('d-none');
-    RESULTS.classList.add('d-none');
-    TRACEPRE.classList.add('d-none');
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    hideAllFeedback();
 
-    const file = FILE?.files?.[0];
-    if (!file) { showAlert('Selecciona un PDF.'); return; }
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      alertBox.textContent = 'Selecciona un PDF.';
+      alertBox.classList.remove('d-none');
+      return;
+    }
 
-    BTN.disabled = true;
-    const original = BTN.innerHTML;
-    BTN.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Procesando…`;
+    btnSubmit.disabled = true;
+    const originalText = btnSubmit.textContent;
+    btnSubmit.textContent = 'Procesando…';
 
     try {
       const fd = new FormData();
       fd.append('manuscript', file);
-      fd.append('engine', (ENGINE?.value || 'auto'));
-      if (DEBUG?.checked) fd.append('debug', '1');
+      fd.append('engine', engineSel.value);
+      fd.append('debug', debugChk.checked ? '1' : '0');
 
-      const res = await fetch(EXTRACT_URL, { method: 'POST', body: fd });
+      const res  = await fetch(ENDPOINT, { method: 'POST', body: fd });
       const data = await res.json();
 
-      if (!res.ok || data?.error) {
-        showAlert(data?.error || 'Error procesando el archivo.');
+      // --- Manejo de error del servidor (ok:false) ---
+      if (!data.ok) {
+        alertBox.textContent = data.error || 'No se pudo extraer citas con el motor seleccionado.';
+        alertBox.classList.remove('d-none');
+
+        if (data.trace) {
+          tracePre.textContent = JSON.stringify(data.trace, null, 2);
+          tracePre.classList.remove('d-none');
+        }
         return;
       }
 
-      // Cabecera-resumen
-      const count = Number(data.count ?? 0);
-      const engineUsed = data.engine_used ?? 'auto';
-      SUMMARY.textContent = `${count} citas detectadas · motor: ${engineUsed}`;
-      SUMMARY.classList.remove('d-none');
+      // --- OK: pintar resumen, resultados y (si procede) la traza ---
+      renderResults(data);
 
-      // Traza
-      if (Array.isArray(data.trace) && data.trace.length) {
-        TRACEPRE.textContent = JSON.stringify(data.trace, null, 2);
-        TRACEPRE.classList.remove('d-none');
+      if (data.trace) {
+        tracePre.textContent = JSON.stringify(data.trace, null, 2);
+        tracePre.classList.remove('d-none');
       }
 
-      // Render resultados
-      render(toFlatArray(data));
-    } catch {
-      showAlert('Error de red o procesando el archivo.');
+      wireCardActions();
+    } catch (e) {
+      alertBox.textContent = 'Error de red o de servidor al extraer citas.';
+      alertBox.classList.remove('d-none');
     } finally {
-      BTN.disabled = false;
-      BTN.innerHTML = original;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = originalText;
     }
   });
 })();
