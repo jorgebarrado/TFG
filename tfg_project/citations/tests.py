@@ -7,6 +7,9 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from .models import IncorrectCitation
+import os
+import json
+from django.conf import settings
 
 
 @override_settings(SITE_ID=1)
@@ -209,7 +212,7 @@ class SemanticCitationsViewTests(SocialAppTestCase):
         self.assertFalse(unregistered_citation["is_registered"])
 
 
-
+from .trace_logger import TraceLogger
 
 class ContextLoggingTests(TestCase):
     @patch("citations.views_api.extract_contexts_from_pdf")
