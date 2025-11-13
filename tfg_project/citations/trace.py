@@ -1,12 +1,16 @@
 from __future__ import annotations
-import json, time, uuid
+import json
+import time
+import uuid
 from datetime import datetime, timezone
+
 
 class Trace:
     """
     Recolecta pasos ordenados y construye el JSON final para log.
     """
-    def __init__(self, citing_doi:str="", target:dict|None=None):
+
+    def __init__(self, citing_doi: str = "", target: dict | None = None):
         self.cid = uuid.uuid4().hex
         self.steps: list[dict] = []
         self.started = time.perf_counter()
@@ -24,15 +28,17 @@ class Trace:
         self.hit_count = 0
         self.error = None
 
-    def add(self, step:str, status:str, detail:str=""):
-        self.steps.append({
-            "step": step,
-            "status": status,
-            "detail": detail,
-            "ms": int((time.perf_counter() - self.started) * 1000)
-        })
+    def add(self, step: str, status: str, detail: str = ""):
+        self.steps.append(
+            {
+                "step": step,
+                "status": status,
+                "detail": detail,
+                "ms": int((time.perf_counter() - self.started) * 1000),
+            }
+        )
 
-    def as_log_line(self, level:str="INFO") -> str:
+    def as_log_line(self, level: str = "INFO") -> str:
         payload = {
             "ts": self.ts,
             "level": level,

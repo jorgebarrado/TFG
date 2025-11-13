@@ -4,6 +4,17 @@ import requests
 
 
 def get_articles_from_dblp(dblp_url):
+    """Obtiene la lista de publicaciones de un autor desde su perfil de DBLP.
+
+    Args:
+        dblp_url (str): La URL de la página de perfil del autor en DBLP
+            (puede ser la versión .html o .xml).
+
+    Returns:
+        list: Una lista de diccionarios, donde cada diccionario representa
+            una publicación y contiene 'title', 'doi' y 'type'.
+            Retorna una lista vacía si ocurre un error.
+    """
     try:
         # Convertir la URL HTML en URL XML
         if dblp_url.endswith(".html"):
@@ -48,6 +59,16 @@ def get_articles_from_dblp(dblp_url):
 
 
 def get_citing_articles(doi):
+    """Recupera los artículos que citan a un DOI específico usando la API de Semantic Scholar.
+
+    Args:
+        doi (str): El DOI del artículo para el cual se buscan las citas.
+
+    Returns:
+        list: Una lista de diccionarios, cada uno representando un artículo
+            citador con su 'title', 'authors', 'year', 'doi' y 'url'.
+            Retorna una lista vacía si la API falla o no hay citas.
+    """
     try:
         headers = {"User-Agent": "Django-App"}
         url = (
@@ -85,6 +106,15 @@ def get_citing_articles(doi):
 
 
 def check_doi_has_citations(doi):
+    """Verifica si un artículo tiene al menos una cita según Semantic Scholar.
+
+    Args:
+        doi (str): El DOI del artículo a verificar.
+
+    Returns:
+        bool: True si el artículo tiene una o más citas, False en caso
+            contrario o si ocurre un error.
+    """
     try:
         headers = {"User-Agent": "Django-App"}
         url = (
@@ -111,6 +141,15 @@ def check_doi_has_citations(doi):
 
 
 def get_citation_count(doi):
+    """Obtiene el número total de citas para un DOI específico desde Semantic Scholar.
+
+    Args:
+        doi (str): El DOI del artículo cuyo conteo de citas se desea obtener.
+
+    Returns:
+        int: El número total de citas. Retorna 0 si no se encuentra el
+            artículo, no tiene citas o hay un error en la solicitud.
+    """
     try:
         headers = {"User-Agent": "Django-App"}
         url = (

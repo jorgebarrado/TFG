@@ -7,9 +7,6 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from .models import IncorrectCitation
-import os
-import json
-from django.conf import settings
 
 
 @override_settings(SITE_ID=1)
@@ -212,16 +209,16 @@ class SemanticCitationsViewTests(SocialAppTestCase):
         self.assertFalse(unregistered_citation["is_registered"])
 
 
-from .trace_logger import TraceLogger
+
 
 class ContextLoggingTests(TestCase):
     @patch("citations.views_api.extract_contexts_from_pdf")
     @patch("citations.views_api.download_pdf_to_temp")
     @patch("citations.views_api.get_openaccess_pdf_url")
-    @patch("citations.views_api.TraceLogger")
+    @patch("citations.views_api.logger")
     def test_logging_and_debug_mode(
         self,
-        MockTraceLogger,
+        mock_logger,
         mock_get_openaccess_pdf_url,
         mock_download_pdf_to_temp,
         mock_extract_contexts_from_pdf,
@@ -229,11 +226,6 @@ class ContextLoggingTests(TestCase):
         mock_get_openaccess_pdf_url.return_value = "http://example.com/paper.pdf"
         mock_download_pdf_to_temp.return_value = "/tmp/fake.pdf"
         mock_extract_contexts_from_pdf.return_value = [{"snippet": "test"}]
-
-        # Crear una instancia mock de TraceLogger
-        mock_trace_logger_instance = MockTraceLogger.return_value
-        mock_trace_logger_instance.trace_data = {"steps": []}
-        mock_trace_logger_instance.get_trace.return_value = {"steps": "mocked trace"}
 
         with patch("os.path.getsize", return_value=12345):
             response = self.client.get(
@@ -248,5 +240,5 @@ class ContextLoggingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("trace", response.json())
 
-        # Verificar que el método log fue llamado
-        mock_trace_logger_instance.log.assert_called_once()
+        # Verificar que el método info fue llamado
+        mock_logger.info.assert_called_once()

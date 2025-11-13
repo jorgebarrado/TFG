@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("citations", "0007_vote"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

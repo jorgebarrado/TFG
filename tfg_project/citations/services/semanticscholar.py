@@ -44,7 +44,9 @@ def download_pdf_to_temp(url: str, timeout: int = 30) -> Optional[str]:
         Optional[str]: La ruta al archivo temporal si la descarga es exitosa, de lo contrario None.
     """
     try:
-        with requests.get(url, stream=True, timeout=timeout, headers={"User-Agent": "CiteCheck/1.0"}) as r:
+        with requests.get(
+            url, stream=True, timeout=timeout, headers={"User-Agent": "CiteCheck/1.0"}
+        ) as r:
             r.raise_for_status()
             fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
             os.close(fd)

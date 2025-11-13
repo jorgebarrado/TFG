@@ -1,10 +1,12 @@
 import json
 import logging
 
+
 class JsonFormatter(logging.Formatter):
     """
     Formateador de logs que convierte el registro en una cadena JSON.
     """
+
     def format(self, record):
         """
         Formatea el registro como un objeto JSON.

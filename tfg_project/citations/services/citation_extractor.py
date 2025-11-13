@@ -10,7 +10,9 @@ except Exception:
 # ====== Imports de extractores específicos (opcionales) ======
 # PaperMage (si tu módulo actual está orientado a "target matching", NO lo uses aquí)
 try:
-    from .papermage_extractor import extract_contexts_from_pdf as pm_ctx  # puede requerir params extra
+    from .papermage_extractor import (
+        extract_contexts_from_pdf as pm_ctx,
+    )  # puede requerir params extra
 except Exception:
     pm_ctx = None
 
@@ -28,20 +30,31 @@ except Exception:
 
 # ====== Regex básicos: [n] y Autor (Año) ======
 NUMERIC_CITE = re.compile(r"\[(\d+)\]")
-AUTHOR_YEAR  = re.compile(
+AUTHOR_YEAR = re.compile(
     r"\b([A-Z][A-Za-z-]+(?:\s(?:and|&)\s[A-Z][A-Za-z-]+|(?:\s+et al\.)?)?)\s*\(((?:19|20)\d{2})\)"
 )
 
 CIT_NUMERIC = re.compile(r"\[(\d{1,3})\]")
 CIT_AUTHORYEAR = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
 
+
 def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
     hits: List[Dict[str, Any]] = []
     for m in CIT_NUMERIC.finditer(paragraph):
-        hits.append({"type": "numeric", "match": m.group(0), "start": m.start(), "end": m.end()})
+        hits.append(
+            {"type": "numeric", "match": m.group(0), "start": m.start(), "end": m.end()}
+        )
     for m in CIT_AUTHORYEAR.finditer(paragraph):
-        hits.append({"type": "authoryear", "match": m.group(0), "start": m.start(), "end": m.end()})
+        hits.append(
+            {
+                "type": "authoryear",
+                "match": m.group(0),
+                "start": m.start(),
+                "end": m.end(),
+            }
+        )
     return hits
+
 
 def _extract_text_from_pdf_generic(path: str) -> str:
     if PyPDF2 is None:
@@ -59,6 +72,7 @@ def _extract_text_from_pdf_generic(path: str) -> str:
         return ""
     return "\n".join(text_parts)
 
+
 def _build_results(paragraphs: List[str]) -> Tuple[List[Dict[str, Any]], int]:
     flat: List[Dict[str, Any]] = []
     total = 0
@@ -68,16 +82,19 @@ def _build_results(paragraphs: List[str]) -> Tuple[List[Dict[str, Any]], int]:
             continue
         total += len(hs)
         for i, h in enumerate(hs, start=1):
-            flat.append({
-                "ref": ref,
-                "idx": i,
-                "snippet": h["match"],
-                "paragraph": p,
-                "start": h["start"],
-                "end": h["end"],
-                "raw": h,
-            })
+            flat.append(
+                {
+                    "ref": ref,
+                    "idx": i,
+                    "snippet": h["match"],
+                    "paragraph": p,
+                    "start": h["start"],
+                    "end": h["end"],
+                    "raw": h,
+                }
+            )
     return flat, total
+
 
 def _split_paragraphs(text: str) -> list[str]:
     # separa por doble salto o líneas largas
@@ -93,33 +110,41 @@ def _split_paragraphs(text: str) -> list[str]:
             paras.append(p)
     return paras
 
+
 def _find_citations_in_paragraph(p: str) -> list[dict]:
     out: list[dict] = []
     # [n]
     for m in NUMERIC_CITE.finditer(p):
         s, e = m.span()
-        snippet = p[max(0, s-80): min(len(p), e+80)]
-        out.append({
-            "ref": int(m.group(1)),
-            "snippet": snippet,
-            "paragraph": p,
-            "start": s, "end": e,
-            "pattern": "numeric"
-        })
+        snippet = p[max(0, s - 80) : min(len(p), e + 80)]
+        out.append(
+            {
+                "ref": int(m.group(1)),
+                "snippet": snippet,
+                "paragraph": p,
+                "start": s,
+                "end": e,
+                "pattern": "numeric",
+            }
+        )
     # Autor (Año)
     for m in AUTHOR_YEAR.finditer(p):
         s, e = m.span()
-        snippet = p[max(0, s-80): min(len(p), e+80)]
-        out.append({
-            "ref": 0,
-            "snippet": snippet,
-            "paragraph": p,
-            "start": s, "end": e,
-            "pattern": "author-year",
-            "author": m.group(1),
-            "year": m.group(2),
-        })
+        snippet = p[max(0, s - 80) : min(len(p), e + 80)]
+        out.append(
+            {
+                "ref": 0,
+                "snippet": snippet,
+                "paragraph": p,
+                "start": s,
+                "end": e,
+                "pattern": "author-year",
+                "author": m.group(1),
+                "year": m.group(2),
+            }
+        )
     return out
+
 
 def _generic_extract_contexts(path: str) -> list[dict]:
     text = _extract_text_from_pdf_generic(path)
@@ -131,6 +156,7 @@ def _generic_extract_contexts(path: str) -> list[dict]:
         if hits:
             contexts.extend(hits)
     return contexts
+
 
 def _pm_loose_extract(path: str) -> list[dict]:
     if pm_extract_paragraphs is None:
@@ -144,7 +170,10 @@ def _pm_loose_extract(path: str) -> list[dict]:
     except Exception:
         return []
 
-def process_manuscript(pdf_path: str, *, engine: str = "auto", debug: bool = False) -> Dict[str, Any]:
+
+def process_manuscript(
+    pdf_path: str, *, engine: str = "auto", debug: bool = False
+) -> Dict[str, Any]:
     engine_used, paragraphs, attempts, err = run_engine(engine, pdf_path)
 
     # Si NO estamos en 'auto' y hubo error → NO hay fallback, devolvemos error

@@ -141,7 +141,11 @@ def citation_list(request):
     Returns:
         HttpResponse: La respuesta HTTP con la lista de citas.
     """
-    qs = IncorrectCitation.objects.select_related("author").order_by("-created_at")
+    qs = (
+        IncorrectCitation.objects.select_related("author")
+        .prefetch_related("votes")
+        .order_by("-created_at")
+    )
 
     # -------------------- búsqueda libre --------------------
     q = request.GET.get("q", "").strip()
@@ -388,14 +392,17 @@ def citation_detail(request, pk):
     Returns:
         HttpResponse: La respuesta HTTP con los detalles del reporte.
     """
-    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    citation = get_object_or_404(
+        IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
+        pk=pk,
+    )
     comments = (
         Comment.objects.filter(citation=citation)
         .select_related("author", "parent")
         .order_by("created_at")
     )
-    upvotes = citation.votes.filter(value=1).count()
-    downvotes = citation.votes.filter(value=-1).count()
+    upvotes = sum(1 for vote in citation.votes.all() if vote.value == 1)
+    downvotes = sum(1 for vote in citation.votes.all() if vote.value == -1)
 
     if request.method == "POST":
         form = CommentForm(request.POST)
@@ -436,44 +443,6 @@ def citation_detail(request, pk):
             "is_saved": is_saved,
         },
     )
-
-
-# Vista alternativa (usada antes)
-def submit_incorrect_citation(request):
-    """
-    Renderiza y procesa el formulario para reportar una cita incorrecta.
-
-    Args:
-        request (HttpRequest): La solicitud HTTP.
-
-    Returns:
-        HttpResponse: La respuesta HTTP, que puede ser el formulario o una redirección.
-    """
-    if request.method == "POST":
-        form = IncorrectCitationForm(request.POST)
-        if form.is_valid():
-            citation = form.save(commit=False)
-            if request.user.is_authenticated:
-                citation.author = request.user
-            citation.save()
-            return redirect("citation_submitted")
-    else:
-        form = IncorrectCitationForm()
-    return render(request, "citations/submit_citation.html", {"form": form})
-
-
-# Página de confirmación tras reporte
-def citation_submitted(request):
-    """
-    Muestra una página de confirmación después de que un reporte ha sido enviado.
-
-    Args:
-        request (HttpRequest): La solicitud HTTP.
-
-    Returns:
-        HttpResponse: La respuesta HTTP con la página de confirmación.
-    """
-    return render(request, "citations/citation_submitted.html")
 
 
 # Obtener metadatos del DOI
@@ -620,8 +589,10 @@ def my_reports(request):
     Returns:
         HttpResponse: La respuesta HTTP con la lista de reportes del usuario.
     """
-    reports = IncorrectCitation.objects.filter(author=request.user).order_by(
-        "-created_at"
+    reports = (
+        IncorrectCitation.objects.filter(author=request.user)
+        .prefetch_related("votes", "comments")
+        .order_by("-created_at")
     )
     return render(request, "citations/my_reports.html", {"reports": reports})
 
@@ -639,7 +610,7 @@ def my_comments(request):
     """
     comments = (
         Comment.objects.filter(author=request.user)
-        .select_related("citation")
+        .select_related("citation", "citation__author")
         .order_by("-created_at")
     )
     return render(request, "citations/my_comments.html", {"comments": comments})
@@ -658,7 +629,7 @@ def my_saved(request):
     """
     saved = (
         SavedCitation.objects.filter(user=request.user)
-        .select_related("citation")
+        .select_related("citation", "citation__author")
         .order_by("-created_at")
     )
     return render(request, "citations/my_saved.html", {"saved": saved})
