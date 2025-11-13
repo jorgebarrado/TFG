@@ -18,7 +18,10 @@ from .generic_extractor import generic_extract_paragraphs  # siempre disponible
 
 EngineAttempt = Dict[str, Any]
 
-def _attempt(name: str, available: bool, fn, pdf_path: str) -> Tuple[List[str], EngineAttempt, str | None]:
+
+def _attempt(
+    name: str, available: bool, fn, pdf_path: str
+) -> Tuple[List[str], EngineAttempt, str | None]:
     """
     Ejecuta un motor y devuelve:
       (paragraphs, attempt_info, error_message)
@@ -48,7 +51,10 @@ def _attempt(name: str, available: bool, fn, pdf_path: str) -> Tuple[List[str], 
         att["error"] = msg
         return [], att, msg
 
-def run_engine(engine_requested: str, pdf_path: str) -> Tuple[str | None, List[str], List[EngineAttempt], str | None]:
+
+def run_engine(
+    engine_requested: str, pdf_path: str
+) -> Tuple[str | None, List[str], List[EngineAttempt], str | None]:
     """
     Política:
       - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
@@ -60,14 +66,18 @@ def run_engine(engine_requested: str, pdf_path: str) -> Tuple[str | None, List[s
     attempts: List[EngineAttempt] = []
 
     if engine == "papermage":
-        paras, att, err = _attempt("papermage", PM_AVAILABLE, pm_extract_paragraphs, pdf_path)
+        paras, att, err = _attempt(
+            "papermage", PM_AVAILABLE, pm_extract_paragraphs, pdf_path
+        )
         attempts.append(att)
         if err:
             return None, [], attempts, err
         return "papermage", paras, attempts, None
 
     if engine == "papercraft":
-        paras, att, err = _attempt("papercraft", PC_AVAILABLE, pc_extract_paragraphs, pdf_path)
+        paras, att, err = _attempt(
+            "papercraft", PC_AVAILABLE, pc_extract_paragraphs, pdf_path
+        )
         attempts.append(att)
         if err:
             return None, [], attempts, err
@@ -75,13 +85,17 @@ def run_engine(engine_requested: str, pdf_path: str) -> Tuple[str | None, List[s
 
     # AUTO
     # 1) PaperMage
-    paras, att, err = _attempt("papermage", PM_AVAILABLE, pm_extract_paragraphs, pdf_path)
+    paras, att, err = _attempt(
+        "papermage", PM_AVAILABLE, pm_extract_paragraphs, pdf_path
+    )
     attempts.append(att)
     if not err:
         return "papermage", paras, attempts, None
 
     # 2) PaperCraft
-    paras, att, err2 = _attempt("papercraft", PC_AVAILABLE, pc_extract_paragraphs, pdf_path)
+    paras, att, err2 = _attempt(
+        "papercraft", PC_AVAILABLE, pc_extract_paragraphs, pdf_path
+    )
     attempts.append(att)
     if not err2:
         return "papercraft", paras, attempts, None

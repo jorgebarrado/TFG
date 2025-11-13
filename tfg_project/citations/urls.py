@@ -5,26 +5,24 @@ from .views import (
     ajax_submit_citation,
     citation_detail,
     citation_list,
-    citation_submitted,
     delete_comment,
     get_all_metadata_from_doi,
     login_view,
     logout_view,
     register_view,
-    submit_incorrect_citation,
 )
 
 urlpatterns = [
-    path("perfil/semantic-citations/", views.semantic_citations_view, name="semantic_citations"),
+    path(
+        "perfil/semantic-citations/",
+        views.semantic_citations_view,
+        name="semantic_citations",
+    ),
     path("perfil/dblp-articulos/", views.dblp_articles_view, name="dblp_articles"),
-
-    path("submit/", submit_incorrect_citation, name="submit_incorrect_citation"),
     path("list/", citation_list, name="citation_list"),
-    path("submitted/", citation_submitted, name="citation_submitted"),
     path("get_all_metadata/", get_all_metadata_from_doi, name="get_all_metadata"),
     path("ajax_submit/", ajax_submit_citation, name="ajax_submit"),
     path("report/<int:pk>/", citation_detail, name="citation_detail"),
-
     path("login/", login_view, name="login"),
     path("register/", register_view, name="register"),
     path("logout/", logout_view, name="logout"),
@@ -38,8 +36,15 @@ urlpatterns = [
     path("ajax/register/", views.register_ajax, name="register_ajax"),
     path("search_suggest/", views.citation_suggest, name="citation_suggest"),
     path("api/doi/", views.fetch_doi_metadata, name="fetch_doi"),
-
     # APIs nuevas/ajustadas
-    path("api/extract-citations/", views_api.api_extract_citations, name="api_extract_citations"),
-    path("api/get-citation-context/", views_api.get_citation_context, name="get_citation_context"),
+    path(
+        "api/extract-citations/",
+        views_api.api_extract_citations,
+        name="api_extract_citations",
+    ),
+    path(
+        "api/get-citation-context/",
+        views_api.get_citation_context,
+        name="get_citation_context",
+    ),
 ]

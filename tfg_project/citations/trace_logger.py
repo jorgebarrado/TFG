@@ -24,7 +24,9 @@ class TraceLogger:
         self.steps: List[Dict[str, Any]] = []
         self.start_time = time.monotonic()
         self.trace_data: Dict[str, Any] = {
-            "user_id": request.user.id if request.user.is_authenticated else "anonymous",
+            "user_id": request.user.id
+            if request.user.is_authenticated
+            else "anonymous",
             "steps": self.steps,
         }
 

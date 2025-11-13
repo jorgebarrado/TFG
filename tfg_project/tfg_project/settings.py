@@ -15,9 +15,6 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
-import logging
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 load_dotenv()
 
@@ -211,7 +208,8 @@ LOGGING = {
     },
     "loggers": {
         "citations.context": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
+            + ["console"],
             "level": LOG_CITATIONS_LEVEL,
             "propagate": False,
         },

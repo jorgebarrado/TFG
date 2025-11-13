@@ -7,6 +7,7 @@ try:
 except Exception:
     pdfplumber = None
 
+
 def _split_paragraphs(text: str) -> List[str]:
     parts = re.split(r"\n\s*\n", text)
     out = []
@@ -15,6 +16,7 @@ def _split_paragraphs(text: str) -> List[str]:
         if p:
             out.append(p)
     return out
+
 
 def generic_extract_paragraphs(pdf_path: str) -> List[str]:
     if pdfplumber is None:

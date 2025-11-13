@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("citations", "0005_comment_parent_alter_comment_author"),
     ]

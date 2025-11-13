@@ -16,6 +16,7 @@ class UserProfileForm(forms.ModelForm):
     """
     Formulario para actualizar la URL de DBLP de un perfil de usuario.
     """
+
     class Meta:
         model = UserProfile
         fields = ["dblp_url"]
@@ -33,6 +34,7 @@ class RegisterForm(UserCreationForm):
     """
     Formulario de registro de nuevos usuarios.
     """
+
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -64,6 +66,7 @@ class ProfileForm(forms.ModelForm):
     """
     Formulario para actualizar el nombre y nombre de usuario de un usuario.
     """
+
     class Meta:
         model = User
         fields = ("first_name", "username")
@@ -119,6 +122,7 @@ class IncorrectCitationForm(forms.ModelForm):
     """
     Formulario para reportar una cita incorrecta.
     """
+
     class Meta:
         model = IncorrectCitation
         fields = [
@@ -137,6 +141,7 @@ class CommentForm(forms.ModelForm):
     """
     Formulario para crear y responder a comentarios.
     """
+
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
