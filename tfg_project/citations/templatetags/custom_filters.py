@@ -2,15 +2,25 @@ from django import template
 
 register = template.Library()
 
+@register.filter
+def count_upvotes(votes):
+    return sum(1 for vote in votes if vote.value == 1)
 
 @register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key, None) if isinstance(dictionary, dict) else None
-
+def count_downvotes(votes):
+    return sum(1 for vote in votes if vote.value == -1)
 
 @register.filter
-def get_index(value, index):
-    try:
-        return value[index]
-    except Exception:
-        return None
+def user_vote(votes, user):
+    if not user.is_authenticated:
+        return 0
+    for vote in votes:
+        if vote.user == user:
+            return vote.value
+    return 0
+
+@register.filter
+def is_saved_by(citation, user):
+    if not user.is_authenticated:
+        return False
+    return citation.saved_by.filter(user=user).exists()
