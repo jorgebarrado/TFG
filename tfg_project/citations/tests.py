@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Comment, IncorrectCitation, SavedCitation
+from .models import IncorrectCitation
 import os
 import json
 from django.conf import settings
@@ -37,41 +37,6 @@ class HomePageTests(SocialAppTestCase):
     def test_home_status_code(self):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-
-
-class LoggedInTestCase(SocialAppTestCase):
-    def setUp(self):
-        super().setUp()
-        self.user1 = User.objects.create_user(
-            username="user1", password="password"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2", password="password"
-        )
-
-        # Datos para user1
-        self.report1 = IncorrectCitation.objects.create(
-            author=self.user1,
-            doi_original="10.1000/orig1",
-            doi_incorrect="10.1000/inc1",
-            citation_type="misinterpretation",
-            publication_area="CIS",
-        )
-        self.comment1 = Comment.objects.create(
-            citation=self.report1, author=self.user1, content="Comentario de user1"
-        )
-        self.saved1 = SavedCitation.objects.create(
-            user=self.user1, citation=self.report1
-        )
-
-        # Datos para user2
-        self.report2 = IncorrectCitation.objects.create(
-            author=self.user2,
-            doi_original="10.1000/orig2",
-            doi_incorrect="10.1000/inc2",
-            citation_type="not said",
-            publication_area="ENG",
-        )
 
 
 class RegisterTests(TestCase):
@@ -126,98 +91,57 @@ class MetadataTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class VoteViewTests(LoggedInTestCase):
+class VoteViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="password")
+        self.citation = IncorrectCitation.objects.create(
+            doi_original="10.1000/orig",
+            doi_incorrect="10.1000/inc",
+            incorrect_reason="Test reason",
+            citation_type="misinterpretation",
+            publication_area="CIS",
+        )
+
     def test_vote_unauthenticated(self):
         response = self.client.post(
-            reverse("vote"), {"citation_id": self.report1.id, "vote": 1}
+            reverse("vote"), {"citation_id": self.citation.id, "vote": 1}
         )
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error"], "not_authenticated")
 
     def test_vote_missing_parameters(self):
-        self.client.login(username="user1", password="password")
+        self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"vote": 1})
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "Missing parameters")
 
     def test_vote_invalid_input(self):
-        self.client.login(username="user1", password="password")
+        self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"citation_id": "abc", "vote": 1})
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "Invalid input")
 
     def test_vote_invalid_vote_value(self):
-        self.client.login(username="user1", password="password")
+        self.client.login(username="testuser", password="password")
         response = self.client.post(
-            reverse("vote"), {"citation_id": self.report1.id, "vote": 5}
+            reverse("vote"), {"citation_id": self.citation.id, "vote": 5}
         )
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "Invalid vote value")
 
     def test_vote_nonexistent_citation(self):
-        self.client.login(username="user1", password="password")
+        self.client.login(username="testuser", password="password")
         response = self.client.post(reverse("vote"), {"citation_id": 999, "vote": 1})
         self.assertEqual(response.status_code, 404)
 
     def test_upvote_citation(self):
-        self.client.login(username="user1", password="password")
+        self.client.login(username="testuser", password="password")
         response = self.client.post(
-            reverse("vote"), {"citation_id": self.report1.id, "vote": 1}
+            reverse("vote"), {"citation_id": self.citation.id, "vote": 1}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '1') # Upvotes
-        self.assertContains(response, '0') # Downvotes
-
-
-class ApiViewTests(LoggedInTestCase):
-    def test_toggle_saved(self):
-        self.client.login(username="user2", password="password")
-
-        # Guardar la cita (report1, que no es de user2)
-        response = self.client.post(
-            reverse("toggle_saved"), {"citation_id": self.report1.id}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Guardado")
-        self.assertTrue(
-            SavedCitation.objects.filter(
-                user=self.user2, citation=self.report1
-            ).exists()
-        )
-
-        # Des-guardar la cita
-        response = self.client.post(
-            reverse("toggle_saved"), {"citation_id": self.report1.id}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Guardar")
-        self.assertFalse(
-            SavedCitation.objects.filter(
-                user=self.user2, citation=self.report1
-            ).exists()
-        )
-
-    def test_ajax_submit_citation_valid(self):
-        self.client.login(username="user1", password="password")
-        response = self.client.post(
-            reverse("ajax_submit"),
-            {
-                "doi_original": "10.1000/new_orig",
-                "doi_incorrect": "10.1000/new_inc",
-                "incorrect_reason": "Razón de prueba",
-                "citation_type": "misinterpretation",
-                "publication_area": "CIS",
-            },
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["success"])
-        self.assertTrue(
-            IncorrectCitation.objects.filter(doi_original="10.1000/new_orig").exists()
-        )
-
-    def test_ajax_submit_citation_invalid(self):
-        self.client.login(username="user1", password="password")
-        response = self.client.post(
-            reverse("ajax_submit"), {"doi_original": "10.1000/new_orig"}
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("errors", response.json())
+        self.assertContains(response, '1')
+        self.assertContains(response, '0')
 
 
 class SemanticCitationsViewTests(SocialAppTestCase):

@@ -98,8 +98,6 @@ def citation_detail(request, pk):
         .select_related("author", "parent")
         .order_by("created_at")
     )
-    upvotes = sum(1 for vote in citation.votes.all() if vote.value == 1)
-    downvotes = sum(1 for vote in citation.votes.all() if vote.value == -1)
 
     if request.method == "POST":
         form = CommentForm(request.POST)
@@ -122,26 +120,10 @@ def citation_detail(request, pk):
     else:
         form = CommentForm()
 
-    user_vote = None
-    if request.user.is_authenticated:
-        vote = Vote.objects.filter(citation=citation, user=request.user).first()
-        if vote:
-            user_vote = vote.value
-
-    is_saved = False
-    if request.user.is_authenticated:
-        is_saved = SavedCitation.objects.filter(
-            user=request.user, citation=citation
-        ).exists()
-
     context = {
         "citation": citation,
         "comment_form": form,
         "comments": comments,
-        "upvotes": upvotes,
-        "downvotes": downvotes,
-        "user_vote": user_vote,
-        "is_saved": is_saved,
     }
     return render(request, "citations/citation_detail.html", context)
 

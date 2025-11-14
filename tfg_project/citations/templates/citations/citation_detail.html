@@ -18,8 +18,8 @@
         <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
 
-        {% include 'citations/partials/_vote_buttons.html' %}
-        {% include 'citations/partials/_save_button.html' %}
+        {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
+        {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
 
     </div>
   <!-- Detalles -->
