@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 
-from citations.views import home
+from citations.views.page_views import home
 
 urlpatterns = [
     path("accounts/", include("allauth.urls")),
