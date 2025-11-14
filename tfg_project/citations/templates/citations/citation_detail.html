@@ -17,27 +17,9 @@
         <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
         <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
         <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
-        <button
-            class="btn btn-sm vote-btn {% if user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}"
-            data-value="1"
-            id="btn-upvote">
-            ▲ <span id="count-up">{{ upvotes }}</span>
-        </button>
 
-        <button
-            class="btn btn-sm vote-btn {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}"
-            data-value="-1"
-            id="btn-downvote">
-            ▼ <span id="count-down">{{ downvotes }}</span>
-        </button>
-
-        <button
-            id="btn-save"
-            class="btn btn-sm border-0 {% if is_saved %}text-warning{% else %}text-secondary{% endif %}"
-            title="{% trans 'Guardar para más tarde' %}">
-            <i class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} fs-4"></i>
-        </button>
-
+        {% include 'citations/partials/_vote_buttons.html' %}
+        {% include 'citations/partials/_save_button.html' %}
 
     </div>
   <!-- Detalles -->
@@ -78,39 +60,19 @@
         <div class="card-body">
             <h5 class="card-title">{% trans "Comentarios" %}</h5>
 
-            {% if comments %}
-                {% for comment in comments %}
-                    <div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
-                        <strong>{{ comment.author.username|default:"Anonymous" }}</strong>
-                        <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
-
-                        {% if comment.parent %}
-                            <div class="text-muted small mb-1">
-                                💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>:
-                                “{{ comment.parent.content|truncatechars:50 }}”
-                            </div>
-                        {% endif %}
-
-                        <p class="mb-1">{{ comment.content }}</p>
-
-                        <div class="d-flex gap-2 align-items-center">
-                            <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">{% trans "Responder" %}</a>
-                            {% if user.is_authenticated and user == comment.author or user.is_superuser %}
-                            <button
-                                class="btn btn-sm btn-link text-danger p-0 small open-delete-modal"
-                                data-comment-id="{{ comment.id }}">
-                                {% trans "Eliminar" %}
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">{% trans "Aún no hay comentarios." %}</p>
-            {% endif %}
+            <div id="comment-list">
+                {% if comments %}
+                    {% for comment in comments %}
+                        {% include 'citations/partials/_comment.html' with comment=comment %}
+                    {% endfor %}
+                {% else %}
+                    <p id="no-comments" class="text-muted">{% trans "Aún no hay comentarios." %}</p>
+                {% endif %}
+            </div>
 
             {% if user.is_authenticated %}
-            <form method="post" class="mt-4" id="commentForm">
+            <form hx-post="{% url 'citation_detail' citation.id %}" hx-target="#comment-list" hx-swap="beforeend"
+                  class="mt-4" id="commentForm">
                 {% csrf_token %}
                 <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
                     {% trans "Respondiendo a:" %} <strong id="replyingToUser"></strong>
@@ -244,82 +206,6 @@
             });
         });
     });
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const voteButtons = document.querySelectorAll('.vote-btn');
-
-  voteButtons.forEach(btn => {
-    btn.addEventListener('click', function () {
-      const voteValue = this.getAttribute('data-value');
-      const citationId = {{ citation.id }};
-
-      fetch("{% url 'vote' %}", {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `citation_id=${citationId}&vote=${voteValue}`
-      })
-      .then(response => response.json())
-      .then(data => {
-      if (data.upvotes !== undefined) {
-        document.getElementById('count-up').textContent = data.upvotes;
-        document.getElementById('count-down').textContent = data.downvotes;
-
-        // Quitar clases activas previas
-        document.getElementById('btn-upvote').classList.remove('btn-success');
-        document.getElementById('btn-upvote').classList.add('btn-outline-success');
-        document.getElementById('btn-downvote').classList.remove('btn-danger');
-        document.getElementById('btn-downvote').classList.add('btn-outline-danger');
-
-        if (data.user_vote == 1) {
-          document.getElementById('btn-upvote').classList.remove('btn-outline-success');
-          document.getElementById('btn-upvote').classList.add('btn-success');
-        } else if (data.user_vote == -1) {
-          document.getElementById('btn-downvote').classList.remove('btn-outline-danger');
-          document.getElementById('btn-downvote').classList.add('btn-danger');
-        }
-      }
-      });
-    });
-  });
-});
-</script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-      const saveBtn = document.getElementById('btn-save');
-      if (saveBtn) {
-          saveBtn.addEventListener('click', function () {
-              fetch("{% url 'toggle_saved' %}", {
-                  method: 'POST',
-                  headers: {
-                      'X-CSRFToken': '{{ csrf_token }}',
-                      'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                  body: `citation_id={{ citation.id }}`
-              })
-              .then(response => response.json())
-              .then(data => {
-                  const icon = saveBtn.querySelector('i');
-                  if (data.is_saved) {
-                      icon.classList.remove('bi-bookmark');
-                      icon.classList.add('bi-bookmark-fill');
-                      saveBtn.classList.remove('text-secondary');
-                      saveBtn.classList.add('text-warning');
-                  } else {
-                      icon.classList.remove('bi-bookmark-fill');
-                      icon.classList.add('bi-bookmark');
-                      saveBtn.classList.remove('text-warning');
-                      saveBtn.classList.add('text-secondary');
-                  }
-              });
-          });
-      }
-  });
 </script>
 
 <script>

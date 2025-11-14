@@ -1,0 +1,24 @@
+<div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
+    <strong>{{ comment.author.username|default:"Anonymous" }}</strong>
+    <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+
+    {% if comment.parent %}
+        <div class="text-muted small mb-1">
+            💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>:
+            “{{ comment.parent.content|truncatechars:50 }}”
+        </div>
+    {% endif %}
+
+    <p class="mb-1">{{ comment.content }}</p>
+
+    <div class="d-flex gap-2 align-items-center">
+        <a href="#" class="reply-link small text-primary" data-id="{{ comment.id }}">{% trans "Responder" %}</a>
+        {% if user.is_authenticated and user == comment.author or user.is_superuser %}
+        <button
+            class="btn btn-sm btn-link text-danger p-0 small open-delete-modal"
+            data-comment-id="{{ comment.id }}">
+            {% trans "Eliminar" %}
+        </button>
+        {% endif %}
+    </div>
+</div>
