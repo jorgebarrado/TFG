@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 
 from ..forms import IncorrectCitationForm, RegisterForm
 from ..models import Comment, IncorrectCitation, SavedCitation, Vote
+from ..services.semantic_fetch import get_citations_with_fallback
 
 
 @require_POST
@@ -180,3 +181,34 @@ def citation_suggest(request):
     ).values("doi_original", "metadata__title")[:5]
 
     return JsonResponse(list(qs), safe=False)
+
+
+def get_semantic_citations(request):
+    """
+    Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+    """
+    doi = request.GET.get("doi")
+    if not doi:
+        return JsonResponse({"error": "No DOI provided"}, status=400)
+
+    citation_count, citations, source = get_citations_with_fallback(doi)
+    citing_dois = [c.get("doi") for c in citations if c.get("doi")]
+    registered_citations = IncorrectCitation.objects.filter(
+        doi_original=doi, doi_incorrect__in=citing_dois
+    ).values("doi_incorrect", "id")
+    registered_map = {item["doi_incorrect"]: item["id"] for item in registered_citations}
+
+    for c in citations:
+        citing_doi = c.get("doi")
+        if citing_doi and citing_doi in registered_map:
+            c["is_registered"] = True
+            c["report_id"] = registered_map[citing_doi]
+        else:
+            c["is_registered"] = False
+
+    return JsonResponse({
+        "doi": doi,
+        "citation_count": citation_count,
+        "citations": citations,
+        "source": source,
+    })
