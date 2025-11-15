@@ -50,4 +50,9 @@ urlpatterns = [
         views_api.get_citation_context,
         name="get_citation_context",
     ),
+    path(
+        "api/get-semantic-citations/",
+        ajax_views.get_semantic_citations,
+        name="get_semantic_citations",
+    ),
 ]

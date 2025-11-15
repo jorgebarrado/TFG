@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { PaperCraft } from 'papercraft';
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const SemanticCitationsViewer = () => {
     const [doi, setDoi] = useState(null);
-    const [pdfUrl, setPdfUrl] = useState(null);
     const [citations, setCitations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -23,14 +18,13 @@ const SemanticCitationsViewer = () => {
 
         const fetchCitations = async () => {
             try {
-                const response = await fetch(`/citations/api/get-citation-context/?citing_doi=${doi}`);
+                const response = await fetch(`/citations/api/get-semantic-citations/?doi=${doi}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch citation contexts');
+                    throw new Error('Failed to fetch citations');
                 }
                 const data = await response.json();
-                setPdfUrl(data.trace.pdf_url);
-                setCitations(data.contexts);
-            } catch (err) {
+                setCitations(data.citations);
+            } catch (err) G
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -48,27 +42,20 @@ const SemanticCitationsViewer = () => {
         return <div className="alert alert-danger">{error}</div>;
     }
 
-    if (!pdfUrl) {
-        return <div className="alert alert-warning">No PDF available for this DOI.</div>;
-    }
-
-    const overlays = citations.map(citation => ({
-        id: `citation-${citation.id}`,
-        page: citation.page_number,
-        bounds: citation.bounding_boxes,
-        type: 'highlight',
-        backgroundColor: 'rgba(255, 255, 0, 0.3)',
-    }));
-
     return (
-        <PaperCraft pdfUrl={pdfUrl} overlays={overlays}>
-            {({ document, pages }) => (
-                <div>
-                    {document}
-                    {pages}
-                </div>
-            )}
-        </PaperCraft>
+        <ul className="list-group">
+            {citations.map(citation => (
+                <li key={citation.doi} className="list-group-item">
+                    <h5>{citation.title}</h5>
+                    <p>{citation.authors}</p>
+                    <p>
+                        <a href={`https://doi.org/${citation.doi}`} target="_blank" rel="noopener noreferrer">
+                            {citation.doi}
+                        </a>
+                    </p>
+                </li>
+            ))}
+        </ul>
     );
 };
 
