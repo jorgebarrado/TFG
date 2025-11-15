@@ -1,12 +1,22 @@
+{% load i18n %}
 <div id="vote-buttons-{{ citation.id }}" class="d-flex align-items-center gap-2">
-    <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
-            hx-vals='{"citation_id": "{{ citation.id }}", "vote": "1"}'
-            class="btn btn-sm {% if user_vote == 1 %}btn-primary{% else %}btn-outline-primary{% endif %}">
-        <i class="bi bi-arrow-up"></i> {{ upvotes }}
-    </button>
-    <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
-            hx-vals='{"citation_id": "{{ citation.id }}", "vote": "-1"}'
-            class="btn btn-sm {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
-        <i class="bi bi-arrow-down"></i> {{ downvotes }}
-    </button>
+    {% if user.is_authenticated %}
+        <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
+                hx-vals='{"citation_id": "{{ citation.id }}", "vote": "1"}'
+                class="btn btn-sm {% if user_vote == 1 %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <i class="bi bi-arrow-up"></i> {{ upvotes }}
+        </button>
+        <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
+                hx-vals='{"citation_id": "{{ citation.id }}", "vote": "-1"}'
+                class="btn btn-sm {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
+            <i class="bi bi-arrow-down"></i> {{ downvotes }}
+        </button>
+    {% else %}
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+            <i class="bi bi-arrow-up"></i> {{ upvotes }}
+        </button>
+        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#loginModal">
+            <i class="bi bi-arrow-down"></i> {{ downvotes }}
+        </button>
+    {% endif %}
 </div>
