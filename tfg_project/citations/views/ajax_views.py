@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from ..forms import IncorrectCitationForm, RegisterForm
@@ -93,18 +94,41 @@ def toggle_saved(request):
 
 def ajax_submit_citation(request):
     """
-    Guarda un reporte de cita incorrecta enviado a través de AJAX.
+    Guarda un reporte de cita incorrecta enviado desde el formulario principal.
+    Acepta solicitudes AJAX y tradicionales.
     """
-    if request.method == "POST":
-        form = IncorrectCitationForm(request.POST)
-        if form.is_valid():
-            citation = form.save(commit=False)
-            if request.user.is_authenticated:
-                citation.author = request.user
-            citation.save()
-            return JsonResponse({"success": True})
+
+    def _is_ajax(req):
+        return req.headers.get("HX-Request") == "true" or req.headers.get(
+            "X-Requested-With"
+        ) == "XMLHttpRequest"
+
+    if request.method != "POST":
+        if _is_ajax(request):
+            return JsonResponse({"error": _("Método no permitido")}, status=405)
+        messages.error(request, _("Método no permitido."))
+        return redirect("home")
+
+    form = IncorrectCitationForm(request.POST)
+    if form.is_valid():
+        citation = form.save(commit=False)
+        if request.user.is_authenticated:
+            citation.author = request.user
+        citation.save()
+
+        if _is_ajax(request):
+            return JsonResponse(
+                {"success": True, "citation_id": citation.id},
+                status=200,
+            )
+        messages.success(request, _("Reporte creado correctamente."))
+        return redirect("citation_detail", pk=citation.pk)
+
+    if _is_ajax(request):
         return JsonResponse({"errors": form.errors}, status=400)
-    return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    messages.error(request, _("Revisa los datos del formulario."))
+    return redirect("home")
 
 
 def fetch_doi_metadata(request):

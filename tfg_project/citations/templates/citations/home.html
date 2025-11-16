@@ -73,20 +73,66 @@
 {% endif %}
 
 <script>
-    $('#reportForm').on('submit', function (e) {
-        e.preventDefault();
-        const formData = $(this).serialize();
-        $.post('/citations/ajax_submit/', formData)
-            .done(function () {
-                $('#successAlert').removeClass('d-none');
-                $('#reportModal').modal('hide');
-                $('#reportForm')[0].reset();
+    document.addEventListener('DOMContentLoaded', function () {
+        const reportForm = document.getElementById('reportForm');
+        const successAlert = document.getElementById('successAlert');
+        const reportModalEl = document.getElementById('reportModal');
+        const errorMessage = "{% trans 'Hubo un error al enviar el reporte.' %}";
+        const successTemplate = "{% trans 'Reporte enviado con éxito.' %}";
+
+        if (!reportForm) {
+            return;
+        }
+
+        reportForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(reportForm);
+            const csrfToken = getCookie('csrftoken');
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+            };
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+
+            fetch(reportForm.action, {
+                method: 'POST',
+                headers,
+                body: formData,
             })
-            .fail(function () {
-                alert('❌ {% trans "Hubo un error al enviar el reporte." %} ');
-            });
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.json().then((data) => {
+                            throw data;
+                        });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    if (successAlert) {
+                        successAlert.classList.remove('d-none');
+                        successAlert.textContent = data?.citation_id
+                            ? `#${data.citation_id} ${successTemplate}`
+                            : successTemplate;
+                    }
+
+                    if (reportModalEl) {
+                        const modalInstance =
+                            bootstrap.Modal.getInstance(reportModalEl) ||
+                            new bootstrap.Modal(reportModalEl);
+                        modalInstance.hide();
+                    }
+                    reportForm.reset();
+                })
+                .catch((err) => {
+                    console.error('Report submission failed', err);
+                    alert(errorMessage);
+                });
+        });
     });
 </script>
+
 
 <script>
     $(document).ready(function () {
