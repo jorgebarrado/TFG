@@ -99,6 +99,8 @@ def citation_detail(request, pk):
         .order_by("created_at")
     )
 
+    is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
+
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -110,13 +112,25 @@ def citation_detail(request, pk):
                 comment.parent_id = int(parent_id)
             comment.save()
 
-            if request.headers.get("HX-Request"):
-                return render(
+            if is_hx_request:
+                response = render(
                     request,
                     "citations/partials/_comment.html",
                     {"comment": comment},
                 )
+                response["HX-Trigger"] = "comment-added"
+                return response
             return redirect("citation_detail", pk=pk)
+        if is_hx_request:
+            error_response = render(
+                request,
+                "citations/partials/_comment_errors.html",
+                {"errors": form.errors},
+                status=400,
+            )
+            error_response["HX-Retarget"] = "#commentFeedback"
+            error_response["HX-Reswap"] = "innerHTML"
+            return error_response
     else:
         form = CommentForm()
 

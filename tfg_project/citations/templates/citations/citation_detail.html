@@ -78,6 +78,7 @@
                     {% trans "Respondiendo a:" %} <strong id="replyingToUser"></strong>
                     <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReply">{% trans "Cancelar" %}</button>
                 </div>
+                <div id="commentFeedback" class="mb-3"></div>
 
                 <div class="mb-3">
                     <label for="{{ comment_form.content.id_for_label }}" class="form-label">{% trans "Comentario:" %}</label>
@@ -170,40 +171,71 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const replyLinks = document.querySelectorAll('.reply-link');
+        const commentForm = document.getElementById('commentForm');
         const parentInput = document.getElementById('parent_id');
         const replyIndicator = document.getElementById('replyIndicator');
         const replyingToUser = document.getElementById('replyingToUser');
-        const cancelReply = document.getElementById('cancelReply');
-
-        replyLinks.forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const parentId = this.getAttribute('data-id');
-                const user = this.closest('.border')?.querySelector('strong')?.textContent?.trim() || 'usuario';
-
-                parentInput.value = parentId;
-                replyingToUser.textContent = user;
-                replyIndicator.classList.remove('d-none');
-            });
-        });
-
-        cancelReply.addEventListener('click', () => {
-            parentInput.value = '';
-            replyIndicator.classList.add('d-none');
-        });
-
-        // Confirmación eliminar
-        const deleteButtons = document.querySelectorAll('.open-delete-modal');
+        const commentFeedback = document.getElementById('commentFeedback');
         const deleteForm = document.getElementById('deleteCommentForm');
+        const confirmDeleteModalEl = document.getElementById('confirmDeleteModal');
+        let confirmDeleteModal = null;
 
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const commentId = this.getAttribute('data-comment-id');
+        const resetReplyState = () => {
+            if (parentInput) parentInput.value = '';
+            if (replyIndicator) replyIndicator.classList.add('d-none');
+            if (replyingToUser) replyingToUser.textContent = '';
+        };
+
+        const getDeleteModal = () => {
+            if (confirmDeleteModalEl && !confirmDeleteModal) {
+                confirmDeleteModal = new bootstrap.Modal(confirmDeleteModalEl);
+            }
+            return confirmDeleteModal;
+        };
+
+        document.addEventListener('click', (event) => {
+            const replyLink = event.target.closest('.reply-link');
+            if (replyLink && commentForm) {
+                event.preventDefault();
+                const parentId = replyLink.getAttribute('data-id');
+                const user =
+                    replyLink.closest('.border')?.querySelector('strong')?.textContent?.trim() ||
+                    '';
+
+                if (parentInput) parentInput.value = parentId;
+                if (replyingToUser) replyingToUser.textContent = user;
+                if (replyIndicator) replyIndicator.classList.remove('d-none');
+                return;
+            }
+
+            if (event.target.closest('#cancelReply')) {
+                event.preventDefault();
+                resetReplyState();
+                return;
+            }
+
+            const deleteBtn = event.target.closest('.open-delete-modal');
+            if (deleteBtn && deleteForm) {
+                event.preventDefault();
+                const commentId = deleteBtn.getAttribute('data-comment-id');
                 deleteForm.setAttribute('action', `/citations/comments/delete/${commentId}/`);
-                const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-                modal.show();
-            });
+                getDeleteModal()?.show();
+            }
+        });
+
+        document.body.addEventListener('htmx:afterSwap', (event) => {
+            const formWasSource = commentForm && event.detail?.requestConfig?.elt === commentForm;
+
+            if (formWasSource && event.target.id === 'comment-list') {
+                document.getElementById('no-comments')?.remove();
+                commentForm.reset();
+                resetReplyState();
+                if (commentFeedback) commentFeedback.innerHTML = '';
+            }
+
+            if (formWasSource && commentFeedback && event.target.id === 'commentFeedback') {
+                commentFeedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         });
     });
 </script>
@@ -338,6 +370,107 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const commentList     = document.getElementById('comment-list');
+  const commentForm     = document.getElementById('commentForm');
+  const parentInput     = document.getElementById('parent_id');
+  const replyIndicator  = document.getElementById('replyIndicator');
+  const replyingToUser  = document.getElementById('replyingToUser');
+  const commentFeedback = document.getElementById('commentFeedback');
+  const deleteForm      = document.getElementById('deleteCommentForm');
+  const deleteModalEl   = document.getElementById('confirmDeleteModal');
+  const deleteModal     = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
+
+  if (!commentList || !commentForm) {
+    console.warn('Comentario: faltan elementos básicos en el DOM');
+    return;
+  }
+
+  // --- 1) RESPONDER A UN COMENTARIO ---------------------------------
+  // Usamos delegación para que funcione también en comentarios nuevos (HTMX)
+  document.addEventListener('click', function (event) {
+    const replyLink = event.target.closest('.reply-link');
+    if (!replyLink) return;
+
+    event.preventDefault();
+
+    const parentId = replyLink.getAttribute('data-id');
+    if (!parentId) return;
+
+    // Usuario al que respondemos (del comentario padre)
+    const card    = replyLink.closest('.border, .mb-3');
+    const userEl  = card ? card.querySelector('strong') : null;
+    const user    = userEl ? userEl.textContent.trim() : 'usuario';
+
+    parentInput.value = parentId;
+    replyingToUser.textContent = user;
+    replyIndicator.classList.remove('d-none');
+
+    // Hacemos scroll suave hasta el formulario
+    commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // Botón "Cancelar" de la respuesta
+  const cancelReplyBtn = document.getElementById('cancelReply');
+  if (cancelReplyBtn) {
+    cancelReplyBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      parentInput.value = '';
+      replyIndicator.classList.add('d-none');
+    });
+  }
+
+  // --- 2) ELIMINAR COMENTARIO ---------------------------------------
+  // Delegación también para botones "Eliminar"
+  document.addEventListener('click', function (event) {
+    const delBtn = event.target.closest('.open-delete-modal');
+    if (!delBtn || !deleteForm || !deleteModal) return;
+
+    event.preventDefault();
+
+    const commentId = delBtn.getAttribute('data-comment-id');
+    if (!commentId) return;
+
+    // Ajusta la URL al patrón de tu urls.py:
+    // path("comments/delete/<int:pk>/", ajax_views.delete_comment, name="delete_comment")
+    deleteForm.setAttribute('action', `/citations/comments/delete/${commentId}/`);
+
+    deleteModal.show();
+  });
+
+  // --- 3) REACCIONES HTMX DESPUÉS DE AÑADIR COMENTARIO ----------------
+
+  // a) Cuando el servidor dispara HX-Trigger="comment-added"
+  document.body.addEventListener('comment-added', function () {
+    // Limpiar textarea
+    const textarea = commentForm.querySelector('textarea[name="{{ comment_form.content.name }}"]');
+    if (textarea) textarea.value = '';
+
+    // Ocultar indicador de respuesta y resetear parent_id
+    parentInput.value = '';
+    replyIndicator.classList.add('d-none');
+
+    // Borrar mensaje "Aún no hay comentarios." si sigue por ahí
+    const noComments = document.getElementById('no-comments');
+    if (noComments) noComments.remove();
+
+    // Limpiar feedback de errores si había
+    if (commentFeedback) commentFeedback.innerHTML = '';
+  });
+
+  // b) Manejar errores devueltos por HTMX (formulario inválido)
+  document.body.addEventListener('htmx:afterSwap', function (event) {
+    // Si el target es #commentFeedback, significa que han llegado errores
+    const target = event.target;
+    if (target && target.id === 'commentFeedback') {
+      // Opcional: hacer scroll hasta el formulario
+      commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+});
 </script>
 
 

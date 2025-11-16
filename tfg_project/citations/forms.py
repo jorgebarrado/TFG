@@ -144,15 +144,19 @@ class CommentForm(forms.ModelForm):
 
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
+    content = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": _("Escribe tu comentario…"),
+            }
+        ),
+        error_messages={
+            "required": _("El comentario no puede estar vacío."),
+        },
+    )
+
     class Meta:
         model = Comment
         fields = ["content", "parent_id"]
-        widgets = {
-            "content": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": _("Escribe tu comentario…"),
-                }
-            )
-        }
