@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card shadow-sm border-0" style="width: 24rem; border-radius: 15px;">
+        <div class="card-body text-center p-4">
+
+            <!-- Avatar -->
+            <div class="mb-3 position-relative d-inline-block">
+                {% if user_profile.avatar %}
+                    <img src="{{ user_profile.avatar.url }}"
+                         alt="{{ profile_user.username }}"
+                         class="rounded-circle border border-3 border-white shadow-sm"
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                {% else %}
+                    <i class="bi bi-person-circle text-secondary" style="font-size: 120px; line-height: 1;"></i>
+                {% endif %}
+            </div>
+
+            <!-- User Info -->
+            <h3 class="fw-bold mb-1">{{ profile_user.username }}</h3>
+            <p class="text-muted small mb-3">
+                <i class="bi bi-calendar3"></i> Joined {{ profile_user.date_joined|date:"M d, Y" }}
+            </p>
+
+            <!-- Social Links -->
+            <div class="d-flex justify-content-center gap-3 mb-4">
+                {% if user_profile.twitter_url %}
+                    <a href="{{ user_profile.twitter_url }}" target="_blank" class="text-decoration-none text-dark fs-5" title="Twitter">
+                        <i class="bi bi-twitter-x"></i>
+                    </a>
+                {% endif %}
+
+                {% if user_profile.linkedin_url %}
+                    <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none text-primary fs-5" title="LinkedIn">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                {% endif %}
+
+                {% if user_profile.github_url %}
+                    <a href="{{ user_profile.github_url }}" target="_blank" class="text-decoration-none text-dark fs-5" title="GitHub">
+                        <i class="bi bi-github"></i>
+                    </a>
+                {% endif %}
+
+                {% if user_profile.dblp_url %}
+                     <a href="{{ user_profile.dblp_url }}" target="_blank" class="text-decoration-none text-success fs-5" title="DBLP Profile">
+                        <i class="bi bi-journal-text"></i>
+                    </a>
+                {% endif %}
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Stats Footer -->
+            <div class="row text-center">
+                <div class="col-4 border-end">
+                    <h4 class="fw-bold mb-0">{{ comments_count }}</h4>
+                    <small class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Comments</small>
+                </div>
+                <div class="col-4 border-end">
+                    <h4 class="fw-bold mb-0">{{ votes_count }}</h4>
+                    <small class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Votes</small>
+                </div>
+                <div class="col-4">
+                    <h4 class="fw-bold mb-0">{{ reports_count }}</h4>
+                    <small class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Reports</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

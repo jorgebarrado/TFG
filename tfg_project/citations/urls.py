@@ -14,6 +14,11 @@ urlpatterns = [
     path("report/<int:pk>/", page_views.citation_detail, name="citation_detail"),
     # User Views
     path(
+        "profile/<str:username>/",
+        user_views.user_profile,
+        name="user_profile",
+    ),
+    path(
         "perfil/dblp-articulos/",
         user_views.dblp_articles_view,
         name="dblp_articles",

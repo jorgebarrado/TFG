@@ -8,7 +8,30 @@ from django.shortcuts import redirect, render
 
 from ..forms import CustomPasswordChangeForm, ProfileForm, UserProfileForm
 from ..models import Comment, IncorrectCitation, SavedCitation, UserProfile
+from django.shortcuts import get_object_or_404
 from ..utils import check_doi_has_citations, get_articles_from_dblp
+
+
+def user_profile(request, username):
+    """
+    Vista pública del perfil de usuario.
+    Muestra información básica, redes sociales y estadísticas.
+    """
+    user_obj = get_object_or_404(get_user_model(), username=username)
+    profile, _ = UserProfile.objects.get_or_create(user=user_obj)
+
+    comments_count = user_obj.comment_set.count()
+    votes_count = user_obj.vote_set.count()
+    reports_count = IncorrectCitation.objects.filter(author=user_obj).count()
+
+    context = {
+        "profile_user": user_obj,
+        "user_profile": profile,
+        "comments_count": comments_count,
+        "votes_count": votes_count,
+        "reports_count": reports_count,
+    }
+    return render(request, "citations/user_profile.html", context)
 
 
 @login_required
@@ -43,10 +66,10 @@ def account_settings(request):
                 return redirect("account_settings")
 
         elif "save_dblp" in request.POST:
-            dblp_form = UserProfileForm(request.POST, instance=userprofile)
+            dblp_form = UserProfileForm(request.POST, request.FILES, instance=userprofile)
             if dblp_form.is_valid():
                 dblp_form.save()
-                messages.success(request, "URL de DBLP actualizada.")
+                messages.success(request, "Ajustes de perfil actualizados.")
                 return redirect("account_settings")
 
     context = {

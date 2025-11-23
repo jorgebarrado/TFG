@@ -19,14 +19,27 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ["dblp_url"]
+        fields = ["dblp_url", "avatar", "twitter_url", "linkedin_url", "github_url"]
         widgets = {
             "dblp_url": forms.URLInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "https://dblp.org/pid/...",
                 }
-            )
+            ),
+            "avatar": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "twitter_url": forms.URLInput(
+                attrs={"class": "form-control", "placeholder": "https://twitter.com/..."}
+            ),
+            "linkedin_url": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "https://linkedin.com/in/...",
+                }
+            ),
+            "github_url": forms.URLInput(
+                attrs={"class": "form-control", "placeholder": "https://github.com/..."}
+            ),
         }
 
 

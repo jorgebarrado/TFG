@@ -26,11 +26,11 @@
 
       <div class="card flex-fill">
         <div class="card-body">
-          <h4 class="card-title mb-3">DBLP URL</h4>
-          <form method="post">
+          <h4 class="card-title mb-3">Detalles de Perfil y DBLP</h4>
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ dblp_form.as_p }}
-            <button type="submit" name="save_dblp" class="btn btn-secondary w-100">Guardar URL DBLP</button>
+            <button type="submit" name="save_dblp" class="btn btn-secondary w-100">Guardar cambios</button>
             <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary mt-3 w-100">
               Ver mis artículos en DBLP
             </a>
