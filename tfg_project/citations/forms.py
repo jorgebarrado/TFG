@@ -86,48 +86,111 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = [
-            "dblp_url",
             "date_of_birth",
             "country",
             "preferred_language",
             "avatar",
             "bio",
-            "twitter_url",
-            "github_url",
-            "linkedin_url",
-            "personal_website",
+            "dblp_url",
+            "research_area",
+            "profession",
+            "institution",
+            "contact_email",
+            "social_link_1",
+            "social_link_2",
+            "social_link_3",
+            "social_link_4",
+            "notify_comments_on_my_reports",
+            "notify_comments_on_followed",
+            "notify_votes_on_my_reports",
+            "notify_news_and_updates",
             "is_public",
             "show_activity",
             "show_social_links",
         ]
         widgets = {
+            "date_of_birth": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+            "preferred_language": forms.Select(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": _("Breve descripción sobre ti…"),
+                }
+            ),
             "dblp_url": forms.URLInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "https://dblp.org/pid/...",
                 }
             ),
-            "date_of_birth": forms.DateInput(
+            "research_area": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "type": "date",
+                    "placeholder": _("Ej. Computer Science, Quantum Computing…"),
                 }
             ),
-            "preferred_language": forms.Select(
-                attrs={"class": "form-control"},
-            ),
-            "bio": forms.Textarea(
+            "profession": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "rows": 3,
-                    "placeholder": "Breve descripción sobre ti…",
+                    "placeholder": _("Ej. PhD Student, Researcher, QA Engineer…"),
                 }
             ),
-            "twitter_url": forms.URLInput(attrs={"class": "form-control"}),
-            "github_url": forms.URLInput(attrs={"class": "form-control"}),
-            "linkedin_url": forms.URLInput(attrs={"class": "form-control"}),
-            "personal_website": forms.URLInput(attrs={"class": "form-control"}),
+            "institution": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Ej. UPM, CSIC, CERN, Google Research…"),
+                }
+            ),
+            "contact_email": forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Correo visible para otros usuarios"),
+                }
+            ),
+            "social_link_1": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Enlace a perfil social 1"),
+                }
+            ),
+            "social_link_2": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Enlace a perfil social 2"),
+                }
+            ),
+            "social_link_3": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Enlace a perfil social 3"),
+                }
+            ),
+            "social_link_4": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Enlace a perfil social 4"),
+                }
+            ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        checkbox_fields = [
+            "notify_comments_on_my_reports",
+            "notify_comments_on_followed",
+            "notify_votes_on_my_reports",
+            "notify_news_and_updates",
+            "is_public",
+            "show_activity",
+            "show_social_links",
+        ]
+        for name in checkbox_fields:
+            if name in self.fields:
+                self.fields[name].widget.attrs.setdefault("class", "form-check-input")
+
 
 class RegisterForm(UserCreationForm):
     """

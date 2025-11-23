@@ -12,7 +12,7 @@
         <img src="{{ profile.avatar.url }}" class="rounded-circle profile-avatar" alt="Avatar">
       {% else %}
         <div class="rounded-circle profile-avatar d-flex align-items-center justify-content-center bg-dark">
-          <span class="fs-2 text-uppercase">{{ profile_user.username|first }}</span>
+          <span class="fs-2 text-uppercase">{{ avatar_initial }}</span>
         </div>
       {% endif %}
     </div>
@@ -111,17 +111,56 @@
         </div>
       </div>
 
+      {% if profile.contact_email or profile.social_link_1 or profile.social_link_2 or profile.social_link_3 or profile.social_link_4 %}
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Redes sociales</h5>
+          <h5 class="card-title">Contacto y enlaces</h5>
           <ul class="list-unstyled small mb-0">
-            <li>X/Twitter: {{ profile.twitter_url|default:"N/A" }}</li>
-            <li>GitHub: {{ profile.github_url|default:"N/A" }}</li>
-            <li>LinkedIn: {{ profile.linkedin_url|default:"N/A" }}</li>
-            <li>Website: {{ profile.personal_website|default:"N/A" }}</li>
+            {% if profile.contact_email %}
+              <li class="mb-2">
+                <i class="bi bi-envelope me-1"></i>
+                <a href="mailto:{{ profile.contact_email }}">
+                  {{ profile.contact_email }}
+                </a>
+              </li>
+            {% endif %}
+
+            {% if profile.social_link_1 %}
+              <li class="mb-1">
+                <i class="bi bi-link-45deg me-1"></i>
+                <a href="{{ profile.social_link_1 }}" target="_blank" rel="noopener">
+                  {{ profile.social_link_1 }}
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.social_link_2 %}
+              <li class="mb-1">
+                <i class="bi bi-link-45deg me-1"></i>
+                <a href="{{ profile.social_link_2 }}" target="_blank" rel="noopener">
+                  {{ profile.social_link_2 }}
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.social_link_3 %}
+              <li class="mb-1">
+                <i class="bi bi-link-45deg me-1"></i>
+                <a href="{{ profile.social_link_3 }}" target="_blank" rel="noopener">
+                  {{ profile.social_link_3 }}
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.social_link_4 %}
+              <li class="mb-1">
+                <i class="bi bi-link-45deg me-1"></i>
+                <a href="{{ profile.social_link_4 }}" target="_blank" rel="noopener">
+                  {{ profile.social_link_4 }}
+                </a>
+              </li>
+            {% endif %}
           </ul>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 
