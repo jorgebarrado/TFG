@@ -1,0 +1,59 @@
+{% load i18n %}
+<div class="modal fade" id="extractModal" tabindex="-1" aria-labelledby="extractModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="extractModalLabel">{% trans "Extraer citas de un PDF" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="extract-form">
+          <div class="mb-3">
+            <label for="extract-file" class="form-label">{% trans "Archivo PDF" %}</label>
+            <input id="extract-file" class="form-control" type="file" accept="application/pdf" required>
+            <div class="form-text">{% trans "Sube el manuscrito en PDF para intentar extraer las citas." %}</div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Motor de extracción" %}</label>
+              <select id="extract-engine" class="form-select">
+                <option value="auto" selected>Auto</option>
+                <option value="papermage">PaperMage</option>
+                <option value="papercraft">PaperCraft</option>
+              </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="extract-debug">
+                <label class="form-check-label" for="extract-debug">{% trans "Incluir depuración" %}</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 d-flex gap-2">
+            <button id="extract-btn" type="submit" class="btn btn-primary">
+              {% trans "Extraer citas" %}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              {% trans "Cerrar" %}
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-4">
+
+        <div id="extract-alert" class="alert alert-danger d-none" role="alert"></div>
+
+        <div id="extract-summary" class="mb-2 small text-muted d-none"></div>
+        <div id="extract-results" class="d-none">
+          <!-- Aquí se insertará la lista de resultados -->
+        </div>
+
+        <pre id="extract-trace" class="mt-3 small text-muted d-none"
+             style="white-space: pre-wrap; background:#f8f9fa; padding:12px; border-radius:8px;"></pre>
+      </div>
+    </div>
+  </div>
+</div>

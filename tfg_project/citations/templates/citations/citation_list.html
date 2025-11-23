@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n custom_filters %}
 
 {% block title %}{% trans "Listado de reportes" %}{% endblock %}
 
@@ -67,7 +67,7 @@
           <th>{% trans "Área" %}</th>
           <th>{% trans "ID" %}</th>
           <th>{% trans "Fecha" %}</th>
-          <th></th>
+          <th>{% trans "Acciones" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -87,11 +87,10 @@
             <td>{{ c.get_publication_area_display }}</td>
             <td data-order="{{ c.id }}">#{{ c.id }}</td>
             <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
-            <td>
-              <a href="{% url 'citation_detail' c.id %}"
-                class="btn btn-sm btn-outline-primary">
-                {% trans "Ver" %}
-              </a>
+            <td class="d-flex gap-2">
+                {% include 'citations/partials/_vote_buttons.html' with citation=c upvotes=c.votes.all|count_upvotes downvotes=c.votes.all|count_downvotes user_vote=c.votes.all|user_vote:request.user %}
+                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c|is_saved_by:request.user %}
+                <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a>
             </td>
           </tr>
         {% endfor %}

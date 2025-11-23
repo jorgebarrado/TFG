@@ -14,7 +14,20 @@
   const EXTRACT_URL = '/citations/api/extract-citations/';
 
   function toFlatArray(data) {
-    // A) dict con keys "1","2",...  -> aplanamos
+    // NUEVO: si viene en "contexts" (p. ej. {"contexts":[...]})
+    if (data && Array.isArray(data.contexts)) {
+      return data.contexts.map((raw, i) => ({
+        ref: raw.ref ?? raw.reference ?? 0,
+        idx: i + 1,
+        snippet: raw.snippet ?? raw.fragment ?? '',
+        paragraph: raw.paragraph ?? '',
+        start: raw.start ?? null,
+        end: raw.end ?? null,
+        raw
+      }));
+    }
+
+    // A) dict con keys "1","2",...  -> aplanamos (tu caso anterior)
     if (data && !Array.isArray(data) && typeof data === 'object') {
       const flat = [];
       Object.keys(data).forEach((key) => {
@@ -33,6 +46,7 @@
       });
       return flat;
     }
+
     // B) ya viene como lista
     if (Array.isArray(data)) return data;
     return [];
