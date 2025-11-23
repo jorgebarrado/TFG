@@ -6,14 +6,13 @@
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form method="post" id="reportForm">
+        <form method="post" id="reportForm" action="{% url 'ajax_submit' %}">
           {% csrf_token %}
           <div class="modal-header">
             <h5 class="modal-title" id="reportModalLabel">{% trans "Crear nuevo reporte" %}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
           </div>
           <div class="modal-body text-start">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
               <!-- DOI original -->
               <div class="mb-3">
                 <label for="id_doi_original" class="form-label">{% trans "DOI original:" %}</label>

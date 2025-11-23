@@ -3,71 +3,12 @@
 
 {% block content %}
 <div class="container py-4">
-
-  <h2 class="mb-3">Citas en Semantic Scholar</h2>
-  <p class="mb-4"><strong>Artículo consultado (DOI):</strong> {{ doi }}</p>
-
-  {% if citations %}
-    {% if source == "crossref" %}
-      <div class="alert alert-info">
-        Resultados devueltos por Crossref como alternativa cuando Semantic Scholar no aporta el detalle.
-      </div>
-    {% endif %}
-
-    <div class="list-group mb-4">
-      {% for c in citations %}
-        <div class="list-group-item d-flex justify-content-between align-items-center">
-          <div class="me-3">
-            <h5 class="mb-1">{{ c.title }}</h5>
-            <small class="text-muted">
-              {{ c.authors }}{% if c.year %} – {{ c.year }}{% endif %}
-            </small><br>
-            {% if c.doi %}
-              <a href="https://doi.org/{{ c.doi }}" target="_blank">Ver cita en fuente original</a>
-            {% elif c.url %}
-              <a href="{{ c.url }}" target="_blank">Ver cita en fuente original</a>
-            {% endif %}
-          </div>
-
-          {% if c.doi %}
-          <button
-            type="button"
-            class="btn btn-outline-primary btn-sm"
-            data-action="view-context"
-            data-citing-doi="{{ c.doi }}"
-            data-target-doi="{{ doi|default:'' }}"
-            data-target-title="{{ target_title|default:'' }}"
-            data-target-first-author="{{ target_first_author|default:'' }}"
-            data-target-year="{{ target_year|default:'' }}"
-          >
-            View context
-          </button>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-
-  {% elif citation_count > 0 %}
-    <div class="alert alert-warning">
-      Este artículo tiene {{ citation_count }} citas registradas, pero la API no proporciona los detalles.
-      Puedes consultarlas directamente aquí:
-      <a href="https://www.semanticscholar.org/search?q={{ doi }}" target="_blank">Semantic Scholar</a>
-    </div>
-  {% else %}
-    <div class="alert alert-info">
-      Este artículo no tiene citas registradas en Semantic Scholar.
-    </div>
-  {% endif %}
-
-  {# ——— Bloque de extractor local (tu flujo actual) ——— #}
-  {% include "citations/_extract_citations_form.html" %}
-
+    <h2 class="mb-3">Citas en Semantic Scholar</h2>
+    <p class="mb-4"><strong>Artículo consultado (DOI):</strong> {{ doi }}</p>
+    <div id="papercraft-root" data-doi="{{ doi }}"></div>
 </div>
+{% endblock %}
 
-{# ÚNICO modal centralizado #}
-{% include "citations/modals/context_modal.html" %}
-
-{# JS #}
-<script src="{% static 'js/citation_extractor.js' %}"></script>
-<script src="{% static 'js/citation_context.js' %}"></script>
+{% block scripts %}
+<script src="{% static 'js/semantic_citations_react.js' %}"></script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static i18n %}
 {% load i18n %}
 {% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
 {% block content %}
@@ -26,14 +27,42 @@
         <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary btn-lg">
             📚 {% trans "Ver artículos de DBLP" %}
         </a>
+        <button class="btn btn-outline-secondary ms-2"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#extractModal">
+            <span class="me-1">📄</span> {% trans "Extraer citas (PDF)" %}
+        </button>
     </div>
 </div>
 
 {% include 'citations/modals/report_modal.html' %}
+{% include "citations/modals/extract_modal.html" %}
+
 {% endblock %}
-
 {% block scripts %}
-
+<script src="{% static 'js/extract_modal.js' %}"></script>
+<script>
+  const extractModalEl = document.getElementById('extractModal');
+  if (extractModalEl) {
+    extractModalEl.addEventListener('show.bs.modal', () => {
+      const alertBox   = document.getElementById('extract-alert');
+      const summaryBox = document.getElementById('extract-summary');
+      const resultsBox = document.getElementById('extract-results');
+      const tracePre   = document.getElementById('extract-trace');
+      alertBox?.classList.add('d-none');
+      summaryBox?.classList.add('d-none');
+      resultsBox?.classList.add('d-none');
+      tracePre?.classList.add('d-none');
+      alertBox && (alertBox.textContent = '');
+      summaryBox && (summaryBox.textContent = '');
+      resultsBox && (resultsBox.innerHTML = '');
+      tracePre && (tracePre.textContent = '');
+      // reset form (opcional):
+      document.getElementById('extract-form')?.reset();
+    });
+  }
+</script>
 {% if show_login_modal %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -44,20 +73,66 @@
 {% endif %}
 
 <script>
-    $('#reportForm').on('submit', function (e) {
-        e.preventDefault();
-        const formData = $(this).serialize();
-        $.post('/citations/ajax_submit/', formData)
-            .done(function () {
-                $('#successAlert').removeClass('d-none');
-                $('#reportModal').modal('hide');
-                $('#reportForm')[0].reset();
+    document.addEventListener('DOMContentLoaded', function () {
+        const reportForm = document.getElementById('reportForm');
+        const successAlert = document.getElementById('successAlert');
+        const reportModalEl = document.getElementById('reportModal');
+        const errorMessage = "{% trans 'Hubo un error al enviar el reporte.' %}";
+        const successTemplate = "{% trans 'Reporte enviado con éxito.' %}";
+
+        if (!reportForm) {
+            return;
+        }
+
+        reportForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(reportForm);
+            const csrfToken = getCookie('csrftoken');
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+            };
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+
+            fetch(reportForm.action, {
+                method: 'POST',
+                headers,
+                body: formData,
             })
-            .fail(function () {
-                alert('❌ {% trans "Hubo un error al enviar el reporte." %} ');
-            });
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.json().then((data) => {
+                            throw data;
+                        });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    if (successAlert) {
+                        successAlert.classList.remove('d-none');
+                        successAlert.textContent = data?.citation_id
+                            ? `#${data.citation_id} ${successTemplate}`
+                            : successTemplate;
+                    }
+
+                    if (reportModalEl) {
+                        const modalInstance =
+                            bootstrap.Modal.getInstance(reportModalEl) ||
+                            new bootstrap.Modal(reportModalEl);
+                        modalInstance.hide();
+                    }
+                    reportForm.reset();
+                })
+                .catch((err) => {
+                    console.error('Report submission failed', err);
+                    alert(errorMessage);
+                });
+        });
     });
 </script>
+
 
 <script>
     $(document).ready(function () {

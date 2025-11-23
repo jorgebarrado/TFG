@@ -1,0 +1,12 @@
+{% load i18n %}
+
+{% if errors %}
+  <div class="alert alert-danger py-2 mb-2">
+    {# Si hay errores específicos del campo "content", los mostramos #}
+    {% if errors.content %}
+      {{ errors.content.0 }}
+    {% else %}
+      {% trans "El comentario no puede estar vacío." %}
+    {% endif %}
+  </div>
+{% endif %}

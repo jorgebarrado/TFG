@@ -6,26 +6,23 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
-    """UserProfile: describe purpose and key fields/methods.
+    """
+    Extiende el modelo de usuario por defecto de Django para almacenar información adicional.
 
-    TODO: Replace this stub docstring with real details.
+    Atributos:
+        user (User): Relación uno a uno con el modelo de usuario de Django.
+        dblp_url (URLField): URL del perfil DBLP del usuario.
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     dblp_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        """__str__.
-
-
-        Args:
-
-            # TODO: describe parameters
+        """
+        Devuelve la representación en cadena del perfil, que es el nombre de usuario.
 
         Returns:
-
-            # TODO: describe return value
-
+            str: El nombre de usuario asociado.
         """
         return self.user.username
 
@@ -52,9 +49,19 @@ AREA_CHOICES = [
 
 
 class IncorrectCitation(models.Model):
-    """IncorrectCitation: describe purpose and key fields/methods.
+    """
+    Representa un reporte de una cita incorrecta.
 
-    TODO: Replace this stub docstring with real details.
+    Atributos:
+        author (User): El usuario que reportó la cita.
+        doi_original (CharField): El DOI del artículo original.
+        doi_incorrect (CharField): El DOI del artículo que cita incorrectamente.
+        incorrect_reason (TextField): La explicación del error.
+        metadata_original (JSONField): Metadatos del artículo original.
+        metadata_incorrect (JSONField): Metadatos del artículo que cita incorrectamente.
+        citation_type (CharField): El tipo de error en la cita.
+        publication_area (CharField): El área de publicación del artículo.
+        created_at (DateTimeField): La fecha y hora en que se creó el reporte.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -77,25 +84,25 @@ class IncorrectCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Fecha de registro
 
     def __str__(self):
-        """__str__.
-
-
-        Args:
-
-            # TODO: describe parameters
+        """
+        Devuelve una representación en cadena del reporte de cita incorrecta.
 
         Returns:
-
-            # TODO: describe return value
-
+            str: Una cadena que identifica el reporte.
         """
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
 class Comment(models.Model):
-    """Comment: describe purpose and key fields/methods.
+    """
+    Representa un comentario en un reporte de cita incorrecta.
 
-    TODO: Replace this stub docstring with real details.
+    Atributos:
+        citation (IncorrectCitation): El reporte al que pertenece el comentario.
+        author (User): El autor del comentario.
+        content (TextField): El contenido del comentario.
+        created_at (DateTimeField): La fecha y hora de creación del comentario.
+        parent (Comment): El comentario padre, si es una respuesta.
     """
 
     citation = models.ForeignKey(
@@ -109,25 +116,23 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
-        """is_reply.
-
-
-        Args:
-
-            # TODO: describe parameters
+        """
+        Comprueba si el comentario es una respuesta a otro comentario.
 
         Returns:
-
-            # TODO: describe return value
-
+            bool: True si el comentario tiene un padre, False en caso contrario.
         """
         return self.parent is not None
 
 
 class Vote(models.Model):
-    """Vote: describe purpose and key fields/methods.
+    """
+    Representa un voto (positivo o negativo) de un usuario en un reporte de cita incorrecta.
 
-    TODO: Replace this stub docstring with real details.
+    Atributos:
+        user (User): El usuario que emitió el voto.
+        citation (IncorrectCitation): El reporte que se está votando.
+        value (IntegerField): El valor del voto (1 para positivo, -1 para negativo).
     """
 
     VOTE_CHOICES = (
@@ -141,18 +146,21 @@ class Vote(models.Model):
     value = models.IntegerField(choices=VOTE_CHOICES)
 
     class Meta:
-        """Meta: describe purpose and key fields/methods.
-
-        TODO: Replace this stub docstring with real details.
+        """
+        Configuración del modelo Vote.
         """
 
         unique_together = ("user", "citation")
 
 
 class SavedCitation(models.Model):
-    """SavedCitation: describe purpose and key fields/methods.
+    """
+    Representa una cita incorrecta guardada por un usuario.
 
-    TODO: Replace this stub docstring with real details.
+    Atributos:
+        user (User): El usuario que guardó la cita.
+        citation (IncorrectCitation): El reporte de cita incorrecta guardado.
+        created_at (DateTimeField): La fecha y hora en que se guardó la cita.
     """
 
     user = models.ForeignKey(
@@ -164,24 +172,17 @@ class SavedCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        """Meta: describe purpose and key fields/methods.
-
-        TODO: Replace this stub docstring with real details.
+        """
+        Configuración del modelo SavedCitation.
         """
 
         unique_together = ("user", "citation")
 
     def __str__(self):
-        """__str__.
-
-
-        Args:
-
-            # TODO: describe parameters
+        """
+        Devuelve una representación en cadena de la cita guardada.
 
         Returns:
-
-            # TODO: describe return value
-
+            str: Una cadena que indica qué usuario guardó qué cita.
         """
         return f"{self.user.username} → {self.citation.id}"
