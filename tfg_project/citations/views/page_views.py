@@ -5,7 +5,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import ExtractYear
 from django.shortcuts import get_object_or_404, redirect, render
-
+from django.template.loader import render_to_string
+from django.db.models import Count, Q
 from ..forms import CommentForm, LoginForm, RegisterForm
 from ..models import (
     AREA_CHOICES,
@@ -15,7 +16,8 @@ from ..models import (
     Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
-
+from django.shortcuts import get_object_or_404, render
+from ..models import IncorrectCitation
 
 def citation_list(request):
     """
@@ -71,7 +73,7 @@ def citation_list(request):
 
 def home(request):
     """
-    Renderiza la página de inicio.
+    Renderiza la pogina de inicio.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
     return render(
@@ -86,17 +88,30 @@ def home(request):
 
 
 def citation_detail(request, pk):
-    """
-    Muestra los detalles de un reporte de cita incorrecta.
-    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
     )
+
     comments = (
         Comment.objects.filter(citation=citation)
         .select_related("author", "parent")
         .order_by("created_at")
+    )
+
+    # otros reportes de la misma orea (excluyendo el actual)
+    other_area_reports = (
+        IncorrectCitation.objects.filter(publication_area=citation.publication_area)
+        .exclude(pk=citation.pk)
+        .order_by("-created_at")[:5]
+    )
+
+    # reportes populares (por ngmero de votos positivos)
+    popular_reports = (
+        IncorrectCitation.objects.annotate(
+            upvotes_count=Count("votes", filter=Q(votes__value=1))
+        )
+        .order_by("-upvotes_count", "-created_at")[:5]
     )
 
     is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
@@ -107,9 +122,11 @@ def citation_detail(request, pk):
             comment = form.save(commit=False)
             comment.citation = citation
             comment.author = request.user
+
             parent_id = request.POST.get("parent_id")
             if parent_id:
                 comment.parent_id = int(parent_id)
+
             comment.save()
 
             if is_hx_request:
@@ -120,7 +137,9 @@ def citation_detail(request, pk):
                 )
                 response["HX-Trigger"] = "comment-added"
                 return response
+
             return redirect("citation_detail", pk=pk)
+
         if is_hx_request:
             error_response = render(
                 request,
@@ -138,13 +157,116 @@ def citation_detail(request, pk):
         "citation": citation,
         "comment_form": form,
         "comments": comments,
+        "other_area_reports": other_area_reports,
+        "popular_reports": popular_reports,
     }
     return render(request, "citations/citation_detail.html", context)
 
+    is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
+
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.citation = citation
+            comment.author = request.user
+
+            parent_id = request.POST.get("parent_id")
+            if parent_id:
+                comment.parent_id = int(parent_id)
+
+            comment.save()
+
+            if is_hx_request:
+                response = render(
+                    request,
+                    "citations/partials/_comment.html",
+                    {"comment": comment},
+                )
+                response["HX-Trigger"] = "comment-added"
+                return response
+
+            return redirect("citation_detail", pk=pk)
+
+        if is_hx_request:
+            error_response = render(
+                request,
+                "citations/partials/_comment_errors.html",
+                {"errors": form.errors},
+                status=400,
+            )
+            error_response["HX-Retarget"] = "#commentFeedback"
+            error_response["HX-Reswap"] = "innerHTML"
+            return error_response
+    else:
+        form = CommentForm()
+
+    context = {
+        "citation": citation,
+        "comment_form": form,
+        "comments": comments,
+        "other_area_reports": other_area_reports,
+        "popular_reports": popular_reports,
+    }
+    return render(request, "citations/citation_detail.html", context)
+
+def citation_preview(request, pk):
+    citation = get_object_or_404(
+        IncorrectCitation.objects
+            .select_related("author")
+            .prefetch_related("votes"),
+        pk=pk,
+    )
+
+    upvotes = citation.votes.filter(value=1).count()
+    downvotes = citation.votes.filter(value=-1).count()
+
+    user_vote = None
+    if request.user.is_authenticated:
+        user_vote = citation.votes.filter(user=request.user).first()
+
+    is_saved = False
+    if request.user.is_authenticated:
+        is_saved = citation.saved_by.filter(user=request.user).exists()
+
+    vote_buttons_html = render_to_string(
+        "citations/partials/_vote_buttons.html",
+        {
+            "citation": citation,
+            "upvotes": upvotes,
+            "downvotes": downvotes,
+            "user_vote": user_vote,
+            "user": request.user,
+        },
+        request=request,
+    )
+
+    save_button_html = render_to_string(
+        "citations/partials/_save_button.html",
+        {
+            "citation": citation,
+            "is_saved": is_saved,
+            "user": request.user,
+        },
+        request=request,
+    )
+
+    return render(
+        request,
+        "citations/partials/_citation_preview.html",
+        {
+            "citation": citation,
+            "upvotes": upvotes,
+            "downvotes": downvotes,
+            "user_vote": user_vote,
+            "vote_buttons_html": vote_buttons_html,
+            "save_button_html": save_button_html,
+        }
+    )
 
 def semantic_citations_view(request):
     """
-    Muestra las citas de un artículo obtenidas de Semantic Scholar.
+    Muestra las citas de un art??culo obtenidas de Semantic Scholar.
     """
     doi = request.GET.get("doi")
     if not doi:
