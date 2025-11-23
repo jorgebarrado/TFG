@@ -8,9 +8,16 @@ from typing import Optional
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from .services.citation_extractor import process_manuscript
+from .services.pdf_citation_analyzer import (
+    PDFDownloadError,
+    analyze_pdf_citations_from_url,
+)
+from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
+from .services.semantic_scholar_client import SemanticScholarError
+from .services.papermage_extractor import ContextHit
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
@@ -220,3 +227,129 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             os.remove(temp_path)
         except Exception:
             pass
+
+
+@require_GET
+def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
+    """
+    API que recibe una URL de PDF y devuelve los contextos de cita detectados.
+
+    Parámetros GET:
+        - pdf_url: URL del PDF a analizar (obligatorio).
+        - pattern: puede repetirse varias veces para pasar patrones personalizados (opcional).
+
+    Respuesta:
+        200 OK:
+            {
+              "count": <número de contextos>,
+              "contexts": [ { ...ContextHit... }, ... ]
+            }
+        4xx / 5xx:
+            { "error": "mensaje de error" }
+    """
+    pdf_url = request.GET.get("pdf_url")
+    if not pdf_url:
+        return JsonResponse(
+            {"error": "Falta el parámetro obligatorio 'pdf_url'."},
+            status=400,
+        )
+
+    patterns = request.GET.getlist("pattern") or None
+
+    try:
+        contexts = analyze_pdf_citations_from_url(pdf_url, patterns)
+    except PDFDownloadError as exc:
+        return JsonResponse({"error": str(exc)}, status=502)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    except FileNotFoundError:
+        return JsonResponse(
+            {"error": "No se pudo leer el PDF descargado."},
+            status=500,
+        )
+    except RuntimeError as exc:
+        return JsonResponse(
+            {"error": f"Error al procesar el PDF con PaperMage: {exc}"},
+            status=500,
+        )
+
+    return JsonResponse(
+        {
+            "count": len(contexts),
+            "contexts": contexts,
+        }
+    )
+
+
+@require_POST
+def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
+    """
+    API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+    """
+    uploaded_file = request.FILES.get("pdf_file")
+    if not uploaded_file:
+        return JsonResponse(
+            {"error": "No se ha recibido ningún archivo PDF ('pdf_file')."},
+            status=400,
+        )
+
+    patterns = [
+        r"\[(\d+)\]",
+        r"\b[A-Z][a-z]+ et al\., \d{4}\b",
+        r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+",
+    ]
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            for chunk in uploaded_file.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name
+
+        contexts: list[ContextHit] = extract_contexts_from_pdf(tmp_path, patterns)
+        return JsonResponse(
+            {
+                "count": len(contexts),
+                "contexts": contexts,
+            }
+        )
+    except Exception as exc:
+        return JsonResponse(
+            {"error": f"Error al procesar el PDF: {exc}"},
+            status=500,
+        )
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+
+@require_GET
+def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
+    """
+    API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
+    y PaperMage para localizar contextos de cita en los PDFs open access.
+    """
+    doi = request.GET.get("doi")
+    if not doi:
+        return JsonResponse(
+            {"error": "Falta el parámetro obligatorio 'doi'."},
+            status=400,
+        )
+
+    try:
+        max_citing = int(request.GET.get("max_citing", "5"))
+    except ValueError:
+        return JsonResponse(
+            {"error": "El parámetro 'max_citing' debe ser un entero."},
+            status=400,
+        )
+
+    analysis_result = analyze_citations_for_original_doi(
+        original_doi=doi,
+        max_citing_papers=max_citing,
+    )
+
+    return JsonResponse(analysis_result, safe=False)

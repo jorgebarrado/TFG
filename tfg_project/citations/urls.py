@@ -52,9 +52,24 @@ urlpatterns = [
         name="get_citation_context",
     ),
     path(
+        "api/pdf-contexts/",
+        views_api.api_pdf_citation_contexts,
+        name="api_pdf_citation_contexts",
+    ),
+    path(
+        "api/pdf-contexts-upload/",
+        views_api.api_pdf_citation_contexts_upload,
+        name="api_pdf_citation_contexts_upload",
+    ),
+    path(
         "api/get-semantic-citations/",
         ajax_views.get_semantic_citations,
         name="get_semantic_citations",
+    ),
+    path(
+        "api/semantic-citation-analysis/",
+        views_api.api_semantic_citation_analysis,
+        name="api_semantic_citation_analysis",
     ),
     path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
 ]
