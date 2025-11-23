@@ -7,104 +7,187 @@
 {% block content %}
 <div class="container py-5">
 
-    <!-- Volver -->
     <div class="mb-4 text-start">
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">⬅️ {% trans "Volver al listado" %}</a>
+        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">
+            &larr; {% trans "Volver al listado" %}
+        </a>
     </div>
 
-    <!-- Cabecera -->
-    <div class="mb-4">
-        <h1 class="fw-bold">{% trans "Reporte" %} #{{ citation.id }}</h1>
-        <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
-        <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
-
-        {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
-        {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
-
-    </div>
-  <!-- Detalles -->
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title"><strong>{% trans "Detalles del reporte" %}</strong></h5>
-        <small><strong>{% trans "Reportado por:" %}</strong> {{ citation.user.username|default:"Anonymous" }} {{ citation.created_at|date:"d/m/Y H:i" }}</small>
-        <p class="mt-3"> </p>
-        <div class="row">
-            <!-- DOI ORIGINAL -->
-            <div class="col-md-6">
-                <h5 class="mt-3">{% trans "Artículo original" %}</h5>
-                <div class="border p-3 rounded shadow-sm mb-4" id="metadataOriginal">
-                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+    {% trans "Título no disponible" as fallback_title %}
+    <section class="border rounded-4 shadow-sm p-4 p-lg-5 mb-5 bg-body">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-8">
+                <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
+                <h1 class="display-5 fw-bold mb-2">{% trans "Reporte" %} #{{ citation.id }}</h1>
+                <p class="lead mb-3" id="reportOriginalTitle">
+                    {{ citation.metadata_original_title|default:citation.doi_original|default:citation.doi_incorrect|default:fallback_title }}
+                </p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
+                    <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
                 </div>
             </div>
-            <!-- DOI INCORRECTO -->
-            <div class="col-md-6">
-                <h5 class="mt-3">{% trans "Cita incorrecta" %}</h5>
-                <div class="border p-3 rounded shadow-sm mb-4" id="metadataIncorrect">
-                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+            <div class="col-lg-4">
+                <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+                    {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
+                    {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-    <!-- Motivo -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">{% trans "Motivo / Explicación" %}</h5>
-            <p class="card-text">{{ citation.incorrect_reason }}</p>
+        <div class="text-muted small mt-3">
+            {% blocktrans with username=citation.user.username|default:"Anonymous" created_at=citation.created_at|date:"d/m/Y H:i" %}
+                Reportado por {{ username }} el {{ created_at }}
+            {% endblocktrans %}
         </div>
-    </div>
+    </section>
 
-    <!-- Comentarios -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">{% trans "Comentarios" %}</h5>
-
-            <div id="comment-list">
-                {% if comments %}
-                    {% for comment in comments %}
-                        {% include 'citations/partials/_comment.html' with comment=comment %}
-                    {% endfor %}
-                {% else %}
-                    <p id="no-comments" class="text-muted">{% trans "Aún no hay comentarios." %}</p>
-                {% endif %}
-            </div>
-
-            {% if user.is_authenticated %}
-            <form hx-post="{% url 'citation_detail' citation.id %}" hx-target="#comment-list" hx-swap="beforeend"
-                  class="mt-4" id="commentForm">
-                {% csrf_token %}
-                <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
-                    {% trans "Respondiendo a:" %} <strong id="replyingToUser"></strong>
-                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReply">{% trans "Cancelar" %}</button>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">{% trans "Artículos implicados" %}</h4>
                 </div>
-                <div id="commentFeedback" class="mb-3"></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted small mb-2">{% trans "Artículo original" %}</h6>
+                                <div class="border rounded-3 p-3" id="metadataOriginal">
+                                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
+                                <div class="border rounded-3 p-3" id="metadataIncorrect">
+                                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                <div class="mb-3">
-                    <label for="{{ comment_form.content.id_for_label }}" class="form-label">{% trans "Comentario:" %}</label>
-                    <textarea
-                        name="{{ comment_form.content.name }}"
-                        id="{{ comment_form.content.id_for_label }}"
-                        class="form-control"
-                        rows="3"
-                        placeholder="{% trans 'Escribe tu comentario...' %}">{% if comment_form.content.value %}{{ comment_form.content.value }}{% endif %}</textarea>
+            <section class="mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">{% trans "Motivo / Explicación" %}</h5>
+                        <p class="mb-0">{{ citation.incorrect_reason }}</p>
+                    </div>
+                </div>
+            </section>
 
-                    {% if comment_form.content.errors %}
-                        <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
+            <section class="mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">{% trans "Comentarios" %}</h5>
+
+                        <div id="comment-list">
+                            {% if comments %}
+                                {% for comment in comments %}
+                                    {% include 'citations/partials/_comment.html' with comment=comment %}
+                                {% endfor %}
+                            {% else %}
+                                <p id="no-comments" class="text-muted">{% trans "Aún no hay comentarios." %}</p>
+                            {% endif %}
+                        </div>
+
+                        {% if user.is_authenticated %}
+                        <form hx-post="{% url 'citation_detail' citation.id %}"
+                              hx-target="#comment-list"
+                              hx-swap="beforeend"
+                              class="mt-4"
+                              id="commentForm">
+                            {% csrf_token %}
+                            <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
+                                {% trans "Respondiendo a:" %} <strong id="replyingToUser"></strong>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReply">{% trans "Cancelar" %}</button>
+                            </div>
+                            <div id="commentFeedback" class="mb-3"></div>
+
+                            <div class="mb-3">
+                                <label for="{{ comment_form.content.id_for_label }}" class="form-label">{% trans "Comentario:" %}</label>
+                                <textarea
+                                    name="{{ comment_form.content.name }}"
+                                    id="{{ comment_form.content.id_for_label }}"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="{% trans 'Escribe tu comentario...' %}">{% if comment_form.content.value %}{{ comment_form.content.value }}{% endif %}</textarea>
+
+                                {% if comment_form.content.errors %}
+                                    <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <input type="hidden" name="parent_id" id="parent_id">
+                            <button type="submit" class="btn btn-primary">{% trans "Enviar comentario" %}</button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning mt-4">
+                            <strong>{% trans "Inicia sesión" %}</strong> {% trans "para añadir un comentario" %}
+                            <br>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-sm btn-outline-primary mt-2">{% trans "Iniciar sesión" %}</a>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" class="btn btn-sm btn-outline-secondary mt-2">{% trans "Registrarse" %}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">{% trans "Otros reportes de la misma área" %}</h5>
+                    {% if other_area_reports %}
+                        <div class="list-group list-group-flush">
+                            {% for report in other_area_reports %}
+                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
+                                <div class="mb-2 d-flex flex-wrap gap-2">
+                                    <span class="badge text-bg-info">{{ report.get_publication_area_display }}</span>
+                                    <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
+                                </div>
+                                <p class="mb-1 fw-semibold">
+                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
+                                </p>
+                                <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- TODO: Cargar other_area_reports en la vista citation_detail -->
+                        <p class="text-muted small mb-0">{% trans "Pronto mostraremos otros reportes relacionados en esta sección." %}</p>
                     {% endif %}
                 </div>
-
-                <input type="hidden" name="parent_id" id="parent_id">
-                <button type="submit" class="btn btn-primary">{% trans "Enviar comentario" %}</button>
-            </form>
-            {% else %}
-            <div class="alert alert-warning mt-4">
-                <strong>{% trans "Inicia sesión" %}</strong> {% trans "para añadir un comentario" %}
-                <br>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-sm btn-outline-primary mt-2">{% trans "Iniciar sesión" %}</a>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" class="btn btn-sm btn-outline-secondary mt-2">{% trans "Registrarse" %}</a>
             </div>
-            {% endif %}
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">{% trans "Reportes populares" %}</h5>
+                    {% if popular_reports %}
+                        <div class="list-group list-group-flush">
+                            {% for report in popular_reports %}
+                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
+                                <div class="mb-2 d-flex flex-wrap gap-2">
+                                    <span class="badge text-bg-info">{{ report.get_publication_area_display }}</span>
+                                    <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
+                                </div>
+                                <p class="mb-1 fw-semibold">
+                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
+                                </p>
+                                <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- TODO: Cargar popular_reports en la vista citation_detail -->
+                        <p class="text-muted small mb-0">{% trans "Pronto mostraremos los reportes más consultados." %}</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
