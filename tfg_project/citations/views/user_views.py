@@ -23,6 +23,14 @@ from ..models import (
 from ..utils import check_doi_has_citations, get_articles_from_dblp
 
 
+def get_avatar_initial(user):
+    if getattr(user, "username", ""):
+        return user.username[0].upper()
+    if getattr(user, "first_name", ""):
+        return user.first_name[0].upper()
+    return "?"
+
+
 @login_required
 def account_settings(request):
     user = request.user
@@ -84,6 +92,7 @@ def account_settings(request):
         "userprofile_form": userprofile_form,
         "pwd_form": pwd_form,
         "profile": profile,
+        "avatar_initial": get_avatar_initial(user),
     }
     return render(request, "citations/account_settings.html", context)
 
@@ -240,6 +249,7 @@ def my_profile(request):
         "comments_list": comments_qs.select_related("citation").order_by("-created_at")[:20],
         "saved_list": saved_qs.select_related("citation").order_by("-created_at")[:20],
         "votes_list": votes_qs.select_related("citation").order_by("citation__created_at")[:20],
+        "avatar_initial": get_avatar_initial(user),
     }
 
     return render(request, "citations/profile.html", context)

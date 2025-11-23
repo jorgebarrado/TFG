@@ -19,7 +19,6 @@ class UserProfile(models.Model):
     )
     dblp_url = models.URLField(blank=True, null=True)
 
-    # NUEVO
     date_of_birth = models.DateField(
         blank=True,
         null=True,
@@ -37,7 +36,76 @@ class UserProfile(models.Model):
         verbose_name=_("Idioma preferido"),
     )
 
-    # NUEVO: info visual y redes
+    # Información académica / profesional
+    research_area = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Área de investigación"),
+        help_text=_("Ej. Computer Science, Quantum Computing, Physics…"),
+    )
+    profession = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Profesión o rol"),
+        help_text=_("Ej. PhD Student, Researcher, Professor, QA Engineer…"),
+    )
+    institution = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Institución / organización"),
+        help_text=_("Ej. Universidad, centro de investigación o empresa."),
+    )
+
+    # Contacto y enlaces sociales
+    contact_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Correo de contacto"),
+        help_text=_("Correo que otros usuarios pueden usar para contactar contigo."),
+    )
+    social_link_1 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 1"),
+        help_text=_("Ej. perfil de X/Twitter, GitHub, LinkedIn, página personal…"),
+    )
+    social_link_2 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 2"),
+        help_text=_("Opcional."),
+    )
+    social_link_3 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 3"),
+        help_text=_("Opcional."),
+    )
+    social_link_4 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 4"),
+        help_text=_("Opcional."),
+    )
+
+    # Preferencias de notificación
+    notify_comments_on_my_reports = models.BooleanField(
+        default=True,
+        verbose_name=_("Avisarme cuando comenten mis reportes"),
+    )
+    notify_comments_on_followed = models.BooleanField(
+        default=True,
+        verbose_name=_("Avisarme cuando haya nuevos comentarios en reportes que sigo"),
+    )
+    notify_votes_on_my_reports = models.BooleanField(
+        default=False,
+        verbose_name=_("Avisarme cuando mis reportes reciban nuevos votos"),
+    )
+    notify_news_and_updates = models.BooleanField(
+        default=False,
+        verbose_name=_("Recibir noticias y novedades de CiteCheck"),
+    )
+
     avatar = models.ImageField(
         upload_to="avatars/",
         blank=True,
@@ -53,7 +121,6 @@ class UserProfile(models.Model):
     linkedin_url = models.URLField(blank=True, null=True)
     personal_website = models.URLField(blank=True, null=True)
 
-    # NUEVO: opciones de privacidad
     is_public = models.BooleanField(default=True)
     show_activity = models.BooleanField(default=True)
     show_social_links = models.BooleanField(default=True)

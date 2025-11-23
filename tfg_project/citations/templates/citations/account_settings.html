@@ -87,7 +87,7 @@
                            alt="Avatar preview">
                     {% else %}
                       <span id="avatar-initial">
-                        {{ user.get_full_name|default:user.username|first|upper }}
+                        {{ avatar_initial }}
                       </span>
                       <img id="avatar-preview"
                            src=""
@@ -123,7 +123,7 @@
         <div class="card">
           <div class="card-body">
             <h4 class="card-title mb-3">{% trans "Perfil extendido, DBLP & redes sociales" %}</h4>
-            <p class="text-muted small mb-3">
+            <p class="text-muted small mb-4">
               {% trans "Configura tu información académica, biografía, enlaces de redes sociales y opciones de privacidad." %}
             </p>
 
@@ -131,28 +131,39 @@
               {% csrf_token %}
               {{ userprofile_form.non_field_errors }}
 
-              <div class="row">
-                <div class="col-md-6">
-                  <h6 class="mb-2">{% trans "Información académica" %}</h6>
-                  <div class="mb-3">
-                    {{ userprofile_form.dblp_url.label_tag }}
-                    {{ userprofile_form.dblp_url }}
-                    {% if userprofile_form.dblp_url.errors %}
-                      <div class="text-danger small">{{ userprofile_form.dblp_url.errors }}</div>
-                    {% endif %}
-                  </div>
+              <!-- Información académica y profesional -->
+              <h6 class="mb-2">{% trans "Información académica y profesional" %}</h6>
+              <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                  {{ userprofile_form.research_area.label_tag }}
+                  {{ userprofile_form.research_area }}
+                  {% if userprofile_form.research_area.errors %}
+                    <div class="text-danger small">{{ userprofile_form.research_area.errors }}</div>
+                  {% endif %}
                 </div>
+                <div class="col-md-4 mb-3">
+                  {{ userprofile_form.profession.label_tag }}
+                  {{ userprofile_form.profession }}
+                  {% if userprofile_form.profession.errors %}
+                    <div class="text-danger small">{{ userprofile_form.profession.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  {{ userprofile_form.institution.label_tag }}
+                  {{ userprofile_form.institution }}
+                  {% if userprofile_form.institution.errors %}
+                    <div class="text-danger small">{{ userprofile_form.institution.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
 
-                <div class="col-md-6">
-                  <h6 class="mb-2">{% trans "Avatar" %}</h6>
-                  <div class="mb-3">
-                    {{ userprofile_form.avatar.label_tag }}
-                    {{ userprofile_form.avatar }}
-                    {% if userprofile_form.avatar.errors %}
-                      <div class="text-danger small">{{ userprofile_form.avatar.errors }}</div>
-                    {% endif %}
-                  </div>
-                </div>
+              <h6 class="mb-2">{% trans "Información académica" %}</h6>
+              <div class="mb-3">
+                {{ userprofile_form.dblp_url.label_tag }}
+                {{ userprofile_form.dblp_url }}
+                {% if userprofile_form.dblp_url.errors %}
+                  <div class="text-danger small">{{ userprofile_form.dblp_url.errors }}</div>
+                {% endif %}
               </div>
 
               <hr>
@@ -166,29 +177,102 @@
                 {% endif %}
               </div>
 
-              <hr>
+              <hr class="my-4">
 
-              <h6 class="mb-2">{% trans "Redes sociales" %}</h6>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  {{ userprofile_form.twitter_url.label_tag }}
-                  {{ userprofile_form.twitter_url }}
+              <h6 class="mb-2">{% trans "Correo de contacto" %}</h6>
+              <p class="text-muted small mb-2">
+                {% trans "Este correo será visible para otros usuarios. No afecta al correo con el que inicias sesión." %}
+              </p>
+              <div class="mb-3">
+                {{ userprofile_form.contact_email.label_tag }}
+                {{ userprofile_form.contact_email }}
+                {% if userprofile_form.contact_email.errors %}
+                  <div class="text-danger small">{{ userprofile_form.contact_email.errors }}</div>
+                {% endif %}
+              </div>
+
+              <hr class="my-4">
+
+              <h6 class="mb-2">{% trans "Cuentas sociales" %}</h6>
+              <p class="text-muted small mb-3">
+                {% trans "Añade enlaces a tus perfiles (X/Twitter, GitHub, LinkedIn, página personal, etc.)." %}
+              </p>
+
+              <div class="mb-2">
+                <label class="form-label small text-muted">{% trans "Enlace social 1" %}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                  {{ userprofile_form.social_link_1 }}
                 </div>
-                <div class="col-md-6 mb-3">
-                  {{ userprofile_form.github_url.label_tag }}
-                  {{ userprofile_form.github_url }}
-                </div>
-                <div class="col-md-6 mb-3">
-                  {{ userprofile_form.linkedin_url.label_tag }}
-                  {{ userprofile_form.linkedin_url }}
-                </div>
-                <div class="col-md-6 mb-3">
-                  {{ userprofile_form.personal_website.label_tag }}
-                  {{ userprofile_form.personal_website }}
+                {% if userprofile_form.social_link_1.errors %}
+                  <div class="text-danger small">{{ userprofile_form.social_link_1.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label small text-muted">{% trans "Enlace social 2" %}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                  {{ userprofile_form.social_link_2 }}
                 </div>
               </div>
 
-              <hr>
+              <div class="mb-2">
+                <label class="form-label small text-muted">{% trans "Enlace social 3" %}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                  {{ userprofile_form.social_link_3 }}
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label small text-muted">{% trans "Enlace social 4" %}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                  {{ userprofile_form.social_link_4 }}
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <h6 class="mb-2">{% trans "Notificaciones" %}</h6>
+              <p class="text-muted small mb-3">
+                {% trans "Elige sobre qué quieres recibir avisos relacionados con tus actividades en CiteCheck." %}
+              </p>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check mb-2">
+                    {{ userprofile_form.notify_comments_on_my_reports }}
+                    <label class="form-check-label" for="{{ userprofile_form.notify_comments_on_my_reports.id_for_label }}">
+                      {{ userprofile_form.notify_comments_on_my_reports.label }}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ userprofile_form.notify_comments_on_followed }}
+                    <label class="form-check-label" for="{{ userprofile_form.notify_comments_on_followed.id_for_label }}">
+                      {{ userprofile_form.notify_comments_on_followed.label }}
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-check mb-2">
+                    {{ userprofile_form.notify_votes_on_my_reports }}
+                    <label class="form-check-label" for="{{ userprofile_form.notify_votes_on_my_reports.id_for_label }}">
+                      {{ userprofile_form.notify_votes_on_my_reports.label }}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ userprofile_form.notify_news_and_updates }}
+                    <label class="form-check-label" for="{{ userprofile_form.notify_news_and_updates.id_for_label }}">
+                      {{ userprofile_form.notify_news_and_updates.label }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4">
 
               <h6 class="mb-2">{% trans "Privacidad" %}</h6>
               <div class="row">
