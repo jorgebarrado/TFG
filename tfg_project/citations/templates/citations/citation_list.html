@@ -90,7 +90,15 @@
             <td class="d-flex gap-2">
                 {% include 'citations/partials/_vote_buttons.html' with citation=c upvotes=c.votes.all|count_upvotes downvotes=c.votes.all|count_downvotes user_vote=c.votes.all|user_vote:request.user %}
                 {% include 'citations/partials/_save_button.html' with citation=c is_saved=c|is_saved_by:request.user %}
-                <a href="{% url 'citation_detail' c.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a>
+                <a href="{% url 'citation_detail' c.id %}"
+                  class="btn btn-sm btn-outline-primary"
+                  hx-get="{% url 'citation_preview' c.id %}"
+                  hx-target="#citationPreviewModalContent"
+                  hx-swap="innerHTML"
+                  data-bs-toggle="modal"
+                  data-bs-target="#citationPreviewModal">
+                    {% trans "Ver" %}
+                </a>
             </td>
           </tr>
         {% endfor %}
@@ -120,6 +128,24 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de vista previa de reporte -->
+<div class="modal fade" id="citationPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content" id="citationPreviewModalContent">
+      <!-- Skeleton de carga inicial -->
+      <div class="modal-body p-4">
+        <div class="placeholder-glow">
+          <div class="placeholder col-6 mb-2"></div>
+          <div class="placeholder col-8 mb-2"></div>
+          <div class="placeholder col-4 mb-2"></div>
+          <div class="placeholder col-10 mb-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}

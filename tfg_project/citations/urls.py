@@ -55,4 +55,5 @@ urlpatterns = [
         ajax_views.get_semantic_citations,
         name="get_semantic_citations",
     ),
+    path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
 ]
