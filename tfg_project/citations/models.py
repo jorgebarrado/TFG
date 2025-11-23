@@ -6,24 +6,35 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
-    """
-    Extiende el modelo de usuario por defecto de Django para almacenar información adicional.
-
-    Atributos:
-        user (User): Relación uno a uno con el modelo de usuario de Django.
-        dblp_url (URLField): URL del perfil DBLP del usuario.
-    """
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
     dblp_url = models.URLField(blank=True, null=True)
 
-    def __str__(self):
-        """
-        Devuelve la representación en cadena del perfil, que es el nombre de usuario.
+    # NUEVO: info visual y redes
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        null=True,
+        verbose_name=_("Avatar"),
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name=_("Bio"),
+    )
+    twitter_url = models.URLField(blank=True, null=True)
+    github_url = models.URLField(blank=True, null=True)
+    linkedin_url = models.URLField(blank=True, null=True)
+    personal_website = models.URLField(blank=True, null=True)
 
-        Returns:
-            str: El nombre de usuario asociado.
-        """
+    # NUEVO: opciones de privacidad
+    is_public = models.BooleanField(default=True)
+    show_activity = models.BooleanField(default=True)
+    show_social_links = models.BooleanField(default=True)
+
+    def __str__(self):
         return self.user.username
 
 
