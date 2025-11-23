@@ -1,0 +1,90 @@
+﻿{% load i18n custom_filters %}
+
+<div class="modal-header border-0 pb-0">
+  <div>
+    <p class="text-uppercase text-muted small mb-1">{% trans "Vista previa de reporte" %}</p>
+    <h2 class="h4 fw-bold mb-1">
+      {% trans "Reporte" %} #{{ citation.id }}
+    </h2>
+    <p class="mb-0 text-muted small">
+      {% blocktrans with username=citation.user.username|default:"Anonymous" created_at=citation.created_at|date:"d/m/Y H:i" %}
+        Reportado por {{ username }} el {{ created_at }}
+      {% endblocktrans %}
+    </p>
+  </div>
+
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+</div>
+
+<div class="modal-body pt-3">
+  {% trans "Título no disponible" as fallback_title %}
+
+  <div class="row g-4">
+    <!-- Columna izquierda: info principal -->
+    <div class="col-lg-8">
+      <div class="mb-3">
+        <p class="text-uppercase text-muted small mb-1">{% trans "Artículo original" %}</p>
+        <h3 class="h5 mb-1">
+          {{ citation.metadata_original.title|default:citation.doi_original|default:fallback_title }}
+        </h3>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
+          <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <p class="text-muted small mb-1 text-uppercase">{% trans "Motivo / explicación" %}</p>
+        <p class="mb-0">
+          {{ citation.incorrect_reason|truncatechars:260 }}
+        </p>
+      </div>
+
+      <div class="border rounded-3 p-3 bg-body-tertiary mb-2">
+        <p class="text-muted small mb-1 text-uppercase">{% trans "DOI original" %}</p>
+        <p class="mb-1 small">
+          {{ citation.doi_original|default:"N/A" }}
+        </p>
+
+        <p class="text-muted small mb-1 text-uppercase mt-3">{% trans "Cita incorrecta" %}</p>
+        <p class="mb-0 small">
+          {{ citation.doi_incorrect|default:"N/A" }}
+        </p>
+      </div>
+
+      <p class="text-muted small mb-0">
+        {% trans "Abre el detalle completo para ver metadatos, comentarios y el historial de actividad." %}
+      </p>
+    </div>
+
+    <!-- Columna derecha: acciones -->
+    <div class="col-lg-4">
+      <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between">
+        <div class="mb-3">
+          <p class="text-muted small text-uppercase mb-2">{% trans "Acciones rápidas" %}</p>
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            {{ vote_buttons_html|safe }}
+            {{ save_button_html|safe }}
+          </div>
+
+          <p class="text-muted small mb-0">
+            {% trans "Puedes votar o guardar el reporte desde aquí o entrar al detalle para ver más contexto." %}
+          </p>
+        </div>
+
+        <div class="d-flex flex-column gap-2 mt-3">
+          <a href="{% url 'citation_detail' citation.id %}"
+             class="btn btn-primary">
+            {% trans "Ver reporte completo" %}
+          </a>
+          <button type="button"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal">
+            {% trans "Cerrar" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
