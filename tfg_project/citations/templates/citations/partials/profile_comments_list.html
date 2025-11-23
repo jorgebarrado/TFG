@@ -1,0 +1,22 @@
+{# citations/templates/citations/partials/profile_comments_list.html #}
+
+{% if comments_list %}
+  {% for c in comments_list %}
+    <div class="card mb-2 activity-card">
+      <div class="card-body">
+        <p class="mb-1">
+          Comentaste en
+          <a href="{% url 'citation_detail' c.citation.id %}">
+            Reporte #{{ c.citation.id }}
+          </a>
+        </p>
+        <p class="mb-1 small">
+          {{ c.content|truncatechars:180 }}
+        </p>
+        <small class="text-muted">{{ c.created_at|date:"d.m.Y H:i" }}</small>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Aún no has escrito comentarios.</p>
+{% endif %}

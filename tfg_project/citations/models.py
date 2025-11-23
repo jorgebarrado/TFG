@@ -6,24 +6,126 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
-    """
-    Extiende el modelo de usuario por defecto de Django para almacenar información adicional.
+    LANGUAGE_CHOICES = [
+        ("", _("Sin preferencia")),
+        ("es", _("Español")),
+        ("en", _("Inglés")),
+    ]
 
-    Atributos:
-        user (User): Relación uno a uno con el modelo de usuario de Django.
-        dblp_url (URLField): URL del perfil DBLP del usuario.
-    """
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
     dblp_url = models.URLField(blank=True, null=True)
 
-    def __str__(self):
-        """
-        Devuelve la representación en cadena del perfil, que es el nombre de usuario.
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Fecha de nacimiento"),
+    )
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_("País"),
+    )
+    preferred_language = models.CharField(
+        max_length=5,
+        blank=True,
+        choices=LANGUAGE_CHOICES,
+        verbose_name=_("Idioma preferido"),
+    )
 
-        Returns:
-            str: El nombre de usuario asociado.
-        """
+    # Información académica / profesional
+    research_area = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Área de investigación"),
+        help_text=_("Ej. Computer Science, Quantum Computing, Physics…"),
+    )
+    profession = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Profesión o rol"),
+        help_text=_("Ej. PhD Student, Researcher, Professor, QA Engineer…"),
+    )
+    institution = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_("Institución / organización"),
+        help_text=_("Ej. Universidad, centro de investigación o empresa."),
+    )
+
+    # Contacto y enlaces sociales
+    contact_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Correo de contacto"),
+        help_text=_("Correo que otros usuarios pueden usar para contactar contigo."),
+    )
+    social_link_1 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 1"),
+        help_text=_("Ej. perfil de X/Twitter, GitHub, LinkedIn, página personal…"),
+    )
+    social_link_2 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 2"),
+        help_text=_("Opcional."),
+    )
+    social_link_3 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 3"),
+        help_text=_("Opcional."),
+    )
+    social_link_4 = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("Enlace social 4"),
+        help_text=_("Opcional."),
+    )
+
+    # Preferencias de notificación
+    notify_comments_on_my_reports = models.BooleanField(
+        default=True,
+        verbose_name=_("Avisarme cuando comenten mis reportes"),
+    )
+    notify_comments_on_followed = models.BooleanField(
+        default=True,
+        verbose_name=_("Avisarme cuando haya nuevos comentarios en reportes que sigo"),
+    )
+    notify_votes_on_my_reports = models.BooleanField(
+        default=False,
+        verbose_name=_("Avisarme cuando mis reportes reciban nuevos votos"),
+    )
+    notify_news_and_updates = models.BooleanField(
+        default=False,
+        verbose_name=_("Recibir noticias y novedades de CiteCheck"),
+    )
+
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        null=True,
+        verbose_name=_("Avatar"),
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name=_("Bio"),
+    )
+    twitter_url = models.URLField(blank=True, null=True)
+    github_url = models.URLField(blank=True, null=True)
+    linkedin_url = models.URLField(blank=True, null=True)
+    personal_website = models.URLField(blank=True, null=True)
+
+    is_public = models.BooleanField(default=True)
+    show_activity = models.BooleanField(default=True)
+    show_social_links = models.BooleanField(default=True)
+
+    def __str__(self):
         return self.user.username
 
 
