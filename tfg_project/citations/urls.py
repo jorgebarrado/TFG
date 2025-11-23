@@ -21,6 +21,7 @@ urlpatterns = [
     path("perfil/mis-reportes/", user_views.my_reports, name="my_reports"),
     path("perfil/mis-comentarios/", user_views.my_comments, name="my_comments"),
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
+    path("perfil/", user_views.my_profile, name="my_profile"),
     path("perfil/ajustes/", user_views.account_settings, name="account_settings"),
     # AJAX Views
     path(
