@@ -9,6 +9,65 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import Comment, IncorrectCitation, UserProfile
 
+COUNTRY_CHOICES = [
+    ("", _("Selecciona un país")),
+    ("Afghanistan", "Afghanistan"),
+    ("Albania", "Albania"),
+    ("Algeria", "Algeria"),
+    ("Andorra", "Andorra"),
+    ("Argentina", "Argentina"),
+    ("Australia", "Australia"),
+    ("Austria", "Austria"),
+    ("Belgium", "Belgium"),
+    ("Brazil", "Brazil"),
+    ("Canada", "Canada"),
+    ("Chile", "Chile"),
+    ("China", "China"),
+    ("Colombia", "Colombia"),
+    ("Croatia", "Croatia"),
+    ("Czech Republic", "Czech Republic"),
+    ("Denmark", "Denmark"),
+    ("Estonia", "Estonia"),
+    ("Finland", "Finland"),
+    ("France", "France"),
+    ("Germany", "Germany"),
+    ("Greece", "Greece"),
+    ("Hungary", "Hungary"),
+    ("Iceland", "Iceland"),
+    ("India", "India"),
+    ("Ireland", "Ireland"),
+    ("Israel", "Israel"),
+    ("Italy", "Italy"),
+    ("Japan", "Japan"),
+    ("Latvia", "Latvia"),
+    ("Lithuania", "Lithuania"),
+    ("Luxembourg", "Luxembourg"),
+    ("Mexico", "Mexico"),
+    ("Netherlands", "Netherlands"),
+    ("New Zealand", "New Zealand"),
+    ("Norway", "Norway"),
+    ("Poland", "Poland"),
+    ("Portugal", "Portugal"),
+    ("Romania", "Romania"),
+    ("Russia", "Russia"),
+    ("Saudi Arabia", "Saudi Arabia"),
+    ("Singapore", "Singapore"),
+    ("Slovakia", "Slovakia"),
+    ("Slovenia", "Slovenia"),
+    ("South Africa", "South Africa"),
+    ("South Korea", "South Korea"),
+    ("Spain", "Spain"),
+    ("Sweden", "Sweden"),
+    ("Switzerland", "Switzerland"),
+    ("Turkey", "Turkey"),
+    ("Ukraine", "Ukraine"),
+    ("United Arab Emirates", "United Arab Emirates"),
+    ("United Kingdom", "United Kingdom"),
+    ("United States", "United States"),
+    ("Venezuela", "Venezuela"),
+    ("Vietnam", "Vietnam"),
+]
+
 User = get_user_model()
 
 
@@ -17,10 +76,20 @@ class UserProfileForm(forms.ModelForm):
     Formulario para actualizar la info extendida del perfil.
     """
 
+    country = forms.ChoiceField(
+        choices=COUNTRY_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+        label=_("País"),
+    )
+
     class Meta:
         model = UserProfile
         fields = [
             "dblp_url",
+            "date_of_birth",
+            "country",
+            "preferred_language",
             "avatar",
             "bio",
             "twitter_url",
@@ -37,6 +106,15 @@ class UserProfileForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "https://dblp.org/pid/...",
                 }
+            ),
+            "date_of_birth": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }
+            ),
+            "preferred_language": forms.Select(
+                attrs={"class": "form-control"},
             ),
             "bio": forms.Textarea(
                 attrs={
@@ -108,10 +186,12 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update(
-                {"class": "form-control", "placeholder": field.label}
-            )
+        # Quitar autofocus del campo antiguo para evitar scroll no deseado
+        if "old_password" in self.fields:
+            self.fields["old_password"].widget.attrs.pop("autofocus", None)
+
+        for field_name, field in self.fields.items():
+            field.widget.attrs.setdefault("class", "form-control")
 
 
 class LoginForm(AuthenticationForm):

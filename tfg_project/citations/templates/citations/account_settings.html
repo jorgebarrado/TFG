@@ -1,70 +1,328 @@
 {% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Ajustes de cuenta" %} - CiteCheck{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <h2 class="mb-4">Ajustes de cuenta</h2>
 
-  {% if messages %}
-    {% for m in messages %}
-      <div class="alert alert-{{ m.tags }}">{{ m }}</div>
-    {% endfor %}
-  {% endif %}
-
-  <div class="row align-items-stretch">
-    <!-- Columna izquierda: Perfil y DBLP -->
-    <div class="col-md-6 mb-4 d-flex flex-column">
-      <div class="card mb-4 flex-fill">
-        <div class="card-body">
-          <h4 class="card-title mb-3">Datos de perfil</h4>
-          <form method="post">
-            {% csrf_token %}
-            {{ profile_form.as_p }}
-            <button name="save_profile" class="btn btn-primary w-100">Guardar cambios</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="card flex-fill">
-        <div class="card-body">
-          <h4 class="card-title mb-3">DBLP URL</h4>
-          <form method="post">
-            {% csrf_token %}
-            {{ dblp_form.as_p }}
-            <button type="submit" name="save_dblp" class="btn btn-secondary w-100">Guardar URL DBLP</button>
-            <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary mt-3 w-100">
-              Ver mis artículos en DBLP
+  <div class="row">
+    <!-- NAV LATERAL -->
+    <div class="col-md-3 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <h5 class="card-title mb-3">{% trans "Ajustes" %}</h5>
+          <div class="list-group small" id="settings-nav">
+            <a href="#section-basic" class="list-group-item list-group-item-action active">
+              {% trans "Perfil básico" %}
             </a>
-          </form>
+            <a href="#section-extended" class="list-group-item list-group-item-action">
+              {% trans "Perfil extendido & redes" %}
+            </a>
+            <a href="#section-password" class="list-group-item list-group-item-action">
+              {% trans "Contraseña" %}
+            </a>
+          </div>
         </div>
       </div>
     </div>
-    <div class="card mb-4 flex-fill">
-      <div class="card-body">
-        <h4 class="card-title mb-3">Perfil</h4>
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ profile_form.as_p }}
-          <hr>
-          {{ userprofile_form.as_p }}
-          <button name="update_profile" class="btn btn-primary w-100">
-            Guardar cambios
-          </button>
-        </form>
-      </div>
-    </div>
-    <!-- Columna derecha: Contraseña -->
-    <div class="col-md-6 mb-4 d-flex">
-      <div class="card flex-fill w-100">
-        <div class="card-body">
-          <h4 class="card-title mb-3">Cambiar contraseña</h4>
-          <form method="post">
-            {% csrf_token %}
-            {{ pwd_form.as_p }}
-            <button name="change_password" class="btn btn-warning w-100">Actualizar contraseña</button>
-          </form>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="col-md-9">
+
+      <!-- PERFIL BÁSICO -->
+      <section id="section-basic" class="mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-3">{% trans "Perfil básico" %}</h4>
+            <p class="text-muted small mb-3">
+              {% trans "Información principal de tu cuenta: nombre de usuario, email y otros datos básicos." %}
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ profile_form.as_p }}
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.date_of_birth.label_tag }}
+                  {{ userprofile_form.date_of_birth }}
+                  {% if userprofile_form.date_of_birth.errors %}
+                    <div class="text-danger small">{{ userprofile_form.date_of_birth.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.country.label_tag }}
+                  {{ userprofile_form.country }}
+                  {% if userprofile_form.country.errors %}
+                    <div class="text-danger small">{{ userprofile_form.country.errors }}</div>
+                  {% endif %}
+
+                  
+                </div>
+              </div>
+
+              <div class="mb-3">
+                {{ userprofile_form.preferred_language.label_tag }}
+                {{ userprofile_form.preferred_language }}
+                {% if userprofile_form.preferred_language.errors %}
+                  <div class="text-danger small">{{ userprofile_form.preferred_language.errors }}</div>
+                {% endif %}
+                <small class="text-muted">
+                  {% trans "Este es el idioma que prefieres para la interfaz de CiteCheck." %}
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label d-block">
+                  {% trans "Avatar" %}
+                </label>
+
+                <div class="d-flex align-items-center gap-4">
+                  <div class="avatar-settings-circle">
+                    {% if profile.avatar %}
+                      <img id="avatar-preview"
+                           src="{{ profile.avatar.url }}"
+                           alt="Avatar preview">
+                    {% else %}
+                      <span id="avatar-initial">
+                        {{ user.get_full_name|default:user.username|first|upper }}
+                      </span>
+                      <img id="avatar-preview"
+                           src=""
+                           alt="Avatar preview"
+                           style="display:none;">
+                    {% endif %}
+                  </div>
+
+                  <div class="flex-grow-1">
+                    {{ userprofile_form.avatar }}
+                    {% if userprofile_form.avatar.errors %}
+                      <div class="text-danger small">{{ userprofile_form.avatar.errors }}</div>
+                    {% endif %}
+                    <small class="text-muted d-block mt-1">
+                      {% trans "Selecciona una imagen cuadrada para un mejor encuadre." %}
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit"
+                      name="update_basic_profile"
+                      class="btn btn-primary">
+                {% trans "Guardar cambios de perfil" %}
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- PERFIL EXTENDIDO -->
+      <section id="section-extended" class="mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-3">{% trans "Perfil extendido, DBLP & redes sociales" %}</h4>
+            <p class="text-muted small mb-3">
+              {% trans "Configura tu información académica, biografía, enlaces de redes sociales y opciones de privacidad." %}
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ userprofile_form.non_field_errors }}
+
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-2">{% trans "Información académica" %}</h6>
+                  <div class="mb-3">
+                    {{ userprofile_form.dblp_url.label_tag }}
+                    {{ userprofile_form.dblp_url }}
+                    {% if userprofile_form.dblp_url.errors %}
+                      <div class="text-danger small">{{ userprofile_form.dblp_url.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="mb-2">{% trans "Avatar" %}</h6>
+                  <div class="mb-3">
+                    {{ userprofile_form.avatar.label_tag }}
+                    {{ userprofile_form.avatar }}
+                    {% if userprofile_form.avatar.errors %}
+                      <div class="text-danger small">{{ userprofile_form.avatar.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <hr>
+
+              <h6 class="mb-2">{% trans "Biografía" %}</h6>
+              <div class="mb-3">
+                {{ userprofile_form.bio.label_tag }}
+                {{ userprofile_form.bio }}
+                {% if userprofile_form.bio.errors %}
+                  <div class="text-danger small">{{ userprofile_form.bio.errors }}</div>
+                {% endif %}
+              </div>
+
+              <hr>
+
+              <h6 class="mb-2">{% trans "Redes sociales" %}</h6>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.twitter_url.label_tag }}
+                  {{ userprofile_form.twitter_url }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.github_url.label_tag }}
+                  {{ userprofile_form.github_url }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.linkedin_url.label_tag }}
+                  {{ userprofile_form.linkedin_url }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  {{ userprofile_form.personal_website.label_tag }}
+                  {{ userprofile_form.personal_website }}
+                </div>
+              </div>
+
+              <hr>
+
+              <h6 class="mb-2">{% trans "Privacidad" %}</h6>
+              <div class="row">
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    {{ userprofile_form.is_public }}
+                    {{ userprofile_form.is_public.label_tag }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    {{ userprofile_form.show_activity }}
+                    {{ userprofile_form.show_activity.label_tag }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    {{ userprofile_form.show_social_links }}
+                    {{ userprofile_form.show_social_links.label_tag }}
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit"
+                      name="update_extended_profile"
+                      class="btn btn-primary mt-3">
+                {% trans "Guardar perfil extendido" %}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTRASEÑA -->
+      <section id="section-password" class="mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-3">{% trans "Cambiar contraseña" %}</h4>
+            <p class="text-muted small mb-3">
+              {% trans "Por seguridad, te recomendamos actualizar tu contraseña de forma periódica." %}
+            </p>
+
+            <form method="post">
+              {% csrf_token %}
+              {{ pwd_form.as_p }}
+              <button type="submit"
+                      name="change_password"
+                      class="btn btn-outline-danger">
+                {% trans "Actualizar contraseña" %}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Quitar autofocus del campo de contraseña antigua (por si viniera en el HTML)
+    const oldPwdInput = document.getElementById("id_old_password");
+    if (oldPwdInput) {
+      oldPwdInput.removeAttribute("autofocus");
+    }
+
+    // Desactivar restauración automática del scroll del navegador
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    const navLinks = document.querySelectorAll('#settings-nav a[href^="#"]');
+
+    function scrollToHash(hash) {
+      const target = document.querySelector(hash);
+      if (!target) return;
+      window.scrollTo({
+        top: target.offsetTop - 80,
+        behavior: "smooth"
+      });
+    }
+
+    // Caso 1: entramos SIN hash → vamos a la parte de arriba (Perfil básico)
+    if (!window.location.hash) {
+      window.scrollTo({ top: 0 });
+      navLinks.forEach(l => l.classList.remove("active"));
+      if (navLinks.length) {
+        navLinks[0].classList.add("active");
+      }
+    } else {
+      // Caso 2: entramos con hash (por ejemplo, después de guardar contraseña)
+      scrollToHash(window.location.hash);
+      navLinks.forEach(l => {
+        l.classList.toggle("active", l.getAttribute("href") === window.location.hash);
+      });
+    }
+
+    // Click en los enlaces del menú lateral → scroll suave + marcar activo
+    navLinks.forEach(link => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const hash = this.getAttribute("href");
+        scrollToHash(hash);
+
+        navLinks.forEach(l => l.classList.remove("active"));
+        this.classList.add("active");
+
+        // actualizar el hash en la barra de direcciones sin recargar
+        history.pushState(null, "", hash);
+      });
+    });
+
+    // Previsualizar avatar al seleccionar archivo
+    const avatarInput = document.getElementById("id_avatar");
+    const avatarPreview = document.getElementById("avatar-preview");
+    const avatarInitial = document.getElementById("avatar-initial");
+    if (avatarInput && avatarPreview) {
+      avatarInput.addEventListener("change", function () {
+        const [file] = avatarInput.files || [];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          avatarPreview.src = url;
+          avatarPreview.style.display = "block";
+          if (avatarInitial) {
+            avatarInitial.style.display = "none";
+          }
+        }
+      });
+    }
+});
+</script>
+{% endblock %}
+
