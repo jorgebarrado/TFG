@@ -10,50 +10,47 @@ from ..forms import CustomPasswordChangeForm, ProfileForm, UserProfileForm
 from ..models import Comment, IncorrectCitation, SavedCitation, UserProfile
 from ..utils import check_doi_has_citations, get_articles_from_dblp
 
+from itertools import chain
+from django.db.models import Count
+
+from ..models import Comment, IncorrectCitation, SavedCitation, UserProfile, Vote
 
 @login_required
 def account_settings(request):
-    """
-    Gestiona la configuración de la cuenta de usuario.
-    """
     user = request.user
-    profile_form = ProfileForm(instance=user)
-    pwd_form = CustomPasswordChangeForm(user)
-    userprofile, _ = UserProfile.objects.get_or_create(user=user)
-    dblp_form = UserProfileForm(instance=userprofile)
-
-    articles = []
-    if userprofile.dblp_url:
-        articles = get_articles_from_dblp(userprofile.dblp_url)
+    profile, _ = UserProfile.objects.get_or_create(user=user)
 
     if request.method == "POST":
-        if "save_profile" in request.POST:
-            profile_form = ProfileForm(request.POST, instance=user)
-            if profile_form.is_valid():
-                profile_form.save()
-                messages.success(request, "Perfil actualizado.")
-                return redirect("account_settings")
+        profile_form = ProfileForm(request.POST, instance=user)
+        userprofile_form = UserProfileForm(
+            request.POST,
+            request.FILES,
+            instance=profile,
+        )
+        pwd_form = CustomPasswordChangeForm(user, request.POST)
 
-        elif "change_password" in request.POST:
-            pwd_form = CustomPasswordChangeForm(user, request.POST)
-            if pwd_form.is_valid():
-                pwd_form.save()
-                update_session_auth_hash(request, pwd_form.user)
-                messages.success(request, "Contraseña cambiada.")
-                return redirect("account_settings")
+        # distinguir qué formulario se ha enviado por el name del botón
+        if "update_profile" in request.POST and profile_form.is_valid() and userprofile_form.is_valid():
+            profile_form.save()
+            userprofile_form.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect("account_settings")
 
-        elif "save_dblp" in request.POST:
-            dblp_form = UserProfileForm(request.POST, instance=userprofile)
-            if dblp_form.is_valid():
-                dblp_form.save()
-                messages.success(request, "URL de DBLP actualizada.")
-                return redirect("account_settings")
+        if "change_password" in request.POST and pwd_form.is_valid():
+            pwd_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Contraseña actualizada.")
+            return redirect("account_settings")
+
+    else:
+        profile_form = ProfileForm(instance=user)
+        userprofile_form = UserProfileForm(instance=profile)
+        pwd_form = CustomPasswordChangeForm(user)
 
     context = {
         "profile_form": profile_form,
+        "userprofile_form": userprofile_form,
         "pwd_form": pwd_form,
-        "dblp_form": dblp_form,
-        "articles": articles,
     }
     return render(request, "citations/account_settings.html", context)
 
@@ -134,3 +131,82 @@ def dblp_articles_view(request):
         "busqueda": busqueda,
     }
     return render(request, "citations/dblp_articles.html", context)
+
+
+@login_required
+def my_profile(request):
+    user = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # Stats
+    reports_qs = IncorrectCitation.objects.filter(author=user)
+    comments_qs = Comment.objects.filter(author=user)
+    votes_qs = Vote.objects.filter(user=user)
+    saved_qs = SavedCitation.objects.filter(user=user)
+
+    stats = {
+        "reports": reports_qs.count(),
+        "comments": comments_qs.count(),
+        "votes": votes_qs.count(),
+        "saved": saved_qs.count(),
+        "joined": user.date_joined,
+    }
+
+    # Última actividad (simple pero efectiva)
+    activities = []
+
+    for r in reports_qs:
+        activities.append(
+            {
+                "type": "report",
+                "created_at": r.created_at,
+                "text": f"Creó el reporte «{r.doi_original}»",
+                "citation": r,
+            }
+        )
+
+    for c in comments_qs:
+        activities.append(
+            {
+                "type": "comment",
+                "created_at": c.created_at,
+                "text": f"Comentó en «{c.citation.doi_original}»",
+                "citation": c.citation,
+            }
+        )
+
+    for s in saved_qs:
+        activities.append(
+            {
+                "type": "saved",
+                "created_at": s.created_at,
+                "text": f"Guardó el reporte «{s.citation.doi_original}»",
+                "citation": s.citation,
+            }
+        )
+
+    for v in votes_qs:
+        label = "Votó positivo" if v.value == 1 else "Votó negativo"
+        activities.append(
+            {
+                "type": "vote",
+                "created_at": v.citation.created_at,  # o un campo created_at si lo tienes
+                "text": f"{label} en «{v.citation.doi_original}»",
+                "citation": v.citation,
+            }
+        )
+
+    activities = sorted(activities, key=lambda a: a["created_at"], reverse=True)[:20]
+
+    context = {
+        "profile_user": user,
+        "profile": profile,
+        "stats": stats,
+        "activities": activities,
+        "reports_list": reports_qs.order_by("-created_at")[:20],
+        "comments_list": comments_qs.select_related("citation").order_by("-created_at")[:20],
+        "saved_list": saved_qs.select_related("citation").order_by("-created_at")[:20],
+        "votes_list": votes_qs.select_related("citation").order_by("citation__created_at")[:20],
+    }
+
+    return render(request, "citations/profile.html", context)

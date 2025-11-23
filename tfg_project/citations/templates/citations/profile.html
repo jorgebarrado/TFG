@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mi perfil - CiteCheck{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- HEADER -->
+  <div class="profile-header text-white mb-4 rounded-4 p-4 d-flex align-items-center">
+    <div class="me-4">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" class="rounded-circle profile-avatar" alt="Avatar">
+      {% else %}
+        <div class="rounded-circle profile-avatar d-flex align-items-center justify-content-center bg-dark">
+          <span class="fs-2 text-uppercase">{{ profile_user.username|first }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="flex-grow-1">
+      <h2 class="mb-1">{{ profile_user.username }}</h2>
+      <p class="mb-2 small text-muted">
+        Fecha de registro: {{ stats.joined|date:"d.m.y" }}
+      </p>
+
+      <div class="d-flex flex-wrap gap-3 stats-bar">
+        <div><span class="stat-number">{{ stats.reports }}</span><span class="stat-label">Reports</span></div>
+        <div><span class="stat-number">{{ stats.comments }}</span><span class="stat-label">Comments</span></div>
+        <div><span class="stat-number">{{ stats.votes }}</span><span class="stat-label">Votes</span></div>
+        <div><span class="stat-number">{{ stats.saved }}</span><span class="stat-label">Saved</span></div>
+      </div>
+    </div>
+
+    <div class="ms-4 d-none d-md-block">
+      <a href="{% url 'account_settings' %}" class="btn btn-outline-light btn-sm">
+        Account settings
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- MAIN TABS -->
+    <div class="col-lg-9 mb-4">
+      <ul class="nav nav-tabs profile-tabs mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-activity">Latest Activity</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reports">Reports</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-comments">Comments</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-saved">Saved</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-votes">Votes</button></li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Latest Activity -->
+        <div class="tab-pane fade show active" id="tab-activity">
+          {% if activities %}
+            {% for a in activities %}
+              <div class="card mb-2 activity-card">
+                <div class="card-body d-flex">
+                  <div class="me-3">
+                    <div class="rounded-circle activity-avatar bg-dark"></div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <p class="mb-1">
+                      <strong>{{ profile_user.username }}</strong> {{ a.text }}
+                      <a href="{% url 'citation_detail' a.citation.id %}">Ver reporte</a>
+                    </p>
+                    <small class="text-muted">{{ a.created_at|date:"d.m.y H:i" }}</small>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">Aún no hay actividad.</p>
+          {% endif %}
+        </div>
+
+        <!-- Reports -->
+        <div class="tab-pane fade" id="tab-reports">
+          {% include "citations/partials/profile_reports_list.html" %}
+        </div>
+
+        <!-- Comments -->
+        <div class="tab-pane fade" id="tab-comments">
+          {% include "citations/partials/profile_comments_list.html" %}
+        </div>
+
+        <!-- Saved -->
+        <div class="tab-pane fade" id="tab-saved">
+          {% include "citations/partials/profile_saved_list.html" %}
+        </div>
+
+        <!-- Votes -->
+        <div class="tab-pane fade" id="tab-votes">
+          {% include "citations/partials/profile_votes_list.html" %}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-3">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">About</h5>
+          <p class="small mb-0">
+            {% if profile.bio %}
+              {{ profile.bio }}
+            {% else %}
+              Añade una breve descripción sobre ti en los ajustes de cuenta.
+            {% endif %}
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Redes sociales</h5>
+          <ul class="list-unstyled small mb-0">
+            <li>X/Twitter: {{ profile.twitter_url|default:"N/A" }}</li>
+            <li>GitHub: {{ profile.github_url|default:"N/A" }}</li>
+            <li>LinkedIn: {{ profile.linkedin_url|default:"N/A" }}</li>
+            <li>Website: {{ profile.personal_website|default:"N/A" }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

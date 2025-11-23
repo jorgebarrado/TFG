@@ -1,0 +1,26 @@
+{# citations/templates/citations/partials/profile_saved_list.html #}
+
+{% if saved_list %}
+  {% for s in saved_list %}
+    <div class="card mb-2 activity-card">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="mb-1">
+            <strong>Reporte guardado</strong> – #{{ s.citation.id }}
+          </p>
+          <p class="mb-1 small text-muted">
+            {{ s.citation.doi_original }}
+          </p>
+          <small class="text-muted">
+            Guardado el {{ s.created_at|date:"d.m.Y H:i" }}
+          </small>
+        </div>
+        <a href="{% url 'citation_detail' s.citation.id %}" class="btn btn-sm btn-outline-light">
+          Ver
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Todavía no has guardado reportes.</p>
+{% endif %}

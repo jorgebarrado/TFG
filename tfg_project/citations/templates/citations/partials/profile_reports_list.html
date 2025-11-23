@@ -1,0 +1,25 @@
+{# citations/templates/citations/partials/profile_reports_list.html #}
+
+{% if reports_list %}
+  {% for r in reports_list %}
+    <div class="card mb-2 activity-card">
+      <div class="card-body">
+        <p class="mb-1">
+          <strong>Reporte #{{ r.id }}</strong>
+          {% if r.doi_original %}
+            – {{ r.doi_original }}
+          {% endif %}
+        </p>
+        <p class="mb-1 small text-muted">
+          {{ r.get_citation_type_display|default:r.citation_type }} ·
+          {{ r.created_at|date:"d.m.Y H:i" }}
+        </p>
+        <a href="{% url 'citation_detail' r.id %}" class="small">
+          Ver reporte
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Aún no has creado ningún reporte.</p>
+{% endif %}

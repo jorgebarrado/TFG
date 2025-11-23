@@ -14,21 +14,42 @@ User = get_user_model()
 
 class UserProfileForm(forms.ModelForm):
     """
-    Formulario para actualizar la URL de DBLP de un perfil de usuario.
+    Formulario para actualizar la info extendida del perfil.
     """
 
     class Meta:
         model = UserProfile
-        fields = ["dblp_url"]
+        fields = [
+            "dblp_url",
+            "avatar",
+            "bio",
+            "twitter_url",
+            "github_url",
+            "linkedin_url",
+            "personal_website",
+            "is_public",
+            "show_activity",
+            "show_social_links",
+        ]
         widgets = {
             "dblp_url": forms.URLInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "https://dblp.org/pid/...",
                 }
-            )
+            ),
+            "bio": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Breve descripción sobre ti…",
+                }
+            ),
+            "twitter_url": forms.URLInput(attrs={"class": "form-control"}),
+            "github_url": forms.URLInput(attrs={"class": "form-control"}),
+            "linkedin_url": forms.URLInput(attrs={"class": "form-control"}),
+            "personal_website": forms.URLInput(attrs={"class": "form-control"}),
         }
-
 
 class RegisterForm(UserCreationForm):
     """

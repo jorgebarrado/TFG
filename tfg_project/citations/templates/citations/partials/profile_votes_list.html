@@ -1,0 +1,28 @@
+{# citations/templates/citations/partials/profile_votes_list.html #}
+
+{% if votes_list %}
+  {% for v in votes_list %}
+    <div class="card mb-2 activity-card">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="mb-1">
+            {% if v.value == 1 %}
+              Votaste <span class="text-success">positivo</span> el reporte #{{ v.citation.id }}
+            {% else %}
+              Votaste <span class="text-danger">negativo</span> el reporte #{{ v.citation.id }}
+            {% endif %}
+          </p>
+          <p class="mb-1 small text-muted">
+            {{ v.citation.doi_original }}
+          </p>
+          <small class="text-muted">{{ v.created_at|default:v.citation.created_at|date:"d.m.Y H:i" }}</small>
+        </div>
+        <a href="{% url 'citation_detail' v.citation.id %}" class="btn btn-sm btn-outline-light">
+          Ver
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Aún no has votado reportes.</p>
+{% endif %}
