@@ -1,19 +1,27 @@
 """Views related to user profiles and personalized content."""
 
+from itertools import chain
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.translation import activate
 
 from ..forms import CustomPasswordChangeForm, ProfileForm, UserProfileForm
-from ..models import Comment, IncorrectCitation, SavedCitation, UserProfile
+from ..models import (
+    Comment,
+    IncorrectCitation,
+    SavedCitation,
+    UserProfile,
+    Vote,
+)
 from ..utils import check_doi_has_citations, get_articles_from_dblp
 
-from itertools import chain
-from django.db.models import Count
-
-from ..models import Comment, IncorrectCitation, SavedCitation, UserProfile, Vote
 
 @login_required
 def account_settings(request):
@@ -30,17 +38,41 @@ def account_settings(request):
         pwd_form = CustomPasswordChangeForm(user, request.POST)
 
         # distinguir qué formulario se ha enviado por el name del botón
-        if "update_profile" in request.POST and profile_form.is_valid() and userprofile_form.is_valid():
-            profile_form.save()
-            userprofile_form.save()
-            messages.success(request, "Perfil actualizado correctamente.")
-            return redirect("account_settings")
+        if "update_basic_profile" in request.POST:
+            if profile_form.is_valid() and userprofile_form.is_valid():
+                profile_form.save()
+                profile = userprofile_form.save()
+
+                lang = profile.preferred_language
+                url = reverse("account_settings") + "#section-basic"
+                response = redirect(url)
+                if lang:
+                    activate(lang)
+                    response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+
+                messages.success(request, "Perfil actualizado correctamente.")
+                return response
+
+        elif "update_extended_profile" in request.POST:
+            if userprofile_form.is_valid():
+                profile = userprofile_form.save()
+
+                lang = profile.preferred_language
+                url = reverse("account_settings") + "#section-extended"
+                response = redirect(url)
+                if lang:
+                    activate(lang)
+                    response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+
+                messages.success(request, "Perfil extendido actualizado.")
+                return response
 
         if "change_password" in request.POST and pwd_form.is_valid():
             pwd_form.save()
             update_session_auth_hash(request, user)
             messages.success(request, "Contraseña actualizada.")
-            return redirect("account_settings")
+            url = reverse("account_settings") + "#section-password"
+            return redirect(url)
 
     else:
         profile_form = ProfileForm(instance=user)
@@ -51,6 +83,7 @@ def account_settings(request):
         "profile_form": profile_form,
         "userprofile_form": userprofile_form,
         "pwd_form": pwd_form,
+        "profile": profile,
     }
     return render(request, "citations/account_settings.html", context)
 
@@ -160,7 +193,7 @@ def my_profile(request):
             {
                 "type": "report",
                 "created_at": r.created_at,
-                "text": f"Creó el reporte «{r.doi_original}»",
+                "text": f"Creó el reporte “{r.doi_original}”",
                 "citation": r,
             }
         )
@@ -170,7 +203,7 @@ def my_profile(request):
             {
                 "type": "comment",
                 "created_at": c.created_at,
-                "text": f"Comentó en «{c.citation.doi_original}»",
+                "text": f"Comentó en “{c.citation.doi_original}”",
                 "citation": c.citation,
             }
         )
@@ -180,7 +213,7 @@ def my_profile(request):
             {
                 "type": "saved",
                 "created_at": s.created_at,
-                "text": f"Guardó el reporte «{s.citation.doi_original}»",
+                "text": f"Guardó el reporte “{s.citation.doi_original}”",
                 "citation": s.citation,
             }
         )
@@ -191,7 +224,7 @@ def my_profile(request):
             {
                 "type": "vote",
                 "created_at": v.citation.created_at,  # o un campo created_at si lo tienes
-                "text": f"{label} en «{v.citation.doi_original}»",
+                "text": f"{label} en “{v.citation.doi_original}”",
                 "citation": v.citation,
             }
         )

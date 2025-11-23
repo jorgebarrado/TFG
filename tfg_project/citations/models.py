@@ -6,12 +6,36 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    LANGUAGE_CHOICES = [
+        ("", _("Sin preferencia")),
+        ("es", _("Español")),
+        ("en", _("Inglés")),
+    ]
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="profile",
     )
     dblp_url = models.URLField(blank=True, null=True)
+
+    # NUEVO
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Fecha de nacimiento"),
+    )
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_("País"),
+    )
+    preferred_language = models.CharField(
+        max_length=5,
+        blank=True,
+        choices=LANGUAGE_CHOICES,
+        verbose_name=_("Idioma preferido"),
+    )
 
     # NUEVO: info visual y redes
     avatar = models.ImageField(
