@@ -29,6 +29,7 @@ class ContextHit(TypedDict):
     start: int
     end: int
     pattern: str
+    section: str  # "body" o "references"
 
 
 def _ensure_papermage_available() -> None:
@@ -199,18 +200,30 @@ def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[Contex
         return []
 
     contexts: List[ContextHit] = []
+    in_references = False
     for paragraph in _iter_paragraphs(document):
+        text = paragraph.text or ""
+        stripped = text.strip()
+
+        if not in_references:
+            if re.match(r"^(references|bibliography)\b", stripped, flags=re.IGNORECASE):
+                in_references = True
+                continue
+
+        section = "references" if in_references else "body"
+
         for pattern_str, pattern in compiled_patterns:
-            for match in pattern.finditer(paragraph.text):
+            for match in pattern.finditer(text):
                 start, end = match.span()
                 contexts.append(
                     {
-                        "paragraph": paragraph.text,
-                        "snippet": _make_snippet(paragraph.text, start, end),
+                        "paragraph": text,
+                        "snippet": _make_snippet(text, start, end),
                         "page": paragraph.page,
                         "start": start,
                         "end": end,
                         "pattern": pattern_str,
+                        "section": section,
                     }
                 )
 
