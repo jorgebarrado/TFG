@@ -294,7 +294,7 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
         )
 
     patterns = [
-        r"\[(\d+)\]",
+        r"\[(\d+(?:\s*[,–-]\s*\d+)*)\]",  # [4], [4, 7], [4-7], [4–7]
         r"\b[A-Z][a-z]+ et al\., \d{4}\b",
         r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+",
     ]
