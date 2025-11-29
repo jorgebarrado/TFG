@@ -1,6 +1,6 @@
 # citations/urls.py
 from django.urls import path
-from . import views_api
+from . import views_ai, views_api, views_reports
 from .views import ajax_views, auth_views, page_views, user_views
 
 urlpatterns = [
@@ -12,6 +12,26 @@ urlpatterns = [
     ),
     path("list/", page_views.citation_list, name="citation_list"),
     path("report/<int:pk>/", page_views.citation_detail, name="citation_detail"),
+    path(
+        "report/wizard/",
+        views_reports.create_report_wizard,
+        name="create_report_wizard",
+    ),
+    path(
+        "reports/create/ajax/",
+        views_reports.ajax_submit_report,
+        name="ajax_submit_report",
+    ),
+    path(
+        "reports/<int:pk>/ai-detect/",
+        views_ai.citation_ai_detect,
+        name="citation_ai_detect",
+    ),
+    path(
+        "reports/<int:pk>/ai-evaluate/",
+        views_ai.citation_ai_evaluate,
+        name="citation_ai_evaluate",
+    ),
     # User Views
     path(
         "perfil/dblp-articulos/",
