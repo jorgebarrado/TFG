@@ -1,5 +1,6 @@
 """Views that handle AJAX requests and return JSON responses."""
 
+import json
 import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
@@ -114,6 +115,31 @@ def ajax_submit_citation(request):
         citation = form.save(commit=False)
         if request.user.is_authenticated:
             citation.author = request.user
+
+        # Metadatos del artículo original (A)
+        raw_original = request.POST.get("original_metadata_json")
+        if raw_original:
+            try:
+                citation.metadata_original = json.loads(raw_original)
+            except json.JSONDecodeError:
+                pass
+
+        # Metadatos del artículo que cita (B)
+        raw_incorrect = request.POST.get("citing_metadata_json")
+        if raw_incorrect:
+            try:
+                citation.metadata_incorrect = json.loads(raw_incorrect)
+            except json.JSONDecodeError:
+                pass
+
+        # Contextos seleccionados donde aparece la cita
+        raw_contexts = request.POST.get("citing_paragraphs_json")
+        if raw_contexts:
+            try:
+                citation.citation_contexts = json.loads(raw_contexts)
+            except json.JSONDecodeError:
+                pass
+
         citation.save()
 
         if _is_ajax(request):

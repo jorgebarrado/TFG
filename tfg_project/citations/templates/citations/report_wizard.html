@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<section class="container py-4">
+
+  <h1 class="text-center mb-4">{% trans "Crear nuevo reporte" %}</h1>
+
+  <form id="report-wizard-form"
+        action="{% url 'ajax_submit' %}"
+        method="post"
+        enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Inputs ocultos para mandar datos enriquecidos -->
+    <input type="hidden" name="doi_original" id="hidden-original-doi">
+    <input type="hidden" name="original_metadata_json" id="hidden-original-metadata">
+    <input type="hidden" name="doi_incorrect" id="hidden-citing-doi">
+    <input type="hidden" name="citing_metadata_json" id="hidden-citing-metadata">
+    <input type="hidden" name="citing_paragraphs_json" id="hidden-citing-paragraphs">
+
+    <!-- SECCIÓN 1: Artículo original -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="h5 mb-0">1. {% trans "Artículo original (el que es citado)" %}</h3>
+      </div>
+      <div class="card-body">
+
+        <label class="form-label">{% trans "DOI del artículo original" %}</label>
+        <div class="d-flex gap-2">
+          <input id="doi-original" type="text" class="form-control" placeholder="10.xxxx/..." />
+          <button class="btn btn-primary" type="button" id="btn-fetch-original">
+            {% trans "Buscar metadatos" %}
+          </button>
+        </div>
+
+        <div id="original-result" class="mt-3 small text-muted"></div>
+
+        <div id="original-pdf-section" class="mt-3">
+          <p class="small mb-1">
+            {% trans "Opcional: sube el PDF del artículo original si quieres usarlo más adelante." %}
+          </p>
+          <input type="file"
+                 name="original_pdf_uploaded"
+                 class="form-control form-control-sm"
+                 accept="application/pdf" />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: Artículo que cita incorrectamente -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="h5 mb-0">2. {% trans "Artículo que cita (posiblemente de forma incorrecta)" %}</h3>
+      </div>
+      <div class="card-body">
+
+        <label class="form-label">{% trans "DOI del artículo que cita" %}</label>
+        <div class="d-flex gap-2">
+          <input id="doi-citing" type="text" class="form-control" placeholder="10.xxxx/..." />
+          <button class="btn btn-primary" type="button" id="btn-fetch-citing">
+            {% trans "Buscar metadatos" %}
+          </button>
+        </div>
+
+        <div id="citing-result" class="mt-3 small text-muted"></div>
+
+        <hr>
+
+        <p class="small text-muted mb-2">
+          {% trans "Opcional: sube el PDF del artículo que cita y extrae párrafos donde pueda aparecer la cita." %}
+        </p>
+
+        <div class="mb-2">
+          <input type="file"
+                 id="citing-pdf-input"
+                 name="citing_pdf_uploaded"
+                 class="form-control form-control-sm"
+                 accept="application/pdf" />
+        </div>
+
+        <button class="btn btn-outline-primary btn-sm mt-2" type="button" id="btn-extract-paragraphs">
+          {% trans "Extraer posibles párrafos de cita (opcional)" %}
+        </button>
+
+        <div id="paragraph-selector" class="mt-4 d-none">
+          <h5 class="mb-2">{% trans "Párrafos seleccionados" %}</h5>
+          <p class="small text-muted">
+            {% trans "Marca uno o varios fragmentos relevantes. Si no seleccionas ninguno, igualmente podrás crear el reporte." %}
+          </p>
+          <div id="paragraph-list"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: Detalles del reporte -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="h5 mb-0">3. {% trans "Detalles del reporte" %}</h3>
+      </div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label">{% trans "Tipo de error" %}</label>
+          <select id="error-type" name="citation_type" class="form-select">
+            <option value="not said">Not said</option>
+            <option value="misinterpretation">Misinterpretation</option>
+            <option value="contextual misattribution">Contextual misattribution</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{% trans "Área de publicación" %}</label>
+          <select name="publication_area" class="form-select" required>
+            <option value="">{% trans "Selecciona un área..." %}</option>
+            {% for value, label in publication_area_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{% trans "Explicación del error" %}</label>
+          <textarea id="user-explanation"
+                    name="incorrect_reason"
+                    rows="4"
+                    class="form-control"
+                    required></textarea>
+        </div>
+
+        <p class="small text-muted">
+          {% trans "Puedes crear el reporte aunque no hayas podido subir PDFs o seleccionar párrafos. Más adelante una IA podrá ayudarte a valorar la cita con los datos disponibles." %}
+        </p>
+
+      </div>
+    </div>
+
+    <div class="text-end mb-4">
+      <button class="btn btn-success" type="button" id="btn-submit-report">
+        {% trans "Crear reporte" %}
+      </button>
+    </div>
+
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const form = document.getElementById("report-wizard-form");
+
+  const doiOriginalInput = document.getElementById("doi-original");
+  const doiCitingInput = document.getElementById("doi-citing");
+
+  const btnFetchOriginal = document.getElementById("btn-fetch-original");
+  const btnFetchCiting = document.getElementById("btn-fetch-citing");
+  const btnExtractParagraphs = document.getElementById("btn-extract-paragraphs");
+  const btnSubmitReport = document.getElementById("btn-submit-report");
+
+  const originalResult = document.getElementById("original-result");
+  const citingResult = document.getElementById("citing-result");
+
+  const hiddenOriginalDoi = document.getElementById("hidden-original-doi");
+  const hiddenOriginalMetadata = document.getElementById("hidden-original-metadata");
+  const hiddenCitingDoi = document.getElementById("hidden-citing-doi");
+  const hiddenCitingMetadata = document.getElementById("hidden-citing-metadata");
+  const hiddenCitingParagraphs = document.getElementById("hidden-citing-paragraphs");
+
+  const paragraphSelector = document.getElementById("paragraph-selector");
+  const paragraphList = document.getElementById("paragraph-list");
+  const citingPdfInput = document.getElementById("citing-pdf-input");
+
+  let selectedParagraphs = [];
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // --- Buscar metadatos del artículo original ---
+  btnFetchOriginal.addEventListener("click", function() {
+    const doi = (doiOriginalInput.value || "").trim();
+    if (!doi) {
+      alert("Introduce un DOI para el artículo original.");
+      return;
+    }
+
+    originalResult.textContent = "Buscando metadatos...";
+    hiddenOriginalDoi.value = "";
+    hiddenOriginalMetadata.value = "";
+
+    fetch(`/citations/get_all_metadata/?doi=${encodeURIComponent(doi)}`)
+      .then(response => response.json())
+      .then(data => {
+        const title = data.title?.[0] || data.title || "Título no disponible";
+        const authors = data.author
+          ? data.author.map(a => `${a.given || ""} ${a.family || ""}`.trim()).join(", ")
+          : "Autores no disponibles";
+        const journal = data["container-title"]?.[0] || data.journal || "Revista no disponible";
+        const year = data["published-print"]?.["date-parts"]?.[0]?.[0] ||
+                     data["published-online"]?.["date-parts"]?.[0]?.[0] ||
+                     data.issued?.["date-parts"]?.[0]?.[0] ||
+                     "";
+
+        originalResult.innerHTML = `
+          <div class="card card-body p-2">
+            <div class="fw-semibold mb-1">${escapeHtml(title)}</div>
+            <div class="small text-muted mb-1">${escapeHtml(authors)}</div>
+            <div class="small text-muted">${escapeHtml(journal)} ${year ? " · " + escapeHtml(String(year)) : ""}</div>
+          </div>
+        `;
+
+        hiddenOriginalDoi.value = doi;
+        hiddenOriginalMetadata.value = JSON.stringify(data);
+      })
+      .catch(error => {
+        console.error(error);
+        originalResult.innerHTML = `<span class="text-danger">No se pudieron obtener metadatos para este DOI.</span>`;
+      });
+  });
+
+  // --- Buscar metadatos del artículo que cita ---
+  btnFetchCiting.addEventListener("click", function() {
+    const doi = (doiCitingInput.value || "").trim();
+    if (!doi) {
+      alert("Introduce un DOI para el artículo que cita.");
+      return;
+    }
+
+    citingResult.textContent = "Buscando metadatos...";
+    hiddenCitingDoi.value = "";
+    hiddenCitingMetadata.value = "";
+
+    paragraphSelector.classList.add("d-none");
+    paragraphList.innerHTML = "";
+    selectedParagraphs = [];
+    hiddenCitingParagraphs.value = "";
+
+    fetch(`/citations/get_all_metadata/?doi=${encodeURIComponent(doi)}`)
+      .then(response => response.json())
+      .then(data => {
+        const title = data.title?.[0] || data.title || "Título no disponible";
+        const authors = data.author
+          ? data.author.map(a => `${a.given || ""} ${a.family || ""}`.trim()).join(", ")
+          : "Autores no disponibles";
+        const journal = data["container-title"]?.[0] || data.journal || "Revista no disponible";
+        const year = data["published-print"]?.["date-parts"]?.[0]?.[0] ||
+                     data["published-online"]?.["date-parts"]?.[0]?.[0] ||
+                     data.issued?.["date-parts"]?.[0]?.[0] ||
+                     "";
+
+        citingResult.innerHTML = `
+          <div class="card card-body p-2">
+            <div class="fw-semibold mb-1">${escapeHtml(title)}</div>
+            <div class="small text-muted mb-1">${escapeHtml(authors)}</div>
+            <div class="small text-muted">${escapeHtml(journal)} ${year ? " · " + escapeHtml(String(year)) : ""}</div>
+          </div>
+        `;
+
+        hiddenCitingDoi.value = doi;
+        hiddenCitingMetadata.value = JSON.stringify(data);
+      })
+      .catch(error => {
+        console.error(error);
+        citingResult.innerHTML = `<span class="text-danger">No se pudieron obtener metadatos para este DOI.</span>`;
+      });
+  });
+
+  // --- Extraer párrafos del PDF (opcional) ---
+  btnExtractParagraphs.addEventListener("click", function() {
+    const file = citingPdfInput.files[0];
+    if (!file) {
+      alert("Sube primero el PDF del artículo que cita (B).");
+      return;
+    }
+
+    paragraphList.innerHTML = "Extrayendo posibles citas...";
+    paragraphSelector.classList.remove("d-none");
+    selectedParagraphs = [];
+    hiddenCitingParagraphs.value = "";
+
+    const formData = new FormData();
+    formData.append("pdf_file", file);
+
+    const csrfInput = document.querySelector("input[name='csrfmiddlewaretoken']");
+    if (csrfInput) {
+      formData.append("csrfmiddlewaretoken", csrfInput.value);
+    }
+
+    fetch("{% url 'api_pdf_citation_contexts_upload' %}", {
+      method: "POST",
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      const contexts = data.contexts || [];
+      if (!contexts.length) {
+        paragraphList.innerHTML = "<p class='text-muted'>No se encontraron citas en el PDF con los patrones actuales.</p>";
+        return;
+      }
+
+      paragraphList.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+
+      contexts.forEach((ctx, index) => {
+        const paragraph = ctx.paragraph || "";
+        const page = ctx.page || "?";
+
+        const card = document.createElement("div");
+        card.className = "card mb-2";
+
+        const body = document.createElement("div");
+        body.className = "card-body p-2";
+
+        const label = document.createElement("label");
+        label.className = "d-flex align-items-start gap-2";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "form-check-input mt-1";
+        checkbox.value = index;
+
+        const content = document.createElement("div");
+        content.innerHTML = `
+          <div class="small text-muted mb-1">Página ${escapeHtml(String(page))}</div>
+          <div class="small" style="white-space:pre-wrap;">${escapeHtml(paragraph)}</div>
+        `;
+
+        label.appendChild(checkbox);
+        label.appendChild(content);
+        body.appendChild(label);
+        card.appendChild(body);
+        fragment.appendChild(card);
+
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            selectedParagraphs.push({
+              paragraph: ctx.paragraph,
+              snippet: ctx.snippet,
+              page: ctx.page,
+              start: ctx.start,
+              end: ctx.end,
+              pattern: ctx.pattern
+            });
+          } else {
+            selectedParagraphs = selectedParagraphs.filter(p => !(p.paragraph === ctx.paragraph && p.page === ctx.page));
+          }
+          hiddenCitingParagraphs.value = JSON.stringify(selectedParagraphs);
+        });
+      });
+
+      paragraphList.appendChild(fragment);
+    })
+    .catch(error => {
+      console.error(error);
+      paragraphList.innerHTML = "<p class='text-danger'>Error al extraer citas del PDF.</p>";
+    });
+  });
+
+  // --- Enviar reporte (con validación mínima) ---
+  btnSubmitReport.addEventListener("click", function() {
+    if (!hiddenOriginalDoi.value || !hiddenCitingDoi.value) {
+      alert("Introduce y busca los DOIs del artículo original y del que cita antes de crear el reporte.");
+      return;
+    }
+
+    const explanation = document.getElementById("user-explanation").value.trim();
+    if (!explanation) {
+      alert("Por favor, explica brevemente el motivo del reporte.");
+      return;
+    }
+
+    if (!hiddenCitingParagraphs.value) {
+      const ok = confirm(
+        "No has seleccionado ningún párrafo del artículo que cita.\n\n" +
+        "Podrás crear el reporte igualmente, pero el contexto será más limitado.\n\n" +
+        "¿Quieres continuar?"
+      );
+      if (!ok) return;
+    }
+
+    form.submit();
+  });
+
+})();
+</script>
+{% endblock %}

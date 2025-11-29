@@ -228,3 +228,25 @@ def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[Contex
                 )
 
     return contexts
+
+
+def pm_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """
+    Variante que devuelve página e índice global por párrafo.
+    Formato: [{"page": int, "index": int, "text": str}, ...]
+    """
+    document = _load_document(pdf_path)
+    paragraphs: List[dict] = []
+    global_index = 0
+
+    for paragraph in _iter_paragraphs(document):
+        paragraphs.append(
+            {
+                "page": paragraph.page,
+                "index": global_index,
+                "text": paragraph.text,
+            }
+        )
+        global_index += 1
+
+    return paragraphs
