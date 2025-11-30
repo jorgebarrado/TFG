@@ -20,7 +20,7 @@
                 <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
                 <h1 class="display-5 fw-bold mb-2">{% trans "Reporte" %} #{{ citation.id }}</h1>
                 <p class="lead mb-3" id="reportOriginalTitle">
-                    {{ citation.metadata_original_title|default:citation.doi_original|default:citation.doi_incorrect|default:fallback_title }}
+                    {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
                 </p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
@@ -72,6 +72,9 @@
                         <div class="card h-100 shadow-sm">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
+                                <p class="mb-1 fw-semibold">
+                                    {{ citation.metadata_incorrect_title|default:citation.doi_incorrect|default:fallback_title }}
+                                </p>
                                 <div class="border rounded-3 p-3" id="metadataIncorrect">
                                     <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
                                 </div>
@@ -246,7 +249,7 @@
                                     <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
                                 </div>
                                 <p class="mb-1 fw-semibold">
-                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
+                                    {{ report.metadata_original_title|default:report.doi_original|default:fallback_title|truncatechars:80 }}
                                 </p>
                                 <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
                             </a>
@@ -258,71 +261,6 @@
     </div>
 </div>
 
-<!-- Modal metadatos DOI -->
-<div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{% trans "Metadatos del artículo" %}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
-      </div>
-      <div class="modal-body" id="doiMetadataContent">
-        <p>{% trans "Cargando metadatos..." %}</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal confirmación eliminar -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-danger">
-      <div class="modal-header">
-        <h5 class="modal-title">{% trans "¿Eliminar comentario?" %}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
-      </div>
-      <div class="modal-body">
-        {% trans "Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este comentario?" %}
-      </div>
-      <div class="modal-footer">
-        <form id="deleteCommentForm" method="post" class="d-inline">
-          {% csrf_token %}
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancelar" %}</button>
-          <button type="submit" class="btn btn-danger">{% trans "Eliminar" %}</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">{% trans "Reportes populares" %}</h5>
-                    {% if popular_reports %}
-                        <div class="list-group list-group-flush">
-                            {% for report in popular_reports %}
-                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
-                                <div class="mb-2 d-flex flex-wrap gap-2">
-                                    <span class="badge text-bg-info">{{ report.get_publication_area_display }}</span>
-                                    <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
-                                </div>
-                                <p class="mb-1 fw-semibold">
-                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
-                                </p>
-                                <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted small mb-0">{% trans "Pronto mostraremos los reportes más consultados." %}</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <!-- Modal metadatos DOI -->
 <div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">

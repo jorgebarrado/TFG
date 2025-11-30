@@ -82,14 +82,18 @@ def analyze_report_with_ai(citation: IncorrectCitation) -> Dict[str, Any]:
     """
     Llama a OpenAI para evaluar el reporte y guarda el resultado en ai_assessment.
     """
+    missing_config_msg = (
+        "La evaluación automática con IA no está configurada en este servidor "
+        "(falta la dependencia openai o la variable OPENAI_API_KEY)."
+    )
     try:
         from openai import OpenAI
     except ImportError as exc:
-        raise RuntimeError("Falta la dependencia openai para usar la evaluación IA.") from exc
+        raise RuntimeError(missing_config_msg) from exc
 
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("Falta OPENAI_API_KEY en el entorno para usar OpenAI.")
+        raise RuntimeError(missing_config_msg)
 
     client = OpenAI(api_key=api_key)
     prompt = _build_report_prompt(citation)
