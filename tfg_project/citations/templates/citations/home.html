@@ -8,211 +8,577 @@
     <p class="lead">{% trans "Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica." %}</p>
 
     <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
-        🟢 {% trans "Reporte enviado con éxito." %}
+        {% trans "Reporte enviado con éxito." %}
     </div>
 
-    <!-- Botones de acción -->
     <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
         <button class="btn btn-primary btn-lg"
                 data-bs-toggle="modal"
                 data-bs-target="#reportModal">
-            ➕ {% trans "Crear nuevo reporte" %}
+            {% trans "Crear nuevo reporte" %}
         </button>
 
         <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">
-            📄 {% trans "Ver lista de reportes" %}
+            {% trans "Ver lista de reportes" %}
         </a>
 
-        <!-- NUEVO: acceso directo a DBLP -->
         <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary btn-lg">
-            📚 {% trans "Ver artículos de DBLP" %}
+            {% trans "Ver artículos de DBLP" %}
+        </a>
+        <a href="{% url 'create_report_wizard' %}" class="btn btn-outline-primary btn-lg">
+            Wizard de reporte
         </a>
         <button class="btn btn-outline-secondary ms-2"
                 type="button"
                 data-bs-toggle="modal"
-                data-bs-target="#extractModal">
+                data-bs-target="#extractPdfCitationsModal">
             <span class="me-1">📄</span> {% trans "Extraer citas (PDF)" %}
         </button>
     </div>
 </div>
 
 {% include 'citations/modals/report_modal.html' %}
-{% include "citations/modals/extract_modal.html" %}
+<!-- Modal para extracción de citas desde PDF subido -->
+<div class="modal fade" id="extractPdfCitationsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Extraer citas de un PDF</h5>
+          <p class="mb-0 small text-muted">
+            Sube el PDF del artículo y te mostraremos los fragmentos donde se han detectado posibles citas.
+          </p>
+        </div>
+        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Formulario de subida -->
+        <form id="pdf-extract-form" enctype="multipart/form-data" class="mb-3">
+          {% csrf_token %}
+          <div class="row g-2 align-items-end">
+            <div class="col-md-7">
+              <label for="pdf-file-input" class="form-label mb-1">Selecciona un archivo PDF</label>
+              <input type="file" class="form-control" id="pdf-file-input" name="pdf_file" accept="application/pdf">
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-primary w-100">
+                Extraer citas
+              </button>
+            </div>
+            <div class="col-md-2 text-end d-none d-md-block">
+              <button type="button" class="btn btn-outline-secondary w-100" id="pdf-extract-export-btn" disabled>
+                Exportar JSON
+              </button>
+            </div>
+          </div>
+        </form>
+        <!-- NUEVO: resumen compacto del archivo -->
+        <div id="pdf-extract-file-summary" class="d-none small text-muted mb-2">
+        </div>
+
+        <!-- Estado / resumen -->
+        <div id="pdf-extract-status" class="small text-muted mb-2">
+          Selecciona un PDF y pulsa "Extraer citas".
+        </div>
+
+        <!-- Controles de filtro y búsqueda -->
+        <div id="pdf-extract-controls" class="border rounded p-2 mb-3 d-none">
+          <details id="pdf-extract-filters">
+            <summary class="small text-muted mb-2">
+              Filtros avanzados
+            </summary>
+
+            <!-- Fila principal: 3 cajas iguales -->
+            <div class="d-md-flex flex-md-row flex-column gap-2">
+              <div class="flex-fill">
+                <label class="form-label mb-1 small">Buscar en resultados</label>
+                <input type="text"
+                       id="pdf-extract-search"
+                       class="form-control form-control-sm"
+                       placeholder="Filtrar por texto (autor, año, palabra…)">
+              </div>
+              <div class="flex-fill">
+                <label class="form-label mb-1 small">Filtrar por tipo de cita</label>
+                <select id="pdf-extract-pattern-filter"
+                        class="form-select form-select-sm">
+                  <option value="all">Todas las citas</option>
+                  <option value="numeric">Citas numéricas [n]</option>
+                  <option value="author">Apellido et al., año</option>
+                  <option value="doi">DOI en el texto</option>
+                </select>
+              </div>
+              <div class="flex-fill">
+                <label class="form-label mb-1 small">Sección</label>
+                <select id="pdf-extract-section-filter"
+                        class="form-select form-select-sm">
+                  <option value="all">Todo</option>
+                  <option value="body">Solo cuerpo del artículo</option>
+                  <option value="references">Solo referencias</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Fila secundaria: página + botones -->
+            <div class="row g-2 align-items-end mt-2">
+              <div class="col-md-4">
+                <label class="form-label mb-1 small">Página</label>
+                <input type="number" min="1" id="pdf-extract-page-filter"
+                       class="form-control form-control-sm" placeholder="Todas">
+              </div>
+              <div class="col-md-4 d-md-none">
+                <button type="button" class="btn btn-sm btn-outline-secondary w-100"
+                        id="pdf-extract-export-btn-mobile" disabled>
+                  Exportar JSON
+                </button>
+              </div>
+              <div class="col-md-4 text-md-end">
+                <button type="button" class="btn btn-sm btn-outline-secondary w-100"
+                        id="pdf-extract-clear-filters">
+                  Limpiar filtros
+                </button>
+              </div>
+            </div>
+          </details>
+        </div>
+        <!-- Resultados -->
+        <div id="pdf-extract-results" class="mt-2" style="max-height: 450px; overflow-y: auto;">
+          <!-- Aquí se pintarán las cards de resultados -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'js/extract_modal.js' %}"></script>
 <script>
-  const extractModalEl = document.getElementById('extractModal');
-  if (extractModalEl) {
-    extractModalEl.addEventListener('show.bs.modal', () => {
-      const alertBox   = document.getElementById('extract-alert');
-      const summaryBox = document.getElementById('extract-summary');
-      const resultsBox = document.getElementById('extract-results');
-      const tracePre   = document.getElementById('extract-trace');
-      alertBox?.classList.add('d-none');
-      summaryBox?.classList.add('d-none');
-      resultsBox?.classList.add('d-none');
-      tracePre?.classList.add('d-none');
-      alertBox && (alertBox.textContent = '');
-      summaryBox && (summaryBox.textContent = '');
-      resultsBox && (resultsBox.innerHTML = '');
-      tracePre && (tracePre.textContent = '');
-      // reset form (opcional):
-      document.getElementById('extract-form')?.reset();
+(function () {
+  const form = document.getElementById("pdf-extract-form");
+  if (!form) return;
+
+  const fileInput = document.getElementById("pdf-file-input");
+  const fileSummaryBox = document.getElementById("pdf-extract-file-summary");
+  const statusBox = document.getElementById("pdf-extract-status");
+  const resultsBox = document.getElementById("pdf-extract-results");
+  const controlsBox = document.getElementById("pdf-extract-controls");
+
+  const searchInput = document.getElementById("pdf-extract-search");
+  const typeFilterSelect = document.getElementById("pdf-extract-pattern-filter");
+  const sectionFilterSelect = document.getElementById("pdf-extract-section-filter");
+  const pageFilterInput = document.getElementById("pdf-extract-page-filter");
+  const clearFiltersBtn = document.getElementById("pdf-extract-clear-filters");
+
+  const exportBtn = document.getElementById("pdf-extract-export-btn");
+  const exportBtnMobile = document.getElementById("pdf-extract-export-btn-mobile");
+
+  let allContexts = [];
+  let lastPage = null;  // usaremos la última página como "referencias"
+
+  // --- envío del formulario (subida y análisis del PDF) ---
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Por favor, selecciona un archivo PDF.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf_file", file);
+
+    const csrfTokenInput = document.querySelector("input[name='csrfmiddlewaretoken']");
+    const csrfToken = csrfTokenInput ? csrfTokenInput.value : "";
+
+    statusBox.textContent = "Procesando el PDF, por favor espera...";
+    resultsBox.innerHTML = "";
+    controlsBox.classList.add("d-none");
+    setExportEnabled(false);
+    allContexts = [];
+    lastPage = null;
+
+    fetch("{% url 'api_pdf_citation_contexts_upload' %}", {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken },
+      body: formData,
+    })
+      .then(response => response.json().then(data => ({ ok: response.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          statusBox.textContent = data.error || "Se ha producido un error al procesar el PDF.";
+          return;
+        }
+
+        const rawContexts = data.contexts || [];
+        if (!rawContexts.length) {
+          statusBox.textContent = "No se han encontrado citas con los patrones configurados.";
+          resultsBox.innerHTML = "<p class='text-muted mb-0'>Prueba con otro PDF o revisa los patrones de búsqueda.</p>";
+          return;
+        }
+
+        // Preprocesar: calcular matchText y tipo de cita independiente del 'pattern'
+        allContexts = rawContexts.map((ctx) => {
+          const paragraph = ctx.paragraph || "";
+          const start = Number.isInteger(ctx.start) ? ctx.start : -1;
+          const end = Number.isInteger(ctx.end) ? ctx.end : -1;
+          let matchText = "";
+          if (start >= 0 && end > start && end <= paragraph.length) {
+            matchText = paragraph.slice(start, end);
+          } else if (ctx.snippet) {
+            matchText = ctx.snippet;
+          }
+          const type = classifyMatch(matchText);
+          const page = typeof ctx.page === "number" ? ctx.page : null;
+          return Object.assign({}, ctx, { matchText, type, page });
+        });
+
+        // calcular última página (referencias)
+        const pagesArray = allContexts
+          .map(c => c.page)
+          .filter(p => typeof p === "number" && !Number.isNaN(p));
+        lastPage = pagesArray.length ? Math.max(...pagesArray) : null;
+
+        const pagesSet = new Set(pagesArray);
+        statusBox.textContent =
+          `Se han encontrado ${allContexts.length} posibles contextos de cita ` +
+          (pagesSet.size ? `en ${pagesSet.size} página(s).` : "");
+
+        // resumen compacto del archivo y ocultar formulario grande
+        if (fileSummaryBox) {
+          fileSummaryBox.innerHTML = `
+            Analizando: <strong>${escapeHtml(file.name)}</strong>
+            <button type="button" class="btn btn-link btn-sm ms-2 p-0" id="pdf-extract-change-file">
+              Cambiar PDF
+            </button>
+          `;
+          fileSummaryBox.classList.remove("d-none");
+          form.classList.add("d-none");
+
+          const changeBtn = document.getElementById("pdf-extract-change-file");
+          if (changeBtn) {
+            changeBtn.addEventListener("click", () => {
+              form.classList.remove("d-none");
+              fileSummaryBox.classList.add("d-none");
+              resultsBox.innerHTML = "";
+              controlsBox.classList.add("d-none");
+              statusBox.textContent = 'Selecciona un PDF y pulsa "Extraer citas".';
+              setExportEnabled(false);
+              allContexts = [];
+              lastPage = null;
+            });
+          }
+        }
+
+        controlsBox.classList.remove("d-none");
+        setExportEnabled(true);
+        resetFilters();
+        attachFilterListenersOnce();
+        renderContexts();
+      })
+      .catch(error => {
+        console.error(error);
+        statusBox.textContent = "Error inesperado al llamar a la API.";
+      });
+  });
+
+  // --- filtros y export ---
+
+  let listenersAttached = false;
+  function attachFilterListenersOnce() {
+    if (listenersAttached) return;
+    listenersAttached = true;
+
+    if (searchInput) {
+      searchInput.addEventListener("input", debounce(renderContexts, 200));
+    }
+    if (typeFilterSelect) {
+      typeFilterSelect.addEventListener("change", renderContexts);
+    }
+    if (sectionFilterSelect) {
+      sectionFilterSelect.addEventListener("change", renderContexts);
+    }
+    if (pageFilterInput) {
+      pageFilterInput.addEventListener("input", debounce(renderContexts, 200));
+    }
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener("click", () => {
+        resetFilters();
+        renderContexts();
+      });
+    }
+    if (exportBtn) exportBtn.addEventListener("click", exportAsJson);
+    if (exportBtnMobile) exportBtnMobile.addEventListener("click", exportAsJson);
+  }
+
+  function resetFilters() {
+    if (searchInput) searchInput.value = "";
+    if (typeFilterSelect) typeFilterSelect.value = "all";
+    if (sectionFilterSelect) sectionFilterSelect.value = "all";
+    if (pageFilterInput) pageFilterInput.value = "";
+  }
+
+  function setExportEnabled(enabled) {
+    if (exportBtn) exportBtn.disabled = !enabled;
+    if (exportBtnMobile) exportBtnMobile.disabled = !enabled;
+  }
+
+  function exportAsJson() {
+    if (!allContexts.length) return;
+    const blob = new Blob([JSON.stringify(allContexts, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "pdf_citation_contexts.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function applyFilters() {
+    const text = (searchInput?.value || "").toLowerCase();
+    const typeFilter = typeFilterSelect?.value || "all";
+    const sectionFilter = sectionFilterSelect?.value || "all";
+    const pageVal = pageFilterInput?.value.trim();
+    const pageNum = pageVal ? parseInt(pageVal, 10) : null;
+
+    return allContexts.filter(ctx => {
+      const paragraph = ctx.paragraph || "";
+      const snippet = ctx.snippet || "";
+      const haystack = (paragraph + " " + snippet).toLowerCase();
+
+      if (text && !haystack.includes(text)) return false;
+      if (pageNum && ctx.page !== pageNum) return false;
+
+      // sección: usamos la última página como "referencias"
+      if (sectionFilter === "body" && lastPage !== null && ctx.page === lastPage) {
+        return false;
+      }
+      if (sectionFilter === "references" && lastPage !== null && ctx.page !== lastPage) {
+        return false;
+      }
+
+      if (typeFilter !== "all") {
+        const t = ctx.type || "other";
+        if (t !== typeFilter) return false;
+      }
+
+      return true;
     });
   }
-</script>
-{% if show_login_modal %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const loginModalTrigger = document.querySelector('[data-bs-target="#loginModal"]');
-    if (loginModalTrigger) loginModalTrigger.click();
-  });
-</script>
-{% endif %}
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const reportForm = document.getElementById('reportForm');
-        const successAlert = document.getElementById('successAlert');
-        const reportModalEl = document.getElementById('reportModal');
-        const errorMessage = "{% trans 'Hubo un error al enviar el reporte.' %}";
-        const successTemplate = "{% trans 'Reporte enviado con éxito.' %}";
+  // --- render de resultados ---
 
-        if (!reportForm) {
-            return;
+  function renderContexts() {
+    resultsBox.innerHTML = "";
+
+    if (!allContexts.length) {
+      resultsBox.innerHTML = "<p class='text-muted mb-0'>No hay resultados que mostrar.</p>";
+      return;
+    }
+
+    const filtered = applyFilters();
+    if (!filtered.length) {
+      resultsBox.innerHTML = "<p class='text-muted mb-0'>No hay resultados que coincidan con los filtros actuales.</p>";
+      return;
+    }
+
+    // agrupar por página
+    const byPage = new Map();
+    filtered.forEach((ctx) => {
+      const page = ctx.page ?? "?";
+      if (!byPage.has(page)) byPage.set(page, []);
+      byPage.get(page).push(ctx);
+    });
+
+    const container = document.createElement("div");
+
+    const pagesSorted = Array.from(byPage.keys()).sort((a, b) => {
+      const na = parseInt(a, 10);
+      const nb = parseInt(b, 10);
+      if (isNaN(na) || isNaN(nb)) return String(a).localeCompare(String(b));
+      return na - nb;
+    });
+
+    let globalIndex = 1;
+
+    pagesSorted.forEach(pageKey => {
+      const contexts = byPage.get(pageKey) || [];
+
+      const pageHeader = document.createElement("div");
+      pageHeader.className = "d-flex justify-content-between align-items-center mb-2 mt-3";
+      pageHeader.innerHTML = `
+        <div class="fw-semibold">
+          Página ${escapeHtml(String(pageKey))}
+          <span class="badge bg-light text-muted ms-1">${contexts.length} cita(s)</span>
+        </div>
+        <div class="small text-muted">Pulsa en “Ver contexto” para desplegar el párrafo completo.</div>
+      `;
+      container.appendChild(pageHeader);
+
+      contexts.forEach(ctx => {
+        const card = document.createElement("div");
+        card.className = "card mb-2";
+
+        const typeLabelMap = {
+          numeric: "Cita numérica [n]",
+          author: "Cita tipo «Apellido et al., año»",
+          doi: "DOI en el texto",
+          other: "Otro tipo de cita",
+        };
+        const typeLabel = typeLabelMap[ctx.type || "other"] || "Otro tipo de cita";
+
+        const header = document.createElement("div");
+        header.className = "card-header py-2 d-flex justify-content-between align-items-center";
+        header.innerHTML = `
+          <div class="small">
+            <span class="badge bg-secondary me-2">#${globalIndex}</span>
+            <span class="fw-semibold">${escapeHtml(typeLabel)}</span>
+          </div>
+          <small class="text-muted">Página ${escapeHtml(String(pageKey))}</small>
+        `;
+
+        const body = document.createElement("div");
+        body.className = "card-body pt-2 pb-2";
+
+        // texto citado
+        const meta = document.createElement("div");
+        meta.className = "small text-muted mb-2";
+        meta.innerHTML = `
+          <div><span class="fw-semibold">Texto citado:</span> ${
+            ctx.matchText
+              ? `<code>${escapeHtml(ctx.matchText)}</code>`
+              : "<span class='text-muted'>No disponible</span>"
+          }</div>
+        `;
+        body.appendChild(meta);
+
+        // contexto con <mark>
+        const paragraph = ctx.paragraph || "";
+        const start = Number.isInteger(ctx.start) ? ctx.start : -1;
+        const end = Number.isInteger(ctx.end) ? ctx.end : -1;
+        let highlightedHtml;
+
+        if (start >= 0 && end > start && end <= paragraph.length) {
+          const before = paragraph.slice(0, start);
+          const match = paragraph.slice(start, end);
+          const after = paragraph.slice(end);
+          highlightedHtml =
+            escapeHtml(before) +
+            "<mark>" + escapeHtml(match) + "</mark>" +
+            escapeHtml(after);
+        } else if (ctx.snippet) {
+          highlightedHtml = escapeHtml(ctx.snippet);
+        } else {
+          highlightedHtml = escapeHtml(paragraph);
         }
 
-        reportForm.addEventListener('submit', function (event) {
-            event.preventDefault();
+        const paragraphEl = document.createElement("p");
+        paragraphEl.className = "card-text small mb-2";
+        paragraphEl.style.whiteSpace = "pre-wrap";
+        paragraphEl.style.display = "none";
+        paragraphEl.innerHTML = highlightedHtml;
 
-            const formData = new FormData(reportForm);
-            const csrfToken = getCookie('csrftoken');
-            const headers = {
-                'X-Requested-With': 'XMLHttpRequest',
-            };
-            if (csrfToken) {
-                headers['X-CSRFToken'] = csrfToken;
-            }
+        const toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "btn btn-link btn-sm ps-0";
+        toggleBtn.textContent = "Ver contexto";
+        let expanded = false;
 
-            fetch(reportForm.action, {
-                method: 'POST',
-                headers,
-                body: formData,
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        return response.json().then((data) => {
-                            throw data;
-                        });
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    if (successAlert) {
-                        successAlert.classList.remove('d-none');
-                        successAlert.textContent = data?.citation_id
-                            ? `#${data.citation_id} ${successTemplate}`
-                            : successTemplate;
-                    }
-
-                    if (reportModalEl) {
-                        const modalInstance =
-                            bootstrap.Modal.getInstance(reportModalEl) ||
-                            new bootstrap.Modal(reportModalEl);
-                        modalInstance.hide();
-                    }
-                    reportForm.reset();
-                })
-                .catch((err) => {
-                    console.error('Report submission failed', err);
-                    alert(errorMessage);
-                });
+        toggleBtn.addEventListener("click", () => {
+          expanded = !expanded;
+          if (expanded) {
+            paragraphEl.style.display = "block";
+            toggleBtn.textContent = "Ocultar contexto";
+          } else {
+            paragraphEl.style.display = "none";
+            toggleBtn.textContent = "Ver contexto";
+          }
         });
+
+        body.appendChild(toggleBtn);
+        body.appendChild(paragraphEl);
+
+        const actions = document.createElement("div");
+        actions.className = "mt-2 d-flex flex-wrap gap-2";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "btn btn-sm btn-outline-secondary";
+        copyBtn.textContent = "Copiar fragmento";
+        copyBtn.addEventListener("click", () => {
+          const textToCopy = ctx.snippet || ctx.paragraph || "";
+          if (!textToCopy) return;
+          navigator.clipboard.writeText(textToCopy)
+            .then(() => { statusBox.textContent = "Fragmento copiado al portapapeles."; })
+            .catch(() => { statusBox.textContent = "No se pudo copiar el fragmento."; });
+        });
+
+        const reportLink = document.createElement("button");
+        reportLink.type = "button";
+        reportLink.className = "btn btn-sm btn-primary";
+        reportLink.setAttribute("data-bs-toggle", "modal");
+        reportLink.setAttribute("data-bs-target", "#reportModal");
+        reportLink.textContent = "Crear reporte desde esta cita";
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(reportLink);
+
+        body.appendChild(actions);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        container.appendChild(card);
+
+        globalIndex += 1;
+      });
     });
-</script>
 
+    resultsBox.appendChild(container);
+  }
 
-<script>
-    $(document).ready(function () {
-        function fetchDOIMetadata(doi, type) {
-            const preview = $(`#doi${type}Preview`);
-            const error = $(`#doi${type}Error`);
-            const success = $(`#doi${type}Success`);
-            const title = $(`#doiTitle${type}`);
-            const authors = $(`#doiAuthors${type}`);
-            const journal = $(`#doiJournal${type}`);
-            const year = $(`#doiYear${type}`);
+  // --- clasificación por texto matcheado, no por patrón ---
+  function classifyMatch(text) {
+    if (!text) return "other";
+    const t = text.trim();
 
-            preview.addClass('d-none');
-            error.addClass('d-none');
-            success.addClass('d-none');
+    // DOI: algo tipo 10.1145/3137065.3137069
+    if (/^10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+$/i.test(t)) {
+      return "doi";
+    }
 
-            if (!doi) return;
+    // Numérica: [4], [4, 7], [4-7], etc.
+    if (/^\[\s*\d+(?:\s*[,–-]\s*\d+)*\s*\]$/.test(t)) {
+      return "numeric";
+    }
 
-            $.get('/citations/get_all_metadata/', { doi: doi })
-                .done(function (data) {
-                    title.text(data.title?.[0] || 'N/A');
-                    authors.text(data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A');
-                    journal.text(data['container-title']?.[0] || 'N/A');
-                    year.text(data.issued?.['date-parts']?.[0]?.[0] || 'N/A');
+    // Autor-año: "Apellido et al., 2017"
+    if (/et al\.,?\s*\d{4}/i.test(t)) {
+      return "author";
+    }
 
-                    preview.removeClass('d-none');
-                    success.removeClass('d-none');
-                })
-                .fail(function () {
-                    error.removeClass('d-none');
-                });
-        }
+    return "other";
+  }
 
-        $('input[name="doi_original"]').on('blur', function () {
-            fetchDOIMetadata($(this).val(), 'Original');
-        });
+  // --- utilidades ---
+  function escapeHtml(text) {
+    if (!text) return "";
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-        $('input[name="doi_incorrect"]').on('blur', function () {
-            fetchDOIMetadata($(this).val(), 'Incorrect');
-        });
-
-        $('#reportModal').on('hidden.bs.modal', function () {
-            $('#doiMetadataPreview, #doiOriginalSuccess, #doiError').addClass('d-none');
-            $('#doiIncorrectPreview, #doiIncorrectSuccess, #doiIncorrectError').addClass('d-none');
-        });
-
-        $('#toggleOriginalMetadata').on('click', function () {
-            const preview = $('#doiOriginalPreview');
-            const isVisible = !preview.hasClass('d-none');
-
-            preview.toggleClass('d-none');
-            $(this).text(isVisible ? '{% trans "Ver metadatos" %}' : '{% trans "Ocultar metadatos" %}');
-        });
-
-        $('#toggleIncorrectMetadata').on('click', function () {
-            const preview = $('#doiIncorrectPreview');
-            const isVisible = !preview.hasClass('d-none');
-
-            preview.toggleClass('d-none');
-            $(this).text(isVisible ? '{% trans "Ver metadatos" %}' : '{% trans "Ocultar metadatos" %}');
-        });
-    });
-</script>
-
-<script>
-    $('#reportModal').on('hidden.bs.modal shown.bs.modal', function () {
-        // Limpia campos de entrada
-        $('#reportForm')[0].reset();
-
-        // Oculta y limpia metadatos y mensajes
-        $('#doiSuccess, #doiIncorrectSuccess, #doiError, #doiIncorrectError').addClass('d-none');
-        $('#doiPreview, #doiIncorrectPreview').addClass('d-none');
-
-        // Borra textos de metadatos
-        $('#doiTitle, #doiAuthors, #doiJournal, #doiYear').text('');
-        $('#doiTitleIncorrect, #doiAuthorsIncorrect, #doiJournalIncorrect, #doiYearIncorrect').text('');
-
-        // Reinicia botones
-        $('#toggleMetadata').text('{% trans "Ver metadatos" %}');
-        $('#toggleIncorrectMetadata').text('{% trans "Ver metadatos" %}');
-    });
+  function debounce(fn, delay) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+})();
 </script>
 {% endblock %}
