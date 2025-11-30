@@ -20,7 +20,7 @@
                 <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
                 <h1 class="display-5 fw-bold mb-2">{% trans "Reporte" %} #{{ citation.id }}</h1>
                 <p class="lead mb-3" id="reportOriginalTitle">
-                    {{ citation.metadata_original_title|default:citation.doi_original|default:citation.doi_incorrect|default:fallback_title }}
+                    {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
                 </p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
@@ -55,6 +55,16 @@
                                 <div class="border rounded-3 p-3" id="metadataOriginal">
                                     <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
                                 </div>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    <a href="https://doi.org/{{ citation.doi_original }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                        {% trans "Ver DOI" %}
+                                    </a>
+                                    {% if citation.original_pdf_uploaded %}
+                                    <a href="{{ citation.original_pdf_uploaded.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        {% trans "Ver PDF subido" %}
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -62,8 +72,21 @@
                         <div class="card h-100 shadow-sm">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
+                                <p class="mb-1 fw-semibold">
+                                    {{ citation.metadata_incorrect_title|default:citation.doi_incorrect|default:fallback_title }}
+                                </p>
                                 <div class="border rounded-3 p-3" id="metadataIncorrect">
                                     <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+                                </div>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    <a href="https://doi.org/{{ citation.doi_incorrect }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                        {% trans "Ver DOI" %}
+                                    </a>
+                                    {% if citation.citing_pdf_uploaded %}
+                                    <a href="{{ citation.citing_pdf_uploaded.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        {% trans "Ver PDF subido" %}
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -74,8 +97,83 @@
             <section class="mb-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
+                        <h5 class="card-title mb-3">{% trans "Párrafos donde aparece la cita" %}</h5>
+                        <form method="post" action="{% url 'citation_ai_detect' citation.id %}" class="mb-3 d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-primary btn-sm">
+                                {% trans "Detectar citas con IA" %}
+                            </button>
+                        </form>
+                        {% if citation.citation_contexts %}
+                            <div class="list-group list-group-flush">
+                                {% for ctx in citation.citation_contexts %}
+                                    <div class="list-group-item px-0">
+                                        <div class="small text-muted mb-1">
+                                            {% trans "Página" %} {{ ctx.page }}{% if ctx.pattern %} · {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code>{% endif %}
+                                        </div>
+                                        <div class="small" style="white-space: pre-wrap;">{{ ctx.paragraph }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">{% trans "Este reporte se creó sin seleccionar párrafos concretos del artículo que cita." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
                         <h5 class="card-title mb-3">{% trans "Motivo / Explicación" %}</h5>
                         <p class="mb-0">{{ citation.incorrect_reason }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{% trans "Análisis automático (IA)" %}</h5>
+                        <form method="post" action="{% url 'citation_ai_evaluate' citation.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-primary btn-sm">
+                                {% trans "Evaluar reporte con IA" %}
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        {% if citation.ai_assessment %}
+                            <div class="mb-2">
+                                <div class="small text-muted">{% trans "Veredicto IA" %}</div>
+                                <div class="fw-semibold">
+                                    {{ citation.ai_assessment.evaluation }} ({{ citation.ai_assessment.confidence|floatformat:2 }})
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="small text-muted">{% trans "Tipo de error sugerido" %}</div>
+                                <div>
+                                    {{ citation.ai_assessment.suggested_error_type }}
+                                    {% if citation.ai_assessment.matches_user_type %}
+                                        <span class="badge bg-success ms-2">{% trans "Coincide con el usuario" %}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark ms-2">{% trans "No coincide con el usuario" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="small text-muted">{% trans "Explicación IA" %}</div>
+                                <p class="mb-1" style="white-space: pre-wrap;">{{ citation.ai_assessment.reasoning }}</p>
+                            </div>
+                            <div>
+                                <div class="small text-muted">{% trans "Notas para el autor del artículo B" %}</div>
+                                <p class="mb-0" style="white-space: pre-wrap;">{{ citation.ai_assessment.notes_for_author }}</p>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">
+                                {% trans "Este reporte todavía no tiene análisis automático. Pulsa el botón para generar uno." %}
+                            </p>
+                        {% endif %}
                     </div>
                 </div>
             </section>
@@ -151,44 +249,15 @@
                                     <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
                                 </div>
                                 <p class="mb-1 fw-semibold">
-                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
+                                    {{ report.metadata_original_title|default:report.doi_original|default:fallback_title|truncatechars:80 }}
                                 </p>
                                 <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
                             </a>
                             {% endfor %}
                         </div>
                     {% else %}
-                        <!-- TODO: Cargar other_area_reports en la vista citation_detail -->
                         <p class="text-muted small mb-0">{% trans "Pronto mostraremos otros reportes relacionados en esta sección." %}</p>
                     {% endif %}
-                </div>
-            </div>
-
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">{% trans "Reportes populares" %}</h5>
-                    {% if popular_reports %}
-                        <div class="list-group list-group-flush">
-                            {% for report in popular_reports %}
-                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
-                                <div class="mb-2 d-flex flex-wrap gap-2">
-                                    <span class="badge text-bg-info">{{ report.get_publication_area_display }}</span>
-                                    <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
-                                </div>
-                                <p class="mb-1 fw-semibold">
-                                    {{ report.metadata_original_title|default:report.doi_original|default:report.doi_incorrect|default:fallback_title|truncatechars:80 }}
-                                </p>
-                                <span class="text-muted small">{{ report.created_at|date:"d/m/Y" }}</span>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <!-- TODO: Cargar popular_reports en la vista citation_detail -->
-                        <p class="text-muted small mb-0">{% trans "Pronto mostraremos los reportes más consultados." %}</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -339,7 +408,6 @@ function renderMetadata(doi, elementId) {
             const year = data.issued?.["date-parts"]?.[0]?.[0] || "N/A";
             const url = data.URL || "#";
 
-            // Metadatos adicionales bien formateados
             const keysToInclude = ["publisher", "DOI", "type", "page", "update-policy", "source", "volume", "language", "URL", "article-number"];
 
             const extraMetadata = Object.entries(data)
@@ -380,7 +448,6 @@ function renderMetadata(doi, elementId) {
                 ` : ""}
             `;
 
-            // Copiar
             const copyBtn = element.querySelector(".copy-doi");
             const confirm = element.querySelector(".copy-confirm");
             if (copyBtn && confirm) {
@@ -392,7 +459,6 @@ function renderMetadata(doi, elementId) {
                 });
             }
 
-            // Mostrar/ocultar detalles
             const toggleBtn = element.querySelector(".toggle-details");
             const extraBox = element.querySelector(".doi-extra-details");
             const icon = toggleBtn?.querySelector("svg");
@@ -435,7 +501,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!userIsAuthenticated) {
       const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
 
-      // Botones de voto
       document.querySelectorAll('.vote-btn').forEach(button => {
         button.addEventListener('click', function (e) {
           e.preventDefault();
@@ -443,7 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
-      // Botón de guardar
       const saveBtn = document.getElementById('btn-save');
       if (saveBtn) {
         saveBtn.addEventListener('click', function (e) {
@@ -472,8 +536,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // --- 1) RESPONDER A UN COMENTARIO ---------------------------------
-  // Usamos delegación para que funcione también en comentarios nuevos (HTMX)
   document.addEventListener('click', function (event) {
     const replyLink = event.target.closest('.reply-link');
     if (!replyLink) return;
@@ -483,7 +545,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const parentId = replyLink.getAttribute('data-id');
     if (!parentId) return;
 
-    // Usuario al que respondemos (del comentario padre)
     const card    = replyLink.closest('.border, .mb-3');
     const userEl  = card ? card.querySelector('strong') : null;
     const user    = userEl ? userEl.textContent.trim() : 'usuario';
@@ -492,11 +553,9 @@ document.addEventListener('DOMContentLoaded', function () {
     replyingToUser.textContent = user;
     replyIndicator.classList.remove('d-none');
 
-    // Hacemos scroll suave hasta el formulario
     commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  // Botón "Cancelar" de la respuesta
   const cancelReplyBtn = document.getElementById('cancelReply');
   if (cancelReplyBtn) {
     cancelReplyBtn.addEventListener('click', function (e) {
@@ -506,8 +565,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // --- 2) ELIMINAR COMENTARIO ---------------------------------------
-  // Delegación también para botones "Eliminar"
   document.addEventListener('click', function (event) {
     const delBtn = event.target.closest('.open-delete-modal');
     if (!delBtn || !deleteForm || !deleteModal) return;
@@ -517,39 +574,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const commentId = delBtn.getAttribute('data-comment-id');
     if (!commentId) return;
 
-    // Ajusta la URL al patrón de tu urls.py:
-    // path("comments/delete/<int:pk>/", ajax_views.delete_comment, name="delete_comment")
     deleteForm.setAttribute('action', `/citations/comments/delete/${commentId}/`);
 
     deleteModal.show();
   });
 
-  // --- 3) REACCIONES HTMX DESPUÉS DE AÑADIR COMENTARIO ----------------
-
-  // a) Cuando el servidor dispara HX-Trigger="comment-added"
   document.body.addEventListener('comment-added', function () {
-    // Limpiar textarea
     const textarea = commentForm.querySelector('textarea[name="{{ comment_form.content.name }}"]');
     if (textarea) textarea.value = '';
 
-    // Ocultar indicador de respuesta y resetear parent_id
     parentInput.value = '';
     replyIndicator.classList.add('d-none');
 
-    // Borrar mensaje "Aún no hay comentarios." si sigue por ahí
     const noComments = document.getElementById('no-comments');
     if (noComments) noComments.remove();
 
-    // Limpiar feedback de errores si había
     if (commentFeedback) commentFeedback.innerHTML = '';
   });
 
-  // b) Manejar errores devueltos por HTMX (formulario inválido)
   document.body.addEventListener('htmx:afterSwap', function (event) {
-    // Si el target es #commentFeedback, significa que han llegado errores
     const target = event.target;
     if (target && target.id === 'commentFeedback') {
-      // Opcional: hacer scroll hasta el formulario
       commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
@@ -568,14 +613,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const text = textarea.value.trim();
 
       if (!text) {
-        e.preventDefault();  // No mandamos la petición HTMX
+        e.preventDefault();
         feedback.innerHTML = `
           <div class="alert alert-danger py-2 small mb-2">
             {% trans "El comentario no puede estar vacío." %}
           </div>
         `;
       } else {
-        // Si ahora sí tiene texto, limpiamos el mensaje anterior
         feedback.innerHTML = '';
       }
     });

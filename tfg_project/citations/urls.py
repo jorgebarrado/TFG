@@ -1,6 +1,6 @@
 # citations/urls.py
 from django.urls import path
-from . import views_api
+from . import views_ai, views_api, views_reports
 from .views import ajax_views, auth_views, page_views, user_views
 
 urlpatterns = [
@@ -12,6 +12,27 @@ urlpatterns = [
     ),
     path("list/", page_views.citation_list, name="citation_list"),
     path("report/<int:pk>/", page_views.citation_detail, name="citation_detail"),
+    # TODO: flujo avanzado de reportes (CitationReport) pendiente de activar; el flujo real usa IncorrectCitation.
+    path(
+        "report/wizard/",
+        views_reports.create_report_wizard,
+        name="create_report_wizard",
+    ),
+    path(
+        "reports/create/ajax/",
+        views_reports.ajax_submit_report,
+        name="ajax_submit_report",
+    ),
+    path(
+        "reports/<int:pk>/ai-detect/",
+        views_ai.citation_ai_detect,
+        name="citation_ai_detect",
+    ),
+    path(
+        "reports/<int:pk>/ai-evaluate/",
+        views_ai.citation_ai_evaluate,
+        name="citation_ai_evaluate",
+    ),
     # User Views
     path(
         "perfil/dblp-articulos/",
@@ -52,9 +73,24 @@ urlpatterns = [
         name="get_citation_context",
     ),
     path(
+        "api/pdf-contexts/",
+        views_api.api_pdf_citation_contexts,
+        name="api_pdf_citation_contexts",
+    ),
+    path(
+        "api/pdf-contexts-upload/",
+        views_api.api_pdf_citation_contexts_upload,
+        name="api_pdf_citation_contexts_upload",
+    ),
+    path(
         "api/get-semantic-citations/",
         ajax_views.get_semantic_citations,
         name="get_semantic_citations",
+    ),
+    path(
+        "api/semantic-citation-analysis/",
+        views_api.api_semantic_citation_analysis,
+        name="api_semantic_citation_analysis",
     ),
     path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
 ]

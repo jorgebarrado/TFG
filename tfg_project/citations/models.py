@@ -36,18 +36,17 @@ class UserProfile(models.Model):
         verbose_name=_("Idioma preferido"),
     )
 
-    # Información académica / profesional
     research_area = models.CharField(
         max_length=200,
         blank=True,
         verbose_name=_("Área de investigación"),
-        help_text=_("Ej. Computer Science, Quantum Computing, Physics…"),
+        help_text=_("Ej. Computer Science, Quantum Computing, Physics..."),
     )
     profession = models.CharField(
         max_length=200,
         blank=True,
         verbose_name=_("Profesión o rol"),
-        help_text=_("Ej. PhD Student, Researcher, Professor, QA Engineer…"),
+        help_text=_("Ej. PhD Student, Researcher, Professor, QA Engineer..."),
     )
     institution = models.CharField(
         max_length=200,
@@ -56,7 +55,6 @@ class UserProfile(models.Model):
         help_text=_("Ej. Universidad, centro de investigación o empresa."),
     )
 
-    # Contacto y enlaces sociales
     contact_email = models.EmailField(
         blank=True,
         null=True,
@@ -67,7 +65,7 @@ class UserProfile(models.Model):
         blank=True,
         null=True,
         verbose_name=_("Enlace social 1"),
-        help_text=_("Ej. perfil de X/Twitter, GitHub, LinkedIn, página personal…"),
+        help_text=_("Ej. perfil de X/Twitter, GitHub, LinkedIn, página personal..."),
     )
     social_link_2 = models.URLField(
         blank=True,
@@ -88,7 +86,6 @@ class UserProfile(models.Model):
         help_text=_("Opcional."),
     )
 
-    # Preferencias de notificación
     notify_comments_on_my_reports = models.BooleanField(
         default=True,
         verbose_name=_("Avisarme cuando comenten mis reportes"),
@@ -153,25 +150,15 @@ AREA_CHOICES = [
 class IncorrectCitation(models.Model):
     """
     Representa un reporte de una cita incorrecta.
-
-    Atributos:
-        author (User): El usuario que reportó la cita.
-        doi_original (CharField): El DOI del artículo original.
-        doi_incorrect (CharField): El DOI del artículo que cita incorrectamente.
-        incorrect_reason (TextField): La explicación del error.
-        metadata_original (JSONField): Metadatos del artículo original.
-        metadata_incorrect (JSONField): Metadatos del artículo que cita incorrectamente.
-        citation_type (CharField): El tipo de error en la cita.
-        publication_area (CharField): El área de publicación del artículo.
-        created_at (DateTimeField): La fecha y hora en que se creó el reporte.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    doi_original = models.CharField(max_length=255)  # DOI del artículo original
-    doi_incorrect = models.CharField(max_length=255)  # DOI del artículo que cita mal
-    incorrect_reason = models.TextField()  # Explicación del por qué está mal
+    doi_original = models.CharField(max_length=255)
+    doi_incorrect = models.CharField(max_length=255)
+    incorrect_reason = models.TextField()
     metadata_original = models.JSONField(null=True, blank=True)
     metadata_incorrect = models.JSONField(null=True, blank=True)
+    citation_contexts = models.JSONField(null=True, blank=True)
     citation_type = models.CharField(
         max_length=50,
         choices=[
@@ -183,28 +170,15 @@ class IncorrectCitation(models.Model):
     publication_area = models.CharField(
         max_length=4, choices=AREA_CHOICES, verbose_name=_("Área de publicación")
     )
-    created_at = models.DateTimeField(auto_now_add=True)  # Fecha de registro
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        """
-        Devuelve una representación en cadena del reporte de cita incorrecta.
-
-        Returns:
-            str: Una cadena que identifica el reporte.
-        """
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
 class Comment(models.Model):
     """
     Representa un comentario en un reporte de cita incorrecta.
-
-    Atributos:
-        citation (IncorrectCitation): El reporte al que pertenece el comentario.
-        author (User): El autor del comentario.
-        content (TextField): El contenido del comentario.
-        created_at (DateTimeField): La fecha y hora de creación del comentario.
-        parent (Comment): El comentario padre, si es una respuesta.
     """
 
     citation = models.ForeignKey(
@@ -218,23 +192,12 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
-        """
-        Comprueba si el comentario es una respuesta a otro comentario.
-
-        Returns:
-            bool: True si el comentario tiene un padre, False en caso contrario.
-        """
         return self.parent is not None
 
 
 class Vote(models.Model):
     """
-    Representa un voto (positivo o negativo) de un usuario en un reporte de cita incorrecta.
-
-    Atributos:
-        user (User): El usuario que emitió el voto.
-        citation (IncorrectCitation): El reporte que se está votando.
-        value (IntegerField): El valor del voto (1 para positivo, -1 para negativo).
+    Representa un voto (positivo o negativo) de un usuario en un reporte.
     """
 
     VOTE_CHOICES = (
@@ -248,43 +211,63 @@ class Vote(models.Model):
     value = models.IntegerField(choices=VOTE_CHOICES)
 
     class Meta:
-        """
-        Configuración del modelo Vote.
-        """
-
         unique_together = ("user", "citation")
 
 
 class SavedCitation(models.Model):
     """
     Representa una cita incorrecta guardada por un usuario.
-
-    Atributos:
-        user (User): El usuario que guardó la cita.
-        citation (IncorrectCitation): El reporte de cita incorrecta guardado.
-        created_at (DateTimeField): La fecha y hora en que se guardó la cita.
     """
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="saved_citations"
     )
     citation = models.ForeignKey(
-        "IncorrectCitation", on_delete=models.CASCADE, related_name="saved_by"
+        IncorrectCitation, on_delete=models.CASCADE, related_name="saved_by"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        """
-        Configuración del modelo SavedCitation.
-        """
-
         unique_together = ("user", "citation")
 
     def __str__(self):
-        """
-        Devuelve una representación en cadena de la cita guardada.
+        return f"{self.user.username} -> {self.citation.id}"
 
-        Returns:
-            str: Una cadena que indica qué usuario guardó qué cita.
-        """
-        return f"{self.user.username} → {self.citation.id}"
+
+# TODO: futuro flujo avanzado de reportes (CitationReport).
+# Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
+class CitationReport(models.Model):
+    """
+    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    """
+
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    # Artículo original (A)
+    original_doi = models.CharField(max_length=255)
+    original_metadata = models.JSONField(null=True, blank=True)
+    original_pdf_url = models.URLField(null=True, blank=True)
+    original_pdf_uploaded = models.FileField(upload_to="original_pdfs/", null=True, blank=True)
+    original_snippet = models.TextField(null=True, blank=True)
+
+    # Artículo que cita (B)
+    citing_doi = models.CharField(max_length=255)
+    citing_metadata = models.JSONField(null=True, blank=True)
+    citing_pdf_url = models.URLField(null=True, blank=True)
+    citing_pdf_uploaded = models.FileField(upload_to="citing_pdfs/", null=True, blank=True)
+
+    # Párrafos seleccionados donde aparece la cita
+    citing_paragraphs = models.JSONField(null=True, blank=True)  # lista de dicts
+    citing_pages = models.JSONField(null=True, blank=True)
+
+    # Datos del reporte
+    error_type = models.CharField(max_length=100)
+    user_explanation = models.TextField()
+
+    # Resultado IA (relleno en fases siguientes)
+    ai_assessment = models.JSONField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reporte: {self.original_doi} vs {self.citing_doi}"

@@ -9,7 +9,7 @@
   --gray-700: #495057;
 }
 
-/* Tipografía y layout base */
+/* Tipografia y layout base */
 body {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--gray-700);
@@ -60,11 +60,11 @@ body {
 a { text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* Pequeñas utilidades */
+/* Pequenas utilidades */
 .toggle-details { cursor: pointer; display: inline-block; transition: transform .2s; }
 .toggle-details:hover { transform: scale(1.1); }
 
-/* ========= Estilo del módulo de “Citation Extractor” =========
+/* ========= Estilo del modulo de Citation Extractor =========
    Todo va bajo el namespace .ce para no interferir con otras vistas. */
 
 /* Paleta suave para tarjetas y fragmentos */
@@ -79,7 +79,7 @@ a:hover { text-decoration: underline; }
   --ce-snippet-bg: #f8fafc;
   --ce-snippet-border: #e5e7eb;
 
-  --ce-hit-bg: #fff3cd;   /* resaltado tipo “warning” claro */
+  --ce-hit-bg: #fff3cd;   /* resaltado tipo warning claro */
   --ce-hit-border: #ffe69c;
 }
 
@@ -102,7 +102,7 @@ a:hover { text-decoration: underline; }
   color: var(--ce-muted);
 }
 
-/* Área de snippet (sin scroll horizontal, con saltos) */
+/* Area de snippet (sin scroll horizontal, con saltos) */
 .ce .ce-snippet {
   background: var(--ce-snippet-bg);
   border: 1px solid var(--ce-snippet-border);
@@ -134,7 +134,7 @@ a:hover { text-decoration: underline; }
 .ce .ce-card:hover { box-shadow: 0 .25rem 1rem rgba(0,0,0,.08); }
 
 
-/* Evita scroll horizontal en párrafos largos del contexto */
+/* Evita scroll horizontal en parrafos largos del contexto */
 .ce-paragraph {
   white-space: normal !important;
   overflow-wrap: anywhere !important;
@@ -204,4 +204,9 @@ a:hover { text-decoration: underline; }
   font-size: 3rem;
   font-weight: 600;
   color: #ffffff;
+}
+
+.pdf-filter-equal {
+    width: 100%;
+    min-width: 100%;
 }
