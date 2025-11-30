@@ -4,6 +4,8 @@ from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+# TODO: futuro flujo avanzado de reportes (CitationReport).
+# Ahora mismo no se usa en produccion; el flujo activo usa IncorrectCitation.
 
 from .models import AREA_CHOICES, CitationReport
 

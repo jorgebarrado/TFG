@@ -234,6 +234,8 @@ class SavedCitation(models.Model):
         return f"{self.user.username} -> {self.citation.id}"
 
 
+# TODO: futuro flujo avanzado de reportes (CitationReport).
+# Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
     """
     Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.

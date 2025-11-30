@@ -70,16 +70,18 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
     """
     Llamada real a Gemini para la detección de citas.
     """
+    missing_config_msg = (
+        "La detección automática con IA no está configurada en este servidor "
+        "(falta la dependencia google-generativeai o la variable GOOGLE_API_KEY)."
+    )
     try:
         from google.generativeai import GenerativeModel, configure
     except ImportError as exc:
-        raise RuntimeError(
-            "Falta la dependencia google-generativeai para usar Gemini."
-        ) from exc
+        raise RuntimeError(missing_config_msg) from exc
 
     api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
-        raise RuntimeError("Falta GOOGLE_API_KEY en el entorno para usar Gemini.")
+        raise RuntimeError(missing_config_msg)
 
     configure(api_key=api_key)
     model = GenerativeModel("gemini-1.5-flash")
@@ -99,11 +101,19 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
 def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str, Any]]:
     """
     Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles con citation.citation_contexts.
-    """
-    if not citation.citing_pdf_uploaded:
-        raise RuntimeError("Este reporte no tiene PDF subido del artículo que cita (B).")
 
-    pdf_path = citation.citing_pdf_uploaded.path
+    Por ahora asumimos que el modelo IncorrectCitation NO tiene todavía campo citing_pdf_uploaded,
+    así que si no está disponible devolvemos un error controlado.
+    """
+    citation_pdf = getattr(citation, "citing_pdf_uploaded", None)
+    if not citation_pdf:
+        raise RuntimeError(
+            "Este reporte todavía no tiene asociado el PDF del artículo que cita (B). "
+            "Cuando añadamos ese campo en el modelo o usemos CitationReport, "
+            "podremos activar la detección automática."
+        )
+
+    pdf_path = citation_pdf.path
     paragraphs_for_ai = pm_extract_paragraphs_with_positions(pdf_path)
 
     prompt = build_ai_prompt_for_detection(
