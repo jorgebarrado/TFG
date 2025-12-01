@@ -3,40 +3,238 @@
 {% load i18n %}
 {% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
 {% block content %}
-<div class="container text-center py-5">
-    <h1>{% trans "Bienvenido a la herramienta de citas" %}</h1>
-    <p class="lead">{% trans "Esta herramienta permite reportar citas científicas incorrectas. Ayuda a mejorar la calidad de la literatura académica." %}</p>
+<div class="relative min-h-screen overflow-hidden">
+  <!-- blobs de fondo ocupando toda la pantalla -->
+  <div class="pointer-events-none absolute -top-64 -left-40 -z-10 h-96 w-96 rounded-full bg-blue-400/30 blur-[100px]"></div>
+  <div class="pointer-events-none absolute top-1/3 -right-40 -z-10 h-[28rem] w-[28rem] rounded-full bg-purple-400/25 blur-[110px]"></div>
+  <div class="pointer-events-none absolute bottom-[-10rem] left-1/4 -z-10 h-[26rem] w-[26rem] rounded-full bg-indigo-400/20 blur-[120px]"></div>
 
-    <div id="successAlert" class="alert alert-success d-none mt-4" role="alert">
-        {% trans "Reporte enviado con éxito." %}
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-xl-10">
+        <!-- Hero -->
+        <section class="min-h-[60vh] flex flex-col justify-center text-center md:text-left">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary mb-2">
+            {% trans "Plataforma para mejorar la calidad de las citas científicas" %}
+          </p>
+
+          <h1 class="text-3xl md:text-4xl lg:text-5xl fw-bold mb-3 leading-tight">
+            {% trans "Análisis avanzado de" %}
+            <span
+              class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
+              {% trans "citas incorrectas" %}
+            </span>
+          </h1>
+
+          <p class="lead text-muted mb-4 max-w-2xl mx-auto md:mx-0">
+            {% trans "Detecta, revisa y reporta citas problemáticas en artículos académicos, ya sea pegando texto, subiendo un PDF o navegando tus publicaciones en DBLP." %}
+          </p>
+
+          <!-- Alert de éxito (mantenemos la lógica) -->
+          <div id="successAlert" class="alert alert-success d-none mt-2 mb-3" role="alert">
+            {% trans "Reporte enviado con éxito." %}
+          </div>
+
+          <!-- Chips rápidos -->
+          <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 mb-4">
+            <span class="badge rounded-pill bg-primary-subtle text-primary d-inline-flex align-items-center gap-1">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              {% trans "Asistente tipo wizard" %}
+            </span>
+            <span class="badge rounded-pill bg-secondary-subtle text-success d-inline-flex align-items-center gap-1">
+              <i class="fa-solid fa-file-pdf"></i>
+              {% trans "Extracción desde PDF" %}
+            </span>
+            <span class="badge rounded-pill bg-light text-muted d-inline-flex align-items-center gap-1">
+              <i class="fa-solid fa-database"></i>
+              DBLP
+            </span>
+          </div>
+
+          <!-- Grid de cards estilo SaaS -->
+          <div class="grid gap-6 md:grid-cols-3 mt-6">
+            <!-- Card 1: Pegar texto / Wizard -->
+            <a href="{% url 'create_report_wizard' %}" class="group relative block h-full">
+              <!-- Glow -->
+              <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
+
+              <!-- Card -->
+              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110">
+                  <i class="fa-solid fa-keyboard"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">
+                  {% trans "Pegar texto" %}
+                </h3>
+                <p class="text-slate-500 text-sm mb-6">
+                  {% trans "Pega el fragmento donde te citan y revisa con ayuda del asistente si la cita es correcta." %}
+                </p>
+
+                <div class="w-100 mt-auto">
+                  <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-cyan-300">
+                    <span class="text-xs text-slate-400 block">
+                      {% trans "Introduce el texto en el siguiente paso" %}
+                    </span>
+                  </div>
+
+                  <div class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-cyan-600 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                    <span>{% trans "Iniciar asistente" %}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <!-- Card 2: Subir PDF (RECOMENDADA) -->
+            <button
+              type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#extractPdfCitationsModal"
+              class="group relative block w-100 text-start bg-transparent border-0 p-0 h-full">
+
+              <!-- Glow -->
+              <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-purple-500 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
+
+              <!-- Card -->
+              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+
+                  <!-- Badge recomendado -->
+                  <div class="position-absolute top-3 end-4">
+                    <span class="rounded-full bg-purple-600 px-3 py-1 text-[0.65rem] font-semibold tracking-wide text-white">
+                      {% trans "RECOMENDADO" %}
+                    </span>
+                  </div>
+
+                  <!-- Icono -->
+                  <div class="flex items-center justify-center mx-auto mb-4 h-14 w-14 rounded-2xl bg-purple-50 text-purple-600 transition-transform duration-300 group-hover:scale-110">
+                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                  </div>
+
+                  <!-- T?tulo -->
+                  <h2 class="text-lg fw-semibold text-slate-900 mb-1">
+                    {% trans "Subir PDF" %}
+                  </h2>
+
+                  <!-- Descripci?n -->
+                  <p class="text-sm text-slate-600 mb-4">
+                    {% trans "Sube el documento completo. Extraeremos y analizaremos todas las referencias." %}
+                  </p>
+
+                  <!-- Dropzone + CTA -->
+                  <div class="mt-auto">
+
+                    <div
+                      class="w-100 rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/40
+                             py-2 text-xs text-purple-500 font-medium">
+                      {% trans "Arrastra o haz clic" %}
+                    </div>
+
+                    <div
+                      class="mt-3 w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
+                             d-flex align-items-center justify-content-center gap-2
+                             hover:bg-slate-800 transition-colors">
+                      <span>{% trans "Procesar PDF" %}</span>
+                      <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                    </div>
+
+                  </div>
+              </div>
+            </button>
+
+            <!-- Card 3: B?squeda en DBLP -->
+            <a href="{% url 'dblp_articles' %}" class="group relative block h-full">
+              <!-- Glow -->
+              <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
+
+              <!-- Card -->
+              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+                  <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110">
+                      <i class="fa-solid fa-database"></i>
+                  </div>
+
+                  <h3 class="text-xl font-bold text-slate-900 mb-2">
+                      {% trans "B?squeda en DBLP" %}
+                  </h3>
+                  <p class="text-slate-500 text-sm mb-6">
+                      {% trans "Explora tus art?culos en DBLP y revisa c?mo han sido citados por otros trabajos." %}
+                  </p>
+
+                  <div class="w-100 mt-auto">
+                      <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
+                          <span class="text-xs text-slate-400 block">
+                              {% trans "Conecta tu perfil y explora tus publicaciones" %}
+                          </span>
+                      </div>
+
+                      <div class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                          <span>{% trans "Explorar DBLP" %}</span>
+                          <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                      </div>
+                  </div>
+              </div>
+            </a>
+          </div>
+<!-- Enlace a la lista de reportes -->
+          <div class="mt-4 text-muted small">
+            {% trans "¿Quieres ver qué han reportado otros autores?" %}
+            <a href="{% url 'citation_list' %}" class="fw-semibold text-primary text-decoration-none">
+              {% trans "Ir a la lista de reportes" %}
+            </a>
+          </div>
+
+          <!-- CTA secundario: crear reporte manual -->
+          <div class="mt-3">
+            <button class="btn btn-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#reportModal">
+              {% trans "Crear nuevo reporte manual" %}
+            </button>
+          </div>
+
+          <div class="mt-20 text-center">
+              <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-6">
+                  {% trans "Potenciado por" %}
+              </p>
+
+              <div class="flex flex-wrap justify-center gap-10 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+
+                  <!-- Django -->
+                  <span class="flex items-center gap-2 font-semibold text-slate-600">
+                      <i class="fa-brands fa-python text-lg"></i>
+                      Django
+                  </span>
+
+                  <!-- Semantic Scholar -->
+                  <span class="flex items-center gap-2 font-semibold text-slate-600">
+                      <i class="fa-solid fa-layer-group text-lg"></i>
+                      Semantic Scholar API
+                  </span>
+
+                  <!-- DBLP -->
+                  <span class="flex items-center gap-2 font-semibold text-slate-600">
+                      <i class="fa-solid fa-database text-lg"></i>
+                      DBLP
+                  </span>
+
+                  <!-- CrossRef -->
+                  <span class="flex items-center gap-2 font-semibold text-slate-600">
+                      <i class="fa-solid fa-link text-lg"></i>
+                      CrossRef
+                  </span>
+
+                  <!-- PaperMage -->
+                  <span class="flex items-center gap-2 font-semibold text-slate-600">
+                      <i class="fa-solid fa-file-pdf text-lg"></i>
+                      PaperMage
+                  </span>
+
+              </div>
+          </div>
+        </section>
+      </div>
     </div>
-
-    <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
-        <button class="btn btn-primary btn-lg"
-                data-bs-toggle="modal"
-                data-bs-target="#reportModal">
-            {% trans "Crear nuevo reporte" %}
-        </button>
-
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary btn-lg">
-            {% trans "Ver lista de reportes" %}
-        </a>
-
-        <a href="{% url 'dblp_articles' %}" class="btn btn-outline-secondary btn-lg">
-            {% trans "Ver artículos de DBLP" %}
-        </a>
-        <a href="{% url 'create_report_wizard' %}" class="btn btn-outline-primary btn-lg">
-            Wizard de reporte
-        </a>
-        <button class="btn btn-outline-secondary ms-2"
-                type="button"
-                data-bs-toggle="modal"
-                data-bs-target="#extractPdfCitationsModal">
-            <span class="me-1">📄</span> {% trans "Extraer citas (PDF)" %}
-        </button>
-    </div>
+  </div>
 </div>
-
 {% include 'citations/modals/report_modal.html' %}
 <!-- Modal para extracción de citas desde PDF subido -->
 <div class="modal fade" id="extractPdfCitationsModal" tabindex="-1" aria-hidden="true">
@@ -96,7 +294,7 @@
                 <input type="text"
                        id="pdf-extract-search"
                        class="form-control form-control-sm"
-                       placeholder="Filtrar por texto (autor, año, palabra…)">
+                       placeholder="Filtrar por texto (autor, año, palabra...)">
               </div>
               <div class="flex-fill">
                 <label class="form-label mb-1 small">Filtrar por tipo de cita</label>
@@ -150,7 +348,7 @@
   </div>
 </div>
 
-{% endblock %}
+{% endblock content %}
 {% block scripts %}
 <script>
 (function () {
@@ -423,7 +621,7 @@
 
         const typeLabelMap = {
           numeric: "Cita numérica [n]",
-          author: "Cita tipo «Apellido et al., año»",
+          author: "Cita tipo “Apellido et al., año”",
           doi: "DOI en el texto",
           other: "Otro tipo de cita",
         };
@@ -549,7 +747,7 @@
     }
 
     // Numérica: [4], [4, 7], [4-7], etc.
-    if (/^\[\s*\d+(?:\s*[,–-]\s*\d+)*\s*\]$/.test(t)) {
+    if (/^\[\s*\d+(?:\s*[,�-]\s*\d+)*\s*\]$/.test(t)) {
       return "numeric";
     }
 
