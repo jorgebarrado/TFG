@@ -67,6 +67,9 @@
 
 {% load i18n %}
 
+<div class="page-surface">
+  <div class="glow"></div>
+  <div class="content-shell">
 <!-- Barra superior -->
 <nav
   class="navbar navbar-light px-4 justify-content-between align-items-center
@@ -85,7 +88,7 @@
           {% if LANGUAGE_CODE == 'en' %}
               <input type="hidden" name="language" value="es">
               <button type="submit" class="btn btn-outline-secondary btn-sm">
-                  <img src="{% static 'citations/img/flag_es.png' %}" alt="Español"
+                  <img src="{% static 'citations/img/flag_es.png' %}" alt="Spanish"
                        style="height: 16px; margin-top: -2px;">
               </button>
           {% else %}
@@ -181,6 +184,8 @@
     {% block content %}
     {% endblock %}
 </main>
+</div>
+</div>
 
 <!-- Modales -->
 {% include 'citations/modals/login_modal.html' %}

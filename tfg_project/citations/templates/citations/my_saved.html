@@ -1,19 +1,42 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">🔖 {% trans "Guardados" %}</h2>
-  {% if saved %}
-    <ul class="list-group">
-      {% for entry in saved %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          {% trans "Reporte" %} #{{ entry.citation.id }} – {{ entry.citation.get_citation_type_display }}
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'citation_detail' entry.citation.id %}">{% trans "Ver" %}</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-muted">{% trans "No has guardado ningún reporte." %}</p>
-  {% endif %}
+<div class="container py-5">
+  <section class="hero-card mb-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div>
+        <p class="muted-label mb-1">{% trans "Tu actividad" %}</p>
+        <h1 class="fw-bold mb-1">{% trans "Guardados" %}</h1>
+        <p class="text-muted mb-0">
+          {% trans "Accede rapido a los reportes que has marcado como favoritos en una interfaz alineada con la home." %}
+        </p>
+      </div>
+      <a href="{% url 'home' %}" class="btn btn-outline-primary">
+        <i class="fa-solid fa-house"></i> {% trans "Inicio" %}
+      </a>
+    </div>
+  </section>
+
+  <div class="surface-card p-4">
+    {% if saved %}
+      <div class="list-group list-group-flush">
+        {% for entry in saved %}
+          <div class="list-group-item bg-transparent d-flex flex-wrap justify-content-between align-items-center">
+            <div class="me-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="pill">#{{ entry.citation.id }}</span>
+                <span class="badge-soft">{{ entry.citation.get_citation_type_display }}</span>
+              </div>
+              <div class="fw-semibold mt-1">{{ entry.citation.metadata_original_title|default:entry.citation.doi_original }}</div>
+              <small class="text-muted">{% trans "Guardado" %}: {{ entry.created_at|date:"d/m/Y" }}</small>
+            </div>
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'citation_detail' entry.citation.id %}">{% trans "Ver" %}</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">{% trans "No has guardado ningun reporte." %}</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

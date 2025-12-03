@@ -14,7 +14,7 @@
     </div>
 
     {% trans "Título no disponible" as fallback_title %}
-    <section class="border rounded-4 shadow-sm p-4 p-lg-5 mb-5 bg-body">
+    <section class="hero-card mb-5">
         <div class="row g-4 align-items-start">
             <div class="col-lg-8">
                 <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
@@ -49,7 +49,7 @@
                 </div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 surface-card">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Artículo original" %}</h6>
                                 <div class="border rounded-3 p-3" id="metadataOriginal">
@@ -69,7 +69,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 surface-card">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
                                 <p class="mb-1 fw-semibold">
@@ -95,7 +95,7 @@
             </section>
 
             <section class="mb-4">
-                <div class="card shadow-sm">
+                <div class="card surface-card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">{% trans "Párrafos donde aparece la cita" %}</h5>
                         <form method="post" action="{% url 'citation_ai_detect' citation.id %}" class="mb-3 d-inline">
@@ -123,7 +123,7 @@
             </section>
 
             <section class="mb-4">
-                <div class="card shadow-sm">
+                <div class="card surface-card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">{% trans "Motivo / Explicación" %}</h5>
                         <p class="mb-0">{{ citation.incorrect_reason }}</p>
@@ -132,7 +132,7 @@
             </section>
 
             <section class="mb-4">
-                <div class="card shadow-sm">
+                <div class="card surface-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{% trans "Análisis automático (IA)" %}</h5>
                         <form method="post" action="{% url 'citation_ai_evaluate' citation.id %}">
@@ -179,7 +179,7 @@
             </section>
 
             <section class="mb-4">
-                <div class="card shadow-sm">
+                <div class="card surface-card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">{% trans "Comentarios" %}</h5>
 
@@ -237,7 +237,7 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
+            <div class="card surface-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">{% trans "Otros reportes de la misma área" %}</h5>
                     {% if other_area_reports %}
