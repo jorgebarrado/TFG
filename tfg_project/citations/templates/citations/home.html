@@ -60,7 +60,7 @@
 
               <!-- Card -->
               <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110 mx-auto">
                   <i class="fa-solid fa-keyboard"></i>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 mb-2">
@@ -110,12 +110,12 @@
                     <i class="fa-solid fa-file-pdf text-xl"></i>
                   </div>
 
-                  <!-- T?tulo -->
+                  <!-- Título -->
                   <h2 class="text-lg fw-semibold text-slate-900 mb-1">
                     {% trans "Subir PDF" %}
                   </h2>
 
-                  <!-- Descripci?n -->
+                  <!-- Descripción -->
                   <p class="text-sm text-slate-600 mb-4">
                     {% trans "Sube el documento completo. Extraeremos y analizaremos todas las referencias." %}
                   </p>
@@ -141,22 +141,22 @@
               </div>
             </button>
 
-            <!-- Card 3: B?squeda en DBLP -->
+            <!-- Card 3: Búsqueda en DBLP -->
             <a href="{% url 'dblp_articles' %}" class="group relative block h-full">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
               <!-- Card -->
               <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
-                  <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110">
+                  <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110 mx-auto">
                       <i class="fa-solid fa-database"></i>
                   </div>
 
                   <h3 class="text-xl font-bold text-slate-900 mb-2">
-                      {% trans "B?squeda en DBLP" %}
+                      {% trans "Búsqueda en DBLP" %}
                   </h3>
                   <p class="text-slate-500 text-sm mb-6">
-                      {% trans "Explora tus art?culos en DBLP y revisa c?mo han sido citados por otros trabajos." %}
+                      {% trans "Explora tus artículos en DBLP y revisa cómo han sido citados por otros trabajos." %}
                   </p>
 
                   <div class="w-100 mt-auto">
