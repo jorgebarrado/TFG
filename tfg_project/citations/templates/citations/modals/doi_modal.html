@@ -1,0 +1,18 @@
+{% load i18n %}
+
+<div class="modal fade" id="doiModal" tabindex="-1"
+     aria-labelledby="doiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="doiModalLabel">{% trans "Metadatos del artículo" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+      <div class="modal-body">
+        <div id="doiMetadataContent">
+          <p>{% trans "Cargando metadatos..." %}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

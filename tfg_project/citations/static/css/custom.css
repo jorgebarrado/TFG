@@ -382,3 +382,9 @@ a:hover { text-decoration: underline; }
     transform: translateY(-6px);
     box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18);
 }
+
+/* Oscurecer fondo del modal sin tocar los valores por defecto de Bootstrap */
+.modal-backdrop.show {
+    background-color: #020617;
+    opacity: 0.35;
+}
