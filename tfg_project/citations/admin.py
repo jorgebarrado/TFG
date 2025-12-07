@@ -1,5 +1,8 @@
 from django.contrib import admin
 
-from .models import IncorrectCitation
+from .models import Conversation, IncorrectCitation, Message, UserProfile
 
 admin.site.register(IncorrectCitation)
+admin.site.register(UserProfile)
+admin.site.register(Conversation)
+admin.site.register(Message)
