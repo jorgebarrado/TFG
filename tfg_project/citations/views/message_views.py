@@ -94,8 +94,9 @@ def new_conversation(request, username):
 
     expected_participants = 1 if other_user == request.user else 2
     conversation = (
-        base_qs.annotate(num_participants=Count("participants"))
+        base_qs.annotate(num_participants=Count("participants", distinct=True))
         .filter(num_participants=expected_participants)
+        .order_by("created_at")
         .first()
     )
 
