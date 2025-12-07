@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import activate
 
@@ -22,6 +22,8 @@ from ..models import (
 )
 from ..utils import check_doi_has_citations, get_articles_from_dblp
 
+User = get_user_model()
+
 
 def get_avatar_initial(user):
     if getattr(user, "username", ""):
@@ -29,6 +31,27 @@ def get_avatar_initial(user):
     if getattr(user, "first_name", ""):
         return user.first_name[0].upper()
     return "?"
+
+
+def profile_view(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    profile, _ = UserProfile.objects.get_or_create(user=profile_user)
+
+    latest_reports = (
+        IncorrectCitation.objects.filter(author=profile_user)
+        .order_by("-created_at")[:5]
+    )
+
+    context = {
+        "profile_user": profile_user,
+        "profile": profile,
+        "latest_reports": latest_reports,
+        "avatar_initial": get_avatar_initial(profile_user),
+        "is_self_profile": request.user.is_authenticated
+        and request.user == profile_user,
+    }
+
+    return render(request, "citations/public_profile.html", context)
 
 
 @login_required

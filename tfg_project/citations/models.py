@@ -234,6 +234,34 @@ class SavedCitation(models.Model):
         return f"{self.user.username} -> {self.citation.id}"
 
 
+class Conversation(models.Model):
+    participants = models.ManyToManyField(User, related_name="conversations")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        users = ", ".join(self.participants.values_list("username", flat=True))
+        return f"Conversación entre {users}"
+
+
+class Message(models.Model):
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE, related_name="messages"
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+
+
 # TODO: futuro flujo avanzado de reportes (CitationReport).
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
