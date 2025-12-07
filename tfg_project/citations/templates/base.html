@@ -1,18 +1,37 @@
 <!DOCTYPE html>
-{% load static %}
-{% load i18n %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/custom.css' %}">
-
-<html lang="es">
+{% load static i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE|default:'es' }}">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}CiteCheck{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: {
+          preflight: false, // no tocamos los estilos base de Bootstrap
+        },
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+
+    <!-- Font Awesome (iconos) -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
     <script src="https://unpkg.com/htmx.org@latest"></script>
     <script>
         function getCookie(name) {
@@ -43,43 +62,59 @@
 
 <body class="bg-light">
 
-{% load i18n %}
-
+<div class="page-surface">
+  <div class="glow"></div>
+  <div class="content-shell">
 <!-- Barra superior -->
-<nav class="navbar navbar-light bg-white shadow-sm px-4 justify-content-between align-items-center">
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+<nav
+  class="navbar navbar-light px-4 justify-content-between align-items-center
+         sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-white/40">
+  <div class="container-fluid d-flex justify-content-between align-items-center px-0">
+    <a class="navbar-brand fw-bold text-decoration-none hover:text-primary transition-colors"
+       href="{% url 'home' %}">
         {% trans "Inicio" %}
     </a>
 
     <div class="d-flex align-items-center gap-3">
-    <form id="languageForm" action="{% url 'set_language' %}" method="post" class="d-inline">
-        {% csrf_token %}
-        {% get_current_language as LANGUAGE_CODE %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        {% if LANGUAGE_CODE == 'en' %}
-            <input type="hidden" name="language" value="es">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                <img src="{% static 'citations/img/flag_es.png' %}" alt="Español" style="height: 16px; margin-top: -2px;">
-            </button>
-        {% else %}
-            <input type="hidden" name="language" value="en">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                <img src="{% static 'citations/img/flag_en.png' %}" alt="English" style="height: 16px; margin-top: -2px;">
-            </button>
-        {% endif %}
-    </form>
+      <form id="languageForm" action="{% url 'set_language' %}" method="post" class="d-inline">
+          {% csrf_token %}
+          {% get_current_language as LANGUAGE_CODE %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          {% if LANGUAGE_CODE == 'en' %}
+              <input type="hidden" name="language" value="es">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                  <img src="{% static 'citations/img/flag_es.png' %}" alt="Spanish"
+                       style="height: 16px; margin-top: -2px;">
+              </button>
+          {% else %}
+              <input type="hidden" name="language" value="en">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                  <img src="{% static 'citations/img/flag_en.png' %}" alt="English"
+                       style="height: 16px; margin-top: -2px;">
+              </button>
+          {% endif %}
+      </form>
 
-
-        <div>
-        {% if user.is_authenticated %}
-        <div class="dropdown">
-        <button class="btn btn-sm btn-outline-dark dropdown-toggle d-flex align-items-center gap-2"
-                type="button"
-                id="profileDropdown"
-                data-bs-toggle="dropdown"
-                aria-expanded="false">
-            <i class="bi bi-person-circle fs-5"></i> {{ user.username }}
-        </button>
+      {% if user.is_authenticated %}
+      <div class="dropdown">
+        <button
+  class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-3 py-1 text-sm text-slate-800 hover:bg-white hover:shadow-md transition"
+  type="button"
+  data-bs-toggle="dropdown"
+  aria-expanded="false">
+  {% if user.profile.avatar %}
+      <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
+  {% else %}
+      <div
+        class="h-6 w-6 rounded-full bg-slate-800 text-white d-inline-flex align-items-center justify-content-center text-xs fw-semibold">
+          {{ user.first_name|default:user.username|first|upper }}
+      </div>
+  {% endif %}
+  <span class="max-w-[7rem] truncate">
+    {{ user.first_name|default:user.username }}
+  </span>
+  <i class="fa-solid fa-chevron-down text-[0.55rem]"></i>
+</button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
             <li>
             <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'my_reports' %}">
@@ -97,7 +132,6 @@
             </a>
             </li>
 
-            <!-- ⭐ AÑADIDO: MI PERFIL ⭐ -->
             <li>
                 <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'my_profile' %}">
                     <i class="bi bi-person-badge"></i> {% trans "Mi perfil" %}
@@ -118,18 +152,26 @@
             </a>
             </li>
         </ul>
-        </div>
-        {% else %}
-        <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-        {% trans "Iniciar sesión" %}
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
-        {% trans "Registrarse" %}
-        </button>
-        {% endif %}
+      </div>
+      {% else %}
+        <button
+  class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-3 py-1 text-sm text-slate-700 hover:bg-white hover:shadow-md transition me-2"
+  data-bs-toggle="modal"
+  data-bs-target="#loginModal">
+  <i class="fa-solid fa-right-to-bracket text-xs"></i>
+  <span>{% trans "Iniciar sesión" %}</span>
+</button>
 
-        </div>
+<button
+  class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-3 py-1 text-sm text-white shadow-md hover:shadow-lg transition"
+  data-bs-toggle="modal"
+  data-bs-target="#registerModal">
+  <i class="fa-solid fa-user-plus text-xs"></i>
+  <span>{% trans "Registrarse" %}</span>
+</button>
+      {% endif %}
     </div>
+  </div>
 </nav>
 
 <!-- Contenido principal -->
@@ -137,10 +179,17 @@
     {% block content %}
     {% endblock %}
 </main>
+</div>
+</div>
 
-<!-- Modales -->
+{# Modales globales, siempre al final del body #}
 {% include 'citations/modals/login_modal.html' %}
 {% include 'citations/modals/register_modal.html' %}
+{% include 'citations/modals/report_modal.html' %}
+{% include 'citations/modals/extract_pdf_modal.html' %}
+{% include 'citations/modals/context_modal.html' %}
+{% include 'citations/modals/doi_modal.html' %}
+{% include 'citations/modals/citation_preview_modal.html' %}
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"

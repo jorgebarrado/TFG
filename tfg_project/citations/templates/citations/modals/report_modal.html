@@ -1,10 +1,7 @@
 {% load i18n %}
-{% load static %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <form method="post" id="reportForm" action="{% url 'ajax_submit' %}">
           {% csrf_token %}

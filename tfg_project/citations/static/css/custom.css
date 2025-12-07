@@ -13,7 +13,10 @@
 body {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--gray-700);
-  background-color: var(--gray-100);
+  background: radial-gradient(circle at 20% 20%, rgba(59,130,246,0.12), transparent 30%),
+              radial-gradient(circle at 80% 0%, rgba(147,51,234,0.10), transparent 35%),
+              radial-gradient(circle at 80% 80%, rgba(14,165,233,0.10), transparent 30%),
+              #f7f9fc;
   line-height: 1.55;
 }
 
@@ -22,6 +25,9 @@ body {
   border: 0;
   border-radius: .75rem;
   box-shadow: 0 6px 24px rgba(0,0,0,.06);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* Botones principales */
@@ -63,6 +69,153 @@ a:hover { text-decoration: underline; }
 /* Pequenas utilidades */
 .toggle-details { cursor: pointer; display: inline-block; transition: transform .2s; }
 .toggle-details:hover { transform: scale(1.1); }
+
+/* ======== Layout global inspirado en la home ======== */
+.page-surface {
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+.page-surface .glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.page-surface .glow::before,
+.page-surface .glow::after {
+  content: "";
+  position: absolute;
+  filter: blur(110px);
+  opacity: 0.65;
+}
+
+.page-surface .glow::before {
+  width: 420px;
+  height: 420px;
+  top: -160px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(59,130,246,0.28), transparent 55%);
+}
+
+.page-surface .glow::after {
+  width: 520px;
+  height: 520px;
+  bottom: -200px;
+  right: -160px;
+  background: radial-gradient(circle, rgba(147,51,234,0.24), transparent 60%);
+}
+
+.content-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  margin-bottom: 1rem;
+}
+
+.section-heading .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #0f172a;
+  background: rgba(226, 232, 240, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.hero-card {
+  border-radius: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(147,51,234,0.12));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 18px 55px rgba(15,23,42,0.14);
+}
+
+.muted-label {
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 700;
+  color: #64748b;
+  font-size: .75rem;
+}
+
+.surface-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+}
+
+.surface-card h4,
+.surface-card h5 {
+  color: #0f172a;
+}
+
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  border-radius: 999px;
+  padding: .35rem .75rem;
+  font-weight: 600;
+}
+
+.table-modern {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+}
+
+.table-modern thead {
+  background: linear-gradient(90deg, rgba(59,130,246,0.08), rgba(99,102,241,0.08));
+  text-transform: uppercase;
+  font-size: .78rem;
+  letter-spacing: .06em;
+}
+
+.table-modern th, .table-modern td {
+  vertical-align: middle;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  border-radius: 999px;
+  padding: .45rem .8rem;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .65rem .9rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 12px 28px rgba(15,23,42,0.08);
+  font-weight: 700;
+  color: #0f172a;
+}
 
 /* ========= Estilo del modulo de Citation Extractor =========
    Todo va bajo el namespace .ce para no interferir con otras vistas. */
@@ -209,4 +362,29 @@ a:hover { text-decoration: underline; }
 .pdf-filter-equal {
     width: 100%;
     min-width: 100%;
+}
+
+.glass-card {
+    background: rgb(255, 255, 255);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(148, 163, 184, 0.08);
+}
+
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18);
+}
+
+/* Oscurecer fondo del modal sin tocar los valores por defecto de Bootstrap */
+.modal-backdrop.show {
+    background-color: #020617;
+    opacity: 0.35;
 }
