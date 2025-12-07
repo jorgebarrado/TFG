@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}Perfil de {{ profile_user.username }} - CiteCheck{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <section class="hero-card mb-4">
+    <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+      <div class="me-md-4">
+        {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" class="rounded-circle profile-avatar" alt="Avatar de {{ profile_user.username }}">
+        {% else %}
+          <div class="rounded-circle profile-avatar d-flex align-items-center justify-content-center bg-dark text-white">
+            <span class="fs-2 text-uppercase">{{ avatar_initial }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="flex-grow-1">
+        <p class="muted-label mb-1">{% trans "Perfil de usuario" %}</p>
+        <h2 class="mb-1">{{ profile_user.username }}</h2>
+        {% if profile_user.get_full_name %}
+          <p class="mb-2 text-muted">{{ profile_user.get_full_name }}</p>
+        {% endif %}
+        {% if profile.bio %}
+          <p class="mb-0">{{ profile.bio }}</p>
+        {% endif %}
+      </div>
+
+      <div class="ms-md-4 d-flex flex-column gap-2">
+        {% if user.is_authenticated and not is_self_profile %}
+          <a href="{% url 'new_conversation' profile_user.username %}" class="btn btn-primary">
+            <i class="fa-regular fa-paper-plane me-2"></i> {% trans "Enviar mensaje" %}
+          </a>
+        {% elif is_self_profile %}
+          <a href="{% url 'messages_inbox' %}" class="btn btn-outline-primary">
+            <i class="fa-regular fa-paper-plane me-2"></i> {% trans "Ir a mis mensajes" %}
+          </a>
+        {% else %}
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+            <i class="fa-regular fa-paper-plane me-2"></i> {% trans "Enviar mensaje" %}
+          </button>
+        {% endif %}
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+          <i class="fa-solid fa-house me-2"></i> {% trans "Volver al inicio" %}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card surface-card h-100">
+        <div class="card-body">
+          <h4 class="card-title mb-3">{% trans "Últimos reportes" %}</h4>
+          {% if latest_reports %}
+            <div class="d-flex flex-column gap-3">
+              {% for report in latest_reports %}
+                <div class="p-3 rounded-3 glass-card border">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <p class="mb-1 fw-semibold">{% trans "Reporte" %} #{{ report.id }}</p>
+                      <p class="mb-1 text-muted small">{{ report.created_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <a href="{% url 'citation_detail' report.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a>
+                  </div>
+                  <p class="mb-1 small text-muted">{{ report.get_publication_area_display }} · {{ report.get_citation_type_display }}</p>
+                  {% if report.doi_original %}
+                    <p class="mb-0 small"><strong>DOI:</strong> {{ report.doi_original }}</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">{% trans "Este usuario aún no ha creado reportes." %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card surface-card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{% trans "Información" %}</h5>
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2">
+              <span class="text-muted">{% trans "Miembro desde" %}:</span>
+              <strong>{{ profile_user.date_joined|date:"d/m/Y" }}</strong>
+            </li>
+            {% if profile.contact_email %}
+              <li class="mb-2">
+                <span class="text-muted">{% trans "Correo" %}:</span>
+                <a href="mailto:{{ profile.contact_email }}">{{ profile.contact_email }}</a>
+              </li>
+            {% endif %}
+            {% if profile.country %}
+              <li class="mb-2">
+                <span class="text-muted">{% trans "País" %}:</span>
+                {{ profile.country }}
+              </li>
+            {% endif %}
+            {% if profile.research_area %}
+              <li class="mb-2">
+                <span class="text-muted">{% trans "Área de investigación" %}:</span>
+                {{ profile.research_area }}
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+
+      {% if profile.social_link_1 or profile.social_link_2 or profile.social_link_3 or profile.social_link_4 %}
+        <div class="card surface-card">
+          <div class="card-body">
+            <h5 class="card-title">{% trans "Enlaces" %}</h5>
+            <ul class="list-unstyled small mb-0">
+              {% if profile.social_link_1 %}
+                <li class="mb-2"><a href="{{ profile.social_link_1 }}" target="_blank" rel="noopener">{{ profile.social_link_1 }}</a></li>
+              {% endif %}
+              {% if profile.social_link_2 %}
+                <li class="mb-2"><a href="{{ profile.social_link_2 }}" target="_blank" rel="noopener">{{ profile.social_link_2 }}</a></li>
+              {% endif %}
+              {% if profile.social_link_3 %}
+                <li class="mb-2"><a href="{{ profile.social_link_3 }}" target="_blank" rel="noopener">{{ profile.social_link_3 }}</a></li>
+              {% endif %}
+              {% if profile.social_link_4 %}
+                <li class="mb-0"><a href="{{ profile.social_link_4 }}" target="_blank" rel="noopener">{{ profile.social_link_4 }}</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
