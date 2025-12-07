@@ -1,11 +1,20 @@
 {% load i18n %}
 <div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
-    <strong>{{ comment.author.username|default:"Anonymous" }}</strong>
+    {% if comment.author %}
+        <a href="{% url 'profile' comment.author.username %}" class="fw-semibold text-decoration-none">{{ comment.author.username }}</a>
+    {% else %}
+        <strong>{% trans "Anonymous" %}</strong>
+    {% endif %}
     <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
 
     {% if comment.parent %}
         <div class="text-muted small mb-1">
-            💬 {% trans "Respondiendo a:" %} <strong>{{ comment.parent.author.username|default:"Anonymous" }}</strong>:
+            💬 {% trans "Respondiendo a:" %}
+            {% if comment.parent.author %}
+                <a href="{% url 'profile' comment.parent.author.username %}" class="fw-semibold text-decoration-none">{{ comment.parent.author.username }}</a>
+            {% else %}
+                <strong>{% trans "Anonymous" %}</strong>
+            {% endif %}:
             “{{ comment.parent.content|truncatechars:50 }}”
         </div>
     {% endif %}
