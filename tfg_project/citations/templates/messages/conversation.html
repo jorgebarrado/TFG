@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Conversación" %} - CiteCheck{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <p class="text-uppercase text-muted small mb-1">{% trans "Mensajes" %}</p>
+      <h2 class="mb-0">{% trans "Conversación" %} #{{ conversation.id }}</h2>
+      <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+        {% for participant in conversation.other_participants %}
+          <a href="{% url 'profile' participant.username %}" class="badge bg-light text-dark border">@{{ participant.username }}</a>
+        {% empty %}
+          <span class="badge bg-light text-dark border">@{{ user.username }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'messages_inbox' %}" class="btn btn-outline-secondary">{% trans "Volver a mensajes" %}</a>
+      {% for participant in conversation.other_participants %}
+        <a href="{% url 'new_conversation' participant.username %}" class="btn btn-primary">{% trans "Nuevo mensaje" %}</a>
+        {% break %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card surface-card mb-4">
+    <div class="card-body">
+      {% if messages|length %}
+        <div class="d-flex flex-column gap-3">
+          {% for message in messages %}
+            <div class="p-3 rounded-3 glass-card border {% if message.sender == user %}bg-primary bg-opacity-10 ms-auto{% else %}bg-white{% endif %}" style="max-width: 720px;">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <div class="d-flex align-items-center gap-2">
+                  <a href="{% url 'profile' message.sender.username %}" class="fw-semibold text-decoration-none">{{ message.sender.username }}</a>
+                  <small class="text-muted">{{ message.created_at|date:"d/m/Y H:i" }}</small>
+                </div>
+                {% if message.is_read and message.sender == user %}
+                  <span class="badge bg-success bg-opacity-75">{% trans "Leído" %}</span>
+                {% endif %}
+              </div>
+              <p class="mb-0">{{ message.content|linebreaksbr }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">{% trans "Aún no hay mensajes en esta conversación." %}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card surface-card">
+    <div class="card-body">
+      <h5 class="card-title">{% trans "Enviar un mensaje" %}</h5>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary">{% trans "Enviar" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
