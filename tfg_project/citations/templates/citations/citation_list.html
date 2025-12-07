@@ -5,66 +5,105 @@
 
 {% block content %}
 <div class="container py-5">
-  <h1 class="mb-4 text-center">{% trans "Lista de citas incorrectas" %}</h1>
-
-  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-    <a href="{% url 'home' %}" class="btn btn-outline-primary mb-2">
-      ⬅️ {% trans "Volver al inicio" %}
-    </a>
-  </div>
-  <form class="row g-3 mb-4" method="get">
-    <div class="col-md-5">
-      <input id="searchInput" type="text"
-            class="form-control"
-            placeholder="{% trans 'Buscar DOI, título o autor' %}">
+  <section class="hero-card mb-4">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3">
+      <div class="flex-grow-1">
+        <p class="muted-label mb-2">{% trans "Explora los reportes" %}</p>
+        <h1 class="fw-bold mb-2">
+          {% trans "Citas cuestionadas por la comunidad" %}
+        </h1>
+        <p class="text-muted mb-3">
+          {% trans "Navega los reportes enviados por otros autores y filtra por area, tipo de error o anio. El diseno sigue la home con tarjetas glass y gradientes suaves." %}
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="stat-pill">
+            <i class="fa-solid fa-flag-checkered text-primary"></i>
+            {{ citations|length }} {% trans "reportes" %}
+          </span>
+          <span class="stat-pill">
+            <i class="fa-solid fa-layer-group text-indigo-500"></i>
+            {{ areas|length }} {% trans "Areas" %}
+          </span>
+          <span class="stat-pill">
+            <i class="fa-solid fa-bug text-amber-500"></i>
+            {{ citation_types|length }} {% trans "tipos de error" %}
+          </span>
+        </div>
+      </div>
+      <div class="d-flex flex-column flex-sm-row gap-2">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary">
+          <i class="fa-solid fa-house"></i> {% trans "Volver al inicio" %}
+        </a>
+        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#reportModal">
+          <i class="fa-solid fa-plus me-1"></i> {% trans "Nuevo reporte" %}
+        </button>
+      </div>
     </div>
+  </section>
 
-    <div class="col-md-3">
-      <select id="areaFilter" class="form-select">
-        <option value="">{% trans "Área (todas)" %}</option>
-        {% for code,label in areas %}
-          <option value="{{ label }}">{{ label }}</option>
-        {% endfor %}
-      </select>
+  <div class="surface-card p-4 mb-3">
+    <div class="section-heading">
+      <span class="pill"><i class="fa-solid fa-sliders"></i> {% trans "Filtros" %}</span>
+      <small class="text-muted">{% trans "Refina la tabla en tiempo real" %}</small>
     </div>
+    <form class="row g-3" method="get">
+      <div class="col-lg-5">
+        <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, titulo o autor" %}</label>
+        <input id="searchInput" type="text"
+              class="form-control"
+              placeholder="{% trans 'Buscar DOI, titulo o autor' %}">
+      </div>
 
-    <div class="col-md-2">
-      <select id="ctypeFilter" class="form-select">
-        <option value="">{% trans "Tipo (todos)" %}</option>
-        {% for code,label in citation_types %}
-          <option value="{{ label }}">{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-lg-3">
+        <label class="form-label small text-muted" for="areaFilter">{% trans "Area" %}</label>
+        <select id="areaFilter" class="form-select">
+          <option value="">{% trans "Todas" %}</option>
+          {% for code,label in areas %}
+            <option value="{{ label }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div class="col-md-2">
-      <select id="yearFilter" class="form-select">
-        <option value=""
-                {% if not request.GET.year %}selected{% endif %}>
-            {% trans "Año" %}
-        </option>
+      <div class="col-lg-2">
+        <label class="form-label small text-muted" for="ctypeFilter">{% trans "Tipo" %}</label>
+        <select id="ctypeFilter" class="form-select">
+          <option value="">{% trans "Todos" %}</option>
+          {% for code,label in citation_types %}
+            <option value="{{ label }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-        {% for y in years %}
-          <option value="{{ y }}"
-                  {% if request.GET.year == y|stringformat:'s' %}selected{% endif %}>
-            {{ y }}
+      <div class="col-lg-2">
+        <label class="form-label small text-muted" for="yearFilter">{% trans "Anio" %}</label>
+        <select id="yearFilter" class="form-select">
+          <option value=""
+                  {% if not request.GET.year %}selected{% endif %}>
+              {% trans "Todos" %}
           </option>
-        {% endfor %}
-      </select>
 
-    </div>
-  </form>
+          {% for y in years %}
+            <option value="{{ y }}"
+                    {% if request.GET.year == y|stringformat:'s' %}selected{% endif %}>
+              {{ y }}
+            </option>
+          {% endfor %}
+        </select>
+
+      </div>
+    </form>
+  </div>
 
   {% if citations %}
-  <div class="table-responsive">
+  <div class="table-modern">
     <table id="citationsTable"
-           class="table table-striped table-hover table-bordered align-middle w-100">
-      <thead class="table-light">
+           class="table align-middle mb-0">
+      <thead>
         <tr>
           <th>{% trans "Reportado por" %}</th>
           <th>{% trans "DOI" %}</th>
           <th>{% trans "Tipo de error" %}</th>
-          <th>{% trans "Área" %}</th>
+          <th>{% trans "Area" %}</th>
           <th>{% trans "ID" %}</th>
           <th>{% trans "Fecha" %}</th>
           <th>{% trans "Acciones" %}</th>
@@ -77,7 +116,7 @@
               {% if c.author %}
                 {{ c.author.username }}
               {% else %}
-                {% trans "Anónimo" %}{% endif %}</td>
+                {% trans "Anonimo" %}{% endif %}</td>
             <td>
               <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
                 <code>{{ c.doi_original }}</code>
@@ -87,7 +126,7 @@
             <td>{{ c.get_publication_area_display }}</td>
             <td data-order="{{ c.id }}">#{{ c.id }}</td>
             <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="d-flex gap-2">
+            <td class="d-flex flex-wrap gap-2">
                 {% include 'citations/partials/_vote_buttons.html' with citation=c upvotes=c.votes.all|count_upvotes downvotes=c.votes.all|count_downvotes user_vote=c.votes.all|user_vote:request.user %}
                 {% include 'citations/partials/_save_button.html' with citation=c is_saved=c|is_saved_by:request.user %}
                 <a href="{% url 'citation_detail' c.id %}"
@@ -108,42 +147,9 @@
 
   {% else %}
     <div class="alert alert-info text-center">
-        {% trans "No hay reportes aún." %}
+        {% trans "No hay reportes aun." %}
     </div>
   {% endif %}
-</div>
-
-<div class="modal fade" id="doiModal" tabindex="-1" aria-labelledby="doiModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="doiModalLabel">{% trans "Metadatos del artículo" %}</h5>
-        <button class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
-      </div>
-      <div class="modal-body">
-        <div id="doiMetadataContent">
-          <p>{% trans "Cargando metadatos…" %}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de vista previa de reporte -->
-<div class="modal fade" id="citationPreviewModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content" id="citationPreviewModalContent">
-      <!-- Skeleton de carga inicial -->
-      <div class="modal-body p-4">
-        <div class="placeholder-glow">
-          <div class="placeholder col-6 mb-2"></div>
-          <div class="placeholder col-8 mb-2"></div>
-          <div class="placeholder col-4 mb-2"></div>
-          <div class="placeholder col-10 mb-2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 {% endblock %}
@@ -183,25 +189,25 @@ $(function () {
   $(document).on('click', '.doi-link', function (e) {
     e.preventDefault();
     const doi = $(this).data('doi');
-    $('#doiMetadataContent').html('<p>{% trans "Cargando metadatos…" %}</p>');
+    $('#doiMetadataContent').html('<p>{% trans "Cargando metadatos..." %}</p>');
     new bootstrap.Modal('#doiModal').show();
 
     $.get('/citations/get_all_metadata/', { doi })
       .done(function (data) {
         const html = `
-          <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
+          <p><strong>{% trans "Titulo" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
           <p><strong>{% trans "Autores" %}:</strong> ${
             data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'
           }</p>
           <p><strong>{% translate "Revista" %}:</strong> ${data['container-title']?.[0] || '{% translate "N/A" %}'}</p>
-          <p><strong>{% translate "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
+          <p><strong>{% translate "Anio" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
           <p><strong>DOI:</strong> <code>${doi}</code></p>
           <p><strong>{% translate "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>`;
         $('#doiMetadataContent').html(html);
       })
       .fail(() => {
         $('#doiMetadataContent').html(
-          '<p class="text-danger">{% translate "No se pudo obtener información para este DOI." %}</p>'
+          '<p class="text-danger">{% translate "No se pudo obtener informacion para este DOI." %}</p>'
         );
       });
   });

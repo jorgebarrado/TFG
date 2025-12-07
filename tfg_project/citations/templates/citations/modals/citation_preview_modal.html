@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<div class="modal fade" id="citationPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content" id="citationPreviewModalContent">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <p class="text-uppercase text-muted small mb-1">{% trans "Vista previa de reporte" %}</p>
+          <h2 class="h5 fw-bold mb-1">{% trans "Cargando reporte..." %}</h2>
+          <p class="mb-0 text-muted small">{% trans "Mostrando la información más reciente." %}</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="placeholder-glow">
+          <div class="placeholder col-6 mb-2"></div>
+          <div class="placeholder col-8 mb-2"></div>
+          <div class="placeholder col-4 mb-2"></div>
+          <div class="placeholder col-10 mb-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

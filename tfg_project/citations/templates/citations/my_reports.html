@@ -1,19 +1,47 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">📝 {% trans "Mis reportes" %}</h2>
-  {% if reports %}
-    <ul class="list-group">
-      {% for citation in reports %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          {% trans "Reporte"%} #{{ citation.id }} – {{ citation.get_citation_type_display }}
-          <a href="{% url 'citation_detail' citation.id %}" class="btn btn-sm btn-outline-primary">{% trans "Ver" %}</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-muted">{% trans "Aún no has creado ningún reporte." %}</p>
-  {% endif %}
+<div class="container py-5">
+  <section class="hero-card mb-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div>
+        <p class="muted-label mb-1">{% trans "Tu actividad" %}</p>
+        <h1 class="fw-bold mb-1">{% trans "Mis reportes" %}</h1>
+        <p class="text-muted mb-0">
+          {% trans "Consulta rapido todos los reportes que has enviado con el mismo look and feel de la home." %}
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary">
+          <i class="fa-solid fa-house"></i> {% trans "Inicio" %}
+        </a>
+        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#reportModal">
+          <i class="fa-solid fa-plus me-1"></i> {% trans "Nuevo reporte" %}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="surface-card p-4">
+    {% if reports %}
+      <div class="list-group list-group-flush">
+        {% for citation in reports %}
+          <div class="list-group-item bg-transparent d-flex flex-wrap justify-content-between align-items-center">
+            <div class="me-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="pill">#{{ citation.id }}</span>
+                <span class="badge-soft">{{ citation.get_citation_type_display }}</span>
+              </div>
+              <div class="fw-semibold mt-1">{{ citation.metadata_original_title|default:citation.doi_original }}</div>
+              <small class="text-muted">{% trans "Creado" %}: {{ citation.created_at|date:"d/m/Y" }}</small>
+            </div>
+            <a href="{% url 'citation_detail' citation.id %}" class="btn btn-outline-primary btn-sm">{% trans "Ver" %}</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">{% trans "Aun no has creado ningun reporte." %}</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
