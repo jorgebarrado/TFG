@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mensajes" %} - CiteCheck{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <p class="text-uppercase text-muted small mb-1">{% trans "Mensajes" %}</p>
+      <h2 class="mb-0">{% trans "Conversaciones" %}</h2>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary">{% trans "Volver" %}</a>
+  </div>
+
+  {% if conversations %}
+    <div class="d-flex flex-column gap-3">
+      {% for conversation in conversations %}
+        <div class="p-3 rounded-3 glass-card border">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 text-muted small">{% trans "Participantes" %}</p>
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                {% for participant in conversation.other_participants %}
+                  <a href="{% url 'profile' participant.username %}" class="badge bg-light text-dark border">@{{ participant.username }}</a>
+                {% empty %}
+                  <span class="badge bg-light text-dark border">@{{ user.username }}</span>
+                {% endfor %}
+              </div>
+              {% if conversation.messages.last %}
+                <p class="mb-0 mt-2 small text-muted">{{ conversation.messages.last.content|truncatechars:120 }}</p>
+              {% else %}
+                <p class="mb-0 mt-2 text-muted small">{% trans "Sin mensajes aún." %}</p>
+              {% endif %}
+            </div>
+            <div class="text-end">
+              {% if conversation.unread_count %}
+                <span class="badge bg-primary">{{ conversation.unread_count }} {% trans "sin leer" %}</span>
+              {% endif %}
+              <a href="{% url 'conversation_detail' conversation.id %}" class="btn btn-outline-primary btn-sm ms-2">{% trans "Abrir" %}</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">{% trans "No tienes conversaciones todavía." %}</div>
+  {% endif %}
+</div>
+{% endblock %}

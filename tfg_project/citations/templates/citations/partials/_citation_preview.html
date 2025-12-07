@@ -7,9 +7,16 @@
       {% trans "Reporte" %} #{{ citation.id }}
     </h2>
     <p class="mb-0 text-muted small">
-      {% blocktrans with username=citation.user.username|default:"Anonymous" created_at=citation.created_at|date:"d/m/Y H:i" %}
-        Reportado por {{ username }} el {{ created_at }}
-      {% endblocktrans %}
+      {% if citation.author %}
+        {% url 'profile' citation.author.username as author_profile_url %}
+        {% blocktrans trimmed with username_link='<a href="'|add:author_profile_url|add:'">'|add:citation.author.username|add:'</a>'|safe created_at=citation.created_at|date:"d/m/Y H:i" %}
+          Reportado por {{ username_link }} el {{ created_at }}
+        {% endblocktrans %}
+      {% else %}
+        {% blocktrans with created_at=citation.created_at|date:"d/m/Y H:i" %}
+          Reportado por Anónimo el {{ created_at }}
+        {% endblocktrans %}
+      {% endif %}
     </p>
   </div>
 
