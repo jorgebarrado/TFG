@@ -324,3 +324,17 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ["content", "parent_id"]
+
+
+class MessageForm(forms.Form):
+    content = forms.CharField(
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": _("Escribe un mensaje…"),
+            }
+        ),
+        error_messages={"required": _("El mensaje no puede estar vacío.")},
+    )

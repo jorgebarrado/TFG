@@ -114,7 +114,7 @@
           <tr>
             <td>
               {% if c.author %}
-                {{ c.author.username }}
+                <a href="{% url 'profile' c.author.username %}" class="text-decoration-none">{{ c.author.username }}</a>
               {% else %}
                 {% trans "Anonimo" %}{% endif %}</td>
             <td>
