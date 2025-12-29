@@ -1,7 +1,7 @@
 # citations/urls.py
 from django.urls import path
 from . import views_ai, views_api, views_reports
-from .views import ajax_views, auth_views, page_views, user_views
+from .views import ajax_views, auth_views, page_views, user_views, message_views
 
 urlpatterns = [
     # Page Views
@@ -93,4 +93,9 @@ urlpatterns = [
         name="api_semantic_citation_analysis",
     ),
     path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
+
+    # Messaging System
+    path("messages/", message_views.inbox, name="messages_inbox"),
+    path("messages/new/<str:username>/", message_views.new_conversation, name="new_conversation"),
+    path("messages/<int:conversation_id>/", message_views.conversation_detail, name="conversation_detail"),
 ]

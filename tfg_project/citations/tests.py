@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Comment, IncorrectCitation, SavedCitation
+from .models import Comment, IncorrectCitation, SavedCitation, Conversation
 import os
 import json
 from django.conf import settings
@@ -88,41 +88,6 @@ class PageLoadTests(LoggedInTestCase):
             reverse("citation_detail", args=[self.report1.id])
         )
         self.assertEqual(response.status_code, 200)
-
-
-class LoggedInTestCase(SocialAppTestCase):
-    def setUp(self):
-        super().setUp()
-        self.user1 = User.objects.create_user(
-            username="user1", password="password"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2", password="password"
-        )
-
-        # Datos para user1
-        self.report1 = IncorrectCitation.objects.create(
-            author=self.user1,
-            doi_original="10.1000/orig1",
-            doi_incorrect="10.1000/inc1",
-            citation_type="misinterpretation",
-            publication_area="CIS",
-        )
-        self.comment1 = Comment.objects.create(
-            citation=self.report1, author=self.user1, content="Comentario de user1"
-        )
-        self.saved1 = SavedCitation.objects.create(
-            user=self.user1, citation=self.report1
-        )
-
-        # Datos para user2
-        self.report2 = IncorrectCitation.objects.create(
-            author=self.user2,
-            doi_original="10.1000/orig2",
-            doi_incorrect="10.1000/inc2",
-            citation_type="not said",
-            publication_area="ENG",
-        )
 
 
 class RegisterTests(TestCase):
@@ -445,3 +410,93 @@ class ContextLoggingTests(TestCase):
 
         # Verificar que el método info fue llamado
         mock_logger.info.assert_called_once()
+
+
+class MessageSystemTests(SocialAppTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user1 = User.objects.create_user(username="user1", password="password")
+        self.user2 = User.objects.create_user(username="user2", password="password")
+        self.user3 = User.objects.create_user(username="user3", password="password")
+
+    def test_new_conversation_creates_if_not_exists(self):
+        self.client.login(username="user1", password="password")
+        url = reverse("new_conversation", kwargs={"username": "user2"})
+        response = self.client.get(url)
+
+        # Debe crear una nueva y redirigir
+        self.assertEqual(Conversation.objects.count(), 1)
+        conversation = Conversation.objects.first()
+        self.assertEqual(conversation.participants.count(), 2)
+        self.assertIn(self.user1, conversation.participants.all())
+        self.assertIn(self.user2, conversation.participants.all())
+
+        self.assertRedirects(response, reverse("conversation_detail", args=[conversation.id]))
+
+    def test_new_conversation_finds_existing(self):
+        self.client.login(username="user1", password="password")
+
+        # Crear conversación previa
+        conv = Conversation.objects.create()
+        conv.participants.add(self.user1, self.user2)
+
+        url = reverse("new_conversation", kwargs={"username": "user2"})
+        response = self.client.get(url)
+
+        # No debe crear otra
+        self.assertEqual(Conversation.objects.count(), 1)
+        self.assertRedirects(response, reverse("conversation_detail", args=[conv.id]))
+
+    def test_new_conversation_ignores_if_third_participant(self):
+        self.client.login(username="user1", password="password")
+
+        # Conversación con user1, user2 y user3 (grupo)
+        conv_group = Conversation.objects.create()
+        conv_group.participants.add(self.user1, self.user2, self.user3)
+
+        url = reverse("new_conversation", kwargs={"username": "user2"})
+        response = self.client.get(url)
+
+        # Debe crear una NUEVA exclusiva entre user1 y user2
+        self.assertEqual(Conversation.objects.count(), 2)
+
+        new_conv = Conversation.objects.exclude(id=conv_group.id).first()
+        self.assertEqual(new_conv.participants.count(), 2)
+        self.assertIn(self.user1, new_conv.participants.all())
+        self.assertIn(self.user2, new_conv.participants.all())
+        self.assertNotIn(self.user3, new_conv.participants.all())
+
+        self.assertRedirects(response, reverse("conversation_detail", args=[new_conv.id]))
+
+    def test_self_conversation(self):
+        self.client.login(username="user1", password="password")
+        url = reverse("new_conversation", kwargs={"username": "user1"})
+        response = self.client.get(url)
+
+        # Debe crear conversación con solo user1
+        self.assertEqual(Conversation.objects.count(), 1)
+        conv = Conversation.objects.first()
+        self.assertEqual(conv.participants.count(), 1)
+        self.assertIn(self.user1, conv.participants.all())
+
+        self.assertRedirects(response, reverse("conversation_detail", args=[conv.id]))
+
+    def test_self_conversation_finds_existing(self):
+        self.client.login(username="user1", password="password")
+
+        conv = Conversation.objects.create()
+        conv.participants.add(self.user1)
+
+        url = reverse("new_conversation", kwargs={"username": "user1"})
+        response = self.client.get(url)
+
+        self.assertEqual(Conversation.objects.count(), 1)
+        self.assertRedirects(response, reverse("conversation_detail", args=[conv.id]))
+
+    def test_conversation_list_view(self):
+        """Prueba básica de que la vista de inbox no crashea"""
+        self.client.login(username="user1", password="password")
+        # Asegurar URL
+        url = reverse("messages_inbox")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

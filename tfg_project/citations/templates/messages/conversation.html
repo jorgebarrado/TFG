@@ -18,9 +18,6 @@
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'messages_inbox' %}" class="btn btn-outline-secondary">{% trans "Volver a mensajes" %}</a>
-      {% for participant in conversation.other_participants|slice:":1" %}
-        <a href="{% url 'new_conversation' participant.username %}" class="btn btn-primary">{% trans "Nuevo mensaje" %}</a>
-      {% endfor %}
     </div>
   </div>
 
