@@ -1,7 +1,14 @@
 # citations/urls.py
 from django.urls import path
 from . import views_ai, views_api, views_reports
-from .views import ajax_views, auth_views, page_views, user_views, message_views
+from .views import (
+    ajax_views,
+    auth_views,
+    message_views,
+    page_views,
+    tutor_views,
+    user_views,
+)
 
 urlpatterns = [
     # Page Views
@@ -44,6 +51,13 @@ urlpatterns = [
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
     path("perfil/", user_views.my_profile, name="my_profile"),
     path("perfil/ajustes/", user_views.account_settings, name="account_settings"),
+    path("revision-citas/", tutor_views.citation_review_papers, name="citation_review_papers"),
+    path("revision-citas/<int:paper_id>/citers/", tutor_views.citation_review_citers, name="citation_review_citers"),
+    path(
+        "revision-citas/create-report/",
+        tutor_views.citation_review_create_report,
+        name="citation_review_create_report",
+    ),
     # AJAX Views
     path(
         "get_all_metadata/",

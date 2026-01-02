@@ -112,6 +112,22 @@ def ajax_submit_citation(request):
 
     form = IncorrectCitationForm(request.POST)
     if form.is_valid():
+        doi_original = form.cleaned_data.get("doi_original")
+        doi_incorrect = form.cleaned_data.get("doi_incorrect")
+
+        if doi_original and doi_incorrect:
+            existing = IncorrectCitation.objects.filter(
+                doi_original=doi_original, doi_incorrect=doi_incorrect
+            ).first()
+            if existing:
+                if _is_ajax(request):
+                    return JsonResponse(
+                        {"success": True, "citation_id": existing.id, "existing": True},
+                        status=200,
+                    )
+                messages.info(request, _("Ese reporte ya existe."))
+                return redirect("citation_detail", pk=existing.pk)
+
         citation = form.save(commit=False)
         if request.user.is_authenticated:
             citation.author = request.user
