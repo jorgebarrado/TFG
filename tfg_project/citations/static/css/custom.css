@@ -375,6 +375,19 @@ a:hover { text-decoration: underline; }
         0 0 0 1px rgba(148, 163, 184, 0.08);
 }
 
+.dropzone-clear {
+    background: transparent;
+    border: 0;
+    color: #dc2626;
+    font-size: 1.05rem;
+    line-height: 1;
+    padding: 0;
+}
+
+.dropzone-clear:hover {
+    color: #b91c1c;
+}
+
 .hover-lift {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

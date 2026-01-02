@@ -3,13 +3,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from citations.views import message_views, user_views
+from citations.views import message_views, notification_views, user_views
 from citations.views.page_views import home
 
 urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("", home, name="home"),
     path("admin/", admin.site.urls),
+    path("notifications/", notification_views.notification_list, name="notifications_list"),
+    path("notifications/mark-all-read/", notification_views.mark_all_read, name="notifications_mark_all_read"),
+    path("notifications/<int:pk>/read/", notification_views.notification_read, name="notifications_read"),
     path("citations/", include("citations.urls")),
     path("messages/", message_views.inbox, name="messages_inbox"),
     path(

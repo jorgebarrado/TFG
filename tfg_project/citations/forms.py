@@ -192,6 +192,27 @@ class UserProfileForm(forms.ModelForm):
                 self.fields[name].widget.attrs.setdefault("class", "form-check-input")
 
 
+class DBLPUrlForm(forms.ModelForm):
+    """
+    Formulario reducido para actualizar solo la URL de DBLP.
+    """
+
+    dblp_url = forms.URLField(
+        required=False,
+        widget=forms.URLInput(
+            attrs={
+                "class": "form-control form-control-sm",
+                "placeholder": "https://dblp.org/pid/...",
+            }
+        ),
+        label=_("DBLP"),
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ["dblp_url"]
+
+
 class RegisterForm(UserCreationForm):
     """
     Formulario de registro de nuevos usuarios.

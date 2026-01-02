@@ -1,5 +1,6 @@
 """Views for pages that render complete HTML pages."""
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -7,12 +8,13 @@ from django.db.models.functions import ExtractYear
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.db.models import Count, Q
-from ..forms import CommentForm, LoginForm, RegisterForm
+from ..forms import CommentForm, DBLPUrlForm, LoginForm, RegisterForm
 from ..models import (
     AREA_CHOICES,
     Comment,
     IncorrectCitation,
     SavedCitation,
+    UserProfile,
     Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
@@ -76,6 +78,20 @@ def home(request):
     Renderiza la pogina de inicio.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
+    dblp_form = None
+
+    if request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if request.method == "POST" and "update_dblp_home" in request.POST:
+            dblp_form = DBLPUrlForm(request.POST, instance=profile)
+            if dblp_form.is_valid():
+                dblp_form.save()
+                messages.success(request, "DBLP actualizado correctamente.")
+                return redirect("home")
+            messages.error(request, "Revisa la URL de DBLP.")
+        else:
+            dblp_form = DBLPUrlForm(instance=profile)
+
     return render(
         request,
         "citations/home.html",
@@ -83,6 +99,7 @@ def home(request):
             "show_login_modal": show_login_modal,
             "login_form": LoginForm(),
             "register_form": RegisterForm(),
+            "dblp_form": dblp_form,
         },
     )
 

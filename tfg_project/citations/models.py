@@ -262,6 +262,42 @@ class Message(models.Model):
         return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
 
 
+class Notification(models.Model):
+    class NotificationType(models.TextChoices):
+        NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
+        NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
+        NEW_MESSAGE = "NEW_MESSAGE", _("Nuevo mensaje")
+        SYSTEM = "SYSTEM", _("Sistema")
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications_sent",
+    )
+    notification_type = models.CharField(
+        max_length=20,
+        choices=NotificationType.choices,
+    )
+    title = models.CharField(max_length=120)
+    message = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} -> {self.user.username}"
+
+
 # TODO: futuro flujo avanzado de reportes (CitationReport).
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
@@ -299,3 +335,4 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
+

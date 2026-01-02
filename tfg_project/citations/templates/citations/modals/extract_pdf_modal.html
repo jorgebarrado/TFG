@@ -21,8 +21,17 @@
           {% csrf_token %}
           <div class="row g-2 align-items-end">
             <div class="col-md-7">
-              <label for="pdf-file-input" class="form-label mb-1">{% trans "Selecciona un archivo PDF" %}</label>
-              <input type="file" class="form-control" id="pdf-file-input" name="pdf_file" accept="application/pdf">
+              <input type="file" class="form-control d-none" id="pdf-file-input" name="pdf_file" accept="application/pdf">
+              <div id="pdf-dropzone"
+                   class="border-2 border-dashed border-slate-200 rounded-2xl p-3 text-center text-muted small position-relative">
+                <span id="pdf-dropzone-text" class="d-block w-100">{% trans "Arrastra un PDF aqui o haz clic para seleccionarlo." %}</span>
+                <button type="button"
+                        id="pdf-dropzone-clear"
+                        class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
+                        aria-label="{% trans 'Quitar PDF' %}">
+                  &times;
+                </button>
+              </div>
             </div>
             <div class="col-md-3">
               <button type="submit" class="btn btn-primary w-100">
@@ -106,3 +115,72 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('pdf-file-input');
+    const dropzone = document.getElementById('pdf-dropzone');
+    const dropzoneText = document.getElementById('pdf-dropzone-text');
+    const dropzoneClear = document.getElementById('pdf-dropzone-clear');
+    const summary = document.getElementById('pdf-extract-file-summary');
+
+    if (!input || !dropzone) return;
+
+    function setSummary(file) {
+      if (!summary || !dropzoneText || !dropzoneClear) return;
+      summary.innerHTML = '';
+      if (!file) {
+        summary.classList.add('d-none');
+        dropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo.';
+        dropzoneClear.classList.add('d-none');
+        return;
+      }
+      const sizeKb = Math.round(file.size / 1024);
+      dropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
+      dropzoneClear.classList.remove('d-none');
+      summary.classList.add('d-none');
+    }
+
+    function applyFile(file) {
+      if (!file) return;
+      if (file.type !== 'application/pdf') {
+        setSummary(null);
+        return;
+      }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      setSummary(file);
+    }
+
+    dropzone.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => applyFile(input.files?.[0]));
+
+    ['dragenter', 'dragover'].forEach((evt) => {
+      dropzone.addEventListener(evt, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-emerald-300', 'bg-emerald-50/40');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((evt) => {
+      dropzone.addEventListener(evt, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-emerald-300', 'bg-emerald-50/40');
+      });
+    });
+
+    dropzone.addEventListener('drop', (event) => {
+      const file = event.dataTransfer?.files?.[0];
+      applyFile(file);
+    });
+
+    if (dropzoneClear) {
+      dropzoneClear.addEventListener('click', (event) => {
+        event.stopPropagation();
+        input.value = '';
+        setSummary(null);
+      });
+    }
+  });
+</script>
