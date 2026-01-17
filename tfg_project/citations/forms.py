@@ -79,7 +79,7 @@ class UserProfileForm(forms.ModelForm):
     country = forms.ChoiceField(
         choices=COUNTRY_CHOICES,
         required=False,
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "form-control", "data-select2": "country"}),
         label=_("País"),
     )
 
