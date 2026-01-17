@@ -54,7 +54,7 @@
           <!-- Grid de cards estilo SaaS -->
           <div class="grid gap-6 md:grid-cols-3 mt-6">
             <!-- Card 1: Crear reporte -->
-            <div class="group relative block h-full">
+            <div class="group relative block h-full" id="home-reportes-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
@@ -64,10 +64,10 @@
                   <i class="fa-solid fa-keyboard"></i>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 mb-2">
-                  {% trans "Crear reporte" %}
+                  {% trans "Reportes" %}
                 </h3>
                 <p class="text-slate-500 text-sm mb-6">
-                  {% trans "Crea un reporte de cita incorrecta desde cero o con el asistente que te guia paso a paso." %}
+                  {% trans "Crea un reporte de cita incorrecta o consulta los reportes existentes." %}
                 </p>
 
                 <div class="w-100 mt-auto">
@@ -83,6 +83,11 @@
                        class="w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
                       <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                       <span>{% trans "Con asistente" %}</span>
+                    </a>
+                    <a href="{% url 'citation_list' %}"
+                       class="w-100 btn btn-outline-secondary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                      <i class="fa-solid fa-list-ul text-xs"></i>
+                      <span>{% trans "Ver reportes" %}</span>
                     </a>
                   </div>
                 </div>
@@ -154,7 +159,7 @@
             </div>
 
             <!-- Card 3: Búsqueda en DBLP -->
-            <div class="group relative block h-full">
+            <div class="group relative block h-full" id="home-dblp-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
@@ -208,23 +213,6 @@
               </div>
             </div>
           </div>
-<!-- Enlace a la lista de reportes -->
-          <div class="mt-4 text-muted small">
-            {% trans "¿Quieres ver qué han reportado otros autores?" %}
-            <a href="{% url 'citation_list' %}" class="fw-semibold text-primary text-decoration-none">
-              {% trans "Ir a la lista de reportes" %}
-            </a>
-          </div>
-
-          <!-- CTA secundario: crear reporte manual -->
-          <div class="mt-3">
-            <button class="btn btn-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#reportModal">
-              {% trans "Crear nuevo reporte manual" %}
-            </button>
-          </div>
-
           <div class="mt-20 text-center">
               <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-6">
                   {% trans "Potenciado por" %}
