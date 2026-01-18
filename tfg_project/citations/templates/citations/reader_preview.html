@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="glass-card p-3 p-md-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div>
+        <h2 class="mb-1">PaperCraft Reader</h2>
+        <div class="small text-muted">Vista previa</div>
+      </div>
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">
+        Volver
+      </a>
+    </div>
+
+    <div
+      id="reader-root"
+      data-api-url=""
+      data-pdf-url="{{ pdf_url|default:'' }}"
+    ></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="{% static 'reader/reader.css' %}">
+<script src="{% static 'reader/reader.js' %}"></script>
+{% endblock %}

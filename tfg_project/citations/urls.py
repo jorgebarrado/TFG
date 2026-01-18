@@ -58,6 +58,16 @@ urlpatterns = [
         tutor_views.citation_review_create_report,
         name="citation_review_create_report",
     ),
+    path(
+        "reader/preview/",
+        page_views.citation_reader_preview,
+        name="citation_reader_preview",
+    ),
+    path(
+        "reader/<int:report_id>/",
+        page_views.citation_reader,
+        name="citation_reader",
+    ),
     # AJAX Views
     path(
         "get_all_metadata/",
@@ -80,6 +90,16 @@ urlpatterns = [
         "api/extract-citations/",
         views_api.api_extract_citations,
         name="api_extract_citations",
+    ),
+    path(
+        "api/extractor-engines/",
+        views_api.api_extractor_engines,
+        name="api_extractor_engines",
+    ),
+    path(
+        "api/reader-data/<int:report_id>/",
+        views_api.api_reader_data,
+        name="api_reader_data",
     ),
     path(
         "api/get-citation-context/",
