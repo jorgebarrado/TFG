@@ -1,3 +1,7 @@
+"""
+Módulo para extraer párrafos de PDFs usando heurísticas de diseño (PyMuPDF blocks) o texto plano.
+"""
+
 from __future__ import annotations
 from typing import List
 import re
@@ -16,6 +20,9 @@ PC_AVAILABLE = fitz is not None or PyPDF2 is not None
 
 
 def _clean_text(raw: str) -> str:
+    """
+    Limpia espacios en blanco y saltos de línea extra.
+    """
     text = raw.replace("\r\n", "\n")
     text = re.sub(r"[ \t]*\n[ \t]*", " ", text)
     text = re.sub(r"\s+", " ", text)
@@ -23,6 +30,9 @@ def _clean_text(raw: str) -> str:
 
 
 def _split_paragraphs(text: str) -> List[str]:
+    """
+    Divide texto en párrafos usando saltos de línea dobles y limpia cada parte.
+    """
     parts = re.split(r"\n\s*\n", text)
     out: List[str] = []
     for part in parts:
@@ -33,6 +43,10 @@ def _split_paragraphs(text: str) -> List[str]:
 
 
 def _extract_blocks_with_pymupdf(pdf_path: str) -> List[dict]:
+    """
+    Extrae bloques de texto estructurados usando PyMuPDF (fitz).
+    Intenta respetar el orden de lectura visual.
+    """
     paragraphs: List[dict] = []
     index = 0
     with fitz.open(pdf_path) as doc:
@@ -57,6 +71,9 @@ def _extract_blocks_with_pymupdf(pdf_path: str) -> List[dict]:
 
 
 def _extract_text_with_pymupdf(pdf_path: str) -> List[dict]:
+    """
+    Extrae texto plano página a página con PyMuPDF y lo divide en párrafos.
+    """
     paragraphs: List[dict] = []
     index = 0
     with fitz.open(pdf_path) as doc:
@@ -75,6 +92,9 @@ def _extract_text_with_pymupdf(pdf_path: str) -> List[dict]:
 
 
 def _extract_text_with_pypdf2(pdf_path: str) -> str:
+    """
+    Extrae todo el texto con PyPDF2.
+    """
     text_parts: List[str] = []
     with open(pdf_path, "rb") as handle:
         reader = PyPDF2.PdfReader(handle)
@@ -86,6 +106,9 @@ def _extract_text_with_pypdf2(pdf_path: str) -> str:
     return "\n".join(text_parts)
 
 def _extract_text_with_pypdf2_with_positions(pdf_path: str) -> List[dict]:
+    """
+    Extrae texto paginado con PyPDF2 y lo divide en párrafos.
+    """
     paragraphs: List[dict] = []
     index = 0
     with open(pdf_path, "rb") as handle:
@@ -108,13 +131,22 @@ def _extract_text_with_pypdf2_with_positions(pdf_path: str) -> List[dict]:
 
 
 def _score_paragraphs(paragraphs: List[dict]) -> tuple[int, int]:
+    """
+    Calcula una puntuación simple (caracteres totales, número de párrafos)
+    para comparar resultados de extracción.
+    """
     total_chars = sum(len(p.get("text", "")) for p in paragraphs)
     return total_chars, len(paragraphs)
 
 
 def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """
+    Estrategia principal de PaperCraft:
+    1. Intenta usar PyMuPDF (bloques vs texto plano, elige el mejor).
+    2. Si falla o no está disponible, usa PyPDF2.
+    """
     if not PC_AVAILABLE:
-        raise RuntimeError("PaperCraft not available in this environment.")
+        raise RuntimeError("PaperCraft no está disponible en este entorno.")
 
     if fitz is not None:
         try:
@@ -143,5 +175,8 @@ def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
 
 
 def pc_extract_paragraphs(pdf_path: str) -> List[str]:
+    """
+    Devuelve solo el texto de los párrafos extraídos por PaperCraft.
+    """
     paragraphs = pc_extract_paragraphs_with_positions(pdf_path)
     return [item["text"] for item in paragraphs]

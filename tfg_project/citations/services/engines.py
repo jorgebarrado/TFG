@@ -1,3 +1,7 @@
+"""
+Módulo para gestionar y ejecutar diferentes motores de extracción de texto/PDF.
+"""
+
 from __future__ import annotations
 from typing import List, Dict, Any, Tuple
 
@@ -42,6 +46,9 @@ ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
+    """
+    Lista los motores de extracción disponibles y su estado.
+    """
     return [
         {
             "key": "papermage",
@@ -109,10 +116,13 @@ def run_engine(
     engine_requested: str, pdf_path: str
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
     """
+    Ejecuta la estrategia de extracción solicitada.
+
     Política:
       - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
       - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
       - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
+
     Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
     """
     engine = (engine_requested or "auto").lower().strip()
