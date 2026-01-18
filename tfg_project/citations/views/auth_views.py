@@ -1,4 +1,4 @@
-"""Views for handling user authentication (login, logout, registration)."""
+"""Vistas para gestionar la autenticación de usuarios (login, logout, registro)."""
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render

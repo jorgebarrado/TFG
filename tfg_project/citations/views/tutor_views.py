@@ -1,3 +1,5 @@
+"""Vistas para el flujo de 'revisión de citas' (Tutor de citas)."""
+
 from __future__ import annotations
 
 import json
@@ -43,6 +45,10 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """
+    Paso 1 del Tutor: Listar los artículos propios (desde DBLP).
+    El usuario selecciona uno para ver quién lo cita.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,10 +84,14 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """
+    Paso 2 del Tutor: Listar quién cita al artículo seleccionado.
+    Se conecta a Semantic Scholar para obtener los artículos citantes.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
-        messages.warning(request, "Configura tu URL de DBLP antes de usar la revision de citas.")
+        messages.warning(request, "Configura tu URL de DBLP antes de usar la revisión de citas.")
         return redirect("citation_review_papers")
 
     try:
@@ -113,7 +123,7 @@ def citation_review_citers(request, paper_id: int):
         except (ValueError, SemanticScholarError) as exc:
             error_message = str(exc)
     else:
-        error_message = "Este articulo no tiene DOI, asi que no se puede revisar."
+        error_message = "Este artículo no tiene DOI, así que no se puede revisar."
 
     registered_map = {}
     if paper.get("doi"):
@@ -163,6 +173,10 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """
+    Paso 3 del Tutor: Crear el reporte inicial.
+    Recibe metadatos y DOIs para crear un objeto IncorrectCitation preliminar.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 
@@ -202,5 +216,5 @@ def citation_review_create_report(request):
     )
     citation.save()
 
-    messages.success(request, "Reporte creado. Completa la explicacion en el detalle.")
+    messages.success(request, "Reporte creado. Completa la explicación en el detalle.")
     return redirect("citation_detail", pk=citation.pk)

@@ -1,4 +1,6 @@
 # citations/views_api.py
+"""Vistas para la API REST de citaciones."""
+
 from __future__ import annotations
 
 import os
@@ -86,7 +88,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
             - trace (dict, optional): Información de depuración si se
               solicita con `?debug=1`.
     """
-    # Compat: GET querystring o POST JSON
+    # Compatibilidad: GET querystring o POST JSON
     if request.method == "POST":
         try:
             payload = json.loads(request.body or "{}")
@@ -124,7 +126,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
         "params", "ok", f"citing_doi={citing_doi}; target_doi={target_doi or '-'}"
     )
 
-    # 1) OpenAccess PDF (Semantic Scholar)
+    # 1) PDF de acceso abierto (Semantic Scholar)
     pdf_url = None
     try:
         pdf_url = get_openaccess_pdf_url(citing_doi)
@@ -159,7 +161,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
         return JsonResponse(resp, status=502)
 
     try:
-        # 3) Extracción / matching
+        # 3) Extracción / coincidencia
         contexts = extract_contexts_from_pdf(
             tmp_path,
             target_title=target_title,
@@ -273,11 +275,16 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """Devuelve la lista de motores de extracción disponibles."""
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """
+    Devuelve los datos necesarios para el lector de PDFs (snippets, referencias, menciones)
+    asociados a un reporte de cita específico.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)

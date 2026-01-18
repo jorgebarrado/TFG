@@ -1,3 +1,5 @@
+"""Cliente para la API de DBLP."""
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
@@ -21,6 +23,7 @@ class DBLPPaper(TypedDict):
 
 
 def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
+    """Normaliza la URL de perfil de DBLP a formato XML."""
     if not dblp_url:
         return None
     if dblp_url.endswith(".xml"):
@@ -31,6 +34,7 @@ def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
 
 
 def _extract_doi(ee_text: str) -> Optional[str]:
+    """Intenta extraer un DOI de un enlace o cadena de texto."""
     if not ee_text:
         return None
     if "doi.org/" in ee_text:
@@ -46,14 +50,14 @@ def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
     """
     dblp_xml_url = _normalize_dblp_url(dblp_url)
     if not dblp_xml_url:
-        raise DBLPClientError("La URL de DBLP no es valida. Usa el enlace .html o .xml.")
+        raise DBLPClientError("La URL de DBLP no es válida. Usa el enlace .html o .xml.")
 
     try:
         response = requests.get(dblp_xml_url, timeout=timeout)
         response.raise_for_status()
     except requests.RequestException as exc:
         raise DBLPClientError(
-            f"No se pudo conectar con DBLP. Intenta de nuevo mas tarde. ({exc})"
+            f"No se pudo conectar con DBLP. Intenta de nuevo más tarde. ({exc})"
         ) from exc
 
     try:
@@ -67,7 +71,7 @@ def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
 
     for publ in root.findall("r"):
         entry = publ[0]
-        title = entry.findtext("title") or "Sin titulo"
+        title = entry.findtext("title") or "Sin título"
         year_raw = entry.findtext("year") or ""
         year = int(year_raw) if year_raw.isdigit() else None
         authors = [a.text for a in entry.findall("author") if a.text]

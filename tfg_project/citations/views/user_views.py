@@ -1,4 +1,4 @@
-"""Views related to user profiles and personalized content."""
+"""Vistas relacionadas con perfiles de usuario y contenido personalizado."""
 
 from itertools import chain
 
@@ -26,6 +26,7 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """Obtiene la inicial del avatar basada en el nombre de usuario o nombre."""
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +35,10 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """
+    Vista pública del perfil de un usuario.
+    Muestra información básica y los últimos reportes creados.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +61,10 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """
+    Vista para gestionar la configuración de la cuenta del usuario.
+    Permite editar perfil básico, perfil extendido y cambiar contraseña.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -200,6 +209,10 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """
+    Vista privada del perfil del usuario logueado.
+    Muestra estadísticas completas y actividad reciente.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

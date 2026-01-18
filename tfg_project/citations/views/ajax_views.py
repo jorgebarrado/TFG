@@ -1,4 +1,4 @@
-"""Views that handle AJAX requests and return JSON responses."""
+"""Vistas que manejan solicitudes AJAX y devuelven respuestas JSON."""
 
 import json
 import requests

@@ -1,3 +1,5 @@
+"""Funciones de utilidad comunes (DBLP, Semantic Scholar, etc.)."""
+
 import xml.etree.ElementTree as ET
 
 import requests

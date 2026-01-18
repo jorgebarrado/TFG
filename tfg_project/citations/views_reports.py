@@ -1,3 +1,5 @@
+"""Vistas para el manejo de reportes avanzados (Wizard)."""
+
 import json
 
 from django.http import HttpResponseBadRequest, JsonResponse

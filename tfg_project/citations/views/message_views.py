@@ -1,4 +1,4 @@
-"""Views for simple user-to-user messaging."""
+"""Vistas para la mensajería simple entre usuarios."""
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -21,6 +21,10 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """
+    Vista de la bandeja de entrada de mensajes.
+    Muestra una lista de conversaciones ordenadas por actividad reciente.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +55,10 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """
+    Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+    Marca los mensajes como leídos al acceder.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +94,10 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """
+    Inicia o retoma una conversación privada con otro usuario.
+    Si ya existe una conversación entre ambos, redirige a ella.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

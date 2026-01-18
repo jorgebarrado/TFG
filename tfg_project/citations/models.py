@@ -1,4 +1,4 @@
-"""Models for citations app."""
+"""Modelos para la aplicación de citaciones."""
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -6,6 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil extendido del usuario, con información adicional sobre su carrera,
+    redes sociales y preferencias de notificación.
+    """
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -162,9 +166,9 @@ class IncorrectCitation(models.Model):
     citation_type = models.CharField(
         max_length=50,
         choices=[
-            ("not said", "Not Said"),
-            ("misinterpretation", "Misinterpretation"),
-            ("contextual misattribution", "Contextual Misattribution"),
+            ("not said", _("No dicho")),
+            ("misinterpretation", _("Malinterpretación")),
+            ("contextual misattribution", _("Atribución contextual errónea")),
         ],
     )
     publication_area = models.CharField(
@@ -235,6 +239,9 @@ class SavedCitation(models.Model):
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación de mensajería privada entre usuarios.
+    """
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -247,6 +254,9 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+    """
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -263,6 +273,9 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
+    """
+    Modelo para gestionar notificaciones de usuario (comentarios, votos, mensajes, sistema).
+    """
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -335,4 +348,3 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-
