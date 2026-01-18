@@ -18,6 +18,7 @@ from ..models import (
     Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
+from ..services.reader_data import extract_pdf_url_from_metadata
 from django.shortcuts import get_object_or_404, render
 from ..models import IncorrectCitation
 
@@ -311,3 +312,22 @@ def semantic_citations_view(request):
         "source": source,
     }
     return render(request, "citations/semantic_citations.html", context)
+
+
+def citation_reader(request, report_id: int):
+    citation = get_object_or_404(IncorrectCitation, pk=report_id)
+    pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
+    context = {
+        "citation": citation,
+        "pdf_url": pdf_url or "",
+        "report_id": report_id,
+    }
+    return render(request, "citations/reader.html", context)
+
+
+def citation_reader_preview(request):
+    pdf_url = request.GET.get("pdf_url", "")
+    context = {
+        "pdf_url": pdf_url or "",
+    }
+    return render(request, "citations/reader_preview.html", context)

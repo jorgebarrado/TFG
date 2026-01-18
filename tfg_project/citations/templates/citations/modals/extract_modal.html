@@ -19,22 +19,25 @@
             <div class="col-md-6">
               <label class="form-label">{% trans "Motor de extracción" %}</label>
               <select id="extract-engine" class="form-select">
-                <option value="auto" selected>Auto</option>
-                <option value="papermage">PaperMage</option>
-                <option value="papercraft">PaperCraft</option>
+                <option value="" selected disabled>Selecciona una herramienta...</option>
               </select>
             </div>
             <div class="col-md-6 d-flex align-items-end">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="extract-debug">
-                <label class="form-check-label" for="extract-debug">{% trans "Incluir depuración" %}</label>
+              <div class="d-flex flex-column gap-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="extract-debug">
+                  <label class="form-check-label" for="extract-debug">{% trans "Incluir depuración" %}</label>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="mt-3 d-flex gap-2">
-            <button id="extract-btn" type="submit" class="btn btn-primary">
+            <button id="extract-btn" type="submit" class="btn btn-primary" disabled>
               {% trans "Extraer citas" %}
+            </button>
+            <button id="extract-reader-btn" type="button" class="btn btn-outline-secondary">
+              Abrir visor
             </button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               {% trans "Cerrar" %}
