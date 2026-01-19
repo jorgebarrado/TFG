@@ -4,6 +4,19 @@ from ..models import Notification
 
 
 def notify(*, user, notification_type, title, message, url="", actor=None):
+    """Crea una notificación para un usuario.
+
+    Args:
+        user: Usuario destinatario de la notificación.
+        notification_type: Tipo de notificación (ver Notification.NotificationType).
+        title (str): Título de la notificación.
+        message (str): Cuerpo del mensaje.
+        url (str, optional): URL asociada a la acción.
+        actor: Usuario que originó la notificación (opcional).
+
+    Returns:
+        Notification: La instancia de notificación creada, o None si es inválida.
+    """
     if user is None:
         return None
     if actor is not None and actor == user:
@@ -20,6 +33,14 @@ def notify(*, user, notification_type, title, message, url="", actor=None):
 
 
 def notify_new_comment(comment):
+    """Genera una notificación de nuevo comentario para el autor del reporte.
+
+    Args:
+        comment: La instancia del comentario creado.
+
+    Returns:
+        Notification | None: La notificación creada o None si no corresponde.
+    """
     report = comment.citation
     recipient = report.author
     if recipient is None:
@@ -44,6 +65,14 @@ def notify_new_comment(comment):
 
 
 def notify_new_vote(vote):
+    """Genera una notificación de nuevo voto para el autor del reporte.
+
+    Args:
+        vote: La instancia del voto registrado.
+
+    Returns:
+        Notification | None: La notificación creada o None si no corresponde.
+    """
     report = vote.citation
     recipient = report.author
     if recipient is None:
@@ -67,6 +96,14 @@ def notify_new_vote(vote):
 
 
 def notify_new_message(message):
+    """Genera notificaciones de nuevo mensaje para los participantes de una conversación.
+
+    Args:
+        message: La instancia del mensaje enviado.
+
+    Returns:
+        List[Notification]: Lista de notificaciones creadas.
+    """
     conversation = message.conversation
     recipients = conversation.participants.exclude(id=message.sender_id)
     url = reverse("conversation_detail", kwargs={"conversation_id": conversation.id})

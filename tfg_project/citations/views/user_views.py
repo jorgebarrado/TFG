@@ -26,6 +26,7 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """Obtiene la inicial del usuario para mostrar en el avatar."""
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +35,7 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """Muestra el perfil público de un usuario."""
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +58,7 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """Gestiona la configuración de la cuenta del usuario (perfil, contraseña)."""
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -200,6 +203,7 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """Muestra el perfil privado del usuario con estadísticas y actividad."""
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

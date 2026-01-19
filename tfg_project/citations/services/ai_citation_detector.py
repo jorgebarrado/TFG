@@ -10,6 +10,10 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """
+    Representa el resultado de una detección de cita por IA.
+    """
+
     page: int
     paragraph_index: int
     confidence: float
@@ -17,9 +21,17 @@ class AiDetectionResult:
     text: str
 
 
-def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
-    """
-    Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
+def build_ai_prompt_for_detection(
+    metadata_original: dict, paragraphs: List[Dict[str, Any]]
+) -> str:
+    """Construye el prompt para el modelo IA a partir de metadatos y párrafos.
+
+    Args:
+        metadata_original (dict): Metadatos del artículo citado (A).
+        paragraphs (List[Dict[str, Any]]): Lista de párrafos del artículo citante (B).
+
+    Returns:
+        str: El prompt formateado para enviar al modelo de IA.
     """
     title_field = metadata_original.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
@@ -67,8 +79,16 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 
 
 def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
-    """
-    Llamada real a Gemini para la detección de citas.
+    """Realiza la llamada al modelo LLM (Gemini) para detectar citas.
+
+    Args:
+        prompt (str): El prompt a enviar al modelo.
+
+    Returns:
+        Dict[str, Any]: La respuesta del modelo parseada como JSON.
+
+    Raises:
+        RuntimeError: Si la configuración de IA falta o la respuesta es inválida.
     """
     missing_config_msg = (
         "La detección automática con IA no está configurada en este servidor "
@@ -99,11 +119,19 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
 
 
 def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str, Any]]:
-    """
-    Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles con citation.citation_contexts.
+    """Detecta citas usando IA para un reporte dado.
 
-    Por ahora asumimos que el modelo IncorrectCitation NO tiene todavía campo citing_pdf_uploaded,
-    así que si no está disponible devolvemos un error controlado.
+    Extrae párrafos del PDF del artículo citante, consulta al modelo de IA
+    y devuelve los contextos encontrados en un formato compatible.
+
+    Args:
+        citation (IncorrectCitation): El objeto del reporte.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de contextos detectados por la IA.
+
+    Raises:
+        RuntimeError: Si no hay PDF subido para el artículo citante.
     """
     citation_pdf = getattr(citation, "citing_pdf_uploaded", None)
     if not citation_pdf:

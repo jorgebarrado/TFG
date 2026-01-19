@@ -42,6 +42,11 @@ ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
+    """Devuelve la lista de motores de extracción configurados y su disponibilidad.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de diccionarios, cada uno representando un motor.
+    """
     return [
         {
             "key": "papermage",
@@ -108,12 +113,24 @@ def _attempt(
 def run_engine(
     engine_requested: str, pdf_path: str
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
-    """
-    Política:
-      - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
-      - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
-      - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
-    Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
+    """Ejecuta el proceso de extracción utilizando el motor solicitado o una estrategia automática.
+
+    Estrategia 'auto':
+      1. Intenta PaperMage.
+      2. Si falla, intenta PaperCraft.
+      3. Si falla, utiliza el extractor genérico (fallback).
+
+    Args:
+        engine_requested (str): Nombre del motor ('papermage', 'papercraft', 'generic', 'auto').
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
+            - Motor utilizado (str) o None si fallaron todos.
+            - Lista de párrafos extraídos (List[str]).
+            - Lista de intentos realizados con detalles de errores (List[EngineAttempt]).
+            - Mensaje de error final (str) si aplica.
+            - Lista de párrafos con posiciones (List[dict]).
     """
     engine = (engine_requested or "auto").lower().strip()
     attempts: List[EngineAttempt] = []

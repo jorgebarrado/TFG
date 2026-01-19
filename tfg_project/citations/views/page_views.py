@@ -76,7 +76,7 @@ def citation_list(request):
 
 def home(request):
     """
-    Renderiza la pogina de inicio.
+    Renderiza la página de inicio.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
     dblp_form = None
@@ -106,6 +106,9 @@ def home(request):
 
 
 def citation_detail(request, pk):
+    """
+    Muestra los detalles de una cita incorrecta, incluyendo comentarios y votos.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
@@ -229,6 +232,9 @@ def citation_detail(request, pk):
     return render(request, "citations/citation_detail.html", context)
 
 def citation_preview(request, pk):
+    """
+    Renderiza una vista previa de la cita para el listado o modal.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects
             .select_related("author")
@@ -315,6 +321,9 @@ def semantic_citations_view(request):
 
 
 def citation_reader(request, report_id: int):
+    """
+    Muestra el lector de PDFs/reportes para una cita específica.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
@@ -326,6 +335,9 @@ def citation_reader(request, report_id: int):
 
 
 def citation_reader_preview(request):
+    """
+    Muestra una vista previa del lector para un PDF dado por URL.
+    """
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",
