@@ -12,6 +12,7 @@ User = get_user_model()
 
 
 def _other_participants(conversation, current_user):
+    """Obtiene los participantes de una conversación excluyendo al usuario actual."""
     return [
         participant
         for participant in conversation.participants.all()
@@ -21,6 +22,7 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """Muestra la bandeja de entrada con las conversaciones del usuario."""
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +53,7 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """Muestra el detalle de una conversación y permite enviar mensajes."""
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +89,7 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """Inicia una nueva conversación con un usuario o redirige a una existente."""
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

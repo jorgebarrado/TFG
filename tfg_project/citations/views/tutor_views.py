@@ -18,6 +18,7 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """Construye los metadatos estandarizados para el artículo original."""
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +32,7 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """Construye los metadatos estandarizados para el artículo que cita."""
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +45,7 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """Muestra los artículos del usuario (desde DBLP) para revisar citas."""
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +81,7 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """Muestra los artículos que citan a un paper seleccionado del usuario."""
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +167,7 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """Crea un reporte de cita incorrecta desde la herramienta de revisión."""
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 
