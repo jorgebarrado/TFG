@@ -26,6 +26,14 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """Devuelve la inicial del nombre de usuario o nombre de pila para el avatar.
+
+    Args:
+        user: Objeto de usuario.
+
+    Returns:
+        str: Inicial en mayúscula o '?' si no se encuentra nombre.
+    """
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +42,15 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """Muestra el perfil público de un usuario.
+
+    Args:
+        request: Objeto HttpRequest.
+        username (str): Nombre de usuario del perfil a visualizar.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla 'citations/public_profile.html'.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +73,16 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """Gestiona la configuración de la cuenta y perfil del usuario.
+
+    Permite actualizar la información básica, el perfil extendido y cambiar la contraseña.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla 'citations/account_settings.html' o redirige tras guardar cambios.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -200,6 +227,14 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """Muestra el perfil privado del usuario con estadísticas y actividad reciente.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla 'citations/profile.html'.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

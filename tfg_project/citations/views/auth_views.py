@@ -7,8 +7,13 @@ from ..forms import LoginForm, RegisterForm
 
 
 def login_view(request):
-    """
-    Gestiona el inicio de sesión de los usuarios.
+    """Gestiona el inicio de sesión de los usuarios.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Redirige a la página siguiente o renderiza el formulario de login.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -27,8 +32,13 @@ def login_view(request):
 
 
 def register_view(request):
-    """
-    Gestiona el registro de nuevos usuarios.
+    """Gestiona el registro de nuevos usuarios.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Redirige a la página siguiente o renderiza el formulario de registro.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -57,8 +67,13 @@ def register_view(request):
 
 
 def logout_view(request):
-    """
-    Cierra la sesión del usuario.
+    """Cierra la sesión del usuario.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Redirige a la página especificada en 'next' o a la raíz.
     """
     logout(request)
     return redirect(request.GET.get("next", "/"))

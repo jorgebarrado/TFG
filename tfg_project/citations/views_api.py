@@ -273,11 +273,36 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """Devuelve la lista de motores de extracción disponibles.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        JsonResponse: Un objeto JSON con la lista de motores bajo la clave 'engines'.
+    """
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """Obtiene los datos necesarios para visualizar un reporte en el lector.
+
+    Recopila información sobre el PDF, los contextos de citación (menciones),
+    fragmentos (snippets) y referencias bibliográficas asociadas al reporte.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+        report_id (int): El ID del reporte (IncorrectCitation) a consultar.
+
+    Returns:
+        JsonResponse: Un objeto JSON con:
+            - pdf_url (str): URL del PDF del artículo citador.
+            - snippets (list): Fragmentos de texto relevantes.
+            - references (list): Lista de referencias bibliográficas extraídas.
+            - mentions (list): Menciones específicas encontradas.
+            - stats (dict): Estadísticas sobre el procesamiento (páginas, referencias, etc.).
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)

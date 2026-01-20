@@ -11,6 +11,8 @@ class DBLPClientError(RuntimeError):
 
 
 class DBLPPaper(TypedDict):
+    """Estructura de datos para representar una publicación de DBLP."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -21,6 +23,14 @@ class DBLPPaper(TypedDict):
 
 
 def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
+    """Normaliza la URL de DBLP para asegurar que apunte al archivo XML.
+
+    Args:
+        dblp_url (str): URL proporcionada por el usuario.
+
+    Returns:
+        Optional[str]: URL normalizada terminada en .xml, o None si es inválida.
+    """
     if not dblp_url:
         return None
     if dblp_url.endswith(".xml"):
@@ -31,6 +41,14 @@ def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
 
 
 def _extract_doi(ee_text: str) -> Optional[str]:
+    """Extrae el DOI de una cadena de texto (campo 'ee' de DBLP).
+
+    Args:
+        ee_text (str): Texto que puede contener un DOI o URL.
+
+    Returns:
+        Optional[str]: El DOI extraído o None.
+    """
     if not ee_text:
         return None
     if "doi.org/" in ee_text:
@@ -41,8 +59,19 @@ def _extract_doi(ee_text: str) -> Optional[str]:
 
 
 def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
-    """
-    Obtiene la lista de publicaciones de un autor desde DBLP.
+    """Obtiene la lista de publicaciones de un autor desde DBLP.
+
+    Parsea el XML del perfil del autor en DBLP y extrae sus publicaciones.
+
+    Args:
+        dblp_url (str): URL del perfil del autor en DBLP.
+        timeout (int, optional): Tiempo máximo de espera en segundos. Defaults to 12.
+
+    Returns:
+        List[DBLPPaper]: Lista de diccionarios con los datos de las publicaciones.
+
+    Raises:
+        DBLPClientError: Si la URL es inválida, hay error de conexión o de parseo XML.
     """
     dblp_xml_url = _normalize_dblp_url(dblp_url)
     if not dblp_xml_url:

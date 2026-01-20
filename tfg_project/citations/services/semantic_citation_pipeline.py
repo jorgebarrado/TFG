@@ -15,6 +15,8 @@ from .papermage_extractor import ContextHit
 
 
 class AnalyzedCitation(TypedDict):
+    """Estructura de una cita analizada, incluyendo contextos extraídos del PDF."""
+
     citing_title: str
     citing_year: Optional[int]
     citing_doi: Optional[str]
@@ -23,6 +25,8 @@ class AnalyzedCitation(TypedDict):
 
 
 class SemanticCitationAnalysisResult(TypedDict):
+    """Resultado del análisis de citas semánticas para un DOI original."""
+
     original_doi: str
     citing_count: int
     analyzed: List[AnalyzedCitation]
@@ -33,8 +37,17 @@ def analyze_citations_for_original_doi(
     original_doi: str,
     max_citing_papers: int = 5,
 ) -> SemanticCitationAnalysisResult:
-    """
-    Dado el DOI de un artículo 'A', obtiene citadores desde Semantic Scholar y analiza sus PDFs.
+    """Dado el DOI de un artículo 'A', obtiene citadores y analiza sus PDFs.
+
+    Utiliza Semantic Scholar para encontrar quién cita al artículo A.
+    Para cada artículo citador con Open Access, descarga el PDF y busca menciones.
+
+    Args:
+        original_doi (str): DOI del artículo citado.
+        max_citing_papers (int, optional): Límite de artículos citadores a procesar. Defaults to 5.
+
+    Returns:
+        SemanticCitationAnalysisResult: Resultado del análisis con contextos encontrados.
     """
     result: SemanticCitationAnalysisResult = {
         "original_doi": original_doi,

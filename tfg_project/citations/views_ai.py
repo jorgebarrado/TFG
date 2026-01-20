@@ -9,7 +9,17 @@ from .services.ai_report_evaluator import analyze_report_with_ai
 
 @require_POST
 def citation_ai_detect(request, pk):
-    """Lanza detección automática de citas mediante IA y guarda contexts."""
+    """Lanza detección automática de citas mediante IA y guarda los contextos.
+
+    Utiliza servicios de IA para analizar el texto y encontrar dónde se cita el artículo original.
+
+    Args:
+        request: Objeto HttpRequest.
+        pk (int): Clave primaria del reporte.
+
+    Returns:
+        HttpResponse: Redirige al detalle del reporte con mensajes de éxito o error.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
 
     try:
@@ -28,7 +38,17 @@ def citation_ai_detect(request, pk):
 
 @require_POST
 def citation_ai_evaluate(request, pk):
-    """Evalúa con IA si la cita está bien/mal con los datos del reporte."""
+    """Evalúa con IA si la cita es correcta o incorrecta basándose en los datos del reporte.
+
+    Analiza el reporte y genera una evaluación automática.
+
+    Args:
+        request: Objeto HttpRequest.
+        pk (int): Clave primaria del reporte.
+
+    Returns:
+        HttpResponse: Redirige al detalle del reporte con mensajes de éxito o error.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
 
     try:
