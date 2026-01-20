@@ -18,8 +18,16 @@ from ..services.semantic_fetch import get_citations_with_fallback
 
 @require_POST
 def vote_view(request):
-    """
-    Gestiona los votos (positivos y negativos) en los reportes de citas.
+    """Gestiona los votos (positivos y negativos) en los reportes de citas.
+
+    Permite a los usuarios votar a favor o en contra de un reporte.
+    Si el usuario ya votó, el voto se actualiza o se elimina si es el mismo.
+
+    Args:
+        request: Objeto HttpRequest. Se esperan 'citation_id' y 'vote' en POST.
+
+    Returns:
+        HttpResponse: Renderiza el fragmento de botones de voto actualizado o JsonResponse en caso de error.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -71,8 +79,13 @@ def vote_view(request):
 @require_POST
 @login_required
 def toggle_saved(request):
-    """
-    Guarda o elimina una cita de la lista de guardados de un usuario.
+    """Guarda o elimina una cita de la lista de guardados de un usuario.
+
+    Args:
+        request: Objeto HttpRequest. Se espera 'citation_id' en POST.
+
+    Returns:
+        HttpResponse: Renderiza el fragmento del botón de guardar actualizado.
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -94,9 +107,16 @@ def toggle_saved(request):
 
 
 def ajax_submit_citation(request):
-    """
-    Guarda un reporte de cita incorrecta enviado desde el formulario principal.
-    Acepta solicitudes AJAX y tradicionales.
+    """Guarda un reporte de cita incorrecta enviado desde el formulario principal.
+
+    Acepta solicitudes AJAX y tradicionales. Procesa metadatos y contextos de citación.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        JsonResponse: Si es AJAX, devuelve éxito y ID del reporte.
+        HttpResponse: Si no es AJAX, redirige al detalle del reporte.
     """
 
     def _is_ajax(req):
@@ -174,8 +194,13 @@ def ajax_submit_citation(request):
 
 
 def fetch_doi_metadata(request):
-    """
-    Obtiene los metadatos de un DOI desde CrossRef.
+    """Obtiene los metadatos de un DOI desde CrossRef.
+
+    Args:
+        request: Objeto HttpRequest. Se espera 'doi' en GET.
+
+    Returns:
+        JsonResponse: Objeto JSON con los metadatos del DOI.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -189,8 +214,13 @@ def fetch_doi_metadata(request):
 
 
 def get_all_metadata_from_doi(request):
-    """
-    Obtiene todos los metadatos de un DOI desde CrossRef.
+    """Obtiene todos los metadatos de un DOI desde CrossRef.
+
+    Args:
+        request: Objeto HttpRequest. Se espera 'doi' en GET.
+
+    Returns:
+        JsonResponse: Objeto JSON con la totalidad de los metadatos obtenidos.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -207,8 +237,13 @@ def get_all_metadata_from_doi(request):
 
 @require_POST
 def register_ajax(request):
-    """
-    Gestiona el registro de usuarios a través de una solicitud AJAX.
+    """Gestiona el registro de usuarios a través de una solicitud AJAX.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        JsonResponse: {success: True} si es exitoso, o {success: False, errors: ...} si falla.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -225,8 +260,14 @@ def register_ajax(request):
 
 @login_required
 def delete_comment(request, pk):
-    """
-    Elimina un comentario si el usuario es el autor o un superusuario.
+    """Elimina un comentario si el usuario es el autor o un superusuario.
+
+    Args:
+        request: Objeto HttpRequest.
+        pk (int): Clave primaria del comentario.
+
+    Returns:
+        HttpResponse: Redirige a la vista de detalle del reporte.
     """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
@@ -238,8 +279,15 @@ def delete_comment(request, pk):
 
 
 def citation_suggest(request):
-    """
-    Sugiere citas incorrectas basadas en un término de búsqueda.
+    """Sugiere citas incorrectas basadas en un término de búsqueda.
+
+    Utilizado para autocompletado en el frontend.
+
+    Args:
+        request: Objeto HttpRequest. Se espera 'term' en GET.
+
+    Returns:
+        JsonResponse: Lista de sugerencias (doi_original, title).
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
@@ -250,8 +298,13 @@ def citation_suggest(request):
 
 
 def get_semantic_citations(request):
-    """
-    Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+    """Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+
+    Args:
+        request: Objeto HttpRequest. Se espera 'doi' en GET.
+
+    Returns:
+        JsonResponse: Objeto JSON con conteo de citas, lista de citas y fuente.
     """
     doi = request.GET.get("doi")
     if not doi:

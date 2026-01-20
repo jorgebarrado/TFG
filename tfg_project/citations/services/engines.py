@@ -42,6 +42,11 @@ ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
+    """Devuelve una lista de los motores de extracción y su disponibilidad.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de diccionarios con metadatos de los motores.
+    """
     return [
         {
             "key": "papermage",
@@ -64,9 +69,17 @@ def list_extractor_engines() -> List[Dict[str, Any]]:
 def _attempt(
     name: str, available: bool, fn, fn_with_positions, pdf_path: str
 ) -> Tuple[List[str], List[dict], EngineAttempt, str | None]:
-    """
-    Ejecuta un motor y devuelve:
-      (paragraphs, paragraphs_with_positions, attempt_info, error_message)
+    """Ejecuta un motor y devuelve los resultados de la extracción.
+
+    Args:
+        name (str): Nombre del motor.
+        available (bool): Si el motor está disponible.
+        fn (callable): Función principal de extracción de texto.
+        fn_with_positions (callable): Función de extracción con posiciones.
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        Tuple: (paragraphs, paragraphs_with_positions, attempt_info, error_message).
     """
     att: EngineAttempt = {
         "name": name,
@@ -108,12 +121,19 @@ def _attempt(
 def run_engine(
     engine_requested: str, pdf_path: str
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
-    """
+    """Ejecuta la extracción de texto usando el motor solicitado o una estrategia automática.
+
     Política:
       - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
       - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
       - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
-    Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
+
+    Args:
+        engine_requested (str): Nombre del motor solicitado.
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        Tuple: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions).
     """
     engine = (engine_requested or "auto").lower().strip()
     attempts: List[EngineAttempt] = []

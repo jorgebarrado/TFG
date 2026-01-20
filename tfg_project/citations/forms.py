@@ -348,6 +348,8 @@ class CommentForm(forms.ModelForm):
 
 
 class MessageForm(forms.Form):
+    """Formulario para enviar un mensaje privado."""
+
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

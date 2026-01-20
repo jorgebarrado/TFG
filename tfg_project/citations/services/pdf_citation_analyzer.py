@@ -21,8 +21,16 @@ class PDFDownloadError(RuntimeError):
 
 
 def _download_pdf_to_temp(pdf_url: str) -> Path:
-    """
-    Descarga un PDF desde una URL a un archivo temporal y devuelve su ruta.
+    """Descarga un PDF desde una URL a un archivo temporal y devuelve su ruta.
+
+    Args:
+        pdf_url (str): URL del archivo PDF.
+
+    Returns:
+        Path: Ruta local al archivo temporal descargado.
+
+    Raises:
+        PDFDownloadError: Si falla la descarga o la conexión.
     """
     try:
         response = requests.get(pdf_url, stream=True, timeout=20)
@@ -49,8 +57,15 @@ def analyze_pdf_citations_from_url(
     pdf_url: str,
     patterns: Optional[List[str]] = None,
 ) -> List[ContextHit]:
-    """
-    Descarga un PDF desde una URL y devuelve los contextos de cita detectados.
+    """Descarga un PDF desde una URL y devuelve los contextos de cita detectados.
+
+    Args:
+        pdf_url (str): URL del PDF a analizar.
+        patterns (Optional[List[str]], optional): Lista de patrones regex personalizados.
+            Si no se proporciona, usa DEFAULT_PATTERNS.
+
+    Returns:
+        List[ContextHit]: Lista de contextos de citación encontrados.
     """
     if patterns is None:
         patterns = DEFAULT_PATTERNS

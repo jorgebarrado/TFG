@@ -93,8 +93,7 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
 
 
 def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
-    """
-    Obtiene citas de CrossRef como alternativa si Semantic Scholar no devuelve resultados.
+    """Obtiene citas de CrossRef como alternativa si Semantic Scholar no devuelve resultados.
 
     Args:
         doi (str): El DOI del artículo.
@@ -140,8 +139,7 @@ def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
 
 
 def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
-    """
-    Obtiene citas para un DOI, intentando primero con Semantic Scholar y luego con CrossRef.
+    """Obtiene citas para un DOI, intentando primero con Semantic Scholar y luego con CrossRef.
 
     Args:
         doi (str): El DOI del artículo.

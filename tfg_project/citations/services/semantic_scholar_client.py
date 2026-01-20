@@ -14,6 +14,8 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """Representa un artículo que cita a otro, obtenido de Semantic Scholar."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -30,8 +32,20 @@ def _build_headers() -> dict:
 
 
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
-    """
-    Devuelve una lista de artículos que citan al paper identificado por este DOI.
+    """Devuelve una lista de artículos que citan al paper identificado por este DOI.
+
+    Utiliza el endpoint de gráficos de Semantic Scholar.
+
+    Args:
+        doi (str): El DOI del artículo citado.
+        limit (int, optional): Límite de resultados. Defaults to 10.
+
+    Returns:
+        List[CitingPaper]: Lista de artículos citadores.
+
+    Raises:
+        ValueError: Si el DOI es vacío.
+        SemanticScholarError: Si hay errores de conexión o API.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -93,8 +107,18 @@ def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
 def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
-    """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    """Devuelve una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Args:
+        doi (str): El DOI del artículo citado.
+        limit (int, optional): Resultados por página. Defaults to 10.
+        offset (int, optional): Desplazamiento inicial. Defaults to 0.
+
+    Returns:
+        tuple[List[CitingPaper], int]: Lista de papeles y total estimado de citas.
+
+    Raises:
+        SemanticScholarError: Errores de API.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacio.")
