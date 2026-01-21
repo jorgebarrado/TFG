@@ -5,6 +5,9 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   base: "/static/reader/",
+  define: {
+    __READER_BUILD_ID__: JSON.stringify(new Date().toISOString()),
+  },
   resolve: {
     alias: [
       {
