@@ -4,6 +4,9 @@ from ..models import Notification
 
 
 def notify(*, user, notification_type, title, message, url="", actor=None):
+    """
+    Crea una notificación para un usuario, verificando condiciones básicas.
+    """
     if user is None:
         return None
     if actor is not None and actor == user:
@@ -20,6 +23,9 @@ def notify(*, user, notification_type, title, message, url="", actor=None):
 
 
 def notify_new_comment(comment):
+    """
+    Envía una notificación al autor del reporte cuando recibe un nuevo comentario.
+    """
     report = comment.citation
     recipient = report.author
     if recipient is None:
@@ -44,6 +50,9 @@ def notify_new_comment(comment):
 
 
 def notify_new_vote(vote):
+    """
+    Envía una notificación al autor del reporte cuando recibe un nuevo voto.
+    """
     report = vote.citation
     recipient = report.author
     if recipient is None:
@@ -67,6 +76,9 @@ def notify_new_vote(vote):
 
 
 def notify_new_message(message):
+    """
+    Envía notificaciones a los participantes de una conversación cuando hay un nuevo mensaje.
+    """
     conversation = message.conversation
     recipients = conversation.participants.exclude(id=message.sender_id)
     url = reverse("conversation_detail", kwargs={"conversation_id": conversation.id})

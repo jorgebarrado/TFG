@@ -36,6 +36,9 @@ def _first_title(metadata: Dict[str, Any]) -> str:
 
 
 def extract_pdf_url_from_metadata(metadata: Optional[Dict[str, Any]]) -> Optional[str]:
+    """
+    Intenta extraer la URL del PDF desde los metadatos (e.g. CrossRef).
+    """
     if not metadata:
         return None
 
@@ -54,6 +57,9 @@ def extract_pdf_url_from_metadata(metadata: Optional[Dict[str, Any]]) -> Optiona
 
 
 def resolve_pdf_url(metadata: Optional[Dict[str, Any]], doi: str | None) -> Optional[str]:
+    """
+    Resuelve la URL del PDF, buscando primero en metadatos y luego en servicios Open Access (Semantic Scholar).
+    """
     url = extract_pdf_url_from_metadata(metadata)
     if url:
         return url
@@ -166,6 +172,15 @@ def _normalize_reference_text(value: str) -> str:
 
 
 def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    Extrae las referencias bibliográficas de un archivo PDF local.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        Tuple: Lista de referencias y diccionario de estadísticas.
+    """
     if fitz is None or not pdf_path:
         return [], {
             "pages_total": 0,
@@ -223,7 +238,12 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
     return references, stats
 
 
-def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+def extract_pdf_references_from_url(
+    pdf_url: str | None,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    Descarga un PDF desde una URL y extrae sus referencias.
+    """
     if not pdf_url:
         return [], {
             "pages_total": 0,
@@ -248,7 +268,12 @@ def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str,
             pass
 
 
-def build_references(metadata: Optional[Dict[str, Any]], doi: str | None) -> List[Dict[str, Any]]:
+def build_references(
+    metadata: Optional[Dict[str, Any]], doi: str | None
+) -> List[Dict[str, Any]]:
+    """
+    Construye una lista de referencias a partir de metadatos o DOI, cuando no hay PDF.
+    """
     if not metadata and not doi:
         return []
 
@@ -263,6 +288,9 @@ def build_references(metadata: Optional[Dict[str, Any]], doi: str | None) -> Lis
 
 
 def build_mentions(contexts: Any) -> List[Dict[str, Any]]:
+    """
+    Transforma los contextos de cita en una lista de menciones estructurada para el frontend.
+    """
     if not isinstance(contexts, list):
         return []
 
@@ -286,6 +314,9 @@ def build_mentions(contexts: Any) -> List[Dict[str, Any]]:
 
 
 def build_snippets_from_results(results: Any) -> List[Dict[str, Any]]:
+    """
+    Construye snippets para el lector a partir de los resultados de extracción de texto.
+    """
     if not isinstance(results, list):
         return []
     snippets: List[Dict[str, Any]] = []
@@ -309,6 +340,9 @@ def build_snippets_from_results(results: Any) -> List[Dict[str, Any]]:
 
 
 def build_snippets_from_mentions(mentions: Any) -> List[Dict[str, Any]]:
+    """
+    Construye snippets para el lector a partir de las menciones.
+    """
     if not isinstance(mentions, list):
         return []
     snippets: List[Dict[str, Any]] = []

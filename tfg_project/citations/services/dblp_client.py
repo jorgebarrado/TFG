@@ -11,6 +11,10 @@ class DBLPClientError(RuntimeError):
 
 
 class DBLPPaper(TypedDict):
+    """
+    Representa un artículo obtenido desde DBLP.
+    """
+
     title: str
     year: Optional[int]
     doi: Optional[str]

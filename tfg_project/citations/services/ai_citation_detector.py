@@ -10,6 +10,10 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """
+    Resultado estructurado de la detección de citas por IA.
+    """
+
     page: int
     paragraph_index: int
     confidence: float
@@ -17,7 +21,9 @@ class AiDetectionResult:
     text: str
 
 
-def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
+def build_ai_prompt_for_detection(
+    metadata_original: dict, paragraphs: List[Dict[str, Any]]
+) -> str:
     """
     Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
     """

@@ -14,6 +14,10 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """
+    Estructura de datos para un artículo que cita, obtenido de Semantic Scholar.
+    """
+
     title: str
     year: Optional[int]
     doi: Optional[str]

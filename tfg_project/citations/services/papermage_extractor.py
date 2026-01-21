@@ -23,6 +23,10 @@ class _Paragraph:
 
 
 class ContextHit(TypedDict):
+    """
+    Representa una coincidencia de contexto encontrada en el texto.
+    """
+
     paragraph: str
     snippet: str
     page: int
