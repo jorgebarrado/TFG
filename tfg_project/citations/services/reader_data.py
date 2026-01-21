@@ -14,7 +14,8 @@ except Exception:
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
-NUMERIC_REF_REGEX = re.compile(r"^\s*(\[(\d+)\]|(\d+)\.)\s+")
+NUMERIC_REF_REGEX = re.compile(r"^\s*(\[(\d+)\]|(\d+)[\.\)])\s*")
+NUMERIC_REF_INLINE_REGEX = re.compile(r"(?:^|\s{2,}|\t)(\[(\d+)\]|(\d+)[\.\)])\s*")
 REFERENCE_HEADERS = (
     "references",
     "bibliography",
@@ -123,6 +124,19 @@ def _split_references(section_text: str) -> Tuple[List[Tuple[int, str]], bool]:
         return [], False
     lines = [line.strip() for line in section_text.splitlines()]
     lines = [line for line in lines if line]
+    expanded_lines: List[str] = []
+    for line in lines:
+        matches = list(NUMERIC_REF_INLINE_REGEX.finditer(line))
+        if len(matches) <= 1:
+            expanded_lines.append(line)
+            continue
+        for idx, match in enumerate(matches):
+            start = match.start(1)
+            end = matches[idx + 1].start(1) if idx + 1 < len(matches) else len(line)
+            chunk = line[start:end].strip()
+            if chunk:
+                expanded_lines.append(chunk)
+    lines = expanded_lines
     has_numeric = any(NUMERIC_REF_REGEX.match(line) for line in lines)
     if not has_numeric:
         blocks = [
