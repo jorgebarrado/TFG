@@ -53,8 +53,8 @@
 
           <!-- Grid de cards estilo SaaS -->
           <div class="grid gap-6 md:grid-cols-3 mt-6">
-            <!-- Card 1: Pegar texto / Wizard -->
-            <a href="{% url 'create_report_wizard' %}" class="group relative block h-full">
+            <!-- Card 1: Crear reporte -->
+            <div class="group relative block h-full" id="home-reportes-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
@@ -64,32 +64,39 @@
                   <i class="fa-solid fa-keyboard"></i>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 mb-2">
-                  {% trans "Pegar texto" %}
+                  {% trans "Reportes" %}
                 </h3>
                 <p class="text-slate-500 text-sm mb-6">
-                  {% trans "Pega el fragmento donde te citan y revisa con ayuda del asistente si la cita es correcta." %}
+                  {% trans "Crea un reporte de cita incorrecta o consulta los reportes existentes." %}
                 </p>
 
                 <div class="w-100 mt-auto">
-                  <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-cyan-300">
-                    <span class="text-xs text-slate-400 block">
-                      {% trans "Introduce el texto en el siguiente paso" %}
-                    </span>
-                  </div>
-
-                  <div class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-cyan-600 transition-colors flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                    <span>{% trans "Iniciar asistente" %}</span>
+                  <div class="d-flex flex-column gap-2">
+                    <button class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-cyan-600 transition-colors d-flex align-items-center justify-content-center gap-2"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#reportModal">
+                      <i class="fa-solid fa-pen-to-square text-xs"></i>
+                      <span>{% trans "Manual" %}</span>
+                    </button>
+                    <a href="{% url 'create_report_wizard' %}"
+                       class="w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                      <span>{% trans "Con asistente" %}</span>
+                    </a>
+                    <a href="{% url 'citation_list' %}"
+                       class="w-100 btn btn-outline-secondary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                      <i class="fa-solid fa-list-ul text-xs"></i>
+                      <span>{% trans "Ver reportes" %}</span>
+                    </a>
                   </div>
                 </div>
               </div>
-            </a>
+            </div>
 
             <!-- Card 2: Subir PDF (RECOMENDADA) -->
-            <button
-              type="button"
-              data-bs-toggle="modal"
-              data-bs-target="#extractPdfCitationsModal"
+            <div
+              id="pdf-upload-card"
               class="group relative block w-100 text-start bg-transparent border-0 p-0 h-full">
 
               <!-- Glow -->
@@ -124,25 +131,43 @@
                   <div class="mt-auto">
 
                     <div
+                      id="pdf-card-dropzone"
                       class="w-100 rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/40
-                             py-2 text-xs text-purple-500 font-medium">
-                      {% trans "Arrastra o haz clic" %}
+                             py-2 text-xs text-purple-500 font-medium text-center position-relative">
+                      <span id="pdf-card-dropzone-text" class="d-block w-100">{% trans "Arrastra un PDF aqui o haz clic para seleccionarlo" %}</span>
+                      <button type="button"
+                              id="pdf-card-dropzone-clear"
+                              class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
+                              aria-label="{% trans 'Quitar PDF' %}">
+                        &times;
+                      </button>
                     </div>
+                    <div id="pdf-card-file-summary" class="small text-muted mt-2 d-none"></div>
 
-                    <div
+                    <button
+                      type="button"
+                      id="pdf-process-btn"
                       class="mt-3 w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
                              d-flex align-items-center justify-content-center gap-2
                              hover:bg-slate-800 transition-colors">
                       <span>{% trans "Procesar PDF" %}</span>
                       <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-                    </div>
+                    </button>
+                    <button
+                      type="button"
+                      class="mt-2 w-100 btn btn-outline-secondary fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#extractModal">
+                      <span>{% trans "Extraer citas (nuevo)" %}</span>
+                      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                    </button>
 
                   </div>
               </div>
-            </button>
+            </div>
 
             <!-- Card 3: Búsqueda en DBLP -->
-            <a href="{% url 'dblp_articles' %}" class="group relative block h-full">
+            <div class="group relative block h-full" id="home-dblp-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
@@ -161,36 +186,41 @@
 
                   <div class="w-100 mt-auto">
                       <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
-                          <span class="text-xs text-slate-400 block">
-                              {% trans "Conecta tu perfil y explora tus publicaciones" %}
-                          </span>
+                          {% if user.is_authenticated %}
+                            <form method="post" class="d-flex flex-column gap-2">
+                              {% csrf_token %}
+                              {{ dblp_form.dblp_url }}
+                              {% if dblp_form.dblp_url.errors %}
+                                <div class="text-danger small">{{ dblp_form.dblp_url.errors }}</div>
+                              {% endif %}
+                              <button type="submit" name="update_dblp_home" class="btn btn-sm btn-outline-success">
+                                {% trans "Guardar DBLP" %}
+                              </button>
+                            </form>
+                          {% else %}
+                            <span class="text-xs text-slate-400 block">
+                              {% trans "Inicia sesión para añadir tu DBLP." %}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                              {% trans "Iniciar sesión" %}
+                            </button>
+                          {% endif %}
                       </div>
 
-                      <div class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
-                          <span>{% trans "Explorar DBLP" %}</span>
-                          <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                      <div class="d-flex flex-column gap-2">
+                          <a href="{% url 'dblp_articles' %}" class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
+                              <span>{% trans "Explorar DBLP" %}</span>
+                              <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                          </a>
+                          <a href="{% url 'citation_review_papers' %}" class="w-100 btn btn-outline-success fw-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                              <span>{% trans "Revisión de citas (DBLP)" %}</span>
+                              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                          </a>
                       </div>
                   </div>
               </div>
-            </a>
+            </div>
           </div>
-<!-- Enlace a la lista de reportes -->
-          <div class="mt-4 text-muted small">
-            {% trans "¿Quieres ver qué han reportado otros autores?" %}
-            <a href="{% url 'citation_list' %}" class="fw-semibold text-primary text-decoration-none">
-              {% trans "Ir a la lista de reportes" %}
-            </a>
-          </div>
-
-          <!-- CTA secundario: crear reporte manual -->
-          <div class="mt-3">
-            <button class="btn btn-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#reportModal">
-              {% trans "Crear nuevo reporte manual" %}
-            </button>
-          </div>
-
           <div class="mt-20 text-center">
               <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-6">
                   {% trans "Potenciado por" %}
@@ -242,6 +272,7 @@
   const form = document.getElementById("pdf-extract-form");
   if (!form) return;
 
+  const modalEl = document.getElementById("extractPdfCitationsModal");
   const fileInput = document.getElementById("pdf-file-input");
   const fileSummaryBox = document.getElementById("pdf-extract-file-summary");
   const statusBox = document.getElementById("pdf-extract-status");
@@ -258,7 +289,40 @@
   const exportBtnMobile = document.getElementById("pdf-extract-export-btn-mobile");
 
   let allContexts = [];
-  let lastPage = null;  // usaremos la última página como "referencias"
+  let lastPage = null;  // usaremos la カltima pスgina como "referencias"
+
+  function resetExtractionState() {
+    if (fileInput) fileInput.value = "";
+    if (fileSummaryBox) {
+      fileSummaryBox.classList.add("d-none");
+      fileSummaryBox.innerHTML = "";
+    }
+    if (statusBox) {
+      statusBox.textContent = 'Selecciona un PDF y pulsa "Extraer citas".';
+    }
+    if (resultsBox) resultsBox.innerHTML = "";
+    if (controlsBox) controlsBox.classList.add("d-none");
+    setExportEnabled(false);
+    resetFilters();
+    allContexts = [];
+    lastPage = null;
+
+    const dropzoneText = document.getElementById("pdf-dropzone-text");
+    const dropzoneClear = document.getElementById("pdf-dropzone-clear");
+    if (dropzoneText) {
+      dropzoneText.textContent = "Arrastra un PDF aqui o haz clic para seleccionarlo.";
+    }
+    if (dropzoneClear) {
+      dropzoneClear.classList.add("d-none");
+    }
+    form.classList.remove("d-none");
+  }
+
+  if (modalEl) {
+    modalEl.addEventListener("hidden.bs.modal", () => {
+      resetExtractionState();
+    });
+  }
 
   // --- envío del formulario (subida y análisis del PDF) ---
   form.addEventListener("submit", function (event) {
@@ -665,5 +729,175 @@
     };
   }
 })();
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const card = document.getElementById('pdf-upload-card');
+    if (!card) return;
+
+    const innerCard = card.querySelector('.glass-card');
+    const modalEl = document.getElementById('extractPdfCitationsModal');
+    const fileInput = document.getElementById('pdf-file-input');
+    const modalSummary = document.getElementById('pdf-extract-file-summary');
+    const processBtn = document.getElementById('pdf-process-btn');
+    const cardSummary = document.getElementById('pdf-card-file-summary');
+    const cardDropzoneText = document.getElementById('pdf-card-dropzone-text');
+    const cardDropzoneClear = document.getElementById('pdf-card-dropzone-clear');
+    const cardDropzone = document.getElementById('pdf-card-dropzone');
+    let pendingFile = null;
+
+    const pickerInput = document.createElement('input');
+    pickerInput.type = 'file';
+    pickerInput.accept = 'application/pdf';
+    pickerInput.className = 'd-none';
+    card.appendChild(pickerInput);
+
+    function setHighlight(active) {
+      if (!innerCard) return;
+      innerCard.classList.toggle('border-2', active);
+      innerCard.classList.toggle('border-purple-300', active);
+      innerCard.classList.toggle('bg-purple-50/40', active);
+    }
+
+    function setCardSummary(file) {
+      if (!cardSummary) return;
+      if (!file) {
+        cardSummary.classList.add('d-none');
+        cardSummary.textContent = '';
+        if (cardDropzoneText) {
+          cardDropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo';
+        }
+        if (cardDropzoneClear) {
+          cardDropzoneClear.classList.add('d-none');
+        }
+        return;
+      }
+      const sizeKb = Math.round(file.size / 1024);
+      cardSummary.textContent = `${file.name} - ${sizeKb} KB`;
+      if (cardDropzoneText) {
+        cardDropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
+      }
+      if (cardDropzoneClear) {
+        cardDropzoneClear.classList.remove('d-none');
+      }
+      cardSummary.classList.add('d-none');
+    }
+
+    function resetModalSelection() {
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      const modalDropzoneText = document.getElementById('pdf-dropzone-text');
+      const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
+      if (modalDropzoneText) {
+        modalDropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo.';
+      }
+      if (modalDropzoneClear) {
+        modalDropzoneClear.classList.add('d-none');
+      }
+      if (modalSummary) {
+        modalSummary.classList.add('d-none');
+      }
+    }
+
+    function applyPdfFileToModal(file) {
+      if (!file || !fileInput) return;
+      if (file.type !== 'application/pdf') {
+        return;
+      }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      const modalDropzone = document.getElementById('pdf-dropzone');
+      const modalDropzoneText = document.getElementById('pdf-dropzone-text');
+      const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
+      if (modalDropzone) {
+        const sizeKb = Math.round(file.size / 1024);
+        if (modalDropzoneText) {
+          modalDropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
+        } else {
+          modalDropzone.textContent = `${file.name} - ${sizeKb} KB`;
+        }
+        if (modalDropzoneClear) {
+          modalDropzoneClear.classList.remove('d-none');
+        }
+      }
+      if (modalSummary) {
+        modalSummary.classList.add('d-none');
+      }
+    }
+
+    ['dragenter', 'dragover'].forEach((evt) => {
+      card.addEventListener(evt, (event) => {
+        event.preventDefault();
+        setHighlight(true);
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((evt) => {
+      card.addEventListener(evt, (event) => {
+        event.preventDefault();
+        setHighlight(false);
+      });
+    });
+
+    card.addEventListener('drop', (event) => {
+      const file = event.dataTransfer?.files?.[0];
+      if (!file) return;
+      if (file.type !== 'application/pdf') {
+        setCardSummary(null);
+        return;
+      }
+      pendingFile = file;
+      setCardSummary(file);
+    });
+
+    if (cardDropzone) {
+      cardDropzone.addEventListener('click', () => {
+        pickerInput.click();
+      });
+    }
+
+    pickerInput.addEventListener('change', () => {
+      const file = pickerInput.files?.[0];
+      if (!file || file.type !== 'application/pdf') {
+        setCardSummary(null);
+        return;
+      }
+      pendingFile = file;
+      setCardSummary(file);
+    });
+
+    if (cardDropzoneClear) {
+      cardDropzoneClear.addEventListener('click', (event) => {
+        event.stopPropagation();
+        pendingFile = null;
+        pickerInput.value = '';
+        setCardSummary(null);
+      });
+    }
+
+    if (processBtn) {
+      processBtn.addEventListener('click', () => {
+        if (!modalEl) return;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        if (pendingFile) {
+          applyPdfFileToModal(pendingFile);
+          return;
+        }
+        resetModalSelection();
+      });
+    }
+
+    const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
+    if (modalDropzoneClear) {
+      modalDropzoneClear.addEventListener('click', () => {
+        pendingFile = null;
+        pickerInput.value = '';
+        setCardSummary(null);
+      });
+    }
+  });
 </script>
 {% endblock %}

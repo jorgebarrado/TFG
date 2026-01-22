@@ -36,13 +36,29 @@ AUTHOR_YEAR = re.compile(
 
 CIT_NUMERIC = re.compile(r"\[(\d{1,3})\]")
 CIT_AUTHORYEAR = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
+CIT_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
+
+
+def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
+    left = max(start - padding, 0)
+    right = min(end + padding, len(text))
+    prefix = "..." if left > 0 else ""
+    suffix = "..." if right < len(text) else ""
+    return f"{prefix}{text[left:right]}{suffix}"
 
 
 def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
     hits: List[Dict[str, Any]] = []
     for m in CIT_NUMERIC.finditer(paragraph):
         hits.append(
-            {"type": "numeric", "match": m.group(0), "start": m.start(), "end": m.end()}
+            {
+                "type": "numeric",
+                "match": m.group(0),
+                "start": m.start(),
+                "end": m.end(),
+                "snippet": _make_snippet(paragraph, m.start(), m.end()),
+                "confidence": 0.0,
+            }
         )
     for m in CIT_AUTHORYEAR.finditer(paragraph):
         hits.append(
@@ -51,6 +67,19 @@ def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
                 "match": m.group(0),
                 "start": m.start(),
                 "end": m.end(),
+                "snippet": _make_snippet(paragraph, m.start(), m.end()),
+                "confidence": 0.0,
+            }
+        )
+    for m in CIT_DOI.finditer(paragraph):
+        hits.append(
+            {
+                "type": "doi",
+                "match": m.group(0),
+                "start": m.start(),
+                "end": m.end(),
+                "snippet": _make_snippet(paragraph, m.start(), m.end()),
+                "confidence": 0.0,
             }
         )
     return hits
@@ -73,11 +102,27 @@ def _extract_text_from_pdf_generic(path: str) -> str:
     return "\n".join(text_parts)
 
 
-def _build_results(paragraphs: List[str]) -> Tuple[List[Dict[str, Any]], int]:
+def _build_results(
+    paragraphs: List[str],
+    paragraphs_with_positions: List[dict] | None = None,
+) -> Tuple[List[Dict[str, Any]], int]:
     flat: List[Dict[str, Any]] = []
     total = 0
-    for ref, p in enumerate(paragraphs, start=1):
-        hs = _find_hits(p)
+    if paragraphs_with_positions:
+        items = [
+            {
+                "text": item.get("text", ""),
+                "page": item.get("page"),
+            }
+            for item in paragraphs_with_positions
+        ]
+    else:
+        items = [{"text": p, "page": None} for p in paragraphs]
+
+    for ref, item in enumerate(items, start=1):
+        text = item["text"]
+        page = item.get("page")
+        hs = _find_hits(text)
         if not hs:
             continue
         total += len(hs)
@@ -86,8 +131,11 @@ def _build_results(paragraphs: List[str]) -> Tuple[List[Dict[str, Any]], int]:
                 {
                     "ref": ref,
                     "idx": i,
-                    "snippet": h["match"],
-                    "paragraph": p,
+                    "page": page,
+                    "type": h["type"],
+                    "confidence": h.get("confidence", 0.0),
+                    "snippet": h.get("snippet", h["match"]),
+                    "paragraph": text,
                     "start": h["start"],
                     "end": h["end"],
                     "raw": h,
@@ -174,10 +222,12 @@ def _pm_loose_extract(path: str) -> list[dict]:
 def process_manuscript(
     pdf_path: str, *, engine: str = "auto", debug: bool = False
 ) -> Dict[str, Any]:
-    engine_used, paragraphs, attempts, err = run_engine(engine, pdf_path)
+    engine_used, paragraphs, attempts, err, paragraphs_with_positions = run_engine(
+        engine, pdf_path
+    )
 
     # Si NO estamos en 'auto' y hubo error → NO hay fallback, devolvemos error
-    if engine.lower() in ("papermage", "papercraft") and err:
+    if engine.lower() != "auto" and err:
         payload: Dict[str, Any] = {
             "ok": False,
             "engine_requested": engine,
@@ -189,7 +239,7 @@ def process_manuscript(
         return payload
 
     # AUTO (o motor explícito sin error): construimos resultados (aunque paragraphs pueda estar vacío)
-    results, total = _build_results(paragraphs)
+    results, total = _build_results(paragraphs, paragraphs_with_positions)
     payload = {
         "ok": True,
         "engine_requested": engine,

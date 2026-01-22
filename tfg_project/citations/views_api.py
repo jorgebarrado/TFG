@@ -2,15 +2,27 @@
 from __future__ import annotations
 
 import os
+import time
 import tempfile
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .services.citation_extractor import process_manuscript
+from .services.engines import ALLOWED_ENGINES, list_extractor_engines
+from .services.reader_data import (
+    build_mentions,
+    build_references,
+    build_snippets_from_mentions,
+    build_snippets_from_results,
+    extract_pdf_references,
+    extract_pdf_references_from_url,
+    resolve_pdf_url,
+)
 from .services.pdf_citation_analyzer import (
     PDFDownloadError,
     analyze_pdf_citations_from_url,
@@ -18,6 +30,7 @@ from .services.pdf_citation_analyzer import (
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.semantic_scholar_client import SemanticScholarError
 from .services.papermage_extractor import ContextHit
+from .models import IncorrectCitation
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
@@ -209,7 +222,17 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
     if not f:
         return JsonResponse({"ok": False, "error": "No file uploaded"}, status=400)
 
-    engine = (request.POST.get("engine") or "auto").lower().strip()
+    engine = (request.POST.get("engine") or "").lower().strip()
+    if not engine:
+        return JsonResponse(
+            {"ok": False, "error": "Debes seleccionar una herramienta de extraccion."},
+            status=400,
+        )
+    if engine not in ALLOWED_ENGINES:
+        return JsonResponse(
+            {"ok": False, "error": "Herramienta no valida."},
+            status=400,
+        )
     debug = request.POST.get("debug") in ("1", "true", "True", "yes", "on")
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
@@ -218,8 +241,27 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             tmp.write(chunk)
         temp_path = tmp.name
 
+    start_time = time.time()
     try:
         data = process_manuscript(temp_path, engine=engine, debug=debug)
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        data["time_ms"] = elapsed_ms
+
+        if suffix == ".pdf" and data.get("ok", False):
+            references, ref_stats = extract_pdf_references(temp_path)
+            snippets = build_snippets_from_results(data.get("results"))
+            data["references"] = references
+            data["snippets"] = snippets
+            data["stats"] = {
+                "pages_total": ref_stats.get("pages_total", 0),
+                "snippets_total": len(snippets),
+                "references_total": ref_stats.get("references_total", len(references)),
+                "dois_total": ref_stats.get("dois_total", 0),
+                "engine_used": data.get("engine_used") or "",
+                "time_ms": elapsed_ms,
+                "references_numbered": ref_stats.get("references_numbered", False),
+            }
+
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
     finally:
@@ -227,6 +269,46 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             os.remove(temp_path)
         except Exception:
             pass
+
+
+@require_GET
+def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    return JsonResponse({"engines": list_extractor_engines()}, status=200)
+
+
+@require_GET
+def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    citation = get_object_or_404(IncorrectCitation, pk=report_id)
+    pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
+    mentions = build_mentions(citation.citation_contexts)
+    snippets = build_snippets_from_mentions(mentions)
+    references, ref_stats = extract_pdf_references_from_url(pdf_url)
+    if not references:
+        references = build_references(citation.metadata_original, citation.doi_original)
+        ref_stats = {
+            "pages_total": 0,
+            "references_total": len(references),
+            "dois_total": sum(1 for ref in references if ref.get("doi")),
+            "references_numbered": False,
+        }
+    return JsonResponse(
+        {
+            "pdf_url": pdf_url or "",
+            "snippets": snippets,
+            "references": references,
+            "mentions": mentions,
+            "stats": {
+                "pages_total": ref_stats.get("pages_total", 0),
+                "snippets_total": len(snippets),
+                "references_total": ref_stats.get("references_total", len(references)),
+                "dois_total": ref_stats.get("dois_total", 0),
+                "engine_used": "",
+                "time_ms": None,
+                "references_numbered": ref_stats.get("references_numbered", False),
+            },
+        },
+        status=200,
+    )
 
 
 @require_GET

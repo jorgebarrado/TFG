@@ -1,5 +1,6 @@
 """Views for pages that render complete HTML pages."""
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -7,15 +8,17 @@ from django.db.models.functions import ExtractYear
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.db.models import Count, Q
-from ..forms import CommentForm, LoginForm, RegisterForm
+from ..forms import CommentForm, DBLPUrlForm, LoginForm, RegisterForm
 from ..models import (
     AREA_CHOICES,
     Comment,
     IncorrectCitation,
     SavedCitation,
+    UserProfile,
     Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
+from ..services.reader_data import extract_pdf_url_from_metadata
 from django.shortcuts import get_object_or_404, render
 from ..models import IncorrectCitation
 
@@ -76,6 +79,20 @@ def home(request):
     Renderiza la pogina de inicio.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
+    dblp_form = None
+
+    if request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if request.method == "POST" and "update_dblp_home" in request.POST:
+            dblp_form = DBLPUrlForm(request.POST, instance=profile)
+            if dblp_form.is_valid():
+                dblp_form.save()
+                messages.success(request, "DBLP actualizado correctamente.")
+                return redirect("home")
+            messages.error(request, "Revisa la URL de DBLP.")
+        else:
+            dblp_form = DBLPUrlForm(instance=profile)
+
     return render(
         request,
         "citations/home.html",
@@ -83,6 +100,7 @@ def home(request):
             "show_login_modal": show_login_modal,
             "login_form": LoginForm(),
             "register_form": RegisterForm(),
+            "dblp_form": dblp_form,
         },
     )
 
@@ -294,3 +312,22 @@ def semantic_citations_view(request):
         "source": source,
     }
     return render(request, "citations/semantic_citations.html", context)
+
+
+def citation_reader(request, report_id: int):
+    citation = get_object_or_404(IncorrectCitation, pk=report_id)
+    pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
+    context = {
+        "citation": citation,
+        "pdf_url": pdf_url or "",
+        "report_id": report_id,
+    }
+    return render(request, "citations/reader.html", context)
+
+
+def citation_reader_preview(request):
+    pdf_url = request.GET.get("pdf_url", "")
+    context = {
+        "pdf_url": pdf_url or "",
+    }
+    return render(request, "citations/reader_preview.html", context)

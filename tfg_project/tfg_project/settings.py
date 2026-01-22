@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.orcid",
-    "citations",
+    "citations.apps.CitationsConfig",
 ]
 
 SITE_ID = 1
@@ -86,6 +86,7 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "citations.context_processors.login_register_forms",
+                "citations.context_processors.notifications_context",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],

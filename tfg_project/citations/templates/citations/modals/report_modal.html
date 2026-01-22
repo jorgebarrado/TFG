@@ -23,6 +23,10 @@
                 <input id="id_doi_incorrect" type="text" class="form-control" name="doi_incorrect" required>
                 <div id="meta_incorrect"></div>
               </div>
+
+              <input type="hidden" name="original_metadata_json" id="id_original_metadata_json">
+              <input type="hidden" name="citing_metadata_json" id="id_citing_metadata_json">
+
             <div class="mb-3">
               <label for="incorrect_reason" class="form-label">{% trans "Motivo:" %}</label>
               <textarea class="form-control" name="incorrect_reason" rows="3" required></textarea>
@@ -71,6 +75,7 @@
 <script>
   function attachDoiListener(id, targetCard) {
   const input = document.getElementById(id);
+  if (!input) return;
   let timer;
   input.addEventListener('input', () => {
     clearTimeout(timer);
@@ -84,10 +89,10 @@
           document.getElementById(targetCard).innerHTML = `
             <div class="card mt-2">
               <div class="card-body p-2">
-                <strong>${data.title?.[0] || '—'}</strong><br>
+                <strong>${data.title?.[0] || 'N/A'}</strong><br>
                 <small>${(data.author||[]).map(a=>a.given+' '+a.family).join(', ')}</small><br>
                 <span class="badge bg-light text-dark">
-                  ${data['container-title']?.[0] || ''} • ${data.issued?.['date-parts']?.[0]?.[0] || ''}
+                  ${data['container-title']?.[0] || ''} - ${data.issued?.['date-parts']?.[0]?.[0] || ''}
                 </span>
               </div>
             </div>`;
@@ -97,4 +102,41 @@
 }
 attachDoiListener('id_doi_original',  'meta_original');
 attachDoiListener('id_doi_incorrect', 'meta_incorrect');
+
+const originalInput = document.getElementById('id_doi_original');
+const incorrectInput = document.getElementById('id_doi_incorrect');
+const originalMetaInput = document.getElementById('id_original_metadata_json');
+const incorrectMetaInput = document.getElementById('id_citing_metadata_json');
+
+if (originalInput && originalMetaInput) {
+  originalInput.addEventListener('input', () => {
+    originalMetaInput.value = '';
+  });
+}
+
+if (incorrectInput && incorrectMetaInput) {
+  incorrectInput.addEventListener('input', () => {
+    incorrectMetaInput.value = '';
+  });
+}
+
+function prefillReportModal(payload) {
+  if (originalInput) {
+    originalInput.value = payload.originalDoi || '';
+    originalInput.dispatchEvent(new Event('input'));
+  }
+  if (incorrectInput) {
+    incorrectInput.value = payload.incorrectDoi || '';
+    incorrectInput.dispatchEvent(new Event('input'));
+  }
+  if (originalMetaInput) {
+    originalMetaInput.value = payload.originalMetadata || '';
+  }
+  if (incorrectMetaInput) {
+    incorrectMetaInput.value = payload.incorrectMetadata || '';
+  }
+}
+
+window.prefillReportModal = prefillReportModal;
 </script>
+

@@ -1,0 +1,44 @@
+{% load i18n %}
+{% if user.is_authenticated %}
+<div class="dropdown">
+  <button
+    class="btn btn-outline-secondary position-relative"
+    type="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false">
+    <i class="bi bi-bell"></i>
+    {% if notifications_unread_count %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+        {{ notifications_unread_count }}
+      </span>
+    {% endif %}
+  </button>
+  <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px;">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">{% trans "Notificaciones" %}</span>
+      <form method="post" action="{% url 'notifications_mark_all_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-secondary">{% trans "Marcar todas" %}</button>
+      </form>
+    </div>
+    <div class="list-group list-group-flush">
+      {% if notifications_latest %}
+        {% for notification in notifications_latest %}
+          <a href="{% url 'notifications_read' notification.id %}" class="list-group-item list-group-item-action {% if not notification.is_read %}fw-semibold{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+              <span class="me-2">{{ notification.title }}</span>
+              <small class="text-muted">{{ notification.created_at|date:"d/m H:i" }}</small>
+            </div>
+            <div class="text-muted small">{{ notification.message|truncatechars:80 }}</div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="p-3 text-muted small">{% trans "No hay notificaciones." %}</div>
+      {% endif %}
+    </div>
+    <div class="p-2 border-top text-center">
+      <a href="{% url 'notifications_list' %}" class="btn btn-link btn-sm">{% trans "Ver todas" %}</a>
+    </div>
+  </div>
+</div>
+{% endif %}
