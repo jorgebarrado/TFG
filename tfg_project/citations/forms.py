@@ -79,7 +79,7 @@ class UserProfileForm(forms.ModelForm):
     country = forms.ChoiceField(
         choices=COUNTRY_CHOICES,
         required=False,
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "form-control", "data-select2": "country"}),
         label=_("País"),
     )
 
@@ -190,6 +190,27 @@ class UserProfileForm(forms.ModelForm):
         for name in checkbox_fields:
             if name in self.fields:
                 self.fields[name].widget.attrs.setdefault("class", "form-check-input")
+
+
+class DBLPUrlForm(forms.ModelForm):
+    """
+    Formulario reducido para actualizar solo la URL de DBLP.
+    """
+
+    dblp_url = forms.URLField(
+        required=False,
+        widget=forms.URLInput(
+            attrs={
+                "class": "form-control form-control-sm",
+                "placeholder": "https://dblp.org/pid/...",
+            }
+        ),
+        label=_("DBLP"),
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ["dblp_url"]
 
 
 class RegisterForm(UserCreationForm):

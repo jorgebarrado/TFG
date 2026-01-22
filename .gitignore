@@ -16,3 +16,4 @@ __pycache__/
 *.sqlite3
 /staticfiles/
 /media/
+node_modules/

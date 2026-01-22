@@ -88,20 +88,27 @@ def conversation_detail(request, conversation_id):
 def new_conversation(request, username):
     other_user = get_object_or_404(User, username=username)
 
-    base_qs = Conversation.objects.filter(participants=request.user).filter(
+    # 1. Obtener todas las conversaciones donde participan AMBOS
+    existing_conversations = Conversation.objects.filter(
+        participants=request.user
+    ).filter(
         participants=other_user
     )
 
-    expected_participants = 1 if other_user == request.user else 2
-    conversation = (
-        base_qs.annotate(num_participants=Count("participants", distinct=True))
-        .filter(num_participants=expected_participants)
-        .order_by("created_at")
-        .first()
-    )
+    found_conversation = None
 
-    if conversation is None:
-        conversation = Conversation.objects.create()
-        conversation.participants.add(request.user, other_user)
+    # 2. Verificar cuál de ellas es EXCLUSIVAMENTE entre estos dos (sin terceros)
+    expected_count = 1 if other_user == request.user else 2
 
+    for conversation in existing_conversations:
+        if conversation.participants.count() == expected_count:
+            found_conversation = conversation
+            break
+
+    # 3. Redirigir o crear
+    if found_conversation:
+        return redirect("conversation_detail", conversation_id=found_conversation.id)
+
+    conversation = Conversation.objects.create()
+    conversation.participants.add(request.user, other_user)
     return redirect("conversation_detail", conversation_id=conversation.id)

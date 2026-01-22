@@ -7,7 +7,15 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <p class="text-uppercase text-muted small mb-1">{% trans "Mensajes" %}</p>
-      <h2 class="mb-0">{% trans "Conversación" %} #{{ conversation.id }}</h2>
+      <h2 class="mb-0">
+        {% trans "Conversacion con" %}
+        {% for participant in conversation.other_participants %}
+          {% if not forloop.first %}, {% endif %}
+          @{{ participant.username }}
+        {% empty %}
+          @{{ user.username }}
+        {% endfor %}
+      </h2>
       <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
         {% for participant in conversation.other_participants %}
           <a href="{% url 'profile' participant.username %}" class="badge bg-light text-dark border">@{{ participant.username }}</a>
@@ -18,9 +26,6 @@
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'messages_inbox' %}" class="btn btn-outline-secondary">{% trans "Volver a mensajes" %}</a>
-      {% for participant in conversation.other_participants|slice:":1" %}
-        <a href="{% url 'new_conversation' participant.username %}" class="btn btn-primary">{% trans "Nuevo mensaje" %}</a>
-      {% endfor %}
     </div>
   </div>
 
@@ -63,3 +68,5 @@
   </div>
 </div>
 {% endblock %}
+
+

@@ -6,15 +6,21 @@
   const engineSel  = document.getElementById('extract-engine');
   const debugChk   = document.getElementById('extract-debug');
   const btnSubmit  = document.getElementById('extract-btn');
+  const readerBtn  = document.getElementById('extract-reader-btn');
 
   const alertBox   = document.getElementById('extract-alert');
   const summaryBox = document.getElementById('extract-summary');
   const resultsBox = document.getElementById('extract-results');
   const tracePre   = document.getElementById('extract-trace');
+  const modalEl    = document.getElementById('extractModal');
 
   const ENDPOINT = '/citations/api/extract-citations/';
+  const ENGINES_ENDPOINT = '/citations/api/extractor-engines/';
+  const READER_PREVIEW = '/citations/reader/preview/';
 
   if (!form) return; // por si la modal no está en esta vista
+
+  let extractionResult = null;
 
   function hideAllFeedback() {
     alertBox.classList.add('d-none');
@@ -25,6 +31,109 @@
     summaryBox.textContent = '';
     resultsBox.innerHTML = '';
     tracePre.textContent = '';
+  }
+
+  function syncButton() {
+    if (!btnSubmit || !engineSel) return;
+    btnSubmit.disabled = !engineSel.value;
+  }
+
+  function normalizeSnippetType(value) {
+    const t = String(value || '').toLowerCase();
+    if (t === 'numeric' || t === 'bracket') return 'bracket';
+    if (t === 'author-year' || t === 'authoryear' || t === 'author_year') return 'authoryear';
+    if (t === 'doi') return 'doi';
+    return 'bracket';
+  }
+
+  function buildExtractionResult(data) {
+    const list = Array.isArray(data?.results) ? data.results : [];
+    const snippets = list
+      .map((item, index) => {
+        const pageNum = Number(item?.page);
+        const page = Number.isFinite(pageNum) && pageNum > 0 ? pageNum : null;
+        const snippet =
+          item?.snippet ||
+          item?.fragment ||
+          item?.raw?.snippet ||
+          item?.raw?.match ||
+          '';
+        if (!snippet) return null;
+        return {
+          id: item?.id || `${item?.ref || 'hit'}-${item?.idx || index + 1}`,
+          page,
+          snippet,
+          type: normalizeSnippetType(item?.type || item?.pattern || item?.kind),
+          confidence: Number(item?.confidence || 0),
+        };
+      })
+      .filter(Boolean);
+
+    const baseStats = data?.stats && typeof data.stats === 'object' ? data.stats : {};
+    const stats = {
+      pages_total: Number(baseStats.pages_total || 0),
+      snippets_total:
+        typeof baseStats.snippets_total === 'number'
+          ? baseStats.snippets_total
+          : (typeof data?.summary?.count === 'number' ? data.summary.count : list.length),
+      references_total: Number(baseStats.references_total || 0),
+      dois_total: Number(baseStats.dois_total || 0),
+      engine_used: baseStats.engine_used || data?.engine_used || '',
+      time_ms: Number.isFinite(Number(baseStats.time_ms))
+        ? Number(baseStats.time_ms)
+        : (Number.isFinite(Number(data?.time_ms)) ? Number(data.time_ms) : null),
+      references_numbered: Boolean(baseStats.references_numbered),
+    };
+    const references = Array.isArray(data?.references) ? data.references : [];
+    return { snippets, stats, references };
+  }
+
+  function buildEngineOptions(engines) {
+    if (!engineSel) return;
+    engineSel.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = 'Selecciona una herramienta...';
+    engineSel.appendChild(placeholder);
+
+    (engines || []).forEach((engine) => {
+      if (!engine || !engine.key) return;
+      const opt = document.createElement('option');
+      opt.value = engine.key;
+      opt.textContent = engine.label || engine.key;
+      if (engine.available === false) {
+        opt.disabled = true;
+        opt.textContent = `${opt.textContent} (Proximamente)`;
+      }
+      engineSel.appendChild(opt);
+    });
+  }
+
+  async function loadEngines() {
+    if (!engineSel) return;
+    buildEngineOptions([]);
+    syncButton();
+
+    try {
+      const res = await fetch(ENGINES_ENDPOINT, { method: 'GET' });
+      if (!res.ok) throw new Error('engine list');
+      const data = await res.json();
+      const engines = Array.isArray(data.engines) ? data.engines : [];
+      buildEngineOptions(engines);
+      if (!engines.length) {
+        alertBox.textContent = 'No hay motores disponibles.';
+        alertBox.classList.remove('d-none');
+      }
+    } catch (e) {
+      buildEngineOptions([]);
+      alertBox.textContent = 'No se pudieron cargar las herramientas de extraccion.';
+      alertBox.classList.remove('d-none');
+    } finally {
+      syncButton();
+    }
   }
 
   function escapeHTML(s) {
@@ -123,14 +232,106 @@
     }, { once: true }); // nos suscribimos una vez por apertura de modal
   }
 
+  function openReaderPreview() {
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      alertBox.textContent = 'Selecciona un PDF.';
+      alertBox.classList.remove('d-none');
+      return;
+    }
+    const previewWin = window.open(READER_PREVIEW, '_blank');
+    if (!previewWin) {
+      alertBox.textContent = 'No se pudo abrir el visor.';
+      alertBox.classList.remove('d-none');
+      return;
+    }
+
+    const payload = {
+      type: 'reader:payload',
+      file,
+      snippets: extractionResult?.snippets || [],
+      references: extractionResult?.references || [],
+      stats: extractionResult?.stats || null,
+    };
+    const targetOrigin = window.location.origin;
+    let attempts = 0;
+    let timerId = null;
+
+    const sendPayload = () => {
+      try {
+        previewWin.postMessage(payload, targetOrigin);
+      } catch (e) {
+        // noop
+      }
+    };
+
+    const cleanup = () => {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      window.removeEventListener('message', onReady);
+    };
+
+    const onReady = (event) => {
+      if (event.origin !== targetOrigin) return;
+      if (!event.data || event.data.type !== 'reader:ready') return;
+      sendPayload();
+      cleanup();
+    };
+
+    window.addEventListener('message', onReady);
+    sendPayload();
+    timerId = setInterval(() => {
+      if (!previewWin || previewWin.closed) {
+        cleanup();
+        return;
+      }
+      attempts += 1;
+      if (attempts > 10) {
+        cleanup();
+        return;
+      }
+      sendPayload();
+    }, 800);
+  }
+
+  if (engineSel) {
+    engineSel.addEventListener('change', syncButton);
+  }
+  if (readerBtn) {
+    readerBtn.addEventListener('click', openReaderPreview);
+  }
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      extractionResult = null;
+    });
+  }
+  if (modalEl) {
+    modalEl.addEventListener('show.bs.modal', () => {
+      hideAllFeedback();
+      loadEngines();
+    });
+  } else {
+    loadEngines();
+  }
+  syncButton();
+
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     hideAllFeedback();
+    extractionResult = null;
 
     const file = fileInput?.files?.[0];
     if (!file) {
       alertBox.textContent = 'Selecciona un PDF.';
       alertBox.classList.remove('d-none');
+      return;
+    }
+    if (!engineSel?.value) {
+      alertBox.textContent = 'Selecciona una herramienta de extraccion.';
+      alertBox.classList.remove('d-none');
+      syncButton();
       return;
     }
 
@@ -161,6 +362,7 @@
 
       // --- OK: pintar resumen, resultados y (si procede) la traza ---
       renderResults(data);
+      extractionResult = buildExtractionResult(data);
 
       if (data.trace) {
         tracePre.textContent = JSON.stringify(data.trace, null, 2);
@@ -172,8 +374,8 @@
       alertBox.textContent = 'Error de red o de servidor al extraer citas.';
       alertBox.classList.remove('d-none');
     } finally {
-      btnSubmit.disabled = false;
       btnSubmit.textContent = originalText;
+      syncButton();
     }
   });
 })();

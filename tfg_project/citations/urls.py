@@ -1,7 +1,14 @@
 # citations/urls.py
 from django.urls import path
 from . import views_ai, views_api, views_reports
-from .views import ajax_views, auth_views, page_views, user_views
+from .views import (
+    ajax_views,
+    auth_views,
+    message_views,
+    page_views,
+    tutor_views,
+    user_views,
+)
 
 urlpatterns = [
     # Page Views
@@ -44,6 +51,23 @@ urlpatterns = [
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
     path("perfil/", user_views.my_profile, name="my_profile"),
     path("perfil/ajustes/", user_views.account_settings, name="account_settings"),
+    path("revision-citas/", tutor_views.citation_review_papers, name="citation_review_papers"),
+    path("revision-citas/<int:paper_id>/citers/", tutor_views.citation_review_citers, name="citation_review_citers"),
+    path(
+        "revision-citas/create-report/",
+        tutor_views.citation_review_create_report,
+        name="citation_review_create_report",
+    ),
+    path(
+        "reader/preview/",
+        page_views.citation_reader_preview,
+        name="citation_reader_preview",
+    ),
+    path(
+        "reader/<int:report_id>/",
+        page_views.citation_reader,
+        name="citation_reader",
+    ),
     # AJAX Views
     path(
         "get_all_metadata/",
@@ -66,6 +90,16 @@ urlpatterns = [
         "api/extract-citations/",
         views_api.api_extract_citations,
         name="api_extract_citations",
+    ),
+    path(
+        "api/extractor-engines/",
+        views_api.api_extractor_engines,
+        name="api_extractor_engines",
+    ),
+    path(
+        "api/reader-data/<int:report_id>/",
+        views_api.api_reader_data,
+        name="api_reader_data",
     ),
     path(
         "api/get-citation-context/",
@@ -93,4 +127,9 @@ urlpatterns = [
         name="api_semantic_citation_analysis",
     ),
     path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
+
+    # Messaging System
+    path("messages/", message_views.inbox, name="messages_inbox"),
+    path("messages/new/<str:username>/", message_views.new_conversation, name="new_conversation"),
+    path("messages/<int:conversation_id>/", message_views.conversation_detail, name="conversation_detail"),
 ]
