@@ -1,4 +1,4 @@
-"""Models for citations app."""
+"""Modelos para la aplicación de citas."""
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -6,6 +6,42 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Modelo que extiende la información del usuario estándar de Django.
+
+    Almacena información adicional sobre el perfil del investigador, como su
+    área de investigación, institución, enlaces a redes sociales y preferencias
+    de notificación.
+
+    Attributes:
+        user (User): Relación uno a uno con el modelo User de Django.
+        dblp_url (str): URL del perfil DBLP del usuario.
+        date_of_birth (date): Fecha de nacimiento del usuario.
+        country (str): País del usuario.
+        preferred_language (str): Código del idioma preferido ('es', 'en', etc.).
+        research_area (str): Área de investigación principal.
+        profession (str): Profesión o rol actual (ej. PhD Student).
+        institution (str): Institución u organización a la que pertenece.
+        contact_email (str): Correo electrónico público de contacto.
+        social_link_1 (str): Primer enlace a red social o página personal.
+        social_link_2 (str): Segundo enlace a red social.
+        social_link_3 (str): Tercer enlace a red social.
+        social_link_4 (str): Cuarto enlace a red social.
+        notify_comments_on_my_reports (bool): Preferencia de notificación para comentarios en reportes propios.
+        notify_comments_on_followed (bool): Preferencia de notificación para comentarios en reportes seguidos.
+        notify_votes_on_my_reports (bool): Preferencia de notificación para votos en reportes propios.
+        notify_news_and_updates (bool): Preferencia para recibir noticias.
+        avatar (ImageField): Imagen de perfil del usuario.
+        bio (str): Biografía corta del usuario.
+        twitter_url (str): URL del perfil de Twitter.
+        github_url (str): URL del perfil de GitHub.
+        linkedin_url (str): URL del perfil de LinkedIn.
+        personal_website (str): URL del sitio web personal.
+        is_public (bool): Indica si el perfil es público.
+        show_activity (bool): Indica si se muestra la actividad reciente en el perfil.
+        show_social_links (bool): Indica si se muestran los enlaces sociales.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -150,6 +186,22 @@ AREA_CHOICES = [
 class IncorrectCitation(models.Model):
     """
     Representa un reporte de una cita incorrecta.
+
+    Este modelo almacena la información sobre una cita que ha sido identificada
+    como incorrecta, incluyendo el DOI del artículo original, el DOI del artículo
+    que cita incorrectamente, la razón del error y metadatos adicionales.
+
+    Attributes:
+        author (User): Usuario que creó el reporte.
+        doi_original (str): DOI del artículo original (el que es citado).
+        doi_incorrect (str): DOI del artículo que contiene la cita incorrecta.
+        incorrect_reason (str): Explicación textual de por qué la cita es incorrecta.
+        metadata_original (dict): Metadatos JSON del artículo original.
+        metadata_incorrect (dict): Metadatos JSON del artículo incorrecto.
+        citation_contexts (list): Lista de contextos de citación extraídos.
+        citation_type (str): Tipo de error de citación (e.g., 'misinterpretation').
+        publication_area (str): Área temática de la publicación.
+        created_at (datetime): Fecha y hora de creación del reporte.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -179,6 +231,13 @@ class IncorrectCitation(models.Model):
 class Comment(models.Model):
     """
     Representa un comentario en un reporte de cita incorrecta.
+
+    Attributes:
+        citation (IncorrectCitation): El reporte al que pertenece el comentario.
+        author (User): El usuario que escribió el comentario.
+        content (str): El contenido textual del comentario.
+        created_at (datetime): Fecha y hora de creación.
+        parent (Comment): Comentario padre, si este es una respuesta (hilo).
     """
 
     citation = models.ForeignKey(
@@ -192,12 +251,23 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """
+        Determina si el comentario es una respuesta a otro comentario.
+
+        Returns:
+            bool: True si tiene un comentario padre, False en caso contrario.
+        """
         return self.parent is not None
 
 
 class Vote(models.Model):
     """
     Representa un voto (positivo o negativo) de un usuario en un reporte.
+
+    Attributes:
+        user (User): El usuario que emite el voto.
+        citation (IncorrectCitation): El reporte votado.
+        value (int): Valor del voto (1 para positivo, -1 para negativo).
     """
 
     VOTE_CHOICES = (
@@ -216,7 +286,12 @@ class Vote(models.Model):
 
 class SavedCitation(models.Model):
     """
-    Representa una cita incorrecta guardada por un usuario.
+    Representa una cita incorrecta guardada por un usuario para referencia futura.
+
+    Attributes:
+        user (User): El usuario que guarda el reporte.
+        citation (IncorrectCitation): El reporte guardado.
+        created_at (datetime): Fecha y hora en que se guardó.
     """
 
     user = models.ForeignKey(
@@ -235,6 +310,14 @@ class SavedCitation(models.Model):
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre dos o más usuarios.
+
+    Attributes:
+        participants (ManyToManyField): Usuarios que participan en la conversación.
+        created_at (datetime): Fecha y hora de inicio de la conversación.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -247,6 +330,17 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+
+    Attributes:
+        conversation (Conversation): La conversación a la que pertenece el mensaje.
+        sender (User): El usuario que envía el mensaje.
+        content (str): El contenido textual del mensaje.
+        created_at (datetime): Fecha y hora de envío.
+        is_read (bool): Indica si el mensaje ha sido leído (lógica simplificada).
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -263,6 +357,20 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario sobre eventos en la plataforma.
+
+    Attributes:
+        user (User): El usuario que recibe la notificación.
+        actor (User): El usuario que originó el evento (opcional).
+        notification_type (str): Tipo de notificación (e.g., 'NEW_COMMENT').
+        title (str): Título breve de la notificación.
+        message (str): Mensaje descriptivo.
+        url (str): URL relacionada con la notificación (e.g., enlace al reporte).
+        is_read (bool): Indica si la notificación ha sido marcada como leída.
+        created_at (datetime): Fecha y hora de creación.
+    """
+
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -302,7 +410,28 @@ class Notification(models.Model):
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Representa un reporte enriquecido con metadatos, PDFs y análisis de IA.
+
+    Este modelo está destinado a un flujo de trabajo más avanzado ('wizard')
+    que actualmente está en desarrollo y no se utiliza completamente en producción.
+
+    Attributes:
+        created_by (User): Usuario que crea el reporte.
+        original_doi (str): DOI del artículo original.
+        original_metadata (dict): Metadatos del artículo original.
+        original_pdf_url (str): URL del PDF original.
+        original_pdf_uploaded (FileField): Archivo PDF original subido.
+        original_snippet (str): Fragmento de texto del original.
+        citing_doi (str): DOI del artículo que cita.
+        citing_metadata (dict): Metadatos del artículo que cita.
+        citing_pdf_url (str): URL del PDF que cita.
+        citing_pdf_uploaded (FileField): Archivo PDF que cita subido.
+        citing_paragraphs (list): Lista de párrafos donde aparece la cita.
+        citing_pages (list): Páginas correspondientes a los párrafos.
+        error_type (str): Tipo de error reportado.
+        user_explanation (str): Explicación del usuario.
+        ai_assessment (dict): Evaluación generada por IA (futuro).
+        created_at (datetime): Fecha de creación.
     """
 
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -335,4 +464,3 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-

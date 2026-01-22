@@ -4,6 +4,22 @@ from ..models import Notification
 
 
 def notify(*, user, notification_type, title, message, url="", actor=None):
+    """
+    Crea una nueva notificación para un usuario.
+
+    Evita crear notificaciones si el actor es el mismo usuario (auto-notificación).
+
+    Args:
+        user (User): El usuario destinatario de la notificación.
+        notification_type (str): El tipo de notificación (e.g., 'NEW_COMMENT').
+        title (str): Título de la notificación.
+        message (str): Cuerpo del mensaje.
+        url (str, optional): Enlace relacionado. Por defecto es "".
+        actor (User, optional): El usuario que generó el evento. Por defecto es None.
+
+    Returns:
+        Notification | None: La notificación creada o None si no se creó.
+    """
     if user is None:
         return None
     if actor is not None and actor == user:
@@ -20,6 +36,17 @@ def notify(*, user, notification_type, title, message, url="", actor=None):
 
 
 def notify_new_comment(comment):
+    """
+    Genera una notificación cuando alguien comenta en un reporte.
+
+    Verifica las preferencias de notificación del autor del reporte antes de enviar.
+
+    Args:
+        comment (Comment): El objeto comentario recién creado.
+
+    Returns:
+        Notification | None: La notificación creada o None.
+    """
     report = comment.citation
     recipient = report.author
     if recipient is None:
@@ -44,6 +71,15 @@ def notify_new_comment(comment):
 
 
 def notify_new_vote(vote):
+    """
+    Genera una notificación cuando alguien vota en un reporte.
+
+    Args:
+        vote (Vote): El objeto voto recién creado.
+
+    Returns:
+        Notification | None: La notificación creada o None.
+    """
     report = vote.citation
     recipient = report.author
     if recipient is None:
@@ -67,6 +103,16 @@ def notify_new_vote(vote):
 
 
 def notify_new_message(message):
+    """
+    Genera notificaciones para todos los participantes de una conversación (excepto el remitente)
+    cuando se envía un nuevo mensaje.
+
+    Args:
+        message (Message): El mensaje enviado.
+
+    Returns:
+        List[Notification]: Lista de notificaciones enviadas.
+    """
     conversation = message.conversation
     recipients = conversation.participants.exclude(id=message.sender_id)
     url = reverse("conversation_detail", kwargs={"conversation_id": conversation.id})

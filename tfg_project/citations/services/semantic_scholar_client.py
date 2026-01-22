@@ -14,6 +14,18 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """
+    Diccionario tipado que representa un artículo que cita a otro.
+
+    Attributes:
+        title (str): Título del artículo.
+        year (int, optional): Año de publicación.
+        doi (str, optional): DOI del artículo.
+        authors (str, optional): Cadena con los nombres de los autores.
+        url (str, optional): URL del artículo en Semantic Scholar.
+        open_access_pdf_url (str, optional): URL directa al PDF de acceso abierto, si existe.
+    """
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -23,6 +35,14 @@ class CitingPaper(TypedDict):
 
 
 def _build_headers() -> dict:
+    """
+    Construye las cabeceras HTTP para las peticiones a Semantic Scholar.
+
+    Incluye la clave de API si está definida en las variables de entorno.
+
+    Returns:
+        dict: Diccionario con las cabeceras HTTP.
+    """
     headers: dict = {"Accept": "application/json"}
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
@@ -31,7 +51,18 @@ def _build_headers() -> dict:
 
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
     """
-    Devuelve una lista de artículos que citan al paper identificado por este DOI.
+    Recupera una lista de artículos que citan al paper identificado por un DOI.
+
+    Args:
+        doi (str): El DOI del artículo original.
+        limit (int, optional): Número máximo de resultados a devolver. Por defecto es 10.
+
+    Returns:
+        List[CitingPaper]: Lista de diccionarios con la información de los artículos que citan.
+
+    Raises:
+        ValueError: Si el DOI está vacío.
+        SemanticScholarError: Si ocurre un error en la conexión o la API devuelve un error (e.g., 404).
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -94,7 +125,24 @@ def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
     """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    Recupera una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Primero resuelve el `paperId` interno de Semantic Scholar a partir del DOI
+    y luego consulta el endpoint de citas paginado.
+
+    Args:
+        doi (str): El DOI del artículo original.
+        limit (int, optional): Número de resultados por página. Por defecto es 10.
+        offset (int, optional): Desplazamiento para la paginación. Por defecto es 0.
+
+    Returns:
+        tuple[List[CitingPaper], int]: Una tupla conteniendo:
+            - La lista de artículos que citan (página actual).
+            - El número total de citas encontradas.
+
+    Raises:
+        ValueError: Si el DOI está vacío.
+        SemanticScholarError: Si hay errores de conexión, el paper no existe o falla la resolución.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacio.")

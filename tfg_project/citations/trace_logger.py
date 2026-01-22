@@ -10,7 +10,8 @@ logger = logging.getLogger("citations.context")
 
 class TraceLogger:
     """
-    Recopila y registra trazas detalladas para una solicitud.
+    Recopila y registra trazas detalladas para una solicitud HTTP.
+    Similar a la clase Trace pero orientada a middleware o vistas.
     """
 
     def __init__(self, request: HttpRequest):
@@ -51,14 +52,14 @@ class TraceLogger:
 
     def log(self):
         """
-        Escribe la traza en el log si el logging está habilitado.
+        Escribe la traza en el log del sistema si la variable de entorno LOG_CITATIONS está activa.
         """
         if os.getenv("LOG_CITATIONS", "1") == "1":
             logger.info(self.trace_data)
 
     def get_trace(self) -> Dict[str, Any]:
         """
-        Devuelve la traza de datos.
+        Devuelve la estructura completa de datos de la traza.
 
         Returns:
             Dict[str, Any]: La traza de datos.

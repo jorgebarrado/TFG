@@ -11,7 +11,17 @@ from .models import AREA_CHOICES, CitationReport
 
 
 def create_report_wizard(request):
-    """Renderiza el flujo guiado para crear un reporte enriquecido."""
+    """
+    Renderiza el flujo guiado (wizard) para crear un reporte enriquecido.
+
+    Este flujo es experimental y utiliza el modelo `CitationReport`.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/report_wizard.html'.
+    """
     return render(
         request,
         "citations/report_wizard.html",
@@ -21,7 +31,18 @@ def create_report_wizard(request):
 
 @require_POST
 def ajax_submit_report(request):
-    """Recibe el POST del wizard y crea un CitationReport."""
+    """
+    Recibe los datos del wizard vía POST y crea un objeto `CitationReport`.
+
+    Maneja la carga de archivos PDF y metadatos JSON.
+
+    Args:
+        request: HttpRequest (POST).
+
+    Returns:
+        JsonResponse: Si es AJAX, devuelve URL de redirección.
+        HttpResponseRedirect: Si es estándar, redirige al detalle.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
     error_type = (request.POST.get("error_type") or "other").strip()
