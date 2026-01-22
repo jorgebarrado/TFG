@@ -15,6 +15,10 @@ from .papermage_extractor import ContextHit
 
 
 class AnalyzedCitation(TypedDict):
+    """
+    Representa una cita analizada, incluyendo el contexto encontrado.
+    """
+
     citing_title: str
     citing_year: Optional[int]
     citing_doi: Optional[str]
@@ -23,6 +27,10 @@ class AnalyzedCitation(TypedDict):
 
 
 class SemanticCitationAnalysisResult(TypedDict):
+    """
+    Resultado global del análisis de citas para un DOI original.
+    """
+
     original_doi: str
     citing_count: int
     analyzed: List[AnalyzedCitation]

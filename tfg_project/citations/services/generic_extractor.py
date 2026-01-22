@@ -60,6 +60,16 @@ def _extract_pages_with_pymupdf(pdf_path: str) -> List[tuple[int, str]]:
 
 
 def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """
+    Extrae párrafos de un PDF utilizando el motor genérico disponible (pdfplumber o PyMuPDF),
+    incluyendo la posición (página).
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con página, índice y texto.
+    """
     if pdfplumber is not None:
         page_texts = _extract_pages_with_pdfplumber(pdf_path)
     elif fitz is not None:
@@ -83,6 +93,15 @@ def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
 
 
 def generic_extract_paragraphs(pdf_path: str) -> List[str]:
+    """
+    Extrae solo el texto de los párrafos de un PDF utilizando el motor genérico.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        List[str]: Lista de textos de los párrafos.
+    """
     paragraphs = generic_extract_paragraphs_with_positions(pdf_path)
     if paragraphs:
         return [item["text"] for item in paragraphs]

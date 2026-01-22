@@ -113,6 +113,16 @@ def _score_paragraphs(paragraphs: List[dict]) -> tuple[int, int]:
 
 
 def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """
+    Extrae párrafos de un PDF utilizando la lógica de 'PaperCraft' (PyMuPDF o PyPDF2),
+    intentando preservar la estructura y devolviendo la página de cada párrafo.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con metadata (page, index, text).
+    """
     if not PC_AVAILABLE:
         raise RuntimeError("PaperCraft not available in this environment.")
 
@@ -143,5 +153,14 @@ def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
 
 
 def pc_extract_paragraphs(pdf_path: str) -> List[str]:
+    """
+    Extrae texto de párrafos de un PDF (solo texto), usando PaperCraft.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[str]: Lista de textos de los párrafos.
+    """
     paragraphs = pc_extract_paragraphs_with_positions(pdf_path)
     return [item["text"] for item in paragraphs]

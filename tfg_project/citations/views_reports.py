@@ -11,7 +11,9 @@ from .models import AREA_CHOICES, CitationReport
 
 
 def create_report_wizard(request):
-    """Renderiza el flujo guiado para crear un reporte enriquecido."""
+    """
+    Renderiza el flujo guiado para crear un reporte enriquecido (Wizard).
+    """
     return render(
         request,
         "citations/report_wizard.html",

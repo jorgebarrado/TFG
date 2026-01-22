@@ -3,6 +3,9 @@ from .models import Notification
 
 
 def login_register_forms(request):
+    """
+    Context processor para inyectar formularios de login y registro en todas las plantillas.
+    """
     return {
         "login_form": LoginForm(),
         "register_form": RegisterForm(),
@@ -10,6 +13,9 @@ def login_register_forms(request):
 
 
 def notifications_context(request):
+    """
+    Context processor para inyectar notificaciones no leídas y recientes en todas las plantillas.
+    """
     if not request.user.is_authenticated:
         return {
             "notifications_unread_count": 0,
