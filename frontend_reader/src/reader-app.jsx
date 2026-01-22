@@ -293,6 +293,9 @@ function useHighlightedSnippet(mention, onHighlight) {
       document
         .querySelectorAll(".reader-highlight")
         .forEach((el) => el.classList.remove("reader-highlight"));
+      document
+        .querySelectorAll(".reader-paragraph-layer")
+        .forEach((layer) => (layer.innerHTML = ""));
 
       const pageEl = document.querySelector(
         `.pdf-reader__page[data-page-number="${pageNumber}"]`
@@ -308,7 +311,7 @@ function useHighlightedSnippet(mention, onHighlight) {
       const { text, nodes } = buildTextLayerIndex(textLayer);
       if (!text) return;
       const highlightMode = mention.highlightMode || "snippet";
-      const snippetText = String(mention.snippet || "").trim();
+      const snippetText = String(mention.highlight_snippet || mention.snippet || "").trim();
       const referenceIndex = Number(mention.reference_index);
       let matched = false;
 
@@ -327,42 +330,68 @@ function useHighlightedSnippet(mention, onHighlight) {
           lineHeight = 16;
         }
         const lineGapThreshold = lineHeight * 1.6;
-        const lineTops = Array.from(
-          new Set(
-            nodes
-              .map((node) => {
-                const rect = node.span.getBoundingClientRect();
-                return Math.round(rect.top);
-              })
-              .filter((value) => Number.isFinite(value))
-          )
-        ).sort((a, b) => a - b);
+        const lineMap = new Map();
+        nodes.forEach((node) => {
+          const rect = node.span.getBoundingClientRect();
+          if (rect.width < 2 || rect.height < 2) return;
+          const key = Math.round(rect.top);
+          const current = lineMap.get(key) || {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            right: rect.right,
+          };
+          current.top = Math.min(current.top, rect.top);
+          current.bottom = Math.max(current.bottom, rect.bottom);
+          current.left = Math.min(current.left, rect.left);
+          current.right = Math.max(current.right, rect.right);
+          lineMap.set(key, current);
+        });
+        const lineKeys = Array.from(lineMap.keys()).sort((a, b) => a - b);
+        if (!lineKeys.length) return;
         const minTop = Math.min(...matchedRects.map((rect) => rect.top));
         const maxBottom = Math.max(...matchedRects.map((rect) => rect.bottom));
-        let startLine = lineTops.findIndex((top) => top >= minTop - 1);
-        let endLine = lineTops.findIndex((top) => top >= maxBottom - 1);
+        let startLine = lineKeys.findIndex((top) => top >= minTop - 1);
+        let endLine = lineKeys.findIndex((top) => top >= maxBottom - 1);
         if (startLine === -1) startLine = 0;
-        if (endLine === -1) endLine = lineTops.length - 1;
+        if (endLine === -1) endLine = lineKeys.length - 1;
         while (
           startLine > 0 &&
-          lineTops[startLine] - lineTops[startLine - 1] <= lineGapThreshold
+          lineKeys[startLine] - lineKeys[startLine - 1] <= lineGapThreshold
         ) {
           startLine -= 1;
         }
         while (
-          endLine < lineTops.length - 1 &&
-          lineTops[endLine + 1] - lineTops[endLine] <= lineGapThreshold
+          endLine < lineKeys.length - 1 &&
+          lineKeys[endLine + 1] - lineKeys[endLine] <= lineGapThreshold
         ) {
           endLine += 1;
         }
-        const startTop = lineTops[startLine];
-        const endTop = lineTops[endLine] + lineHeight;
-        nodes.forEach((node) => {
-          const rect = node.span.getBoundingClientRect();
-          if (rect.top >= startTop - 1 && rect.top <= endTop + 1) {
-            node.span.classList.add("reader-highlight");
+        let layer = pageEl.querySelector(".reader-paragraph-layer");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.className = "reader-paragraph-layer";
+          if (window.getComputedStyle(pageEl).position === "static") {
+            pageEl.style.position = "relative";
           }
-        });
+          pageEl.appendChild(layer);
+        }
+        layer.innerHTML = "";
+        const pageRect = pageEl.getBoundingClientRect();
+        for (let i = startLine; i <= endLine; i += 1) {
+          const line = lineMap.get(lineKeys[i]);
+          if (!line) continue;
+          const width = line.right - line.left;
+          const height = line.bottom - line.top;
+          if (width < 2 || height < 2) continue;
+          const block = document.createElement("div");
+          block.className = "reader-paragraph-hit";
+          block.style.left = `${line.left - pageRect.left}px`;
+          block.style.top = `${line.top - pageRect.top}px`;
+          block.style.width = `${width}px`;
+          block.style.height = `${height}px`;
+          layer.appendChild(block);
+        }
       };
 
       if (highlightMode === "paragraph" && Number.isFinite(referenceIndex)) {
@@ -1029,16 +1058,44 @@ export default function ReaderApp({
     return map;
   }, [inlineCitations]);
 
+  useEffect(() => {
+    if (!selectedSnippet || selectedSnippet.highlightMode !== "paragraph") {
+      return;
+    }
+    const refIndex = Number(selectedSnippet.reference_index);
+    if (!Number.isFinite(refIndex)) {
+      return;
+    }
+    const inlineSnippet = inlineSnippetByIndex.get(refIndex);
+    if (!inlineSnippet || !Number.isFinite(Number(inlineSnippet.page))) {
+      return;
+    }
+    if (Number(selectedSnippet.page) === Number(inlineSnippet.page)) {
+      if (selectedSnippet.highlight_snippet === inlineSnippet.snippet) {
+        return;
+      }
+    }
+    setSelectedSnippet((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        page: inlineSnippet.page,
+        highlight_snippet: inlineSnippet.snippet,
+      };
+    });
+  }, [inlineSnippetByIndex, selectedSnippet]);
+
   const referencesWithStats = useMemo(() => {
     return filteredReferences.map((ref) => {
       const statsEntry = citationStatsByReference.get(ref.index);
       const pages = statsEntry
         ? Array.from(statsEntry.pages).sort((a, b) => a - b)
         : [];
-      const linkedSnippet =
-        referenceSnippetByIndex.get(ref.index) || inlineSnippetByIndex.get(ref.index) || null;
+      const extractorSnippet = referenceSnippetByIndex.get(ref.index) || null;
+      const inlineSnippet = inlineSnippetByIndex.get(ref.index) || null;
+      const linkedSnippet = extractorSnippet || inlineSnippet;
       const summary = extractReferenceSummary(ref.raw);
-      const snippetPage = linkedSnippet ? Number(linkedSnippet.page) : null;
+      const snippetPage = Number(inlineSnippet?.page ?? extractorSnippet?.page ?? "");
       let displayPage = null;
       if (pages.length) {
         displayPage = pages[0];
@@ -1389,8 +1446,9 @@ export default function ReaderApp({
     }
     setActiveReferenceId(ref.index);
     setHighlightReferenceId(ref.index);
-    const linkedSnippet =
-      referenceSnippetByIndex.get(ref.index) || inlineSnippetByIndex.get(ref.index);
+    const extractorSnippet = referenceSnippetByIndex.get(ref.index);
+    const inlineSnippet = inlineSnippetByIndex.get(ref.index);
+    const linkedSnippet = extractorSnippet || inlineSnippet;
     if (linkedSnippet) {
       const snippetPayload = linkedSnippet.snippet
         ? linkedSnippet
@@ -1398,10 +1456,11 @@ export default function ReaderApp({
       setSelectedSnippet({
         ...snippetPayload,
         id: linkedSnippet.id || `inline-${ref.index}`,
-        page: linkedSnippet.page || ref.display_page || null,
+        page: inlineSnippet?.page || ref.display_page || linkedSnippet.page || null,
         type: linkedSnippet.type || "bracket",
         confidence: linkedSnippet.confidence || 0,
         reference_index: ref.index,
+        highlight_snippet: inlineSnippet?.snippet || "",
         highlightMode: "paragraph",
       });
     }
@@ -1411,8 +1470,9 @@ export default function ReaderApp({
     setActiveReferenceKey(referenceKey(ref));
     setActiveReferenceId(ref.index);
     setHighlightReferenceId(ref.index);
-    const linkedSnippet =
-      referenceSnippetByIndex.get(ref.index) || inlineSnippetByIndex.get(ref.index);
+    const extractorSnippet = referenceSnippetByIndex.get(ref.index);
+    const inlineSnippet = inlineSnippetByIndex.get(ref.index);
+    const linkedSnippet = extractorSnippet || inlineSnippet;
     if (linkedSnippet) {
       const snippetPayload = linkedSnippet.snippet
         ? linkedSnippet
@@ -1420,14 +1480,16 @@ export default function ReaderApp({
       setSelectedSnippet({
         ...snippetPayload,
         id: linkedSnippet.id || `inline-${ref.index}`,
-        page: linkedSnippet.page || ref.display_page || null,
+        page: inlineSnippet?.page || ref.display_page || linkedSnippet.page || null,
         type: linkedSnippet.type || "bracket",
         confidence: linkedSnippet.confidence || 0,
         reference_index: ref.index,
+        highlight_snippet: inlineSnippet?.snippet || "",
         highlightMode: "paragraph",
       });
-      if (Number.isFinite(Number(linkedSnippet.page))) {
-        scrollToPdfPageIndex(Number(linkedSnippet.page) - 1);
+      const targetPage = inlineSnippet?.page || linkedSnippet.page;
+      if (Number.isFinite(Number(targetPage))) {
+        scrollToPdfPageIndex(Number(targetPage) - 1);
         return;
       }
     }
