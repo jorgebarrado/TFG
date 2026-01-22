@@ -26,6 +26,9 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """
+    Obtiene la inicial para mostrar en el avatar por defecto del usuario.
+    """
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +37,18 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """
+    Muestra el perfil público de un usuario.
+
+    Incluye información básica y los últimos reportes creados.
+
+    Args:
+        request: HttpRequest.
+        username (str): Nombre de usuario del perfil a visualizar.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/public_profile.html'.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +71,20 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """
+    Permite al usuario editar su configuración de cuenta y perfil.
+
+    Gestiona múltiples formularios:
+    - Información básica (ProfileForm).
+    - Información extendida de perfil (UserProfileForm).
+    - Cambio de contraseña (CustomPasswordChangeForm).
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/account_settings.html'.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -124,6 +153,12 @@ def account_settings(request):
 def my_reports(request):
     """
     Muestra los reportes de citas incorrectas creados por el usuario actual.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/my_reports.html'.
     """
     reports = (
         IncorrectCitation.objects.filter(author=request.user)
@@ -137,6 +172,12 @@ def my_reports(request):
 def my_comments(request):
     """
     Muestra los comentarios realizados por el usuario actual.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/my_comments.html'.
     """
     comments = (
         Comment.objects.filter(author=request.user)
@@ -150,6 +191,12 @@ def my_comments(request):
 def my_saved(request):
     """
     Muestra las citas guardadas por el usuario actual.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/my_saved.html'.
     """
     saved = (
         SavedCitation.objects.filter(user=request.user)
@@ -163,6 +210,15 @@ def my_saved(request):
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Permite filtrar por tipo y buscar por título. También verifica si los DOIs
+    tienen citas reportadas en el sistema.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/dblp_articles.html'.
     """
     user = request.user
     profile = UserProfile.objects.get(user=user)
@@ -200,6 +256,17 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """
+    Muestra el panel de control personal del usuario (Dashboard).
+
+    Incluye estadísticas y un feed de actividad reciente (reportes, comentarios, votos, guardados).
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/profile.html'.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

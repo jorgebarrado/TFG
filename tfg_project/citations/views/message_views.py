@@ -12,6 +12,9 @@ User = get_user_model()
 
 
 def _other_participants(conversation, current_user):
+    """
+    Obtiene la lista de participantes de una conversación excluyendo al usuario actual.
+    """
     return [
         participant
         for participant in conversation.participants.all()
@@ -21,6 +24,18 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """
+    Muestra la bandeja de entrada del usuario con sus conversaciones.
+
+    Las conversaciones se ordenan por el mensaje más reciente y se calcula
+    el número de mensajes no leídos.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'messages/inbox.html'.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +66,18 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """
+    Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+
+    Marca automáticamente como leídos los mensajes recibidos no leídos.
+
+    Args:
+        request: HttpRequest.
+        conversation_id (int): ID de la conversación.
+
+    Returns:
+        HttpResponse: Renderiza 'messages/conversation.html'.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +113,18 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """
+    Inicia una nueva conversación con un usuario específico o redirige a la existente.
+
+    Evita crear conversaciones duplicadas entre los mismos dos usuarios.
+
+    Args:
+        request: HttpRequest.
+        username (str): Nombre de usuario del destinatario.
+
+    Returns:
+        HttpResponseRedirect: Redirige al detalle de la conversación.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

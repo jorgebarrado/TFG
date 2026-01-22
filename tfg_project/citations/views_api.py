@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from .services.citation_extractor import process_manuscript
 from .services.engines import ALLOWED_ENGINES, list_extractor_engines
@@ -31,6 +31,11 @@ from .services.semantic_citation_pipeline import analyze_citations_for_original_
 from .services.semantic_scholar_client import SemanticScholarError
 from .services.papermage_extractor import ContextHit
 from .models import IncorrectCitation
+from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
+from .trace import Trace
+
+import logging
+import json
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
@@ -42,12 +47,6 @@ except Exception:
         return []
 
 
-from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
-import logging
-import json
-from django.views.decorators.http import require_http_methods
-from .trace import Trace
-
 logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
@@ -55,7 +54,8 @@ INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def get_citation_context(request: HttpRequest) -> JsonResponse:
-    """Busca y extrae el contexto de una citación desde un artículo científico.
+    """
+    Busca y extrae el contexto de una citación desde un artículo científico.
 
     Esta vista localiza un artículo (citador) a través de su DOI, descarga
     la versión de acceso abierto si está disponible en Semantic Scholar, y
@@ -67,24 +67,19 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
         request: El objeto HttpRequest de Django.
             Puede contener en el querystring o en el cuerpo JSON los
             siguientes parámetros:
-            - citing_doi (str): El DOI del artículo que contiene la cita.
-              Es obligatorio.
+            - citing_doi (str): El DOI del artículo que contiene la cita (obligatorio).
             - target_title (str, optional): Título del artículo citado.
-            - target_first_author (str, optional): Primer autor del
-              artículo citado.
-            - target_year (str, optional): Año de publicación del artículo
-              citado.
+            - target_first_author (str, optional): Primer autor del artículo citado.
+            - target_year (str, optional): Año de publicación del artículo citado.
             - target_doi (str, optional): DOI del artículo citado.
 
     Returns:
         JsonResponse: Un objeto JSON que contiene:
             - ok (bool): True si la operación fue exitosa.
-            - contexts (list): Una lista de fragmentos de texto donde se
-              encontró la cita.
+            - contexts (list): Una lista de fragmentos de texto donde se encontró la cita.
             - count (int): El número de contextos encontrados.
             - error (str, optional): Un mensaje de error si `ok` es False.
-            - trace (dict, optional): Información de depuración si se
-              solicita con `?debug=1`.
+            - trace (dict, optional): Información de depuración si se solicita con `?debug=1`.
     """
     # Compat: GET querystring o POST JSON
     if request.method == "POST":
@@ -197,7 +192,8 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
-    """Extrae referencias bibliográficas de un manuscrito en formato PDF o TXT.
+    """
+    Extrae referencias bibliográficas de un manuscrito en formato PDF o TXT.
 
     Esta API procesa un archivo subido por el usuario (`manuscript`),
     extrae las referencias que contiene utilizando diferentes motores de
@@ -273,11 +269,33 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """
+    Devuelve la lista de motores de extracción de citas disponibles.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        JsonResponse: Un objeto JSON con la clave 'engines' conteniendo la lista de motores.
+    """
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """
+    Proporciona los datos necesarios para visualizar el reporte en el frontend.
+
+    Recupera la información del reporte, descarga o resuelve la URL del PDF,
+    y estructura los datos de menciones, fragmentos y referencias.
+
+    Args:
+        request: El objeto HttpRequest.
+        report_id (int): El ID del reporte (`IncorrectCitation`) a visualizar.
+
+    Returns:
+        JsonResponse: Datos estructurados del reporte (PDF, snippets, menciones, referencias).
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)
@@ -316,18 +334,16 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
     """
     API que recibe una URL de PDF y devuelve los contextos de cita detectados.
 
-    Parámetros GET:
-        - pdf_url: URL del PDF a analizar (obligatorio).
-        - pattern: puede repetirse varias veces para pasar patrones personalizados (opcional).
+    Args:
+        request: El objeto HttpRequest. Parámetros GET:
+            - pdf_url (str): URL del PDF a analizar (obligatorio).
+            - pattern (str, optional): Puede repetirse. Patrones de regex personalizados.
 
-    Respuesta:
-        200 OK:
-            {
-              "count": <número de contextos>,
-              "contexts": [ { ...ContextHit... }, ... ]
-            }
-        4xx / 5xx:
-            { "error": "mensaje de error" }
+    Returns:
+        JsonResponse:
+            - 200 OK: { "count": int, "contexts": list }
+            - 400 Bad Request: Error en los parámetros.
+            - 500/502 Server Error: Error al descargar o procesar el PDF.
     """
     pdf_url = request.GET.get("pdf_url")
     if not pdf_url:
@@ -367,6 +383,15 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
 def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
     """
     API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+
+    Args:
+        request: El objeto HttpRequest (POST). Debe contener un archivo en 'pdf_file'.
+
+    Returns:
+        JsonResponse:
+            - 200 OK: { "count": int, "contexts": list }
+            - 400 Bad Request: Si no se sube archivo.
+            - 500 Server Error: Si falla el procesamiento.
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
@@ -411,8 +436,18 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
 @require_GET
 def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     """
-    API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
-    y PaperMage para localizar contextos de cita en los PDFs open access.
+    API que realiza un análisis semántico de citas para un DOI.
+
+    Utiliza Semantic Scholar para buscar quién cita el DOI dado y PaperMage
+    para localizar contextos de cita en los PDFs de acceso abierto.
+
+    Args:
+        request: HttpRequest con parámetros GET:
+            - doi (str): El DOI del artículo original a analizar.
+            - max_citing (int, optional): Número máximo de artículos citantes a analizar. Por defecto 5.
+
+    Returns:
+        JsonResponse: Resultado del análisis.
     """
     doi = request.GET.get("doi")
     if not doi:

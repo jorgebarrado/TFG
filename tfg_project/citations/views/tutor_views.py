@@ -18,6 +18,9 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """
+    Construye el diccionario de metadatos para el artículo original (DBLP).
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +34,9 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """
+    Construye el diccionario de metadatos para el artículo que cita (Semantic Scholar).
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +49,18 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """
+    Muestra la lista de papers del usuario (desde DBLP) para seleccionar cuál revisar.
+
+    Si el usuario no tiene configurada la URL de DBLP, muestra un mensaje o
+    instrucciones.
+
+    Args:
+        request: HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/tutor_papers.html'.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +96,19 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """
+    Muestra los artículos que citan a un paper seleccionado del usuario.
+
+    Obtiene las citas desde Semantic Scholar y marca si ya han sido reportadas.
+    Permite paginación de resultados.
+
+    Args:
+        request: HttpRequest.
+        paper_id (int): Índice del paper en la lista de DBLP.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/tutor_citers.html'.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +194,17 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """
+    Crea un reporte de cita incorrecta desde la vista de revisión (tutor).
+
+    Recibe los metadatos pre-poblados y crea el objeto `IncorrectCitation`.
+
+    Args:
+        request: HttpRequest (POST).
+
+    Returns:
+        HttpResponseRedirect: Redirige al detalle del reporte recién creado.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 

@@ -4,7 +4,10 @@ import requests
 
 
 def get_articles_from_dblp(dblp_url):
-    """Obtiene la lista de publicaciones de un autor desde su perfil de DBLP.
+    """
+    Obtiene la lista de publicaciones de un autor desde su perfil de DBLP.
+
+    Parsea el feed XML de DBLP para extraer títulos, DOIs y tipos de publicación.
 
     Args:
         dblp_url (str): La URL de la página de perfil del autor en DBLP
@@ -13,7 +16,7 @@ def get_articles_from_dblp(dblp_url):
     Returns:
         list: Una lista de diccionarios, donde cada diccionario representa
             una publicación y contiene 'title', 'doi' y 'type'.
-            Retorna una lista vacía si ocurre un error.
+            Retorna una lista vacía si ocurre un error o la URL es inválida.
     """
     try:
         # Convertir la URL HTML en URL XML
@@ -59,7 +62,8 @@ def get_articles_from_dblp(dblp_url):
 
 
 def get_citing_articles(doi):
-    """Recupera los artículos que citan a un DOI específico usando la API de Semantic Scholar.
+    """
+    Recupera los artículos que citan a un DOI específico usando la API de Semantic Scholar.
 
     Args:
         doi (str): El DOI del artículo para el cual se buscan las citas.
@@ -106,7 +110,8 @@ def get_citing_articles(doi):
 
 
 def check_doi_has_citations(doi):
-    """Verifica si un artículo tiene al menos una cita según Semantic Scholar.
+    """
+    Verifica si un artículo tiene al menos una cita según Semantic Scholar.
 
     Args:
         doi (str): El DOI del artículo a verificar.
@@ -141,7 +146,8 @@ def check_doi_has_citations(doi):
 
 
 def get_citation_count(doi):
-    """Obtiene el número total de citas para un DOI específico desde Semantic Scholar.
+    """
+    Obtiene el número total de citas para un DOI específico desde Semantic Scholar.
 
     Args:
         doi (str): El DOI del artículo cuyo conteo de citas se desea obtener.
