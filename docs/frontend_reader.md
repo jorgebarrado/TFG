@@ -2,25 +2,33 @@
 
 El **Reader** es una aplicación React (Single Page Application) incrustada dentro del proyecto Django. Su función es visualizar PDFs, gestionar el resaltado de citas y facilitar la navegación entre referencias bibliográficas y sus menciones en el texto.
 
-## Ubicación y Arquitectura
-*   **Código Fuente:** `frontend_reader/`
-*   **Entrada:** `frontend_reader/src/main.jsx`
-*   **Componente Principal:** `frontend_reader/src/reader-app.jsx`
-*   **Build:** Utiliza **Vite**. Los archivos compilados (`assets/`) se generan y Django los sirve como archivos estáticos.
-*   **Librería Core:** `@allenai/pdf-components` (React PDF).
+## Estructura Híbrida
 
-## Integración con Django
-La aplicación React no corre en un puerto separado en producción. Se compila y se inyecta en una plantilla Django (`citations/templates/citations/reader.html`).
+La aplicación no es 100% SPA; vive dentro de una plantilla de Django.
+
+### 1. El Wrapper Legacy (Django)
+*   **Archivo:** `citations/templates/citations/reader.html`
+*   **Responsabilidad:**
+    *   Provee el contenedor HTML (`<div id="root">`).
+    *   Inyecta datos iniciales desde el backend (URL del PDF, ID del reporte) usando `data-attributes`.
+    *   Carga el bundle de JavaScript compilado (`{% static 'assets/index.js' %}`).
 
 ```html
 <!-- Ejemplo conceptual de integración -->
 <div id="root"
-     data-api-url="..."
+     data-api-url="/citations/api/reader-data/123/"
      data-pdf-url="..."
-     data-report-id="...">
+     data-report-id="123">
 </div>
-<script src="{% static 'reader/index.js' %}"></script>
 ```
+
+### 2. La Aplicación React (Moderna)
+*   **Directorio:** `frontend_reader/`
+*   **Entrada:** `frontend_reader/src/main.jsx`
+*   **Responsabilidad:**
+    *   Lee los `data-attributes` del div `#root`.
+    *   Monta el componente raíz `ReaderApp`.
+    *   Gestiona todo el renderizado del PDF y la interactividad.
 
 ## Estado de la Aplicación (`reader-app.jsx`)
 
@@ -49,15 +57,14 @@ El componente `ReaderApp` gestiona un estado complejo para sincronizar la vista 
 
 El Reader consume las siguientes APIs (ver `api_reference_completa.md`):
 
-1.  **`GET /citations/api/reader-data/<id>/`**: Inicializa el visor con datos de un reporte.
-2.  **`POST /citations/api/extract-citations/`**: Envía el PDF actual para que el backend extraiga referencias y snippets (cuando el usuario sube un archivo manualmente).
-3.  **`GET /citations/api/extractor-engines/`**: Obtiene lista de motores disponibles (`auto`, `science-parse`).
-
-## Estilos
-*   **CSS:** `frontend_reader/src/styles.css`.
-*   Usa variables CSS y prefijos `reader-` para evitar colisiones con el CSS de Bootstrap de Django.
+| API Endpoint | Método | Uso |
+| :--- | :--- | :--- |
+| `/citations/api/reader-data/<id>/` | GET | Inicializa el visor con datos de un reporte existente. |
+| `/citations/api/extract-citations/` | POST | Envía el PDF actual para que el backend extraiga referencias y snippets (modo subida manual). |
+| `/citations/api/extractor-engines/` | GET | Obtiene lista de motores disponibles (`auto`, `science-parse`) para poblar el dropdown. |
 
 ## Desarrollo Local
+
 Para trabajar en el frontend sin recompilar Django constantemente:
 1.  Ir a `frontend_reader/`.
 2.  `npm install`.
