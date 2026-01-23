@@ -1,4 +1,8 @@
-"""Models for citations app."""
+"""Modelos para la aplicación de citaciones.
+
+Define las estructuras de datos principales incluyendo perfiles de usuario,
+reportes de citas incorrectas, comentarios, votos y notificaciones.
+"""
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -6,6 +10,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil extendido de usuario que complementa el modelo User de Django.
+
+    Almacena información adicional académica, profesional y social del usuario.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -17,7 +27,10 @@ class UserProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="profile",
     )
+    """Relación uno a uno con el modelo de Usuario de Django."""
+
     dblp_url = models.URLField(blank=True, null=True)
+    """URL del perfil DBLP del usuario."""
 
     date_of_birth = models.DateField(
         blank=True,
@@ -123,6 +136,7 @@ class UserProfile(models.Model):
     show_social_links = models.BooleanField(default=True)
 
     def __str__(self):
+        """Devuelve la representación en cadena del perfil (nombre de usuario)."""
         return self.user.username
 
 
@@ -150,15 +164,32 @@ AREA_CHOICES = [
 class IncorrectCitation(models.Model):
     """
     Representa un reporte de una cita incorrecta.
+
+    Almacena información sobre el artículo original, el artículo citante (incorrecto),
+    el tipo de error, metadatos y el contexto de la cita.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    """El usuario que creó el reporte."""
+
     doi_original = models.CharField(max_length=255)
+    """DOI del artículo citado (original)."""
+
     doi_incorrect = models.CharField(max_length=255)
+    """DOI del artículo citante (incorrecto)."""
+
     incorrect_reason = models.TextField()
+    """Explicación del usuario sobre por qué la cita es incorrecta."""
+
     metadata_original = models.JSONField(null=True, blank=True)
+    """Metadatos del artículo original (JSON)."""
+
     metadata_incorrect = models.JSONField(null=True, blank=True)
+    """Metadatos del artículo incorrecto (JSON)."""
+
     citation_contexts = models.JSONField(null=True, blank=True)
+    """Contextos de cita extraídos (lista de fragmentos de texto)."""
+
     citation_type = models.CharField(
         max_length=50,
         choices=[
@@ -167,31 +198,52 @@ class IncorrectCitation(models.Model):
             ("contextual misattribution", "Contextual Misattribution"),
         ],
     )
+    """Tipo de error de citación categorizado."""
+
     publication_area = models.CharField(
         max_length=4, choices=AREA_CHOICES, verbose_name=_("Área de publicación")
     )
+    """Área de conocimiento a la que pertenece la publicación."""
+
     created_at = models.DateTimeField(auto_now_add=True)
+    """Fecha y hora de creación del reporte."""
 
     def __str__(self):
+        """Devuelve una representación legible del reporte."""
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
 class Comment(models.Model):
     """
-    Representa un comentario en un reporte de cita incorrecta.
+    Representa un comentario realizado por un usuario en un reporte de cita incorrecta.
     """
 
     citation = models.ForeignKey(
         "IncorrectCitation", on_delete=models.CASCADE, related_name="comments"
     )
+    """El reporte al que pertenece el comentario."""
+
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    """El autor del comentario."""
+
     content = models.TextField()
+    """El contenido textual del comentario."""
+
     created_at = models.DateTimeField(auto_now_add=True)
+    """Fecha y hora de creación del comentario."""
+
     parent = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
+    """Comentario padre (si este es una respuesta)."""
 
     def is_reply(self):
+        """
+        Verifica si el comentario es una respuesta a otro comentario.
+
+        Returns:
+            bool: True si tiene un padre, False en caso contrario.
+        """
         return self.parent is not None
 
 
@@ -213,10 +265,13 @@ class Vote(models.Model):
     class Meta:
         unique_together = ("user", "citation")
 
+    def __str__(self):
+        return f"{self.user} voto {self.value} en {self.citation}"
+
 
 class SavedCitation(models.Model):
     """
-    Representa una cita incorrecta guardada por un usuario.
+    Representa una cita incorrecta guardada por un usuario para referencia futura.
     """
 
     user = models.ForeignKey(
@@ -231,10 +286,15 @@ class SavedCitation(models.Model):
         unique_together = ("user", "citation")
 
     def __str__(self):
+        """Devuelve una representación legible de la cita guardada."""
         return f"{self.user.username} -> {self.citation.id}"
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre dos o más usuarios.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -242,11 +302,16 @@ class Conversation(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una lista de los participantes de la conversación."""
         users = ", ".join(self.participants.values_list("username", flat=True))
         return f"Conversación entre {users}"
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -259,10 +324,15 @@ class Message(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
+        """Devuelve una representación legible del mensaje."""
         return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario sobre eventos en la plataforma.
+    """
+
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -295,6 +365,7 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una representación legible de la notificación."""
         return f"{self.title} -> {self.user.username}"
 
 
@@ -302,7 +373,10 @@ class Notification(models.Model):
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Modelo para el flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+
+    Actualmente no se usa en producción, pero está diseñado para un flujo más complejo
+    que permite la subida de PDFs y análisis detallado.
     """
 
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -334,5 +408,5 @@ class CitationReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación legible del reporte avanzado."""
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-
