@@ -1,48 +1,60 @@
 # Arquitectura del Backend
 
-El backend de CiteCheck está construido sobre el framework **Django**. Sigue una arquitectura MVT (Modelo-Vista-Template) estándar, enriquecida con servicios especializados para el procesamiento de documentos científicos.
+El backend de CiteCheck está construido sobre **Django 5.x**, siguiendo una arquitectura monolítica modular. Este documento ofrece una visión de alto nivel de cómo se organizan los componentes del servidor.
 
-## Estructura del Proyecto
+## Estructura de Directorios
 
-El proyecto se organiza en un directorio principal `tfg_project/` que contiene:
+```text
+tfg_project/
+├── manage.py              # CLI de Django
+├── tfg_project/           # Configuración global (settings, wsgi, asgi)
+│   ├── settings.py        # Configuración (DB, Apps, Middleware)
+│   └── urls.py            # Enrutador principal
+└── citations/             # APLICACIÓN PRINCIPAL (Business Logic)
+    ├── models.py          # Definición de esquema de datos
+    ├── views/             # Vistas HTML (User-facing)
+    ├── views_api.py       # API REST (JSON endpoints)
+    ├── services/          # Lógica de dominio compleja (Extracción, APIs externas)
+    ├── urls.py            # Rutas internas de la app
+    └── templates/         # Plantillas HTML (Django Template Language)
+```
 
-*   **`tfg_project/` (Configuración):** Contiene `settings.py`, `urls.py` principal, y configuración WSGI/ASGI.
-*   **`citations/` (Aplicación Principal):** Contiene la lógica de negocio.
+## Componentes Clave
 
-### Aplicación `citations`
+### 1. Vistas (Views)
+El proyecto separa claramente las vistas que renderizan HTML de las que sirven JSON.
+*   **Vistas HTML (`citations/views/`):** Usan plantillas Django + Bootstrap. Gestionan la navegación, perfiles de usuario y formularios tradicionales.
+*   **API REST (`citations/views_api.py`):** Controladores que responden JSON. Son consumidos por el Frontend React (Reader) y por scripts JS en las plantillas.
+    *   *Ver `api_reference_completa.md` para detalles de endpoints.*
 
-Esta aplicación encapsula la mayor parte de la funcionalidad:
+### 2. Capa de Servicios (`citations/services/`)
+Para mantener las vistas "delgadas" (thin views), la lógica pesada se delega a servicios especializados.
+*   **Extractores:** `papermage_extractor.py`, `pdf_citation_analyzer.py`.
+*   **Clientes API:** `semantic_scholar_client.py`, `dblp_client.py`.
+*   **Pipelines:** `semantic_citation_pipeline.py`.
+    *   *Ver `servicios_extraccion.md` para profundidad técnica.*
 
-*   **`models.py`:** Definición del esquema de base de datos (ver `modelos_datos.md`).
-*   **`views/`:** Vistas organizadas por funcionalidad:
-    *   `page_views.py`: Vistas que renderizan páginas HTML completas.
-    *   `api_views.py` / `views_api.py`: Endpoints REST que devuelven JSON.
-    *   `user_views.py`: Gestión de perfiles y configuraciones de usuario.
-    *   `auth_views.py`: Vistas personalizadas de autenticación.
-*   **`services/`:** Capa de servicios para lógica compleja (ver `servicios_extraccion.md`). Aquí reside la inteligencia de extracción de citas y conexión con APIs externas.
-*   **`templates/`:** Plantillas HTML usando el motor de Django y Bootstrap 5.
-*   **`static/`:** Archivos estáticos (CSS, JS, imágenes).
+### 3. Base de Datos
+*   **Motor:** SQLite por defecto (desarrollo), compatible con PostgreSQL.
+*   **ORM:** Django ORM.
+*   **Datos No Estructurados:** Uso extensivo de `JSONField` en modelos como `IncorrectCitation` para almacenar metadatos bibliográficos variables y coordenadas de texto (snippets).
+    *   *Ver `modelos_y_relaciones.md`.*
 
-## Integraciones Externas
+### 4. Autenticación
+*   Delegada a `django-allauth`.
+*   Soporta Login local (username/password) y Social (Google, ORCID).
+*   **Extensión:** El modelo `UserProfile` (relación 1:1 con `User`) almacena datos académicos adicionales.
 
-El backend actúa como orquestador entre la base de datos local y varios servicios externos:
+## Flujo de Petición Típico (Ejemplo: Ver Contexto)
 
-1.  **Semantic Scholar API:** Utilizada para obtener metadatos de artículos, identificar citas y obtener enlaces a PDFs de acceso abierto.
-2.  **CrossRef API:** Fuente alternativa de metadatos bibliográficos.
-3.  **DBLP:** Para obtener listas de publicaciones de los usuarios.
-4.  **Google / ORCID (Auth):** Proveedores de identidad mediante OAuth (vía `django-allauth`).
+1.  **Request:** Cliente GET `/citations/get_citation_context/?citing_doi=...`
+2.  **Routing:** `tfg_project/urls.py` -> `citations/urls.py` -> `views_api.get_citation_context`.
+3.  **Controller:** La vista valida parámetros.
+4.  **Service:** Llama a `services.semanticscholar.get_openaccess_pdf_url`.
+5.  **Service:** Si hay PDF, llama a `services.papermage_extractor.extract_contexts_from_pdf`.
+    *   *Este paso descarga el PDF a `/tmp`, lo procesa y devuelve objetos Python.*
+6.  **Response:** La vista serializa los objetos a JSON y retorna HTTP 200.
 
-## Flujo de Datos Típico (Extracción de Contexto)
-
-1.  **Solicitud:** El usuario (o frontend) solicita el contexto de una cita mediante un DOI.
-2.  **Vista API:** `views_api.get_citation_context` recibe la petición.
-3.  **Servicio:** Se invoca a `semantic_fetch` o `semantic_scholar_client` para obtener el PDF.
-4.  **Procesamiento:** `papermage_extractor` descarga y analiza el PDF.
-    *   Convierte el PDF a objetos manipulables.
-    *   Busca patrones de citación (ej. "[1]", "Smith et al. (2020)").
-    *   Extrae el texto circundante (contexto).
-5.  **Respuesta:** Se devuelve un JSON con los fragmentos de texto encontrados.
-
-## Sistema de Tareas y Asincronía
-
-Actualmente, el procesamiento es síncrono en las vistas, aunque algunas operaciones pesadas (descarga y análisis de PDF) pueden tomar tiempo. Se recomienda el uso de `Trace` y logs estructurados (`citations.context`) para monitorear el rendimiento y errores en estos procesos.
+## Logging y Trazabilidad
+*   El sistema implementa un logger específico `citations.context` configurado en `settings.py`.
+*   Las vistas críticas generan objetos `Trace` que acumulan pasos de ejecución (download ok, extract fail, etc.) y los vuelcan al log al finalizar la petición.
