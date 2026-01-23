@@ -2,6 +2,39 @@
 
 Este documento detalla el estado actual de madurez de los diferentes módulos del proyecto. Se utiliza para identificar rápidamente qué partes son críticas/estables y cuáles están en fase de desarrollo o experimentación.
 
+## Mapa Mental del Sistema
+
+```mermaid
+mindmap
+  root((CiteCheck))
+    Core Stable
+      Modelos Datos
+        IncorrectCitation
+        UserProfile
+      Autenticacion
+        Django Allauth
+      Frontend Viewer
+        React App
+        Highlighting
+      Reportes Basicos
+        CRUD IncorrectCitation
+    Partial Beta
+      API REST
+        Extraction Endpoints
+        Context Search
+      Servicios Extraccion
+        PaperMage Wrapper
+        Semantic Pipeline
+        PDF Handling
+    Experimental
+      Inteligencia Artificial
+        Citation Detector
+        Report Evaluator
+      Legacy
+        Report Wizard
+        Old JS Templates
+```
+
 ## Resumen de Módulos
 
 | Módulo / Funcionalidad | Estado | Descripción | Riesgos Principales |
@@ -9,7 +42,7 @@ Este documento detalla el estado actual de madurez de los diferentes módulos de
 | **Modelos de Datos** | ✅ **Estable** | Esquema de BD (SQLite/Postgres) definido en `models.py`. | Cambios en `IncorrectCitation` pueden requerir migraciones complejas. |
 | **Autenticación** | ✅ **Estable** | `django-allauth` con Google y ORCID. No tocar. | Dependencia de claves de API externas (Google/ORCID). |
 | **API REST (Core)** | ⚠️ **Parcial** | Endpoints en `views_api.py`. Funcional pero mezcla lógica legacy con nueva. | Falta de validación estricta de payloads en algunos endpoints. |
-| **Extracción de Citas (PaperMage)** | ⚠️ **Parcial** | Uso de `papermage` para extraer contextos. Funciona pero es lento y pesado. | Requiere instalación compleja de dependencias (PyTorch, Java). Falla con PDFs escaneados (sin OCR). |
+| **Extracción de Citas** | ⚠️ **Parcial** | Uso de `papermage` y `papercraft`. Funciona pero es lento y pesado. | Requiere instalación compleja de dependencias (PyTorch, Java). Falla con PDFs escaneados (sin OCR). |
 | **Viewer Frontend (React)** | ✅ **Estable** | Aplicación en `frontend_reader/` con soporte de resaltado. | Dependencia de `@allenai/pdf-components`. Integración con backend vía `reader.html` (legacy wrapper). |
 | **Pipeline Semántico** | ⚠️ **Parcial** | Búsqueda inversa de citadores (`semantic_citation_pipeline.py`). | Depende críticamente de la API gratuita de Semantic Scholar (rate limits). |
 | **Reportes (Wizard Legacy)** | 🛑 **Inactivo** | Flujo en `report_wizard.html` y modelo `CitationReport`. | Código muerto o desactivado. No usar como referencia de flujo principal. |

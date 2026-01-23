@@ -45,6 +45,28 @@ Para mantener las vistas "delgadas" (thin views), la lógica pesada se delega a 
 *   Soporta Login local (username/password) y Social (Google, ORCID).
 *   **Extensión:** El modelo `UserProfile` (relación 1:1 con `User`) almacena datos académicos adicionales.
 
+## Puntos de Extensión (Dónde tocar)
+
+### ¿Cómo añadir un nuevo Endpoint API?
+1.  Crea la función de vista en `citations/views_api.py`.
+    *   Usa anotaciones de tipo (`-> JsonResponse`).
+    *   Decora con `@require_GET` o `@require_POST`.
+2.  Registra la URL en `citations/urls.py` bajo el comentario `# APIs nuevas/ajustadas`.
+
+### ¿Cómo añadir una nueva Notificación?
+1.  Define el tipo en `Notification.NotificationType` (`models.py`).
+2.  Crea la lógica de disparo en `citations/services/notifications.py`.
+3.  Llama al servicio desde la vista correspondiente (ej. al crear un comentario).
+
+### ¿Cómo modificar el Logging?
+*   El logger se configura en `tfg_project/settings.py` -> `LOGGING`.
+*   Para añadir trazas a un módulo nuevo, usa:
+    ```python
+    import logging
+    logger = logging.getLogger("citations.context") # O crea uno nuevo
+    logger.info("...")
+    ```
+
 ## Flujo de Petición Típico (Ejemplo: Ver Contexto)
 
 1.  **Request:** Cliente GET `/citations/get_citation_context/?citing_doi=...`
@@ -54,7 +76,3 @@ Para mantener las vistas "delgadas" (thin views), la lógica pesada se delega a 
 5.  **Service:** Si hay PDF, llama a `services.papermage_extractor.extract_contexts_from_pdf`.
     *   *Este paso descarga el PDF a `/tmp`, lo procesa y devuelve objetos Python.*
 6.  **Response:** La vista serializa los objetos a JSON y retorna HTTP 200.
-
-## Logging y Trazabilidad
-*   El sistema implementa un logger específico `citations.context` configurado en `settings.py`.
-*   Las vistas críticas generan objetos `Trace` que acumulan pasos de ejecución (download ok, extract fail, etc.) y los vuelcan al log al finalizar la petición.

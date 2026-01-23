@@ -21,16 +21,21 @@ def analyze_citations_for_original_doi(original_doi: str, max_citing_papers: int
 
 ---
 
-## 2. Cliente Semantic Scholar (`semantic_scholar_client.py`)
+## 2. Motores de Extracción (`engines.py`)
 
-**Responsabilidad:** Abstraer la comunicación con la API pública de Semantic Scholar.
+**Responsabilidad:** Gestionar la disponibilidad de las distintas librerías de extracción y seleccionar cuál usar.
 
-*   **Endpoint Principal:** `https://api.semanticscholar.org/graph/v1/paper/{doi}`
-*   **Campos Solicitados:** `title`, `year`, `authors`, `openAccessPdf`, `citations.title`, `citations.year`, `citations.openAccessPdf`.
+*   **Motores Soportados:**
+    *   `papermage`: Wrapper sobre la librería AI2 PaperMage.
+    *   `papercraft`: Extractor alternativo (en desarrollo).
+    *   `generic`: Extractor basado en regex (fallback).
+*   **Lógica de Selección:** La función `run_engine(requested, path)` decide. Si `requested="auto"`, prueba en cascada: `papermage` -> `papercraft` -> `generic`.
 
-### Gestión de Errores
-*   Captura excepciones de red y códigos de estado HTTP no 200.
-*   **Limitación:** Actualmente no implementa reintentos automáticos (backoff) ni gestión de rate limits (claves de API).
+### Puntos de Extensión: ¿Cómo añadir un nuevo motor?
+1.  Crea un archivo `nuevo_extractor.py` en `services/` con una función `extract_paragraphs(pdf_path)`.
+2.  Importa el módulo en `engines.py` dentro de un bloque `try/except` para manejar dependencias faltantes.
+3.  Añade la clave a `ENGINE_LABELS` y actualiza `list_extractor_engines`.
+4.  Añade la lógica de llamada en `run_engine` (o en `_attempt`).
 
 ---
 
@@ -48,10 +53,6 @@ Es el núcleo de la búsqueda de texto.
 4.  **Matching:** Aplica Regex (`patterns`) sobre cada párrafo.
 5.  **Snippet:** Genera un recorte del texto alrededor del hallazgo con `_make_snippet`.
 
-### Dependencias Críticas
-*   Requiere `papermage` y sus dependencias (puede incluir PyTorch y Java para ciertos parsers, aunque aquí usamos `PDFPlumberParser` que es más ligero).
-*   **Fallback:** Si `papermage` no está instalado, el módulo define flags (`PM_AVAILABLE = False`) para no romper la importación, pero las funciones lanzarán error en tiempo de ejecución.
-
 ---
 
 ## 4. Analizador de PDFs (`pdf_citation_analyzer.py`)
@@ -63,17 +64,11 @@ Es el núcleo de la búsqueda de texto.
 2.  Invoca a `extract_contexts_from_pdf`.
 3.  **Limpieza:** Asegura el borrado del archivo temporal en un bloque `finally` para evitar llenar el disco del servidor.
 
----
-
-## 5. Extractores Legacy (`citation_extractor.py`, `generic_extractor.py`)
-
-**Responsabilidad:** Métodos alternativos de extracción, usados principalmente cuando se sube un manuscrito "en crudo" en el Reader.
-
-*   **Science Parse / Grobid:** El código tiene hooks para llamar a estos servicios si están configurados (docker local), pero por defecto usa regex ("auto").
-*   **Uso:** Principalmente para extraer *la lista de referencias bibliográficas* al final del documento, no el contexto en el cuerpo.
-
 ## Dónde Tocar para Mejorar
 
 1.  **Mejorar OCR:** Integrar OCR (Tesseract) en `papermage_extractor.py` para PDFs escaneados (imagen) que actualmente devuelven texto vacío.
+    *   *Archivo:* `services/papermage_extractor.py` -> `_load_document`.
 2.  **Soporte CrossRef:** Añadir un cliente CrossRef robusto en `semantic_scholar_client.py` como fallback cuando Semantic Scholar no tenga datos.
+    *   *Archivo:* `services/semantic_scholar_client.py`.
 3.  **Async:** Mover `analyze_citations_for_original_doi` a una tarea de Celery, ya que descargar 5 PDFs puede tardar >30 segundos y causar timeout en la vista HTTP.
+    *   *Archivo:* Crear `citations/tasks.py` y mover la lógica de `semantic_citation_pipeline.py`.

@@ -1,6 +1,6 @@
 # Referencia Completa de la API
 
-Esta referencia documenta los endpoints REST expuestos por la aplicación `citations`. Estos endpoints son consumidos principalmente por el Frontend React (Reader) y, en menor medida, por las vistas AJAX de Django.
+Esta referencia documenta los endpoints REST expuestos por la aplicación `citations`. Estos endpoints están definidos en `citations/urls.py` y servidos principalmente por `citations/views_api.py`.
 
 **Base URL:** `/citations/api/` (relativo a la raíz del sitio)
 
@@ -10,7 +10,8 @@ Esta referencia documenta los endpoints REST expuestos por la aplicación `citat
 
 Busca un artículo por DOI, intenta descargar su PDF open access y extrae las frases donde se cita a un artículo "objetivo".
 
-*   **Endpoint:** `/citations/get_citation_context/`
+*   **Ruta:** `/citations/api/get-citation-context/`
+*   **Vista:** `citations.views_api.get_citation_context`
 *   **Métodos:** `GET`, `POST`
 *   **Parámetros (QueryString o JSON Body):**
 
@@ -40,22 +41,10 @@ Busca un artículo por DOI, intenta descargar su PDF open access y extrae las fr
       "end": 45,
       "pattern": "author-year",
       "section": "body"
-    },
-    {
-       "paragraph": "[12] Smith, J. ...",
-       "snippet": "[12]",
-       "page": 10,
-       "section": "references"
     }
-  ],
-  "trace": { ... } // Solo si debug=1
+  ]
 }
 ```
-
-*   **Errores Comunes:**
-    *   `400 Bad Request`: Falta `citing_doi`.
-    *   `404 Not Found`: No se encontró PDF open access para el DOI citador.
-    *   `502 Bad Gateway`: Error de comunicación con Semantic Scholar o fallo en la descarga del PDF.
 
 ---
 
@@ -63,7 +52,8 @@ Busca un artículo por DOI, intenta descargar su PDF open access y extrae las fr
 
 Procesa un archivo PDF subido por el usuario para extraer *todas* las referencias bibliográficas. Usado en el "Reader".
 
-*   **Endpoint:** `/citations/api/extract-citations/`
+*   **Ruta:** `/citations/api/extract-citations/`
+*   **Vista:** `citations.views_api.api_extract_citations`
 *   **Métodos:** `POST`
 *   **Content-Type:** `multipart/form-data`
 *   **Parámetros:**
@@ -71,7 +61,7 @@ Procesa un archivo PDF subido por el usuario para extraer *todas* las referencia
 | Campo | Tipo | Descripción |
 | :--- | :--- | :--- |
 | `manuscript` | File | El archivo PDF a procesar. |
-| `engine` | String | Motor de extracción (`auto`, `grobid`, `regex`). |
+| `engine` | String | Motor de extracción (ver listado de motores). Default: `auto`. |
 | `debug` | Bool | Opcional. |
 
 *   **Respuesta Exitosa (200 OK):**
@@ -89,108 +79,96 @@ Procesa un archivo PDF subido por el usuario para extraer *todas* las referencia
       "numbered": true
     }
   ],
-  "snippets": [...], // Fragmentos detectados
+  "snippets": [...],
   "stats": {
     "pages_total": 12,
     "references_total": 40,
     "dois_total": 35,
-    "time_ms": 1500
+    "time_ms": 1500,
+    "engine_used": "papermage"
   }
 }
 ```
 
 ---
 
-### 3. Análisis de Citas en PDF por URL
+### 3. Motores de Extracción Disponibles
 
-Descarga un PDF arbitrario de una URL y devuelve contextos de cita encontrados (sin target específico, busca patrones generales como `[1]`, `(Author, 2000)`).
+Lista los motores de extracción soportados y detectados en el entorno (ver `citations/services/engines.py`).
 
-*   **Endpoint:** `/citations/api/pdf-citation-contexts/`
+*   **Ruta:** `/citations/api/extractor-engines/`
+*   **Vista:** `citations.views_api.api_extractor_engines`
+*   **Métodos:** `GET`
+
+*   **Respuesta Típica:**
+
+```json
+{
+  "engines": [
+    { "key": "papermage", "label": "PaperMage", "available": true },
+    { "key": "generic", "label": "Generico (rapido)", "available": true },
+    { "key": "papercraft", "label": "PaperCraft", "available": false }
+  ]
+}
+```
+
+*   **Nota de Ingeniería:**
+    *   `papermage`: Usa `papermage` library. Más lento, más preciso.
+    *   `generic`: Usa regex simples sobre texto plano extraído (rápido, menos contexto).
+    *   `papercraft`: Experimental.
+    *   `auto`: Intenta `papermage` -> `papercraft` -> `generic`.
+
+---
+
+### 4. Análisis de Citas en PDF por URL (PaperMage Directo)
+
+Descarga un PDF arbitrario de una URL y devuelve contextos de cita encontrados.
+
+*   **Ruta:** `/citations/api/pdf-contexts/`
+*   **Vista:** `citations.views_api.api_pdf_citation_contexts`
 *   **Métodos:** `GET`
 *   **Parámetros:**
     *   `pdf_url` (String, Obligatorio): URL directa al PDF.
     *   `pattern` (String, Opcional, Múltiple): Patrones regex personalizados.
 
-*   **Respuesta (200 OK):**
+---
 
-```json
-{
-  "count": 5,
-  "contexts": [
-    {
-      "paragraph": "El método propuesto [3] mejora...",
-      "page": 2,
-      ...
-    }
-  ]
-}
-```
+### 5. Upload PDF para Contextos (PaperMage Directo)
+
+Igual que el anterior, pero subiendo el binario del PDF.
+
+*   **Ruta:** `/citations/api/pdf-contexts-upload/`
+*   **Vista:** `citations.views_api.api_pdf_citation_contexts_upload`
+*   **Métodos:** `POST` (`multipart/form-data`)
+*   **Parámetros:**
+    *   `pdf_file` (File, Obligatorio).
 
 ---
 
-### 4. Cargar Datos para el Reader (Reporte Existente)
+### 6. Cargar Datos para el Reader (Reporte Existente)
 
 Carga los datos iniciales para el visor (Viewer) cuando se abre un reporte existente.
 
-*   **Endpoint:** `/citations/api/reader-data/<int:report_id>/`
+*   **Ruta:** `/citations/api/reader-data/<int:report_id>/`
+*   **Vista:** `citations.views_api.api_reader_data`
 *   **Métodos:** `GET`
-*   **Descripción:** Recupera el `IncorrectCitation`, obtiene el PDF url (del metadato incorrecto), y reconstruye los snippets y referencias guardados.
-
-*   **Respuesta (200 OK):**
-
-```json
-{
-  "pdf_url": "https://pdfs.semanticscholar.org/...",
-  "snippets": [...],
-  "references": [...],
-  "mentions": [...],
-  "stats": { ... }
-}
-```
 
 ---
 
-### 5. Análisis de Citación Semántica (Pipeline Completo)
+### 7. Análisis de Citación Semántica (Pipeline Completo)
 
 Ejecuta el pipeline de búsqueda inversa: Dado un DOI original, busca quién lo cita y analiza esos PDFs.
 
-*   **Endpoint:** `/citations/api/semantic-citation-analysis/`
+*   **Ruta:** `/citations/api/semantic-citation-analysis/`
+*   **Vista:** `citations.views_api.api_semantic_citation_analysis`
 *   **Métodos:** `GET`
 *   **Parámetros:**
     *   `doi` (String, Obligatorio): DOI original.
     *   `max_citing` (Int, Default 5): Número máximo de artículos citadores a analizar.
 
-*   **Respuesta (200 OK):**
-
-```json
-{
-  "original_doi": "10.1038/nature123",
-  "citing_count": 3,
-  "analyzed": [
-    {
-      "citing_title": "A follow up study...",
-      "citing_doi": "10.1093/bio/456",
-      "pdf_url": "https://...",
-      "contexts": [ ... ] // Hits encontrados en este PDF
-    }
-  ],
-  "errors": []
-}
-```
-
----
-
-### 6. Motores Disponibles
-
-Lista los motores de extracción soportados por el backend.
-
-*   **Endpoint:** `/citations/api/extractor-engines/`
-*   **Métodos:** `GET`
-*   **Respuesta:** `{"engines": [{"key": "auto", "label": "Automático", ...}]}`
-
 ---
 
 ## Notas de Implementación
 
-*   **Autenticación:** La mayoría de estos endpoints están marcados con `@csrf_exempt` en `views_api.py` para facilitar pruebas, pero en producción deberían estar protegidos o usar tokens CSRF/Session.
+*   **Autenticación:** La mayoría de estos endpoints están marcados con `@csrf_exempt` en `views_api.py` para facilitar pruebas desde herramientas externas (Postman), pero en producción deberían estar protegidos.
 *   **Errores:** El formato de error estándar es `{"ok": false, "error": "Mensaje descriptivo"}` o `{"error": "Mensaje"}` dependiendo de la vista. Se recomienda estandarizar esto en el futuro.
