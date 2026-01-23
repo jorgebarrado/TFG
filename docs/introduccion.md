@@ -1,46 +1,51 @@
-# Introducción a CiteCheck
+# Documentación Técnica de CiteCheck
 
-CiteCheck es una plataforma web diseñada para abordar el problema de las citas incorrectas en la literatura académica. Permite a los investigadores y lectores identificar, reportar y discutir citas que no respaldan adecuadamente las afirmaciones hechas en los artículos científicos.
+Bienvenido a la documentación técnica de **CiteCheck**. Este conjunto de documentos está dirigido a desarrolladores y mantenedores del proyecto.
 
-El proyecto combina una aplicación web robusta construida con Django con potentes herramientas de procesamiento de lenguaje natural y análisis de documentos (como PaperMage y Semantic Scholar) para extraer y verificar contextos de citación automáticamente.
+CiteCheck es una plataforma de ingeniería de software diseñada para la **verificación y análisis de citas académicas**. Su objetivo técnico es automatizar la detección de inconsistencias entre lo que un artículo dice (citador) y lo que la referencia realmente contiene (citado).
 
-## Propósito
+## Arquitectura Conceptual
 
-La integridad científica depende de la precisión de las referencias. CiteCheck busca:
-1.  **Democratizar la verificación:** Permitir que la comunidad académica colabore en la detección de errores.
-2.  **Automatizar el análisis:** Utilizar herramientas de IA y extracción de texto para facilitar la validación de citas en archivos PDF.
-3.  **Centralizar la discusión:** Proveer un espacio dedicado para debatir la validez de las citas con un sistema de comentarios y votos.
+El sistema se basa en la interacción de tres componentes principales ("Las 3 Herramientas"):
 
-## Características Principales
+1.  **Buscador de Citadores (Semantic Pipeline):**
+    *   *Input:* Un DOI original.
+    *   *Proceso:* Consulta grafos de citas (Semantic Scholar), descarga PDFs Open Access y escanea su contenido.
+    *   *Output:* Lista de citas encontradas con su contexto textual.
 
-*   **Gestión de Perfiles de Usuario:**
-    *   Registro e inicio de sesión (incluyendo soporte para Google y ORCID).
-    *   Perfiles públicos con estadísticas de actividad.
-    *   Integración con DBLP para vincular publicaciones académicas.
+2.  **Viewer / Reader (Visor PDF Enriquecido):**
+    *   *Tech:* React + PDF.js (vía `@allenai/pdf-components`).
+    *   *Función:* Permite a un humano visualizar un paper, ver dónde están las referencias y validar si el texto extraído es correcto.
+    *   *Interacción:* Puente bidireccional con el sistema de reportes.
 
-*   **Reporte de Citas Incorrectas:**
-    *   Formularios detallados para reportar errores de citación (DOI original vs. DOI incorrecto).
-    *   Clasificación de errores (ej. malinterpretación, no mencionado).
-    *   Soporte para metadatos y extracción de contextos.
+3.  **Sistema de Reportes (Gestión de Errores):**
+    *   *Modelo:* `IncorrectCitation`.
+    *   *Función:* Persistencia estructurada de la denuncia (DOI A vs DOI B, tipo de error, evidencia textual).
+    *   *Comunidad:* Sistema de discusión, votación y reputación sobre los reportes.
 
-*   **Análisis Automático y Extracción:**
-    *   **Extracción de Contexto:** Identificación automática de frases citantes dentro de PDFs.
-    *   **Integración con APIs:** Uso de Semantic Scholar y CrossRef para obtener metadatos y PDFs de acceso abierto.
-    *   **Visor de PDF Enriquecido:** Un frontend especializado en React para visualizar documentos y sus referencias.
+## Índice de Documentación
 
-*   **Comunidad:**
-    *   Sistema de votos (positivo/negativo) para validar reportes.
-    *   Hilos de comentarios anidados.
-    *   Mensajería privada entre usuarios.
-    *   Notificaciones de actividad.
+Para navegar por el código y entender los subsistemas, consulta los siguientes documentos especializados:
 
-*   **API REST:**
-    *   Endpoints públicos para integrar funcionalidades de extracción de citas en otras herramientas.
+### Nivel Alto (Arquitectura y Datos)
+*   [Estado del Sistema](estado_del_sistema.md): **Lectura obligatoria.** Tabla de madurez de módulos, riesgos y deuda técnica actual.
+*   [Arquitectura Backend](arquitectura_backend.md): Visión general de Django, organización de carpetas y capas.
+*   [Modelos y Relaciones](modelos_y_relaciones.md): Esquema de base de datos, entidades principales (`IncorrectCitation`, `UserProfile`) y decisiones de diseño.
+*   [Flujo de Datos End-to-End](flujo_datos_end_to_end.md): Diagramas de cómo viaja la información entre las 3 herramientas.
 
-## Tecnologías Utilizadas
+### Nivel Bajo (Ingeniería e Implementación)
+*   [Referencia API](api_reference_completa.md): Documentación técnica de endpoints REST (inputs, outputs JSON).
+*   [Servicios de Extracción](servicios_extraccion.md): Lógica interna de `citations/services/` (PaperMage, Regex, Pipelines).
+*   [Frontend Reader](frontend_reader.md): Arquitectura de la aplicación React y su integración con Django.
+*   [Dependencias y Limitaciones](dependencias_y_limitaciones.md): Fronteras del sistema (APIs externas, PDFs ilegibles, fallbacks).
 
-*   **Backend:** Python, Django 5.x.
-*   **Base de Datos:** SQLite (por defecto).
-*   **Frontend:** HTML/CSS (Bootstrap 5) y React 17 (para el visor de documentos).
-*   **Procesamiento de Datos:** PaperMage, PyPDF2, Semantic Scholar API.
-*   **Autenticación:** Django Allauth.
+### Otros
+*   [Instalación](instalacion.md): Guía de despliegue local.
+*   [Manual de Usuario](manual_usuario.md): Guía funcional básica (contexto no técnico).
+
+## Tecnologías Core
+
+*   **Backend:** Python 3.10+, Django 5.x.
+*   **Frontend:** React 17 (Vite), Bootstrap 5.
+*   **NLP / PDF:** PaperMage, PDFPlumber, Regex.
+*   **APIs Externas:** Semantic Scholar Graph API.
