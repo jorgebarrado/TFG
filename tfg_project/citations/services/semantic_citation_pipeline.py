@@ -15,6 +15,15 @@ from .papermage_extractor import ContextHit
 
 
 class AnalyzedCitation(TypedDict):
+    """Representa el resultado del análisis de una cita.
+
+    Attributes:
+        citing_title (str): Título del artículo citante.
+        citing_year (Optional[int]): Año del artículo citante.
+        citing_doi (Optional[str]): DOI del artículo citante.
+        pdf_url (Optional[str]): URL del PDF analizado.
+        contexts (List[ContextHit]): Lista de contextos de cita encontrados en el PDF.
+    """
     citing_title: str
     citing_year: Optional[int]
     citing_doi: Optional[str]
@@ -23,6 +32,14 @@ class AnalyzedCitation(TypedDict):
 
 
 class SemanticCitationAnalysisResult(TypedDict):
+    """Representa el resultado global del análisis de citas para un DOI.
+
+    Attributes:
+        original_doi (str): DOI del artículo original (citado).
+        citing_count (int): Número de artículos citantes encontrados en Semantic Scholar.
+        analyzed (List[AnalyzedCitation]): Lista de análisis exitosos de artículos citantes.
+        errors (List[str]): Lista de errores encontrados durante el proceso.
+    """
     original_doi: str
     citing_count: int
     analyzed: List[AnalyzedCitation]
@@ -33,8 +50,19 @@ def analyze_citations_for_original_doi(
     original_doi: str,
     max_citing_papers: int = 5,
 ) -> SemanticCitationAnalysisResult:
-    """
-    Dado el DOI de un artículo 'A', obtiene citadores desde Semantic Scholar y analiza sus PDFs.
+    """Orquesta el análisis de citas para un DOI dado.
+
+    1. Busca artículos que citan al original_doi usando Semantic Scholar.
+    2. Para cada artículo citante con PDF Open Access, descarga y analiza el PDF.
+    3. Extrae los contextos donde se cita al artículo original.
+    4. Compila los resultados y errores.
+
+    Args:
+        original_doi (str): DOI del artículo a analizar (el que recibe las citas).
+        max_citing_papers (int, optional): Máximo de artículos citantes a procesar. Por defecto 5.
+
+    Returns:
+        SemanticCitationAnalysisResult: Diccionario con los resultados del análisis.
     """
     result: SemanticCitationAnalysisResult = {
         "original_doi": original_doi,

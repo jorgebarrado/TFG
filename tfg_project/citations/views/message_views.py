@@ -1,4 +1,4 @@
-"""Views for simple user-to-user messaging."""
+"""Vistas para el sistema de mensajería simple entre usuarios."""
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -12,6 +12,15 @@ User = get_user_model()
 
 
 def _other_participants(conversation, current_user):
+    """Devuelve los participantes de una conversación excluyendo al usuario actual.
+
+    Args:
+        conversation (Conversation): La conversación.
+        current_user (User): El usuario actual.
+
+    Returns:
+        List[User]: Lista de otros participantes.
+    """
     return [
         participant
         for participant in conversation.participants.all()
@@ -21,6 +30,17 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """Muestra la bandeja de entrada del usuario.
+
+    Lista las conversaciones ordenadas por el mensaje más reciente,
+    mostrando contadores de mensajes no leídos.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'messages/inbox.html'.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +71,17 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+
+    Marca como leídos los mensajes recibidos al abrir la conversación.
+
+    Args:
+        request: Objeto HttpRequest.
+        conversation_id (int): ID de la conversación.
+
+    Returns:
+        HttpResponse: Renderiza 'messages/conversation.html'.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +117,18 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """Inicia o recupera una conversación privada con otro usuario.
+
+    Si ya existe una conversación entre ambos (y solo ellos), redirige a ella.
+    Si no, crea una nueva.
+
+    Args:
+        request: Objeto HttpRequest.
+        username (str): Nombre de usuario del destinatario.
+
+    Returns:
+        HttpResponse: Redirección a la vista de detalle de la conversación.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

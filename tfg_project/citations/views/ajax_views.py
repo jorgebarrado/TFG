@@ -18,8 +18,15 @@ from ..services.semantic_fetch import get_citations_with_fallback
 
 @require_POST
 def vote_view(request):
-    """
-    Gestiona los votos (positivos y negativos) en los reportes de citas.
+    """Gestiona los votos (positivos y negativos) en los reportes de citas.
+
+    Permite votar o cambiar un voto existente. Si se vota lo mismo, se elimina el voto.
+
+    Args:
+        request: Objeto HttpRequest (POST).
+
+    Returns:
+        JsonResponse o HttpResponse (HTML parcial) con los nuevos contadores.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -71,8 +78,13 @@ def vote_view(request):
 @require_POST
 @login_required
 def toggle_saved(request):
-    """
-    Guarda o elimina una cita de la lista de guardados de un usuario.
+    """Guarda o elimina una cita de la lista de guardados de un usuario.
+
+    Args:
+        request: Objeto HttpRequest (POST).
+
+    Returns:
+        HttpResponse: Renderiza el botón de guardado actualizado.
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -94,9 +106,16 @@ def toggle_saved(request):
 
 
 def ajax_submit_citation(request):
-    """
-    Guarda un reporte de cita incorrecta enviado desde el formulario principal.
-    Acepta solicitudes AJAX y tradicionales.
+    """Guarda un reporte de cita incorrecta enviado desde el formulario principal.
+
+    Maneja la creación del objeto IncorrectCitation, incluyendo metadatos JSON
+    y contextos. Soporta respuestas AJAX y redirecciones estándar.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        JsonResponse o HttpResponseRedirect.
     """
 
     def _is_ajax(req):
@@ -174,41 +193,61 @@ def ajax_submit_citation(request):
 
 
 def fetch_doi_metadata(request):
-    """
-    Obtiene los metadatos de un DOI desde CrossRef.
+    """Obtiene los metadatos de un DOI desde CrossRef.
+
+    Args:
+        request: Objeto HttpRequest con parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos o error.
     """
     doi = request.GET.get("doi")
     if not doi:
         return JsonResponse({"error": "No DOI"}, status=400)
 
     url = f"https://api.crossref.org/works/{doi}"
-    r = requests.get(url, timeout=6)
-    if r.status_code == 200:
-        return JsonResponse(r.json()["message"])
+    try:
+        r = requests.get(url, timeout=6)
+        if r.status_code == 200:
+            return JsonResponse(r.json()["message"])
+    except Exception:
+        pass
     return JsonResponse({"error": "Not found"}, status=404)
 
 
 def get_all_metadata_from_doi(request):
-    """
-    Obtiene todos los metadatos de un DOI desde CrossRef.
+    """Obtiene todos los metadatos de un DOI desde CrossRef (formato crudo).
+
+    Args:
+        request: Objeto HttpRequest con parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos completos.
     """
     doi = request.GET.get("doi")
     if not doi:
         return JsonResponse({"error": "No DOI provided"}, status=400)
 
     url = f"https://api.crossref.org/works/{doi}"
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        data = response.json().get("message", {})
-        return JsonResponse(data, safe=False)
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            data = response.json().get("message", {})
+            return JsonResponse(data, safe=False)
+    except Exception:
+        pass
     return JsonResponse({"error": "DOI not found or invalid"}, status=404)
 
 
 @require_POST
 def register_ajax(request):
-    """
-    Gestiona el registro de usuarios a través de una solicitud AJAX.
+    """Gestiona el registro de usuarios a través de una solicitud AJAX.
+
+    Args:
+        request: Objeto HttpRequest (POST).
+
+    Returns:
+        JsonResponse: Éxito o lista de errores.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -225,33 +264,51 @@ def register_ajax(request):
 
 @login_required
 def delete_comment(request, pk):
-    """
-    Elimina un comentario si el usuario es el autor o un superusuario.
+    """Elimina un comentario si el usuario es el autor o un superusuario.
+
+    Args:
+        request: Objeto HttpRequest.
+        pk (int): ID del comentario.
+
+    Returns:
+        HttpResponse: Redirección.
     """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
         comment.delete()
-        messages.success(request, "Comentario eliminado correctamente.")
+        messages.success(request, _("Comentario eliminado correctamente."))
     else:
         return HttpResponseForbidden("No tienes permiso para eliminar este comentario.")
     return redirect("citation_detail", pk=comment.citation.pk)
 
 
 def citation_suggest(request):
-    """
-    Sugiere citas incorrectas basadas en un término de búsqueda.
+    """Sugiere citas incorrectas basadas en un término de búsqueda (autocompletado).
+
+    Args:
+        request: Objeto HttpRequest con parámetro 'term'.
+
+    Returns:
+        JsonResponse: Lista de sugerencias.
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
-        Q(doi_original__icontains=term) | Q(metadata__title__icontains=term)
-    ).values("doi_original", "metadata__title")[:5]
+        Q(doi_original__icontains=term) | Q(metadata_original__title__icontains=term)
+    ).values("doi_original", "metadata_original__title")[:5]
 
     return JsonResponse(list(qs), safe=False)
 
 
 def get_semantic_citations(request):
-    """
-    Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+    """Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+
+    Marca si alguna de las citas ya está reportada en el sistema.
+
+    Args:
+        request: Objeto HttpRequest con parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Datos de citas y estado de reporte.
     """
     doi = request.GET.get("doi")
     if not doi:

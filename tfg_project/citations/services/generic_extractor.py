@@ -16,6 +16,14 @@ GENERIC_AVAILABLE = pdfplumber is not None or fitz is not None
 
 
 def _split_paragraphs(text: str) -> List[str]:
+    """Divide texto en párrafos usando saltos de línea dobles.
+
+    Args:
+        text (str): Texto completo.
+
+    Returns:
+        List[str]: Lista de párrafos.
+    """
     parts = re.split(r"\n\s*\n", text)
     out = []
     for p in parts:
@@ -26,6 +34,14 @@ def _split_paragraphs(text: str) -> List[str]:
 
 
 def _extract_with_pdfplumber(pdf_path: str) -> str:
+    """Extrae texto usando pdfplumber.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        str: Texto completo extraído.
+    """
     chunks: List[str] = []
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
@@ -35,6 +51,14 @@ def _extract_with_pdfplumber(pdf_path: str) -> str:
 
 
 def _extract_pages_with_pdfplumber(pdf_path: str) -> List[tuple[int, str]]:
+    """Extrae texto página por página usando pdfplumber.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[tuple[int, str]]: Lista de tuplas (número_página, texto).
+    """
     pages: List[tuple[int, str]] = []
     with pdfplumber.open(pdf_path) as pdf:
         for idx, page in enumerate(pdf.pages, start=1):
@@ -44,6 +68,14 @@ def _extract_pages_with_pdfplumber(pdf_path: str) -> List[tuple[int, str]]:
 
 
 def _extract_with_pymupdf(pdf_path: str) -> str:
+    """Extrae texto usando PyMuPDF (fitz).
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        str: Texto completo extraído.
+    """
     text_parts: List[str] = []
     with fitz.open(pdf_path) as doc:
         for page in doc:
@@ -52,6 +84,14 @@ def _extract_with_pymupdf(pdf_path: str) -> str:
 
 
 def _extract_pages_with_pymupdf(pdf_path: str) -> List[tuple[int, str]]:
+    """Extrae texto página por página usando PyMuPDF.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[tuple[int, str]]: Lista de tuplas (número_página, texto).
+    """
     pages: List[tuple[int, str]] = []
     with fitz.open(pdf_path) as doc:
         for idx, page in enumerate(doc, start=1):
@@ -60,6 +100,16 @@ def _extract_pages_with_pymupdf(pdf_path: str) -> List[tuple[int, str]]:
 
 
 def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """Extrae párrafos preservando información de página usando librerías genéricas.
+
+    Intenta usar pdfplumber primero, luego PyMuPDF.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de diccionarios con claves 'page', 'index', 'text'.
+    """
     if pdfplumber is not None:
         page_texts = _extract_pages_with_pdfplumber(pdf_path)
     elif fitz is not None:
@@ -83,6 +133,14 @@ def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
 
 
 def generic_extract_paragraphs(pdf_path: str) -> List[str]:
+    """Extrae párrafos como lista de strings usando librerías genéricas.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[str]: Lista de párrafos de texto.
+    """
     paragraphs = generic_extract_paragraphs_with_positions(pdf_path)
     if paragraphs:
         return [item["text"] for item in paragraphs]

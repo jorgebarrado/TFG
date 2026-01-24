@@ -1,28 +1,31 @@
 from __future__ import annotations
-from typing import List, Dict, Any, Tuple
+from typing import Callable, Any, List, Optional, Tuple
+import os
+import time
 
-# ---- Declaraciones de disponibilidad e import seguro ----
 try:
     from .papermage_extractor import (
         pm_extract_paragraphs,
         pm_extract_paragraphs_with_positions,
-        PM_AVAILABLE,
     )
+
+    PAPERMAGE_AVAILABLE = True
 except Exception:
-    PM_AVAILABLE = False
-    pm_extract_paragraphs = None  # type: ignore
-    pm_extract_paragraphs_with_positions = None  # type: ignore
+    pm_extract_paragraphs = None
+    pm_extract_paragraphs_with_positions = None
+    PAPERMAGE_AVAILABLE = False
 
 try:
     from .papercraft_extractor import (
         pc_extract_paragraphs,
         pc_extract_paragraphs_with_positions,
-        PC_AVAILABLE,
     )
+
+    PAPERCRAFT_AVAILABLE = True
 except Exception:
-    PC_AVAILABLE = False
-    pc_extract_paragraphs = None  # type: ignore
-    pc_extract_paragraphs_with_positions = None  # type: ignore
+    pc_extract_paragraphs = None
+    pc_extract_paragraphs_with_positions = None
+    PAPERCRAFT_AVAILABLE = False
 
 from .generic_extractor import (
     generic_extract_paragraphs,
@@ -30,159 +33,139 @@ from .generic_extractor import (
     GENERIC_AVAILABLE,
 )
 
-EngineAttempt = Dict[str, Any]
-
-ENGINE_LABELS = {
-    "papermage": "PaperMage",
-    "generic": "Generico (rapido)",
-    "papercraft": "PaperCraft",
-}
-
-ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
+ALLOWED_ENGINES = ["auto", "paper-mage", "paper-craft", "generic"]
 
 
-def list_extractor_engines() -> List[Dict[str, Any]]:
+def list_extractor_engines() -> List[dict]:
+    """Lista los motores de extracción disponibles y su estado.
+
+    Returns:
+        List[dict]: Lista de diccionarios con claves 'key', 'label' y 'available'.
+    """
     return [
         {
-            "key": "papermage",
-            "label": ENGINE_LABELS["papermage"],
-            "available": PM_AVAILABLE,
+            "key": "auto",
+            "label": "Automático (secuencial)",
+            "available": True,
+        },
+        {
+            "key": "paper-mage",
+            "label": "PaperMage (AllenAI)",
+            "available": PAPERMAGE_AVAILABLE,
+        },
+        {
+            "key": "paper-craft",
+            "label": "PaperCraft (PyMuPDF/PyPDF2)",
+            "available": PAPERCRAFT_AVAILABLE,
         },
         {
             "key": "generic",
-            "label": ENGINE_LABELS["generic"],
+            "label": "Genérico (Texto plano)",
             "available": GENERIC_AVAILABLE,
-        },
-        {
-            "key": "papercraft",
-            "label": ENGINE_LABELS["papercraft"],
-            "available": PC_AVAILABLE,
         },
     ]
 
 
 def _attempt(
-    name: str, available: bool, fn, fn_with_positions, pdf_path: str
-) -> Tuple[List[str], List[dict], EngineAttempt, str | None]:
+    engine_name: str,
+    available: bool,
+    func_text: Callable[[str], List[str]] | None,
+    func_pos: Callable[[str], List[dict]] | None,
+    pdf_path: str,
+) -> Tuple[List[str] | None, List[dict] | None, dict, str | None]:
+    """Intenta ejecutar un motor de extracción específico.
+
+    Args:
+        engine_name (str): Nombre del motor.
+        available (bool): Si el motor está disponible (importado correctamente).
+        func_text (Callable): Función para extraer solo texto (lista de strings).
+        func_pos (Callable): Función para extraer texto con posiciones.
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        Tuple: (paragraphs, paragraphs_with_positions, trace_dict, error_message).
     """
-    Ejecuta un motor y devuelve:
-      (paragraphs, paragraphs_with_positions, attempt_info, error_message)
-    """
-    att: EngineAttempt = {
-        "name": name,
-        "available": bool(available and (fn or fn_with_positions)),
-        "attempted": False,
-        "ok": False,
-        "error": None,
-        "count": 0,
-    }
-    if not att["available"]:
-        # No disponible: no se intenta
-        return [], [], att, f"{name} not available"
+    trace: dict = {"engine": engine_name, "available": available, "ok": False}
+    start_t = time.time()
+    if not available or not func_text:
+        trace["error"] = "Not available"
+        return None, None, trace, "Not available"
 
     try:
-        att["attempted"] = True
-        paras: List[str] = []
-        paragraphs_with_positions: List[dict] = []
-        if fn_with_positions:
-            paragraphs_with_positions = fn_with_positions(pdf_path) or []
-            paras = [item.get("text", "") for item in paragraphs_with_positions]
-        if not paras and fn:
-            paras = fn(pdf_path) or []
-            if paras and not paragraphs_with_positions:
-                paragraphs_with_positions = [
-                    {"page": None, "index": idx, "text": text}
-                    for idx, text in enumerate(paras)
-                ]
-        att["ok"] = bool(paras)
-        att["count"] = len(paras)
-        if not paras:
-            return [], [], att, f"{name} returned no paragraphs"
-        return paras, paragraphs_with_positions, att, None
+        # Preferimos la versión con posiciones si existe
+        if func_pos:
+            paras_pos = func_pos(pdf_path)
+            # Y de ahí derivamos la lista simple de textos
+            paras_text = [p["text"] for p in paras_pos] if paras_pos else []
+            # Si ambas fallan (lista vacía) consideramos error o empty?
+            # Depende de la lógica; aquí asumimos que si no hay excepción, es OK (aunque sea 0 paras).
+            trace["ok"] = True
+            trace["count"] = len(paras_text)
+            trace["time_ms"] = int((time.time() - start_t) * 1000)
+            return paras_text, paras_pos, trace, None
+        else:
+            # Fallback solo texto
+            paras_text = func_text(pdf_path)
+            trace["ok"] = True
+            trace["count"] = len(paras_text)
+            trace["time_ms"] = int((time.time() - start_t) * 1000)
+            return paras_text, None, trace, None
     except Exception as e:
-        msg = f"{type(e).__name__}: {e}"
-        att["error"] = msg
-        return [], [], att, msg
+        trace["error"] = str(e)
+        trace["time_ms"] = int((time.time() - start_t) * 1000)
+        return None, None, trace, str(e)
 
 
 def run_engine(
     engine_requested: str, pdf_path: str
-) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
-    """
-    Política:
-      - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
-      - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
-      - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
-    Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
-    """
-    engine = (engine_requested or "auto").lower().strip()
-    attempts: List[EngineAttempt] = []
+) -> Tuple[str | None, List[str], List[dict], str | None, List[dict] | None]:
+    """Ejecuta la lógica de selección y ejecución del motor de extracción.
 
-    if engine == "papermage":
-        paras, with_pos, att, err = _attempt(
-            "papermage",
-            PM_AVAILABLE,
+    Si se solicita 'auto', prueba los motores en orden: PaperMage -> PaperCraft -> Generic.
+    Si se solicita uno específico, ejecuta solo ese.
+
+    Args:
+        engine_requested (str): El ID del motor solicitado ('auto', 'paper-mage', etc.).
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        Tuple: (engine_used, paragraphs, attempts_trace, error_msg, paragraphs_with_positions).
+    """
+    req = engine_requested.lower()
+    attempts: List[dict] = []
+
+    # 1. PaperMage
+    if req == "auto" or req == "paper-mage":
+        paras, with_pos, att, err1 = _attempt(
+            "paper-mage",
+            PAPERMAGE_AVAILABLE,
             pm_extract_paragraphs,
             pm_extract_paragraphs_with_positions,
             pdf_path,
         )
         attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "papermage", paras, attempts, None, with_pos
+        if not err1 and paras:
+            return "paper-mage", paras, attempts, None, with_pos
+        # Si era específico y falló
+        if req == "paper-mage":
+            return None, [], attempts, err1 or "Empty results", None
 
-    if engine == "papercraft":
-        paras, with_pos, att, err = _attempt(
-            "papercraft",
-            PC_AVAILABLE,
+    # 2. PaperCraft
+    if req == "auto" or req == "paper-craft":
+        paras, with_pos, att, err2 = _attempt(
+            "paper-craft",
+            PAPERCRAFT_AVAILABLE,
             pc_extract_paragraphs,
             pc_extract_paragraphs_with_positions,
             pdf_path,
         )
         attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "papercraft", paras, attempts, None, with_pos
+        if not err2 and paras:
+            return "paper-craft", paras, attempts, None, with_pos
+        if req == "paper-craft":
+            return None, [], attempts, err2 or "Empty results", None
 
-    if engine == "generic":
-        paras, with_pos, att, err = _attempt(
-            "generic",
-            GENERIC_AVAILABLE,
-            generic_extract_paragraphs,
-            generic_extract_paragraphs_with_positions,
-            pdf_path,
-        )
-        attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "generic", paras, attempts, None, with_pos
-
-    # AUTO
-    # 1) PaperMage
-    paras, with_pos, att, err = _attempt(
-        "papermage",
-        PM_AVAILABLE,
-        pm_extract_paragraphs,
-        pm_extract_paragraphs_with_positions,
-        pdf_path,
-    )
-    attempts.append(att)
-    if not err:
-        return "papermage", paras, attempts, None, with_pos
-
-    # 2) PaperCraft
-    paras, with_pos, att, err2 = _attempt(
-        "papercraft",
-        PC_AVAILABLE,
-        pc_extract_paragraphs,
-        pc_extract_paragraphs_with_positions,
-        pdf_path,
-    )
-    attempts.append(att)
-    if not err2:
-        return "papercraft", paras, attempts, None, with_pos
-
-    # 3) Generic (siempre)
+    # 3. Generic (siempre último recurso en auto)
     paras, with_pos, att, err3 = _attempt(
         "generic",
         GENERIC_AVAILABLE,
@@ -192,4 +175,4 @@ def run_engine(
     )
     attempts.append(att)
     # Generic no debería errar; si viniera vacío, es lo que hay
-    return "generic", paras, attempts, None, with_pos
+    return "generic", paras or [], attempts, None, with_pos

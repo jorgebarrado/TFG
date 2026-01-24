@@ -1,4 +1,5 @@
-# citations/urls.py
+"""Configuración de URLs para la aplicación 'citations'."""
+
 from django.urls import path
 from . import views_ai, views_api, views_reports
 from .views import (
