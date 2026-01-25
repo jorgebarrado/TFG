@@ -4,6 +4,20 @@ from ..models import Notification
 
 
 def notify(*, user, notification_type, title, message, url="", actor=None):
+    """
+    Crea una notificación genérica para un usuario.
+
+    Args:
+        user: Usuario destinatario.
+        notification_type: Tipo de notificación (NotificationType).
+        title: Título de la notificación.
+        message: Mensaje corto descriptivo.
+        url: URL de destino al hacer clic.
+        actor: Usuario que originó la acción (opcional).
+
+    Returns:
+        Notification: Objeto creado, o None si no es necesario notificar (e.g. auto-notificación).
+    """
     if user is None:
         return None
     if actor is not None and actor == user:
@@ -20,6 +34,11 @@ def notify(*, user, notification_type, title, message, url="", actor=None):
 
 
 def notify_new_comment(comment):
+    """
+    Notifica al autor de un reporte sobre un nuevo comentario.
+
+    Verifica las preferencias de notificación del destinatario.
+    """
     report = comment.citation
     recipient = report.author
     if recipient is None:
@@ -44,6 +63,11 @@ def notify_new_comment(comment):
 
 
 def notify_new_vote(vote):
+    """
+    Notifica al autor de un reporte sobre un nuevo voto.
+
+    Verifica las preferencias de notificación del destinatario.
+    """
     report = vote.citation
     recipient = report.author
     if recipient is None:
@@ -67,6 +91,11 @@ def notify_new_vote(vote):
 
 
 def notify_new_message(message):
+    """
+    Notifica a los participantes de una conversación sobre un nuevo mensaje.
+
+    Envía notificaciones a todos los participantes excepto al remitente.
+    """
     conversation = message.conversation
     recipients = conversation.participants.exclude(id=message.sender_id)
     url = reverse("conversation_detail", kwargs={"conversation_id": conversation.id})

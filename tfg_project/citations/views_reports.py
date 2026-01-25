@@ -11,7 +11,18 @@ from .models import AREA_CHOICES, CitationReport
 
 
 def create_report_wizard(request):
-    """Renderiza el flujo guiado para crear un reporte enriquecido."""
+    """
+    Renderiza el flujo guiado (wizard) para crear un reporte enriquecido.
+
+    Esta vista prepara el entorno para que el usuario pueda crear un `CitationReport`
+    con información detallada paso a paso.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página del wizard.
+    """
     return render(
         request,
         "citations/report_wizard.html",
@@ -21,7 +32,19 @@ def create_report_wizard(request):
 
 @require_POST
 def ajax_submit_report(request):
-    """Recibe el POST del wizard y crea un CitationReport."""
+    """
+    Procesa el envío del formulario del wizard y crea un `CitationReport`.
+
+    Maneja la recepción de metadatos JSON y archivos PDF opcionales.
+
+    Args:
+        request: La solicitud HTTP POST.
+
+    Returns:
+        JsonResponse: Si la solicitud es AJAX, devuelve la URL de redirección.
+        HttpResponse: Redirección directa si es una solicitud estándar.
+        HttpResponseBadRequest: Si faltan DOIs obligatorios.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
     error_type = (request.POST.get("error_type") or "other").strip()
@@ -31,6 +54,7 @@ def ajax_submit_report(request):
         return HttpResponseBadRequest("Faltan DOIs para crear el reporte.")
 
     def parse_json_field(name, default):
+        """Intenta parsear un campo JSON del POST, devolviendo un valor por defecto en caso de error."""
         raw = request.POST.get(name)
         if not raw:
             return default

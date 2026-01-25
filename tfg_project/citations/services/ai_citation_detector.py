@@ -10,6 +10,7 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """Estructura de resultados para la detección de IA."""
     page: int
     paragraph_index: int
     confidence: float
@@ -20,6 +21,13 @@ class AiDetectionResult:
 def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
     """
     Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
+
+    Args:
+        metadata_original (dict): Metadatos del artículo citado (título, autores, año).
+        paragraphs (List[Dict]): Lista de párrafos extraídos del PDF B.
+
+    Returns:
+        str: El prompt formateado para enviar al LLM.
     """
     title_field = metadata_original.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
@@ -68,7 +76,16 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 
 def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
     """
-    Llamada real a Gemini para la detección de citas.
+    Realiza la llamada al modelo LLM (Gemini) para detectar las citas.
+
+    Args:
+        prompt (str): El texto del prompt construido.
+
+    Returns:
+        Dict[str, Any]: La respuesta del modelo parseada como JSON.
+
+    Raises:
+        RuntimeError: Si la configuración de API es incorrecta o falta la librería.
     """
     missing_config_msg = (
         "La detección automática con IA no está configurada en este servidor "
@@ -100,10 +117,19 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
 
 def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str, Any]]:
     """
-    Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles con citation.citation_contexts.
+    Orquesta el proceso completo de detección de citas con IA para un reporte dado.
 
-    Por ahora asumimos que el modelo IncorrectCitation NO tiene todavía campo citing_pdf_uploaded,
-    así que si no está disponible devolvemos un error controlado.
+    1. Verifica si hay un PDF subido para el artículo citante (B).
+    2. Extrae los párrafos del PDF.
+    3. Construye el prompt con los metadatos del artículo original (A).
+    4. Llama al LLM para identificar los contextos de cita.
+    5. Formatea los resultados.
+
+    Args:
+        citation (IncorrectCitation): El objeto reporte a analizar.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de contextos detectados por la IA.
     """
     citation_pdf = getattr(citation, "citing_pdf_uploaded", None)
     if not citation_pdf:

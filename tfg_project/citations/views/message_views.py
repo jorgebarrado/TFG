@@ -12,6 +12,9 @@ User = get_user_model()
 
 
 def _other_participants(conversation, current_user):
+    """
+    Devuelve la lista de participantes de una conversación excluyendo al usuario actual.
+    """
     return [
         participant
         for participant in conversation.participants.all()
@@ -21,6 +24,17 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """
+    Muestra la bandeja de entrada de mensajes del usuario.
+
+    Lista todas las conversaciones ordenadas por la fecha del último mensaje.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página de la bandeja de entrada renderizada.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +65,18 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """
+    Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+
+    Marca automáticamente los mensajes recibidos como leídos.
+
+    Args:
+        request: La solicitud HTTP.
+        conversation_id (int): El ID de la conversación.
+
+    Returns:
+        HttpResponse: La página de la conversación renderizada.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +112,19 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """
+    Inicia una nueva conversación con un usuario o redirige a una existente.
+
+    Verifica si ya existe una conversación privada entre el usuario actual
+    y el destinatario. Si existe, redirige a ella; si no, crea una nueva.
+
+    Args:
+        request: La solicitud HTTP.
+        username (str): El nombre de usuario del destinatario.
+
+    Returns:
+        HttpResponse: Redirección al detalle de la conversación.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

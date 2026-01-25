@@ -6,6 +6,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil extendido de usuario que complementa al modelo User de Django.
+
+    Almacena información adicional académica y profesional, preferencias de
+    notificaciones y enlaces a redes sociales.
+    """
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -123,6 +129,7 @@ class UserProfile(models.Model):
     show_social_links = models.BooleanField(default=True)
 
     def __str__(self):
+        """Devuelve el nombre de usuario asociado al perfil."""
         return self.user.username
 
 
@@ -150,6 +157,10 @@ AREA_CHOICES = [
 class IncorrectCitation(models.Model):
     """
     Representa un reporte de una cita incorrecta.
+
+    Este modelo almacena la información sobre una cita bibliográfica que ha sido
+    identificada como errónea, incluyendo los DOIs de los artículos involucrados,
+    el tipo de error, el área de conocimiento y metadatos adicionales.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -173,12 +184,16 @@ class IncorrectCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación legible del reporte de cita incorrecta."""
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
 class Comment(models.Model):
     """
     Representa un comentario en un reporte de cita incorrecta.
+
+    Permite a los usuarios discutir sobre un reporte específico. Soporta
+    respuestas anidadas (hilos) a través del campo `parent`.
     """
 
     citation = models.ForeignKey(
@@ -192,12 +207,16 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """Comprueba si este comentario es una respuesta a otro comentario."""
         return self.parent is not None
 
 
 class Vote(models.Model):
     """
     Representa un voto (positivo o negativo) de un usuario en un reporte.
+
+    Se utiliza para calificar la calidad o veracidad de un reporte de
+    cita incorrecta.
     """
 
     VOTE_CHOICES = (
@@ -217,6 +236,9 @@ class Vote(models.Model):
 class SavedCitation(models.Model):
     """
     Representa una cita incorrecta guardada por un usuario.
+
+    Permite a los usuarios marcar reportes para acceder a ellos fácilmente
+    en el futuro.
     """
 
     user = models.ForeignKey(
@@ -231,10 +253,14 @@ class SavedCitation(models.Model):
         unique_together = ("user", "citation")
 
     def __str__(self):
+        """Devuelve una representación de la cita guardada."""
         return f"{self.user.username} -> {self.citation.id}"
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre dos o más usuarios.
+    """
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -242,11 +268,15 @@ class Conversation(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una lista de los participantes de la conversación."""
         users = ", ".join(self.participants.values_list("username", flat=True))
         return f"Conversación entre {users}"
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+    """
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -259,10 +289,16 @@ class Message(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
+        """Devuelve una representación breve del mensaje."""
         return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario.
+
+    Puede ser generada por nuevos comentarios, votos, mensajes o eventos del sistema.
+    """
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -295,6 +331,7 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve el título de la notificación y el usuario destinatario."""
         return f"{self.title} -> {self.user.username}"
 
 
@@ -302,7 +339,11 @@ class Notification(models.Model):
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Modelo para el flujo avanzado de reportes (wizard).
+
+    Permite crear reportes enriquecidos con metadatos completos, archivos PDF
+    y selección específica de párrafos. Actualmente no se usa en el flujo
+    principal de producción.
     """
 
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -334,5 +375,6 @@ class CitationReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación del reporte avanzado."""
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
 

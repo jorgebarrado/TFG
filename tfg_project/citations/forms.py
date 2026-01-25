@@ -73,7 +73,11 @@ User = get_user_model()
 
 class UserProfileForm(forms.ModelForm):
     """
-    Formulario para actualizar la info extendida del perfil.
+    Formulario para actualizar la información extendida del perfil de usuario.
+
+    Permite editar campos como la fecha de nacimiento, país, idioma,
+    información profesional, enlaces a redes sociales y preferencias de
+    notificación.
     """
 
     country = forms.ChoiceField(
@@ -194,7 +198,7 @@ class UserProfileForm(forms.ModelForm):
 
 class DBLPUrlForm(forms.ModelForm):
     """
-    Formulario reducido para actualizar solo la URL de DBLP.
+    Formulario simplificado para actualizar únicamente la URL del perfil de DBLP.
     """
 
     dblp_url = forms.URLField(
@@ -215,7 +219,10 @@ class DBLPUrlForm(forms.ModelForm):
 
 class RegisterForm(UserCreationForm):
     """
-    Formulario de registro de nuevos usuarios.
+    Formulario para el registro de nuevos usuarios en la plataforma.
+
+    Hereda de UserCreationForm y añade estilos personalizados de Bootstrap
+    a los campos de nombre de usuario y contraseñas.
     """
 
     class Meta:
@@ -247,7 +254,9 @@ class RegisterForm(UserCreationForm):
 
 class ProfileForm(forms.ModelForm):
     """
-    Formulario para actualizar el nombre y nombre de usuario de un usuario.
+    Formulario para actualizar la información básica de la cuenta de usuario.
+
+    Permite modificar el nombre de pila (first_name) y el nombre de usuario (username).
     """
 
     class Meta:
@@ -265,7 +274,10 @@ class ProfileForm(forms.ModelForm):
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
-    Formulario de cambio de contraseña con estilos de Bootstrap.
+    Formulario para el cambio de contraseña del usuario.
+
+    Extiende PasswordChangeForm para añadir clases CSS de Bootstrap y mejorar
+    la presentación.
     """
 
     def __init__(self, *args, **kwargs):
@@ -280,7 +292,10 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 class LoginForm(AuthenticationForm):
     """
-    Formulario de inicio de sesión con placeholders y estilos de Bootstrap.
+    Formulario de inicio de sesión.
+
+    Personaliza AuthenticationForm para incluir placeholders y estilos
+    compatibles con Bootstrap 5.
     """
 
     def __init__(self, *args, **kwargs):
@@ -305,7 +320,10 @@ class LoginForm(AuthenticationForm):
 
 class IncorrectCitationForm(forms.ModelForm):
     """
-    Formulario para reportar una cita incorrecta.
+    Formulario para la creación de un nuevo reporte de cita incorrecta.
+
+    Permite ingresar los DOIs originales e incorrectos, la razón del error,
+    el tipo de cita y el área de publicación.
     """
 
     class Meta:
@@ -324,7 +342,9 @@ class IncorrectCitationForm(forms.ModelForm):
 
 class CommentForm(forms.ModelForm):
     """
-    Formulario para crear y responder a comentarios.
+    Formulario para la creación de comentarios y respuestas en un reporte.
+
+    Incluye un campo oculto `parent_id` para gestionar las respuestas anidadas.
     """
 
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
@@ -348,6 +368,9 @@ class CommentForm(forms.ModelForm):
 
 
 class MessageForm(forms.Form):
+    """
+    Formulario simple para enviar un mensaje privado dentro de una conversación.
+    """
     content = forms.CharField(
         label="",
         widget=forms.Textarea(
