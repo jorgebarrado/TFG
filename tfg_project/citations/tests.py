@@ -14,7 +14,7 @@ from django.conf import settings
 
 @override_settings(
     SITE_ID=1,
-    LANGUAGE_CODE="en-us",
+    LANGUAGE_CODE="es",
     ROOT_URLCONF="tfg_project.urls",
 )
 class SocialAppTestCase(TestCase):
@@ -130,6 +130,7 @@ class ReportTests(TestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(IncorrectCitation.objects.count(), 1)
@@ -267,7 +268,9 @@ class ApiViewTests(LoggedInTestCase):
             reverse("toggle_saved"), {"citation_id": self.report1.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Saved")
+        # La vista renderiza "Guardado" (o translation string), no "Saved" literal en inglés
+        # si el entorno está en ES o usa gettext.
+        self.assertContains(response, "Guardado")
         self.assertTrue(
             SavedCitation.objects.filter(
                 user=self.user2, citation=self.report1
@@ -279,7 +282,7 @@ class ApiViewTests(LoggedInTestCase):
             reverse("toggle_saved"), {"citation_id": self.report1.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Save")
+        self.assertContains(response, "Guardar")
         self.assertFalse(
             SavedCitation.objects.filter(
                 user=self.user2, citation=self.report1
@@ -297,6 +300,7 @@ class ApiViewTests(LoggedInTestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
@@ -304,7 +308,9 @@ class ApiViewTests(LoggedInTestCase):
     def test_ajax_submit_citation_invalid(self):
         self.client.login(username="user1", password="password")
         response = self.client.post(
-            reverse("ajax_submit"), {"doi_original": "10.1000/new_orig"}
+            reverse("ajax_submit"),
+            {"doi_original": "10.1000/new_orig"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("errors", response.json())

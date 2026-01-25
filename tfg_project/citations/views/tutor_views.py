@@ -18,6 +18,7 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """Construye un diccionario de metadatos estandarizado para un artículo original (DBLP)."""
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +32,7 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """Construye un diccionario de metadatos estandarizado para un artículo citante (Semantic Scholar)."""
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +45,18 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """
+    Vista principal del 'Tutor' de revisión de citas.
+
+    Muestra una lista paginada de los artículos del usuario (desde DBLP) para
+    seleccionar cuál revisar.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página de selección de artículos.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +92,19 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """
+    Muestra los artículos que citan a uno de los papers del usuario.
+
+    Obtiene las citas desde Semantic Scholar y verifica si ya están reportadas.
+    Permite paginar a través de los citantes.
+
+    Args:
+        request: La solicitud HTTP.
+        paper_id (int): El índice del paper en la lista de DBLP.
+
+    Returns:
+        HttpResponse: La página de revisión de citantes.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +190,18 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """
+    Crea un reporte de cita incorrecta desde la herramienta de revisión (Tutor).
+
+    Recibe los datos del formulario en el listado de citantes y genera un
+    nuevo objeto IncorrectCitation.
+
+    Args:
+        request: La solicitud HTTP POST.
+
+    Returns:
+        HttpResponse: Redirección al detalle del nuevo reporte.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 

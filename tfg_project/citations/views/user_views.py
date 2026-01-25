@@ -26,6 +26,12 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """
+    Obtiene la inicial del avatar del usuario.
+
+    Devuelve la primera letra del nombre de usuario o del nombre de pila,
+    o '?' si no hay datos.
+    """
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +40,19 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """
+    Muestra el perfil público de un usuario.
+
+    Incluye la información básica y extendida del perfil, así como sus
+    últimos reportes.
+
+    Args:
+        request: La solicitud HTTP.
+        username (str): El nombre de usuario del perfil a visualizar.
+
+    Returns:
+        HttpResponse: La página de perfil público renderizada.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +75,18 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """
+    Vista para la gestión de la configuración de la cuenta y el perfil.
+
+    Permite actualizar la información básica, el perfil extendido y cambiar
+    la contraseña. Maneja múltiples formularios en la misma vista.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página de configuración de cuenta.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -124,6 +155,12 @@ def account_settings(request):
 def my_reports(request):
     """
     Muestra los reportes de citas incorrectas creados por el usuario actual.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página con la lista de reportes propios.
     """
     reports = (
         IncorrectCitation.objects.filter(author=request.user)
@@ -137,6 +174,12 @@ def my_reports(request):
 def my_comments(request):
     """
     Muestra los comentarios realizados por el usuario actual.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página con la lista de comentarios propios.
     """
     comments = (
         Comment.objects.filter(author=request.user)
@@ -150,6 +193,12 @@ def my_comments(request):
 def my_saved(request):
     """
     Muestra las citas guardadas por el usuario actual.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página con la lista de citas guardadas.
     """
     saved = (
         SavedCitation.objects.filter(user=request.user)
@@ -163,6 +212,15 @@ def my_saved(request):
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Permite filtrar y buscar entre los artículos recuperados del perfil
+    de DBLP asociado al usuario.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página con la lista de artículos de DBLP.
     """
     user = request.user
     profile = UserProfile.objects.get(user=user)
@@ -200,6 +258,18 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """
+    Muestra el resumen privado del perfil del usuario actual (Dashboard).
+
+    Incluye estadísticas, historial de actividad reciente y listas resumidas
+    de reportes, comentarios, votos y guardados.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página del dashboard del usuario.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

@@ -14,6 +14,7 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """Estructura simplificada para un artículo que cita a otro."""
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -23,6 +24,7 @@ class CitingPaper(TypedDict):
 
 
 def _build_headers() -> dict:
+    """Construye los encabezados HTTP para la API, incluyendo la API Key si existe."""
     headers: dict = {"Accept": "application/json"}
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
@@ -32,6 +34,18 @@ def _build_headers() -> dict:
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
     """
     Devuelve una lista de artículos que citan al paper identificado por este DOI.
+
+    Consulta el endpoint /paper/DOI:{doi} para obtener las citas entrantes.
+
+    Args:
+        doi (str): DOI del artículo citado.
+        limit (int): Número máximo de resultados.
+
+    Returns:
+        List[CitingPaper]: Lista de artículos citantes.
+
+    Raises:
+        SemanticScholarError: Si hay errores de conexión o la API responde con error.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -94,7 +108,20 @@ def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
     """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    Devuelve una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Primero resuelve el `paperId` del DOI y luego consulta sus citaciones de forma paginada.
+
+    Args:
+        doi (str): DOI del artículo.
+        limit (int): Resultados por página.
+        offset (int): Desplazamiento para paginación.
+
+    Returns:
+        tuple[List[CitingPaper], int]: Lista de citantes y total de citas.
+
+    Raises:
+        SemanticScholarError: Si falla la resolución o la obtención de citas.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacio.")

@@ -6,6 +6,7 @@ from citations.models import IncorrectCitation
 
 
 def _extract_basic(meta: dict) -> tuple[str, str, Any]:
+    """Extrae título, autores y año de los metadatos de un artículo."""
     title_field = meta.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
 
@@ -26,6 +27,7 @@ def _extract_basic(meta: dict) -> tuple[str, str, Any]:
 
 
 def _build_report_prompt(citation: IncorrectCitation) -> str:
+    """Construye el prompt para evaluar la corrección de un reporte de cita."""
     meta_a = citation.metadata_original or {}
     meta_b = citation.metadata_incorrect or {}
     contexts: List[Dict[str, Any]] = citation.citation_contexts or []
@@ -80,7 +82,18 @@ def _build_report_prompt(citation: IncorrectCitation) -> str:
 
 def analyze_report_with_ai(citation: IncorrectCitation) -> Dict[str, Any]:
     """
-    Llama a OpenAI para evaluar el reporte y guarda el resultado en ai_assessment.
+    Evalúa la validez de un reporte de cita incorrecta utilizando OpenAI (GPT-4o-mini).
+
+    El resultado de la evaluación se guarda en el campo `ai_assessment` del reporte.
+
+    Args:
+        citation (IncorrectCitation): El reporte a evaluar.
+
+    Returns:
+        Dict[str, Any]: La evaluación estructurada (evaluación, confianza, razonamiento, etc.).
+
+    Raises:
+        RuntimeError: Si la configuración de OpenAI es incorrecta.
     """
     missing_config_msg = (
         "La evaluación automática con IA no está configurada en este servidor "

@@ -25,6 +25,16 @@ from ..models import IncorrectCitation
 def citation_list(request):
     """
     Muestra una lista paginada de citas incorrectas, con opciones de filtrado.
+
+    Permite filtrar por término de búsqueda (DOI, título, autor), área de
+    publicación, tipo de cita y año.
+
+    Args:
+        request: La solicitud HTTP GET con posibles parámetros de filtro
+                 (q, area, ctype, year, page).
+
+    Returns:
+        HttpResponse: La página renderizada con la lista de citas.
     """
     qs = (
         IncorrectCitation.objects.select_related("author")
@@ -76,7 +86,16 @@ def citation_list(request):
 
 def home(request):
     """
-    Renderiza la pogina de inicio.
+    Renderiza la página de inicio.
+
+    Muestra formularios de acceso y registro en modales si se solicitan, y
+    permite actualizar la URL de DBLP para usuarios autenticados.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página de inicio renderizada.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
     dblp_form = None
@@ -106,6 +125,19 @@ def home(request):
 
 
 def citation_detail(request, pk):
+    """
+    Muestra los detalles de un reporte de cita incorrecta.
+
+    Incluye la información del reporte, comentarios, votos y reportes similares.
+    Maneja también la publicación de nuevos comentarios via POST, soportando HTMX.
+
+    Args:
+        request: La solicitud HTTP.
+        pk (int): La clave primaria del reporte (IncorrectCitation).
+
+    Returns:
+        HttpResponse: La página de detalle renderizada o respuestas parciales HTMX.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
@@ -229,6 +261,16 @@ def citation_detail(request, pk):
     return render(request, "citations/citation_detail.html", context)
 
 def citation_preview(request, pk):
+    """
+    Renderiza una vista previa de una cita para modales o tooltips.
+
+    Args:
+        request: La solicitud HTTP.
+        pk (int): La clave primaria del reporte.
+
+    Returns:
+        HttpResponse: El HTML parcial de la vista previa.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects
             .select_related("author")
@@ -284,7 +326,16 @@ def citation_preview(request, pk):
 
 def semantic_citations_view(request):
     """
-    Muestra las citas de un art??culo obtenidas de Semantic Scholar.
+    Muestra las citas de un artículo obtenidas de Semantic Scholar.
+
+    Busca quién cita a un artículo (dado por su DOI) y verifica si esas citas
+    ya están registradas como incorrectas en el sistema.
+
+    Args:
+        request: La solicitud HTTP GET con el parámetro 'doi'.
+
+    Returns:
+        HttpResponse: La página con la lista de citas semánticas.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -315,6 +366,18 @@ def semantic_citations_view(request):
 
 
 def citation_reader(request, report_id: int):
+    """
+    Renderiza la interfaz de lectura (Reader) para un reporte específico.
+
+    Carga el entorno para visualizar el PDF y sus anotaciones asociadas.
+
+    Args:
+        request: La solicitud HTTP.
+        report_id (int): El ID del reporte.
+
+    Returns:
+        HttpResponse: La página del lector.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
@@ -326,6 +389,15 @@ def citation_reader(request, report_id: int):
 
 
 def citation_reader_preview(request):
+    """
+    Renderiza una vista previa del lector para un PDF arbitrario.
+
+    Args:
+        request: La solicitud HTTP, opcionalmente con 'pdf_url'.
+
+    Returns:
+        HttpResponse: La página de previsualización del lector.
+    """
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",

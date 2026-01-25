@@ -40,6 +40,18 @@ CIT_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 
 
 def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
+    """
+    Crea un fragmento de texto alrededor de una posición dada.
+
+    Args:
+        text (str): El texto completo.
+        start (int): Índice de inicio del match.
+        end (int): Índice de fin del match.
+        padding (int, optional): Caracteres de relleno antes y después.
+
+    Returns:
+        str: El fragmento de texto con el contexto.
+    """
     left = max(start - padding, 0)
     right = min(end + padding, len(text))
     prefix = "..." if left > 0 else ""
@@ -48,6 +60,15 @@ def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
 
 
 def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
+    """
+    Busca patrones de citas (numéricas, autor-año, DOI) dentro de un párrafo.
+
+    Args:
+        paragraph (str): El texto del párrafo a analizar.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de coincidencias encontradas con su tipo y posición.
+    """
     hits: List[Dict[str, Any]] = []
     for m in CIT_NUMERIC.finditer(paragraph):
         hits.append(
@@ -86,6 +107,15 @@ def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
 
 
 def _extract_text_from_pdf_generic(path: str) -> str:
+    """
+    Extrae texto de un PDF utilizando PyPDF2 (fallback genérico).
+
+    Args:
+        path (str): Ruta al archivo PDF.
+
+    Returns:
+        str: El texto extraído de todo el documento.
+    """
     if PyPDF2 is None:
         return ""
     text_parts: list[str] = []
@@ -106,6 +136,16 @@ def _build_results(
     paragraphs: List[str],
     paragraphs_with_positions: List[dict] | None = None,
 ) -> Tuple[List[Dict[str, Any]], int]:
+    """
+    Procesa los párrafos extraídos para encontrar citas y estructurar los resultados.
+
+    Args:
+        paragraphs (List[str]): Lista de textos de los párrafos.
+        paragraphs_with_positions (List[dict] | None): Información posicional opcional.
+
+    Returns:
+        Tuple[List[Dict[str, Any]], int]: Lista plana de resultados y contador total de hits.
+    """
     flat: List[Dict[str, Any]] = []
     total = 0
     if paragraphs_with_positions:
@@ -145,6 +185,10 @@ def _build_results(
 
 
 def _split_paragraphs(text: str) -> list[str]:
+    """
+    Divide un texto crudo en párrafos basándose en dobles saltos de línea.
+    Intenta reconstruir líneas cortadas.
+    """
     # separa por doble salto o líneas largas
     raw = re.split(r"\n\s*\n", text)
     paras: list[str] = []
@@ -160,6 +204,17 @@ def _split_paragraphs(text: str) -> list[str]:
 
 
 def _find_citations_in_paragraph(p: str) -> list[dict]:
+    """
+    Busca patrones de citación básicos en un párrafo.
+
+    Soporta formato numérico [n] y Autor (Año).
+
+    Args:
+        p (str): Texto del párrafo.
+
+    Returns:
+        list[dict]: Lista de coincidencias encontradas.
+    """
     out: list[dict] = []
     # [n]
     for m in NUMERIC_CITE.finditer(p):
@@ -195,6 +250,9 @@ def _find_citations_in_paragraph(p: str) -> list[dict]:
 
 
 def _generic_extract_contexts(path: str) -> list[dict]:
+    """
+    Extrae contextos de cita usando el método genérico (PyPDF2).
+    """
     text = _extract_text_from_pdf_generic(path)
     if not text:
         return []
@@ -207,6 +265,9 @@ def _generic_extract_contexts(path: str) -> list[dict]:
 
 
 def _pm_loose_extract(path: str) -> list[dict]:
+    """
+    Intenta extraer contextos usando PaperMage si está disponible.
+    """
     if pm_extract_paragraphs is None:
         return []
     try:
@@ -222,6 +283,19 @@ def _pm_loose_extract(path: str) -> list[dict]:
 def process_manuscript(
     pdf_path: str, *, engine: str = "auto", debug: bool = False
 ) -> Dict[str, Any]:
+    """
+    Procesa un manuscrito PDF para extraer referencias bibliográficas y sus contextos.
+
+    Orquesta la ejecución de los motores de extracción y post-procesa los resultados.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+        engine (str, optional): Motor a utilizar ('auto', 'papermage', 'papercraft', 'generic').
+        debug (bool, optional): Si incluir trazas de depuración en la respuesta.
+
+    Returns:
+        Dict[str, Any]: Diccionario con resultados, resumen y metadatos de la ejecución.
+    """
     engine_used, paragraphs, attempts, err, paragraphs_with_positions = run_engine(
         engine, pdf_path
     )
