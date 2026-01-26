@@ -14,6 +14,8 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """Definición de tipo para un artículo citante."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -23,6 +25,7 @@ class CitingPaper(TypedDict):
 
 
 def _build_headers() -> dict:
+    """Construye los encabezados HTTP para las peticiones a Semantic Scholar, incluyendo la API key."""
     headers: dict = {"Accept": "application/json"}
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
@@ -32,6 +35,19 @@ def _build_headers() -> dict:
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
     """
     Devuelve una lista de artículos que citan al paper identificado por este DOI.
+
+    Utiliza el endpoint de detalles del paper para obtener las citas directas.
+
+    Args:
+        doi: El DOI del artículo original.
+        limit: Número máximo de citas a recuperar.
+
+    Returns:
+        List[CitingPaper]: Lista de diccionarios con la información de los artículos citantes.
+
+    Raises:
+        SemanticScholarError: Si ocurre un error en la comunicación con la API.
+        ValueError: Si el DOI está vacío.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -94,10 +110,27 @@ def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
     """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    Devuelve una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Primero resuelve el `paperId` interno de Semantic Scholar a partir del DOI,
+    y luego consulta el endpoint de citas de ese paper.
+
+    Args:
+        doi: El DOI del artículo original.
+        limit: Número de resultados por página.
+        offset: Desplazamiento para la paginación.
+
+    Returns:
+        tuple:
+            - Lista de diccionarios con los artículos citantes.
+            - Número total estimado de citas.
+
+    Raises:
+        SemanticScholarError: Si hay errores de conexión o el paper no se encuentra.
+        ValueError: Si el DOI está vacío.
     """
     if not doi:
-        raise ValueError("El DOI no puede estar vacio.")
+        raise ValueError("El DOI no puede estar vacío.")
 
     paper_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/DOI:{doi}"
     try:
@@ -109,11 +142,11 @@ def get_citing_papers_for_doi_paginated(
         )
     except requests.RequestException as exc:
         raise SemanticScholarError(
-            f"Error de conexion con Semantic Scholar: {exc}"
+            f"Error de conexión con Semantic Scholar: {exc}"
         ) from exc
 
     if paper_response.status_code == 404:
-        raise SemanticScholarError(f"No se ha encontrado ningun paper con DOI '{doi}'.")
+        raise SemanticScholarError(f"No se ha encontrado ningún paper con DOI '{doi}'.")
     if paper_response.status_code != 200:
         raise SemanticScholarError(
             "Error en la API de Semantic Scholar al resolver el paper."
@@ -146,7 +179,7 @@ def get_citing_papers_for_doi_paginated(
         )
     except requests.RequestException as exc:
         raise SemanticScholarError(
-            f"Error de conexion con Semantic Scholar: {exc}"
+            f"Error de conexión con Semantic Scholar: {exc}"
         ) from exc
 
     if response.status_code != 200:
