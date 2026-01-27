@@ -10,6 +10,8 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """Resultado de detección de cita por IA."""
+
     page: int
     paragraph_index: int
     confidence: float
@@ -69,6 +71,8 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
     """
     Llamada real a Gemini para la detección de citas.
+
+    Utiliza el modelo gemini-1.5-flash y espera una respuesta JSON.
     """
     missing_config_msg = (
         "La detección automática con IA no está configurada en este servidor "

@@ -4,6 +4,7 @@ from ..models import Notification
 
 
 def notify(*, user, notification_type, title, message, url="", actor=None):
+    """Crea una notificación genérica para un usuario, evitando auto-notificaciones."""
     if user is None:
         return None
     if actor is not None and actor == user:
@@ -20,6 +21,7 @@ def notify(*, user, notification_type, title, message, url="", actor=None):
 
 
 def notify_new_comment(comment):
+    """Notifica al autor del reporte cuando recibe un nuevo comentario, si tiene la preferencia activa."""
     report = comment.citation
     recipient = report.author
     if recipient is None:
@@ -44,6 +46,7 @@ def notify_new_comment(comment):
 
 
 def notify_new_vote(vote):
+    """Notifica al autor del reporte cuando recibe un nuevo voto, si tiene la preferencia activa."""
     report = vote.citation
     recipient = report.author
     if recipient is None:
@@ -67,6 +70,7 @@ def notify_new_vote(vote):
 
 
 def notify_new_message(message):
+    """Notifica a los otros participantes de una conversación cuando hay un nuevo mensaje."""
     conversation = message.conversation
     recipients = conversation.participants.exclude(id=message.sender_id)
     url = reverse("conversation_detail", kwargs={"conversation_id": conversation.id})

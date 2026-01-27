@@ -106,6 +106,11 @@ def home(request):
 
 
 def citation_detail(request, pk):
+    """
+    Muestra el detalle de un reporte de cita incorrecta.
+    Incluye comentarios, reportes relacionados y populares.
+    Gestiona la creación de nuevos comentarios.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
@@ -229,6 +234,9 @@ def citation_detail(request, pk):
     return render(request, "citations/citation_detail.html", context)
 
 def citation_preview(request, pk):
+    """
+    Renderiza una vista previa del reporte para modales o tooltips via AJAX.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects
             .select_related("author")
@@ -315,6 +323,10 @@ def semantic_citations_view(request):
 
 
 def citation_reader(request, report_id: int):
+    """
+    Vista principal del Lector (Reader).
+    Carga la aplicación React para visualizar el PDF y la cita resaltada.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
@@ -326,6 +338,9 @@ def citation_reader(request, report_id: int):
 
 
 def citation_reader_preview(request):
+    """
+    Vista de previsualización del Lector para un PDF arbitrario (sin reporte asociado).
+    """
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",

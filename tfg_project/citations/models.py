@@ -6,6 +6,29 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Modelo que extiende el usuario de Django para almacenar información adicional del perfil.
+
+    Atributos:
+        user (User): Relación uno a uno con el modelo User de Django.
+        dblp_url (str): URL del perfil de DBLP.
+        date_of_birth (date): Fecha de nacimiento.
+        country (str): País de residencia.
+        preferred_language (str): Idioma preferido (código ISO).
+        research_area (str): Área de investigación.
+        profession (str): Profesión o rol actual.
+        institution (str): Institución u organización.
+        contact_email (str): Correo de contacto público.
+        social_link_1..4 (str): Enlaces a redes sociales.
+        notify_* (bool): Preferencias de notificación.
+        avatar (ImageField): Imagen de perfil.
+        bio (str): Biografía corta.
+        twitter_url, github_url, etc.: Enlaces específicos.
+        is_public (bool): Si el perfil es visible públicamente.
+        show_activity (bool): Si mostrar la actividad reciente.
+        show_social_links (bool): Si mostrar los enlaces sociales.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -150,6 +173,21 @@ AREA_CHOICES = [
 class IncorrectCitation(models.Model):
     """
     Representa un reporte de una cita incorrecta.
+
+    Almacena la relación entre un artículo original y un artículo que lo cita incorrectamente,
+    junto con los metadatos y la razón del error.
+
+    Atributos:
+        author (User): Usuario que creó el reporte.
+        doi_original (str): DOI del artículo original (citado).
+        doi_incorrect (str): DOI del artículo que contiene la cita incorrecta (citador).
+        incorrect_reason (str): Explicación textual del error.
+        metadata_original (dict): Metadatos cacheados del artículo original.
+        metadata_incorrect (dict): Metadatos cacheados del artículo citador.
+        citation_contexts (list): Lista de contextos donde aparece la cita.
+        citation_type (str): Tipo de error de citación.
+        publication_area (str): Área de conocimiento de la publicación.
+        created_at (datetime): Fecha de creación del reporte.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -179,6 +217,13 @@ class IncorrectCitation(models.Model):
 class Comment(models.Model):
     """
     Representa un comentario en un reporte de cita incorrecta.
+
+    Atributos:
+        citation (IncorrectCitation): El reporte sobre el que se comenta.
+        author (User): El autor del comentario.
+        content (str): El contenido textual del comentario.
+        created_at (datetime): Fecha de creación.
+        parent (Comment): Referencia al comentario padre si es una respuesta.
     """
 
     citation = models.ForeignKey(
@@ -192,12 +237,18 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """Devuelve True si este comentario es una respuesta a otro."""
         return self.parent is not None
 
 
 class Vote(models.Model):
     """
     Representa un voto (positivo o negativo) de un usuario en un reporte.
+
+    Atributos:
+        user (User): Usuario que emite el voto.
+        citation (IncorrectCitation): Reporte votado.
+        value (int): Valor del voto (1 para positivo, -1 para negativo).
     """
 
     VOTE_CHOICES = (
@@ -216,7 +267,12 @@ class Vote(models.Model):
 
 class SavedCitation(models.Model):
     """
-    Representa una cita incorrecta guardada por un usuario.
+    Representa una cita incorrecta guardada por un usuario para referencia futura.
+
+    Atributos:
+        user (User): Usuario que guarda la cita.
+        citation (IncorrectCitation): La cita guardada.
+        created_at (datetime): Fecha en que se guardó.
     """
 
     user = models.ForeignKey(
@@ -235,6 +291,14 @@ class SavedCitation(models.Model):
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre usuarios.
+
+    Atributos:
+        participants (ManyToManyField): Usuarios participantes en la conversación.
+        created_at (datetime): Fecha de inicio de la conversación.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -247,6 +311,17 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+
+    Atributos:
+        conversation (Conversation): La conversación a la que pertenece el mensaje.
+        sender (User): El usuario que envía el mensaje.
+        content (str): Contenido del mensaje.
+        created_at (datetime): Fecha de envío.
+        is_read (bool): Indica si el mensaje ha sido leído.
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -263,7 +338,23 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario.
+
+    Atributos:
+        user (User): Destinatario de la notificación.
+        actor (User): Usuario que generó la notificación (opcional).
+        notification_type (str): Tipo de notificación (comentario, voto, mensaje, sistema).
+        title (str): Título de la notificación.
+        message (str): Cuerpo del mensaje de la notificación.
+        url (str): Enlace relacionado.
+        is_read (bool): Estado de lectura.
+        created_at (datetime): Fecha de creación.
+    """
+
     class NotificationType(models.TextChoices):
+        """Tipos de notificaciones disponibles."""
+
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
         NEW_MESSAGE = "NEW_MESSAGE", _("Nuevo mensaje")
