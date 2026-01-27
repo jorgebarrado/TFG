@@ -18,11 +18,17 @@ SNIPPET_PADDING = 80
 
 @dataclass(frozen=True)
 class _Paragraph:
+    """Representación interna de un párrafo."""
+
     text: str
     page: int
 
 
 class ContextHit(TypedDict):
+    """
+    Estructura de un hit de contexto (cita encontrada).
+    """
+
     paragraph: str
     snippet: str
     page: int

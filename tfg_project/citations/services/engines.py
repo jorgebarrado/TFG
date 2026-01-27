@@ -42,6 +42,7 @@ ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
+    """Devuelve la lista de motores de extracción disponibles y su estado."""
     return [
         {
             "key": "papermage",

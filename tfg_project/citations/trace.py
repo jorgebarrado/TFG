@@ -11,6 +11,13 @@ class Trace:
     """
 
     def __init__(self, citing_doi: str = "", target: dict | None = None):
+        """
+        Inicializa una nueva traza de ejecución.
+
+        Args:
+            citing_doi: DOI del artículo citador.
+            target: Diccionario con info del artículo destino (citado).
+        """
         self.cid = uuid.uuid4().hex
         self.steps: list[dict] = []
         self.started = time.perf_counter()
@@ -29,6 +36,14 @@ class Trace:
         self.error = None
 
     def add(self, step: str, status: str, detail: str = ""):
+        """
+        Agrega un paso a la traza.
+
+        Args:
+            step: Nombre del paso.
+            status: Estado del paso (e.g., 'ok', 'error').
+            detail: Detalles adicionales.
+        """
         self.steps.append(
             {
                 "step": step,
@@ -39,6 +54,12 @@ class Trace:
         )
 
     def as_log_line(self, level: str = "INFO") -> str:
+        """
+        Genera una cadena JSON lista para ser escrita en el log.
+
+        Args:
+            level: Nivel de log.
+        """
         payload = {
             "ts": self.ts,
             "level": level,
@@ -58,5 +79,6 @@ class Trace:
         return json.dumps(payload, ensure_ascii=False)
 
     def as_public_trace(self) -> list[dict]:
+        """Devuelve la lista de pasos para ser mostrada en la respuesta API (debug)."""
         # Para devolver al cliente si debug=1
         return self.steps.copy()

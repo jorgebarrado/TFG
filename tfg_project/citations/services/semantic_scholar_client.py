@@ -14,6 +14,8 @@ class SemanticScholarError(RuntimeError):
 
 
 class CitingPaper(TypedDict):
+    """Representa un artículo que cita a otro."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -23,6 +25,7 @@ class CitingPaper(TypedDict):
 
 
 def _build_headers() -> dict:
+    """Construye las cabeceras para la petición a Semantic Scholar."""
     headers: dict = {"Accept": "application/json"}
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
@@ -32,6 +35,8 @@ def _build_headers() -> dict:
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
     """
     Devuelve una lista de artículos que citan al paper identificado por este DOI.
+
+    Consulta la API Graph de Semantic Scholar.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -94,7 +99,9 @@ def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
     """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    Devuelve una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Utiliza paginación con 'offset' y 'limit'.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacio.")

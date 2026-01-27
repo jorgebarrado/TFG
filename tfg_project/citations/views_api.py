@@ -38,7 +38,7 @@ try:
 except Exception:
 
     def extract_contexts_from_pdf(*args, **kwargs):
-        # Fallback vacío para no romper el arranque; la vista seguirá viva.
+        """Fallback vacío para no romper el arranque si PaperMage no está disponible."""
         return []
 
 
@@ -273,11 +273,22 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """Devuelve la lista de motores de extracción disponibles."""
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """
+    Devuelve los datos necesarios para el lector (Reader) de un reporte específico.
+
+    Incluye:
+    - URL del PDF.
+    - Fragmentos de texto (snippets) relevantes.
+    - Referencias extraídas.
+    - Menciones en el texto.
+    - Estadísticas del proceso.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)
@@ -367,6 +378,12 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
 def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
     """
     API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+
+    Args:
+        request: HttpRequest con el archivo 'pdf_file' en FILES.
+
+    Returns:
+        JsonResponse: Objeto con la cuenta de contextos y la lista de ellos.
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
@@ -413,6 +430,13 @@ def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     """
     API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
     y PaperMage para localizar contextos de cita en los PDFs open access.
+
+    Parámetros GET:
+        doi (str): DOI del artículo original.
+        max_citing (int): Número máximo de artículos citantes a analizar.
+
+    Returns:
+        JsonResponse: Resultado del análisis semántico.
     """
     doi = request.GET.get("doi")
     if not doi:

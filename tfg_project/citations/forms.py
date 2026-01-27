@@ -348,6 +348,10 @@ class CommentForm(forms.ModelForm):
 
 
 class MessageForm(forms.Form):
+    """
+    Formulario para enviar un nuevo mensaje en una conversación.
+    """
+
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

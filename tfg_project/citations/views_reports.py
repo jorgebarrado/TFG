@@ -31,6 +31,7 @@ def ajax_submit_report(request):
         return HttpResponseBadRequest("Faltan DOIs para crear el reporte.")
 
     def parse_json_field(name, default):
+        """Parsea un campo JSON del POST o devuelve un valor por defecto."""
         raw = request.POST.get(name)
         if not raw:
             return default
