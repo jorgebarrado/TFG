@@ -18,8 +18,17 @@ from ..services.semantic_fetch import get_citations_with_fallback
 
 @require_POST
 def vote_view(request):
-    """
-    Gestiona los votos (positivos y negativos) en los reportes de citas.
+    """Gestiona los votos (positivos y negativos) en los reportes de citas.
+
+    Permite a los usuarios autenticados votar en un reporte. Si ya existe un voto,
+    lo actualiza o lo elimina si el valor es el mismo.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe ser POST.
+
+    Returns:
+        JsonResponse: Error si la autenticación falla o los datos son inválidos.
+        HttpResponse: Renderizado parcial de los botones de voto en caso de éxito.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -71,8 +80,13 @@ def vote_view(request):
 @require_POST
 @login_required
 def toggle_saved(request):
-    """
-    Guarda o elimina una cita de la lista de guardados de un usuario.
+    """Guarda o elimina una cita de la lista de guardados de un usuario.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe ser POST y estar autenticado.
+
+    Returns:
+        HttpResponse: Renderizado parcial del botón de guardado.
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -94,9 +108,17 @@ def toggle_saved(request):
 
 
 def ajax_submit_citation(request):
-    """
-    Guarda un reporte de cita incorrecta enviado desde el formulario principal.
-    Acepta solicitudes AJAX y tradicionales.
+    """Guarda un reporte de cita incorrecta enviado desde el formulario principal.
+
+    Acepta solicitudes AJAX y tradicionales. Procesa los datos del formulario,
+    incluyendo metadatos JSON adicionales.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        JsonResponse: Si es AJAX, devuelve éxito o errores.
+        HttpResponseRedirect: Si es petición normal, redirige a home o detalle.
     """
 
     def _is_ajax(req):
@@ -174,8 +196,13 @@ def ajax_submit_citation(request):
 
 
 def fetch_doi_metadata(request):
-    """
-    Obtiene los metadatos de un DOI desde CrossRef.
+    """Obtiene los metadatos de un DOI desde CrossRef.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe contener el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Los metadatos del artículo o error si no se encuentra.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -189,8 +216,13 @@ def fetch_doi_metadata(request):
 
 
 def get_all_metadata_from_doi(request):
-    """
-    Obtiene todos los metadatos de un DOI desde CrossRef.
+    """Obtiene todos los metadatos de un DOI desde CrossRef.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe contener el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Todos los metadatos obtenidos o error.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -207,8 +239,15 @@ def get_all_metadata_from_doi(request):
 
 @require_POST
 def register_ajax(request):
-    """
-    Gestiona el registro de usuarios a través de una solicitud AJAX.
+    """Gestiona el registro de usuarios a través de una solicitud AJAX.
+
+    Crea un nuevo usuario y lo autentica inmediatamente.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe ser POST.
+
+    Returns:
+        JsonResponse: Éxito (True) o lista de errores de validación.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -225,8 +264,15 @@ def register_ajax(request):
 
 @login_required
 def delete_comment(request, pk):
-    """
-    Elimina un comentario si el usuario es el autor o un superusuario.
+    """Elimina un comentario si el usuario es el autor o un superusuario.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+        pk (int): La clave primaria del comentario a eliminar.
+
+    Returns:
+        HttpResponseRedirect: Redirección al detalle de la cita.
+        HttpResponseForbidden: Si el usuario no tiene permisos.
     """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
@@ -238,8 +284,15 @@ def delete_comment(request, pk):
 
 
 def citation_suggest(request):
-    """
-    Sugiere citas incorrectas basadas en un término de búsqueda.
+    """Sugiere citas incorrectas basadas en un término de búsqueda.
+
+    Busca en `IncorrectCitation` por DOI original o título.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe contener el parámetro 'term'.
+
+    Returns:
+        JsonResponse: Lista de sugerencias encontradas.
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
@@ -250,8 +303,15 @@ def citation_suggest(request):
 
 
 def get_semantic_citations(request):
-    """
-    Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+    """Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+
+    Además, verifica si alguna de las citas ya está registrada como incorrecta en el sistema.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe contener el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Objeto con el DOI, conteo de citas, lista de citas y fuente.
     """
     doi = request.GET.get("doi")
     if not doi:

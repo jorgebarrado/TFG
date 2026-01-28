@@ -18,6 +18,14 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """Construye el diccionario de metadatos para el artículo original (A) desde datos de DBLP.
+
+    Args:
+        paper (dict): Datos del paper desde DBLP.
+
+    Returns:
+        dict: Diccionario normalizado de metadatos.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +39,14 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """Construye el diccionario de metadatos para el artículo citador (B) desde datos de Semantic Scholar.
+
+    Args:
+        paper (dict): Datos del paper desde Semantic Scholar.
+
+    Returns:
+        dict: Diccionario normalizado de metadatos.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +59,14 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """Muestra la lista de artículos propios del usuario (desde DBLP) para revisión.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página con la lista de artículos renderizada.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +102,17 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """Muestra la lista de artículos que citan a un paper específico del usuario.
+
+    Obtiene las citas desde Semantic Scholar y marca si ya han sido reportadas.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+        paper_id (int): Índice del paper en la lista de DBLP del usuario.
+
+    Returns:
+        HttpResponse: La página con la lista de citadores renderizada.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +198,17 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """Crea un reporte inicial de cita incorrecta desde la herramienta de revisión.
+
+    El reporte se crea en estado 'not said' y con metadatos pre-rellenados,
+    redirigiendo luego al detalle para que el usuario complete la información.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere POST y autenticación.
+
+    Returns:
+        HttpResponseRedirect: Redirección al detalle del nuevo reporte o al listado en caso de error.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 
