@@ -7,8 +7,15 @@ from ..forms import LoginForm, RegisterForm
 
 
 def login_view(request):
-    """
-    Gestiona el inicio de sesión de los usuarios.
+    """Gestiona el inicio de sesión de los usuarios.
+
+    Muestra el formulario de inicio de sesión o procesa la solicitud POST para autenticar al usuario.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        HttpResponse: La página de inicio con el formulario o redirección tras el login.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -27,8 +34,15 @@ def login_view(request):
 
 
 def register_view(request):
-    """
-    Gestiona el registro de nuevos usuarios.
+    """Gestiona el registro de nuevos usuarios.
+
+    Muestra el formulario de registro o procesa la solicitud POST para crear y autenticar un nuevo usuario.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        HttpResponse: La página de inicio con el formulario o redirección tras el registro.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -57,8 +71,13 @@ def register_view(request):
 
 
 def logout_view(request):
-    """
-    Cierra la sesión del usuario.
+    """Cierra la sesión del usuario.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        HttpResponseRedirect: Redirección a la página especificada en 'next' o a la raíz.
     """
     logout(request)
     return redirect(request.GET.get("next", "/"))

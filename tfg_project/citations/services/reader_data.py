@@ -26,6 +26,7 @@ REFERENCE_HEADERS = (
 
 
 def _first_title(metadata: Dict[str, Any]) -> str:
+    """Extrae el primer título válido de los metadatos."""
     title = metadata.get("title")
     if isinstance(title, list):
         title = title[0] if title else ""
@@ -37,6 +38,14 @@ def _first_title(metadata: Dict[str, Any]) -> str:
 
 
 def extract_pdf_url_from_metadata(metadata: Optional[Dict[str, Any]]) -> Optional[str]:
+    """Intenta extraer la URL de un PDF de los metadatos (tipo CrossRef o similar).
+
+    Args:
+        metadata (dict): Metadatos del artículo.
+
+    Returns:
+        Optional[str]: URL del PDF si se encuentra.
+    """
     if not metadata:
         return None
 
@@ -55,6 +64,15 @@ def extract_pdf_url_from_metadata(metadata: Optional[Dict[str, Any]]) -> Optiona
 
 
 def resolve_pdf_url(metadata: Optional[Dict[str, Any]], doi: str | None) -> Optional[str]:
+    """Resuelve la URL del PDF, buscando en metadatos o consultando Semantic Scholar.
+
+    Args:
+        metadata (dict): Metadatos disponibles.
+        doi (str): DOI del artículo.
+
+    Returns:
+        Optional[str]: URL del PDF.
+    """
     url = extract_pdf_url_from_metadata(metadata)
     if url:
         return url
@@ -64,12 +82,14 @@ def resolve_pdf_url(metadata: Optional[Dict[str, Any]], doi: str | None) -> Opti
 
 
 def _normalize_text(value: str) -> str:
+    """Normaliza texto eliminando acentos y espacios extra."""
     stripped = unicodedata.normalize("NFKD", value)
     stripped = stripped.encode("ascii", "ignore").decode("ascii")
     return re.sub(r"\s+", " ", stripped).strip().lower()
 
 
 def _is_reference_header(line: str) -> bool:
+    """Detecta si una línea parece ser un encabezado de referencias."""
     normalized = _normalize_text(line)
     if not normalized:
         return False
@@ -77,6 +97,14 @@ def _is_reference_header(line: str) -> bool:
 
 
 def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool]:
+    """Busca y extrae la sección de referencias del texto completo de las páginas.
+
+    Args:
+        page_texts (List[str]): Lista de textos por página.
+
+    Returns:
+        Tuple[str, bool]: Texto de la sección de referencias y booleano indicando éxito.
+    """
     for page_idx, text in enumerate(page_texts):
         lines = text.splitlines()
         for line_idx, line in enumerate(lines):
@@ -91,6 +119,7 @@ def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool]:
 
 
 def _fallback_reference_section(page_texts: List[str]) -> str:
+    """Estrategia de fallback: devuelve el último 25% del documento."""
     if not page_texts:
         return ""
     page_count = len(page_texts)
@@ -100,6 +129,7 @@ def _fallback_reference_section(page_texts: List[str]) -> str:
 
 
 def _normalize_doi(value: str) -> str:
+    """Limpia y normaliza un string de DOI."""
     candidate = value.strip()
     candidate = re.sub(r"^doi:\s*", "", candidate, flags=re.IGNORECASE)
     candidate = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE)
@@ -108,6 +138,7 @@ def _normalize_doi(value: str) -> str:
 
 
 def _extract_doi(text: str) -> Optional[str]:
+    """Busca y extrae un DOI de un texto."""
     if not text:
         return None
     url_match = DOI_URL_REGEX.search(text)
@@ -120,6 +151,13 @@ def _extract_doi(text: str) -> Optional[str]:
 
 
 def _split_references(section_text: str) -> Tuple[List[Tuple[int, str]], bool]:
+    """Divide la sección de referencias en entradas individuales.
+
+    Intenta detectar formato numérico [1], [2]... o divide por bloques.
+
+    Returns:
+        Tuple: Lista de tuplas (índice, texto) y booleano indicando si es numerado.
+    """
     if not section_text:
         return [], False
     lines = [line.strip() for line in section_text.splitlines()]
@@ -180,6 +218,14 @@ def _normalize_reference_text(value: str) -> str:
 
 
 def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Extrae referencias bibliográficas de un archivo PDF local.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        Tuple: Lista de referencias extraídas y estadísticas del proceso.
+    """
     if fitz is None or not pdf_path:
         return [], {
             "pages_total": 0,
@@ -238,6 +284,14 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
 
 
 def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Descarga un PDF temporalmente y extrae sus referencias.
+
+    Args:
+        pdf_url (str): URL del PDF.
+
+    Returns:
+        Tuple: Lista de referencias y estadísticas.
+    """
     if not pdf_url:
         return [], {
             "pages_total": 0,
@@ -263,6 +317,15 @@ def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str,
 
 
 def build_references(metadata: Optional[Dict[str, Any]], doi: str | None) -> List[Dict[str, Any]]:
+    """Construye una lista de referencias 'dummy' basada en metadatos si no hay PDF.
+
+    Args:
+        metadata (dict): Metadatos del artículo.
+        doi (str): DOI del artículo.
+
+    Returns:
+        List[Dict[str, Any]]: Lista con una única referencia construida.
+    """
     if not metadata and not doi:
         return []
 
@@ -277,6 +340,14 @@ def build_references(metadata: Optional[Dict[str, Any]], doi: str | None) -> Lis
 
 
 def build_mentions(contexts: Any) -> List[Dict[str, Any]]:
+    """Convierte contextos de cita (PaperMage) al formato de menciones para el frontend.
+
+    Args:
+        contexts (list): Lista de contextos de cita.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de menciones formateadas.
+    """
     if not isinstance(contexts, list):
         return []
 
@@ -300,6 +371,14 @@ def build_mentions(contexts: Any) -> List[Dict[str, Any]]:
 
 
 def build_snippets_from_results(results: Any) -> List[Dict[str, Any]]:
+    """Construye snippets a partir de resultados de extracción generales.
+
+    Args:
+        results (list): Resultados de extracción.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de snippets.
+    """
     if not isinstance(results, list):
         return []
     snippets: List[Dict[str, Any]] = []
@@ -323,6 +402,14 @@ def build_snippets_from_results(results: Any) -> List[Dict[str, Any]]:
 
 
 def build_snippets_from_mentions(mentions: Any) -> List[Dict[str, Any]]:
+    """Construye snippets a partir de menciones.
+
+    Args:
+        mentions (list): Lista de menciones.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de snippets formateados.
+    """
     if not isinstance(mentions, list):
         return []
     snippets: List[Dict[str, Any]] = []

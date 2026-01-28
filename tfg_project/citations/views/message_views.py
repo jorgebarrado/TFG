@@ -12,6 +12,15 @@ User = get_user_model()
 
 
 def _other_participants(conversation, current_user):
+    """Devuelve la lista de participantes de una conversación, excluyendo al usuario actual.
+
+    Args:
+        conversation (Conversation): La conversación a filtrar.
+        current_user (User): El usuario a excluir.
+
+    Returns:
+        list: Lista de usuarios participantes.
+    """
     return [
         participant
         for participant in conversation.participants.all()
@@ -21,6 +30,17 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """Muestra la bandeja de entrada de conversaciones del usuario.
+
+    Lista las conversaciones ordenadas por fecha del último mensaje, incluyendo
+    un contador de mensajes no leídos.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página de la bandeja de entrada renderizada.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +71,17 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+
+    Marca los mensajes no leídos como leídos al acceder.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+        conversation_id (int): El ID de la conversación.
+
+    Returns:
+        HttpResponse: La página de la conversación renderizada.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +117,18 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """Inicia una nueva conversación con un usuario o redirige a una existente.
+
+    Busca si ya existe una conversación privada entre los dos usuarios. Si existe,
+    redirige a ella. Si no, crea una nueva.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+        username (str): El nombre de usuario con quien iniciar la conversación.
+
+    Returns:
+        HttpResponseRedirect: Redirección al detalle de la conversación.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

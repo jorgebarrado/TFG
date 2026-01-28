@@ -26,6 +26,14 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """Obtiene la inicial para mostrar en el avatar por defecto del usuario.
+
+    Args:
+        user (User): La instancia del usuario.
+
+    Returns:
+        str: La inicial del nombre de usuario o nombre, o '?' si no hay datos.
+    """
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +42,17 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """Muestra el perfil público de un usuario.
+
+    Incluye información básica y una lista de sus últimos reportes.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+        username (str): El nombre de usuario del perfil a mostrar.
+
+    Returns:
+        HttpResponse: La página del perfil público renderizada.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +75,16 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """Gestiona la configuración de la cuenta del usuario.
+
+    Permite actualizar el perfil básico, perfil extendido y cambiar la contraseña.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página de configuración de cuenta.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -122,8 +151,13 @@ def account_settings(request):
 
 @login_required
 def my_reports(request):
-    """
-    Muestra los reportes de citas incorrectas creados por el usuario actual.
+    """Muestra los reportes de citas incorrectas creados por el usuario actual.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página con mis reportes renderizada.
     """
     reports = (
         IncorrectCitation.objects.filter(author=request.user)
@@ -135,8 +169,13 @@ def my_reports(request):
 
 @login_required
 def my_comments(request):
-    """
-    Muestra los comentarios realizados por el usuario actual.
+    """Muestra los comentarios realizados por el usuario actual.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página con mis comentarios renderizada.
     """
     comments = (
         Comment.objects.filter(author=request.user)
@@ -148,8 +187,13 @@ def my_comments(request):
 
 @login_required
 def my_saved(request):
-    """
-    Muestra las citas guardadas por el usuario actual.
+    """Muestra las citas guardadas por el usuario actual.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página con mis citas guardadas renderizada.
     """
     saved = (
         SavedCitation.objects.filter(user=request.user)
@@ -161,8 +205,15 @@ def my_saved(request):
 
 @login_required
 def dblp_articles_view(request):
-    """
-    Muestra los artículos de un usuario obtenidos de DBLP.
+    """Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Permite filtrar y paginar los resultados, y verifica si tienen citas en Semantic Scholar.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página con los artículos de DBLP renderizada.
     """
     user = request.user
     profile = UserProfile.objects.get(user=user)
@@ -200,6 +251,16 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """Muestra el panel de control del perfil privado del usuario.
+
+    Incluye estadísticas y un feed de actividad reciente.
+
+    Args:
+        request: El objeto HttpRequest de Django. Requiere autenticación.
+
+    Returns:
+        HttpResponse: La página del perfil privado renderizada.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
