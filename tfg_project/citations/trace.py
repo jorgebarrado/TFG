@@ -6,11 +6,20 @@ from datetime import datetime, timezone
 
 
 class Trace:
-    """
-    Recolecta pasos ordenados y construye el JSON final para log.
+    """Recolecta pasos de ejecución y construye un log JSON estructurado.
+
+    Se utiliza para monitorizar el proceso de extracción de contextos de citas,
+    registrando tiempos, éxitos y errores en cada paso.
     """
 
     def __init__(self, citing_doi: str = "", target: dict | None = None):
+        """Inicializa una nueva traza.
+
+        Args:
+            citing_doi (str): DOI del artículo que cita.
+            target (dict, optional): Datos del artículo objetivo (citado).
+                Puede contener keys 'doi', 'title', 'first_author', 'year'.
+        """
         self.cid = uuid.uuid4().hex
         self.steps: list[dict] = []
         self.started = time.perf_counter()
@@ -29,6 +38,13 @@ class Trace:
         self.error = None
 
     def add(self, step: str, status: str, detail: str = ""):
+        """Añade un paso a la traza.
+
+        Args:
+            step (str): Nombre del paso (ej. 'openaccess', 'download').
+            status (str): Estado del paso (ej. 'ok', 'error').
+            detail (str): Información adicional o mensaje de error.
+        """
         self.steps.append(
             {
                 "step": step,
@@ -39,6 +55,14 @@ class Trace:
         )
 
     def as_log_line(self, level: str = "INFO") -> str:
+        """Devuelve la traza completa como una cadena JSON para logging.
+
+        Args:
+            level (str): Nivel de log (por defecto 'INFO').
+
+        Returns:
+            str: JSON string con toda la información de la traza.
+        """
         payload = {
             "ts": self.ts,
             "level": level,
@@ -58,5 +82,10 @@ class Trace:
         return json.dumps(payload, ensure_ascii=False)
 
     def as_public_trace(self) -> list[dict]:
+        """Devuelve una versión pública de los pasos para depuración en cliente.
+
+        Returns:
+            list[dict]: Lista de pasos ejecutados.
+        """
         # Para devolver al cliente si debug=1
         return self.steps.copy()

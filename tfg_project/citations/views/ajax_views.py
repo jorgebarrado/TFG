@@ -1,4 +1,4 @@
-"""Views that handle AJAX requests and return JSON responses."""
+"""Vistas que gestionan peticiones AJAX y devuelven respuestas JSON."""
 
 import json
 import requests
@@ -18,8 +18,17 @@ from ..services.semantic_fetch import get_citations_with_fallback
 
 @require_POST
 def vote_view(request):
-    """
-    Gestiona los votos (positivos y negativos) en los reportes de citas.
+    """Gestiona los votos (positivos y negativos) en los reportes de citas.
+
+    Permite votar o cambiar el voto en un reporte. Si ya existe un voto idéntico,
+    se elimina (toggle). Devuelve el fragmento HTML actualizado de los botones.
+
+    Args:
+        request: La solicitud HTTP POST.
+
+    Returns:
+        HttpResponse: Fragmento HTML actualizado con el estado de los votos.
+        JsonResponse: Error JSON si faltan parámetros o no está autenticado.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -71,8 +80,15 @@ def vote_view(request):
 @require_POST
 @login_required
 def toggle_saved(request):
-    """
-    Guarda o elimina una cita de la lista de guardados de un usuario.
+    """Guarda o elimina una cita de la lista de guardados de un usuario.
+
+    Actúa como un toggle: si ya está guardada, la borra; si no, la crea.
+
+    Args:
+        request: La solicitud HTTP POST.
+
+    Returns:
+        HttpResponse: Fragmento HTML del botón de guardado actualizado.
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -94,11 +110,17 @@ def toggle_saved(request):
 
 
 def ajax_submit_citation(request):
-    """
-    Guarda un reporte de cita incorrecta enviado desde el formulario principal.
-    Acepta solicitudes AJAX y tradicionales.
-    """
+    """Guarda un reporte de cita incorrecta enviado desde el formulario principal.
 
+    Maneja tanto solicitudes AJAX como envíos de formularios tradicionales.
+    Si es AJAX, devuelve JSON; si no, redirige.
+
+    Args:
+        request: La solicitud HTTP (POST).
+
+    Returns:
+        JsonResponse | HttpResponseRedirect: Respuesta según el tipo de solicitud.
+    """
     def _is_ajax(req):
         return req.headers.get("HX-Request") == "true" or req.headers.get(
             "X-Requested-With"
@@ -174,8 +196,13 @@ def ajax_submit_citation(request):
 
 
 def fetch_doi_metadata(request):
-    """
-    Obtiene los metadatos de un DOI desde CrossRef.
+    """Obtiene los metadatos básicos de un DOI desde CrossRef.
+
+    Args:
+        request: La solicitud HTTP GET con el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos del DOI o error si no se encuentra.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -189,8 +216,13 @@ def fetch_doi_metadata(request):
 
 
 def get_all_metadata_from_doi(request):
-    """
-    Obtiene todos los metadatos de un DOI desde CrossRef.
+    """Obtiene todos los metadatos disponibles de un DOI desde CrossRef.
+
+    Args:
+        request: La solicitud HTTP GET con el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos completos o error.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -207,8 +239,15 @@ def get_all_metadata_from_doi(request):
 
 @require_POST
 def register_ajax(request):
-    """
-    Gestiona el registro de usuarios a través de una solicitud AJAX.
+    """Gestiona el registro de usuarios a través de una solicitud AJAX.
+
+    Crea el usuario y lo autentica automáticamente si el formulario es válido.
+
+    Args:
+        request: La solicitud HTTP POST con datos de registro.
+
+    Returns:
+        JsonResponse: Éxito o lista de errores de validación.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -225,8 +264,15 @@ def register_ajax(request):
 
 @login_required
 def delete_comment(request, pk):
-    """
-    Elimina un comentario si el usuario es el autor o un superusuario.
+    """Elimina un comentario si el usuario es el autor o un superusuario.
+
+    Args:
+        request: La solicitud HTTP.
+        pk (int): ID del comentario a eliminar.
+
+    Returns:
+        HttpResponseRedirect: Redirige al detalle del reporte.
+        HttpResponseForbidden: Si no tiene permisos.
     """
     comment = get_object_or_404(Comment, pk=pk)
     if request.user == comment.author or request.user.is_superuser:
@@ -238,8 +284,15 @@ def delete_comment(request, pk):
 
 
 def citation_suggest(request):
-    """
-    Sugiere citas incorrectas basadas en un término de búsqueda.
+    """Sugiere reportes de citas existentes para autocompletado.
+
+    Busca coincidencias parciales en el DOI original o título del artículo.
+
+    Args:
+        request: La solicitud HTTP GET con el parámetro 'term'.
+
+    Returns:
+        JsonResponse: Lista de sugerencias (doi_original, title).
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
@@ -250,8 +303,16 @@ def citation_suggest(request):
 
 
 def get_semantic_citations(request):
-    """
-    Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+    """Obtiene y compara las citas de un artículo desde Semantic Scholar.
+
+    Consulta los citadores en Semantic Scholar y marca aquellos que ya
+    tienen un reporte registrado en el sistema local.
+
+    Args:
+        request: La solicitud HTTP GET con el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Datos de citas, incluyendo estado de registro.
     """
     doi = request.GET.get("doi")
     if not doi:

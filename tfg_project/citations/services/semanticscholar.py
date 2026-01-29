@@ -1,4 +1,9 @@
-# citations/services/semanticscholar.py
+"""Funciones auxiliares para interactuar con la API de Semantic Scholar (deprecated).
+
+Este módulo contiene funciones legacy. Para nuevas implementaciones,
+use `semantic_scholar_client`.
+"""
+
 from __future__ import annotations
 
 import os
@@ -12,15 +17,14 @@ S2_GRAPH = "https://api.semanticscholar.org/graph/v1"
 
 
 def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
-    """
-    Obtiene la URL de un PDF de acceso abierto desde Semantic Scholar usando el DOI del artículo.
+    """Obtiene la URL de un PDF de acceso abierto para un DOI.
 
     Args:
         doi (str): El DOI del artículo.
-        timeout (int, optional): El tiempo de espera para la solicitud. Defaults to 15.
+        timeout (int, optional): Tiempo de espera. Default 15.
 
     Returns:
-        Optional[str]: La URL del PDF si se encuentra, de lo contrario None.
+        Optional[str]: La URL del PDF si existe, o None.
     """
     # Nota: DOI debe ir con el prefijo DOI:
     url = f"{S2_GRAPH}/paper/DOI:{doi}?fields=openAccessPdf"
@@ -33,15 +37,14 @@ def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
 
 
 def download_pdf_to_temp(url: str, timeout: int = 30) -> Optional[str]:
-    """
-    Descarga un archivo PDF desde una URL a un archivo temporal.
+    """Descarga un PDF desde una URL a un archivo temporal local.
 
     Args:
-        url (str): La URL del PDF a descargar.
-        timeout (int, optional): El tiempo de espera para la solicitud. Defaults to 30.
+        url (str): URL del archivo PDF.
+        timeout (int, optional): Tiempo de espera. Default 30.
 
     Returns:
-        Optional[str]: La ruta al archivo temporal si la descarga es exitosa, de lo contrario None.
+        Optional[str]: Ruta al archivo temporal si es exitoso, o None.
     """
     try:
         with requests.get(

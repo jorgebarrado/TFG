@@ -1,3 +1,5 @@
+"""Módulo para el registro de trazas de ejecución en la aplicación."""
+
 import logging
 import os
 import time
@@ -9,16 +11,17 @@ logger = logging.getLogger("citations.context")
 
 
 class TraceLogger:
-    """
-    Recopila y registra trazas detalladas para una solicitud.
+    """Recopila y registra trazas detalladas para una solicitud HTTP.
+
+    Permite monitorizar el rendimiento y el flujo de ejecución de una petición,
+    almacenando tiempos y estados de cada paso.
     """
 
     def __init__(self, request: HttpRequest):
-        """
-        Inicializa el logger de trazas.
+        """Inicializa el logger de trazas.
 
         Args:
-            request (HttpRequest): La solicitud HTTP.
+            request (HttpRequest): La solicitud HTTP actual.
         """
         self.request = request
         self.steps: List[Dict[str, Any]] = []
@@ -31,13 +34,15 @@ class TraceLogger:
         }
 
     def add_step(self, step_name: str, status: str, details: Optional[str] = None):
-        """
-        Añade un paso a la traza.
+        """Añade un paso a la traza actual.
+
+        Registra el tiempo transcurrido desde el inicio de la solicitud hasta
+        este paso.
 
         Args:
-            step_name (str): El nombre del paso.
-            status (str): El estado del paso ('ok', 'miss', 'error').
-            details (Optional[str], optional): Detalles adicionales. Defaults to None.
+            step_name (str): El nombre identificativo del paso.
+            status (str): El estado del paso (ej. 'ok', 'miss', 'error').
+            details (Optional[str], optional): Detalles adicionales sobre el paso.
         """
         elapsed_ms = (time.monotonic() - self.start_time) * 1000
         self.steps.append(
@@ -50,17 +55,17 @@ class TraceLogger:
         )
 
     def log(self):
-        """
-        Escribe la traza en el log si el logging está habilitado.
+        """Escribe la traza acumulada en el log del sistema.
+
+        Solo registra si la variable de entorno LOG_CITATIONS está activa (valor '1').
         """
         if os.getenv("LOG_CITATIONS", "1") == "1":
             logger.info(self.trace_data)
 
     def get_trace(self) -> Dict[str, Any]:
-        """
-        Devuelve la traza de datos.
+        """Devuelve los datos de la traza acumulados hasta el momento.
 
         Returns:
-            Dict[str, Any]: La traza de datos.
+            Dict[str, Any]: Diccionario con el ID de usuario y la lista de pasos.
         """
         return self.trace_data

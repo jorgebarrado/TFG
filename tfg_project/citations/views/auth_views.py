@@ -1,4 +1,4 @@
-"""Views for handling user authentication (login, logout, registration)."""
+"""Vistas para la gestión de autenticación de usuarios (login, registro, logout)."""
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render
@@ -7,8 +7,16 @@ from ..forms import LoginForm, RegisterForm
 
 
 def login_view(request):
-    """
-    Gestiona el inicio de sesión de los usuarios.
+    """Gestiona el inicio de sesión de los usuarios.
+
+    Muestra el formulario de login y procesa la autenticación. Si es exitosa,
+    redirige a la URL 'next' o al home.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página renderizada o redirección.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -27,8 +35,16 @@ def login_view(request):
 
 
 def register_view(request):
-    """
-    Gestiona el registro de nuevos usuarios.
+    """Gestiona el registro de nuevos usuarios en la plataforma.
+
+    Muestra el formulario de registro y crea el usuario. Autentica al usuario
+    automáticamente tras un registro exitoso.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página renderizada o redirección.
     """
     next_url = request.POST.get("next", request.GET.get("next", "/"))
     if request.method == "POST":
@@ -57,8 +73,13 @@ def register_view(request):
 
 
 def logout_view(request):
-    """
-    Cierra la sesión del usuario.
+    """Cierra la sesión del usuario actual.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponseRedirect: Redirige a la página principal o a 'next'.
     """
     logout(request)
     return redirect(request.GET.get("next", "/"))

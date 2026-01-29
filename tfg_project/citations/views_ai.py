@@ -1,3 +1,5 @@
+"""Vistas para la interacción con servicios de Inteligencia Artificial."""
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
@@ -9,7 +11,18 @@ from .services.ai_report_evaluator import analyze_report_with_ai
 
 @require_POST
 def citation_ai_detect(request, pk):
-    """Lanza detección automática de citas mediante IA y guarda contexts."""
+    """Lanza la detección automática de contextos de citas mediante IA.
+
+    Utiliza el servicio de detección de citas para buscar y extraer fragmentos
+    relevantes en el artículo citador asociado al reporte.
+
+    Args:
+        request: La solicitud HTTP (debe ser POST).
+        pk (int): La clave primaria del reporte de cita incorrecta.
+
+    Returns:
+        HttpResponseRedirect: Redirecciona a la vista de detalle del reporte.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
 
     try:
@@ -28,7 +41,18 @@ def citation_ai_detect(request, pk):
 
 @require_POST
 def citation_ai_evaluate(request, pk):
-    """Evalúa con IA si la cita está bien/mal con los datos del reporte."""
+    """Evalúa mediante IA si la cita reportada es correcta o incorrecta.
+
+    Analiza los metadatos y contextos del reporte para generar una evaluación
+    automática sobre la validez de la cita.
+
+    Args:
+        request: La solicitud HTTP (debe ser POST).
+        pk (int): La clave primaria del reporte de cita incorrecta.
+
+    Returns:
+        HttpResponseRedirect: Redirecciona a la vista de detalle del reporte.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=pk)
 
     try:
