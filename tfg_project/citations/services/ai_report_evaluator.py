@@ -1,3 +1,5 @@
+"""Servicio para la evaluación de reportes mediante IA (OpenAI)."""
+
 import json
 import os
 from typing import Any, Dict, List
@@ -6,6 +8,14 @@ from citations.models import IncorrectCitation
 
 
 def _extract_basic(meta: dict) -> tuple[str, str, Any]:
+    """Extrae título, autores y año de un diccionario de metadatos.
+
+    Args:
+        meta (dict): Metadatos del artículo (formato CrossRef/JSON).
+
+    Returns:
+        tuple[str, str, Any]: Título, cadena de autores y año.
+    """
     title_field = meta.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
 
@@ -26,6 +36,14 @@ def _extract_basic(meta: dict) -> tuple[str, str, Any]:
 
 
 def _build_report_prompt(citation: IncorrectCitation) -> str:
+    """Genera el prompt para que la IA evalúe la corrección de la cita.
+
+    Args:
+        citation (IncorrectCitation): El reporte a evaluar.
+
+    Returns:
+        str: El prompt formateado para el modelo.
+    """
     meta_a = citation.metadata_original or {}
     meta_b = citation.metadata_incorrect or {}
     contexts: List[Dict[str, Any]] = citation.citation_contexts or []
@@ -79,8 +97,18 @@ def _build_report_prompt(citation: IncorrectCitation) -> str:
 
 
 def analyze_report_with_ai(citation: IncorrectCitation) -> Dict[str, Any]:
-    """
-    Llama a OpenAI para evaluar el reporte y guarda el resultado en ai_assessment.
+    """Evalúa un reporte de cita incorrecta utilizando OpenAI GPT.
+
+    Guarda el resultado de la evaluación en el campo `ai_assessment` del modelo.
+
+    Args:
+        citation (IncorrectCitation): El reporte a analizar.
+
+    Returns:
+        Dict[str, Any]: Diccionario con la evaluación de la IA.
+
+    Raises:
+        RuntimeError: Si no está configurada la API key de OpenAI.
     """
     missing_config_msg = (
         "La evaluación automática con IA no está configurada en este servidor "

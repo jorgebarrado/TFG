@@ -1,3 +1,5 @@
+"""Cliente para interactuar con la API pública de DBLP."""
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
@@ -7,10 +9,12 @@ import requests
 
 
 class DBLPClientError(RuntimeError):
-    """Errores relacionados con DBLP."""
+    """Excepción base para errores relacionados con la comunicación con DBLP."""
 
 
 class DBLPPaper(TypedDict):
+    """Definición de tipo para un artículo obtenido de DBLP."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -21,6 +25,14 @@ class DBLPPaper(TypedDict):
 
 
 def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
+    """Normaliza la URL de DBLP para asegurar que apunte al recurso XML.
+
+    Args:
+        dblp_url (str): URL proporcionada (puede ser .html o .xml).
+
+    Returns:
+        Optional[str]: URL normalizada o None si es inválida.
+    """
     if not dblp_url:
         return None
     if dblp_url.endswith(".xml"):
@@ -31,6 +43,14 @@ def _normalize_dblp_url(dblp_url: str) -> Optional[str]:
 
 
 def _extract_doi(ee_text: str) -> Optional[str]:
+    """Extrae el DOI limpio de una cadena que puede contener prefijos o URL.
+
+    Args:
+        ee_text (str): Texto del campo 'ee' (Electronic Edition).
+
+    Returns:
+        Optional[str]: El DOI limpio o None.
+    """
     if not ee_text:
         return None
     if "doi.org/" in ee_text:
@@ -41,8 +61,19 @@ def _extract_doi(ee_text: str) -> Optional[str]:
 
 
 def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
-    """
-    Obtiene la lista de publicaciones de un autor desde DBLP.
+    """Obtiene la lista de publicaciones de un autor desde DBLP.
+
+    Consulta el perfil XML del autor y extrae sus publicaciones.
+
+    Args:
+        dblp_url (str): URL del perfil del autor.
+        timeout (int, optional): Tiempo máximo de espera. Default 12.
+
+    Returns:
+        List[DBLPPaper]: Lista de diccionarios con información de los artículos.
+
+    Raises:
+        DBLPClientError: Si hay errores de conexión o parsing.
     """
     dblp_xml_url = _normalize_dblp_url(dblp_url)
     if not dblp_xml_url:

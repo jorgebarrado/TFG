@@ -1,3 +1,5 @@
+"""Cliente específico para la API Graph de Semantic Scholar."""
+
 from __future__ import annotations
 
 import os
@@ -10,10 +12,12 @@ SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
 
 
 class SemanticScholarError(RuntimeError):
-    """Errores relacionados con la API de Semantic Scholar."""
+    """Excepción para errores de comunicación con Semantic Scholar."""
 
 
 class CitingPaper(TypedDict):
+    """Definición de tipo para un artículo citador."""
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -23,6 +27,11 @@ class CitingPaper(TypedDict):
 
 
 def _build_headers() -> dict:
+    """Construye las cabeceras HTTP incluyendo la API Key si existe.
+
+    Returns:
+        dict: Cabeceras HTTP.
+    """
     headers: dict = {"Accept": "application/json"}
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
@@ -30,8 +39,18 @@ def _build_headers() -> dict:
 
 
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
-    """
-    Devuelve una lista de artículos que citan al paper identificado por este DOI.
+    """Obtiene artículos que citan a un DOI específico.
+
+    Args:
+        doi (str): DOI del artículo original.
+        limit (int, optional): Límite de resultados. Default 10.
+
+    Returns:
+        List[CitingPaper]: Lista de artículos citadores.
+
+    Raises:
+        ValueError: Si el DOI está vacío.
+        SemanticScholarError: Si falla la API o no se encuentra el paper.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacío.")
@@ -93,8 +112,18 @@ def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
 def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
-    """
-    Devuelve una lista paginada de articulos que citan un DOI y el total estimado.
+    """Obtiene una lista paginada de artículos que citan un DOI y el total estimado.
+
+    Args:
+        doi (str): DOI del artículo original.
+        limit (int, optional): Resultados por página. Default 10.
+        offset (int, optional): Desplazamiento inicial. Default 0.
+
+    Returns:
+        tuple[List[CitingPaper], int]: (Lista de papers, total de citas).
+
+    Raises:
+        SemanticScholarError: Si hay errores en la resolución del paper o las citas.
     """
     if not doi:
         raise ValueError("El DOI no puede estar vacio.")

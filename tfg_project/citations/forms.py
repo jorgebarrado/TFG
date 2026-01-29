@@ -1,3 +1,5 @@
+"""Formularios de la aplicación citations."""
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
@@ -72,8 +74,10 @@ User = get_user_model()
 
 
 class UserProfileForm(forms.ModelForm):
-    """
-    Formulario para actualizar la info extendida del perfil.
+    """Formulario para crear o actualizar el perfil de usuario extendido.
+
+    Permite editar campos como país, biografía, enlaces sociales y preferencias.
+    Utiliza widgets personalizados para estilizado con Bootstrap.
     """
 
     country = forms.ChoiceField(
@@ -177,6 +181,12 @@ class UserProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario y añade clases CSS a los campos checkbox.
+
+        Args:
+            *args: Argumentos posicionales variables.
+            **kwargs: Argumentos de palabras clave variables.
+        """
         super().__init__(*args, **kwargs)
         checkbox_fields = [
             "notify_comments_on_my_reports",
@@ -193,9 +203,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class DBLPUrlForm(forms.ModelForm):
-    """
-    Formulario reducido para actualizar solo la URL de DBLP.
-    """
+    """Formulario reducido para actualizar únicamente la URL de DBLP."""
 
     dblp_url = forms.URLField(
         required=False,
@@ -214,8 +222,10 @@ class DBLPUrlForm(forms.ModelForm):
 
 
 class RegisterForm(UserCreationForm):
-    """
-    Formulario de registro de nuevos usuarios.
+    """Formulario para el registro de nuevos usuarios en el sistema.
+
+    Extiende UserCreationForm de Django para usar el modelo User y
+    añadir estilos Bootstrap a los campos.
     """
 
     class Meta:
@@ -223,6 +233,12 @@ class RegisterForm(UserCreationForm):
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario de registro con estilos personalizados.
+
+        Args:
+            *args: Argumentos posicionales variables.
+            **kwargs: Argumentos de palabras clave variables.
+        """
         super().__init__(*args, **kwargs)
 
         self.fields["username"].widget.attrs.update(
@@ -246,8 +262,9 @@ class RegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
-    """
-    Formulario para actualizar el nombre y nombre de usuario de un usuario.
+    """Formulario para actualizar información básica del usuario (User model).
+
+    Permite cambiar el nombre completo y el nombre de usuario.
     """
 
     class Meta:
@@ -264,11 +281,20 @@ class ProfileForm(forms.ModelForm):
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):
-    """
-    Formulario de cambio de contraseña con estilos de Bootstrap.
+    """Formulario de cambio de contraseña personalizado con estilos Bootstrap.
+
+    Extiende PasswordChangeForm para mejorar la presentación.
     """
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario de cambio de contraseña.
+
+        Elimina el autofocus del campo de contraseña antigua y añade clases CSS.
+
+        Args:
+            *args: Argumentos posicionales variables.
+            **kwargs: Argumentos de palabras clave variables.
+        """
         super().__init__(*args, **kwargs)
         # Quitar autofocus del campo antiguo para evitar scroll no deseado
         if "old_password" in self.fields:
@@ -279,11 +305,20 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 
 class LoginForm(AuthenticationForm):
-    """
-    Formulario de inicio de sesión con placeholders y estilos de Bootstrap.
+    """Formulario de inicio de sesión personalizado con placeholders y estilos.
+
+    Extiende AuthenticationForm para adaptar la interfaz de usuario.
     """
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario de login.
+
+        Añade placeholders y clases CSS a los campos de usuario y contraseña.
+
+        Args:
+            *args: Argumentos posicionales variables.
+            **kwargs: Argumentos de palabras clave variables.
+        """
         super().__init__(*args, **kwargs)
 
         # Usuario / email
@@ -304,8 +339,9 @@ class LoginForm(AuthenticationForm):
 
 
 class IncorrectCitationForm(forms.ModelForm):
-    """
-    Formulario para reportar una cita incorrecta.
+    """Formulario para reportar una nueva cita incorrecta.
+
+    Utilizado para crear instancias de IncorrectCitation.
     """
 
     class Meta:
@@ -323,8 +359,9 @@ class IncorrectCitationForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
-    """
-    Formulario para crear y responder a comentarios.
+    """Formulario para publicar comentarios o respuestas en reportes.
+
+    Incluye un campo oculto para el ID del comentario padre en caso de respuesta.
     """
 
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
@@ -348,6 +385,8 @@ class CommentForm(forms.ModelForm):
 
 
 class MessageForm(forms.Form):
+    """Formulario simple para enviar mensajes privados en una conversación."""
+
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

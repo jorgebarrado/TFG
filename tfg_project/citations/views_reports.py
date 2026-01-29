@@ -1,3 +1,5 @@
+"""Vistas para el flujo avanzado de creación de reportes (Wizard)."""
+
 import json
 
 from django.http import HttpResponseBadRequest, JsonResponse
@@ -11,7 +13,16 @@ from .models import AREA_CHOICES, CitationReport
 
 
 def create_report_wizard(request):
-    """Renderiza el flujo guiado para crear un reporte enriquecido."""
+    """Renderiza la interfaz del asistente (wizard) para crear un reporte enriquecido.
+
+    Muestra el formulario inicial con las opciones de área de publicación.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: La página renderizada del wizard.
+    """
     return render(
         request,
         "citations/report_wizard.html",
@@ -21,7 +32,18 @@ def create_report_wizard(request):
 
 @require_POST
 def ajax_submit_report(request):
-    """Recibe el POST del wizard y crea un CitationReport."""
+    """Procesa el envío del formulario del wizard y crea un CitationReport.
+
+    Recibe datos vía POST, incluyendo DOIs, metadatos JSON y archivos opcionales.
+
+    Args:
+        request: La solicitud HTTP (debe ser POST y preferiblemente AJAX).
+
+    Returns:
+        JsonResponse: Respuesta JSON con la URL de redirección si es AJAX.
+        HttpResponseRedirect: Redirección directa si no es AJAX.
+        HttpResponseBadRequest: Si faltan datos obligatorios.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
     error_type = (request.POST.get("error_type") or "other").strip()

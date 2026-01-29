@@ -1,3 +1,5 @@
+"""Configuración del panel de administración para la app citations."""
+
 from django.contrib import admin
 
 from .models import Conversation, IncorrectCitation, Message, UserProfile

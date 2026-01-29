@@ -1,3 +1,9 @@
+"""Analizador de citas en archivos PDF descargados desde URLs.
+
+Facilita la descarga temporal de PDFs y la extracción de contextos de cita
+utilizando PaperMage y patrones definidos.
+"""
+
 from __future__ import annotations
 
 import tempfile
@@ -21,8 +27,16 @@ class PDFDownloadError(RuntimeError):
 
 
 def _download_pdf_to_temp(pdf_url: str) -> Path:
-    """
-    Descarga un PDF desde una URL a un archivo temporal y devuelve su ruta.
+    """Descarga un PDF desde una URL a un archivo temporal.
+
+    Args:
+        pdf_url (str): URL del archivo PDF.
+
+    Returns:
+        Path: Ruta del archivo temporal descargado.
+
+    Raises:
+        PDFDownloadError: Si falla la conexión o la descarga.
     """
     try:
         response = requests.get(pdf_url, stream=True, timeout=20)
@@ -49,8 +63,15 @@ def analyze_pdf_citations_from_url(
     pdf_url: str,
     patterns: Optional[List[str]] = None,
 ) -> List[ContextHit]:
-    """
-    Descarga un PDF desde una URL y devuelve los contextos de cita detectados.
+    """Descarga un PDF y extrae los contextos de cita detectados.
+
+    Args:
+        pdf_url (str): URL del PDF a analizar.
+        patterns (Optional[List[str]]): Lista opcional de patrones regex.
+            Si es None, usa DEFAULT_PATTERNS.
+
+    Returns:
+        List[ContextHit]: Lista de citas encontradas con contexto.
     """
     if patterns is None:
         patterns = DEFAULT_PATTERNS

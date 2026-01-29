@@ -1,3 +1,5 @@
+"""Servicio para la obtención de metadatos de citas desde Semantic Scholar y CrossRef."""
+
 import requests
 
 S2_BASE = "https://api.semanticscholar.org/graph/v1"
@@ -5,16 +7,15 @@ CR_BASE = "https://api.crossref.org"
 
 
 def _safe_get(url, params=None, timeout=12):
-    """
-    Realiza una solicitud GET a una URL de forma segura, manejando errores de conexión y timeouts.
+    """Realiza una solicitud GET segura manejando excepciones.
 
     Args:
-        url (str): La URL a la que se realizará la solicitud.
-        params (dict, optional): Un diccionario de parámetros para la solicitud. Defaults to None.
-        timeout (int, optional): El tiempo de espera para la solicitud. Defaults to 12.
+        url (str): La URL a consultar.
+        params (dict, optional): Parámetros de la query string.
+        timeout (int, optional): Tiempo máximo de espera. Default 12.
 
     Returns:
-        dict: El JSON de la respuesta si la solicitud es exitosa, de lo contrario None.
+        dict | None: El JSON de respuesta o None si falla.
     """
     headers = {"User-Agent": "CiteCheck/1.0 (mailto:you@example.com)"}
     try:
@@ -27,14 +28,13 @@ def _safe_get(url, params=None, timeout=12):
 
 
 def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
-    """
-    Obtiene el paperId y el número de citas de un artículo desde Semantic Scholar.
+    """Obtiene el ID interno y el conteo de citas de Semantic Scholar.
 
     Args:
-        doi (str): El DOI del artículo.
+        doi (str): DOI del artículo.
 
     Returns:
-        tuple[str | None, int]: Una tupla con el paperId y el número de citas, o (None, 0) si no se encuentra.
+        tuple[str | None, int]: (paperId, citationCount).
     """
     url = f"{S2_BASE}/paper/DOI:{doi}"
     data = _safe_get(url, params={"fields": "paperId,citationCount"})
@@ -44,15 +44,14 @@ def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
 
 
 def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
-    """
-    Obtiene una lista de citas para un artículo desde Semantic Scholar.
+    """Obtiene la lista de citas desde Semantic Scholar.
 
     Args:
-        doi (str): El DOI del artículo.
-        limit (int, optional): El número máximo de citas a obtener. Defaults to 100.
+        doi (str): DOI del artículo.
+        limit (int, optional): Límite de resultados. Default 100.
 
     Returns:
-        list[dict]: Una lista de diccionarios, donde cada uno representa una cita.
+        list[dict]: Lista de citas formateadas.
     """
     paper_id, count = get_s2_paperid_and_count(doi)
     if not paper_id or count == 0:
@@ -93,15 +92,14 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
 
 
 def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
-    """
-    Obtiene citas de CrossRef como alternativa si Semantic Scholar no devuelve resultados.
+    """Obtiene citas desde CrossRef como alternativa.
 
     Args:
-        doi (str): El DOI del artículo.
-        rows (int, optional): El número máximo de citas a obtener. Defaults to 100.
+        doi (str): DOI del artículo.
+        rows (int, optional): Límite de filas a recuperar. Default 100.
 
     Returns:
-        list[dict]: Una lista de diccionarios, donde cada uno representa una cita.
+        list[dict]: Lista de citas formateadas.
     """
     url = f"{CR_BASE}/works"
     # Nota: rows máx ~1000; aquí 100 es razonable para UI
@@ -140,15 +138,13 @@ def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
 
 
 def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
-    """
-    Obtiene citas para un DOI, intentando primero con Semantic Scholar y luego con CrossRef.
+    """Obtiene citas usando Semantic Scholar con fallback a CrossRef.
 
     Args:
-        doi (str): El DOI del artículo.
+        doi (str): DOI del artículo.
 
     Returns:
-        tuple[int, list[dict], str]: Una tupla que contiene el número estimado de citas,
-        la lista de citas y la fuente de datos utilizada ('s2', 'crossref', o 'none').
+        tuple[int, list[dict], str]: (Total estimado, lista de citas, fuente ['s2', 'crossref', 'none']).
     """
     s2_list = get_s2_citations(doi)
     if s2_list:
