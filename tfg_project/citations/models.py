@@ -6,6 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil de usuario extendido con información académica y social.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -235,6 +239,10 @@ class SavedCitation(models.Model):
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre usuarios.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -247,6 +255,10 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    """
+    Mensaje individual dentro de una conversación.
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -263,6 +275,10 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
+    """
+    Notificación para el usuario sobre eventos relevantes.
+    """
+
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
