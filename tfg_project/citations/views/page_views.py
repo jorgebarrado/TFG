@@ -106,6 +106,9 @@ def home(request):
 
 
 def citation_detail(request, pk):
+    """
+    Muestra el detalle de una cita incorrecta, incluyendo comentarios y reportes relacionados.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
@@ -180,55 +183,10 @@ def citation_detail(request, pk):
     }
     return render(request, "citations/citation_detail.html", context)
 
-    is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
-
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.citation = citation
-            comment.author = request.user
-
-            parent_id = request.POST.get("parent_id")
-            if parent_id:
-                comment.parent_id = int(parent_id)
-
-            comment.save()
-
-            if is_hx_request:
-                response = render(
-                    request,
-                    "citations/partials/_comment.html",
-                    {"comment": comment},
-                )
-                response["HX-Trigger"] = "comment-added"
-                return response
-
-            return redirect("citation_detail", pk=pk)
-
-        if is_hx_request:
-            error_response = render(
-                request,
-                "citations/partials/_comment_errors.html",
-                {"errors": form.errors},
-                status=400,
-            )
-            error_response["HX-Retarget"] = "#commentFeedback"
-            error_response["HX-Reswap"] = "innerHTML"
-            return error_response
-    else:
-        form = CommentForm()
-
-    context = {
-        "citation": citation,
-        "comment_form": form,
-        "comments": comments,
-        "other_area_reports": other_area_reports,
-        "popular_reports": popular_reports,
-    }
-    return render(request, "citations/citation_detail.html", context)
-
 def citation_preview(request, pk):
+    """
+    Renderiza una vista previa de la cita incorrecta para su inclusión en listas o modales.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects
             .select_related("author")
@@ -315,6 +273,9 @@ def semantic_citations_view(request):
 
 
 def citation_reader(request, report_id: int):
+    """
+    Vista principal del lector de PDF y análisis de citas.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
@@ -326,6 +287,9 @@ def citation_reader(request, report_id: int):
 
 
 def citation_reader_preview(request):
+    """
+    Vista previa simplificada del lector de PDF.
+    """
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",
