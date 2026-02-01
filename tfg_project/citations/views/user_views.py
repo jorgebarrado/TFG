@@ -26,6 +26,15 @@ User = get_user_model()
 
 
 def get_avatar_initial(user):
+    """
+    Obtiene la inicial del usuario para mostrar en el avatar por defecto.
+
+    Args:
+        user (User): El usuario del cual obtener la inicial.
+
+    Returns:
+        str: La primera letra del nombre de usuario o nombre de pila, o '?' si no hay datos.
+    """
     if getattr(user, "username", ""):
         return user.username[0].upper()
     if getattr(user, "first_name", ""):
@@ -34,6 +43,13 @@ def get_avatar_initial(user):
 
 
 def profile_view(request, username):
+    """
+    Muestra el perfil público de un usuario.
+
+    Args:
+        request: La solicitud HTTP.
+        username (str): El nombre de usuario del perfil a mostrar.
+    """
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
@@ -56,6 +72,12 @@ def profile_view(request, username):
 
 @login_required
 def account_settings(request):
+    """
+    Gestiona la configuración de la cuenta del usuario.
+
+    Permite actualizar la información básica del perfil, la información extendida
+    y cambiar la contraseña. Maneja múltiples formularios en una misma vista.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
@@ -163,6 +185,9 @@ def my_saved(request):
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Permite filtrar por tipo de publicación y buscar por texto en el título.
+    También verifica si los artículos tienen citas registradas.
     """
     user = request.user
     profile = UserProfile.objects.get(user=user)
@@ -200,6 +225,12 @@ def dblp_articles_view(request):
 
 @login_required
 def my_profile(request):
+    """
+    Muestra el perfil privado del usuario con estadísticas y actividad reciente.
+
+    Recopila información sobre reportes, comentarios, votos y citas guardadas
+    para mostrar un resumen de la actividad del usuario.
+    """
     user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
 

@@ -20,6 +20,12 @@ from ..services.semantic_fetch import get_citations_with_fallback
 def vote_view(request):
     """
     Gestiona los votos (positivos y negativos) en los reportes de citas.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        JsonResponse o HttpResponse: Respuesta JSON con error o HTML parcial con los botones de voto actualizados.
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "not_authenticated"}, status=403)
@@ -73,6 +79,12 @@ def vote_view(request):
 def toggle_saved(request):
     """
     Guarda o elimina una cita de la lista de guardados de un usuario.
+
+    Args:
+        request: La solicitud HTTP.
+
+    Returns:
+        HttpResponse: HTML parcial con el botón de guardar actualizado.
     """
     citation_id = request.POST.get("citation_id")
     citation = get_object_or_404(IncorrectCitation, id=citation_id)
@@ -96,10 +108,12 @@ def toggle_saved(request):
 def ajax_submit_citation(request):
     """
     Guarda un reporte de cita incorrecta enviado desde el formulario principal.
-    Acepta solicitudes AJAX y tradicionales.
+
+    Acepta solicitudes AJAX (HTMX o XMLHttpRequest) y solicitudes POST tradicionales.
     """
 
     def _is_ajax(req):
+        """Verifica si la solicitud es AJAX (HTMX o XMLHttpRequest)."""
         return req.headers.get("HX-Request") == "true" or req.headers.get(
             "X-Requested-With"
         ) == "XMLHttpRequest"
@@ -175,7 +189,13 @@ def ajax_submit_citation(request):
 
 def fetch_doi_metadata(request):
     """
-    Obtiene los metadatos de un DOI desde CrossRef.
+    Obtiene los metadatos de un DOI desde CrossRef (formato simplificado).
+
+    Args:
+        request: La solicitud HTTP con el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos del artículo o error.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -190,7 +210,13 @@ def fetch_doi_metadata(request):
 
 def get_all_metadata_from_doi(request):
     """
-    Obtiene todos los metadatos de un DOI desde CrossRef.
+    Obtiene todos los metadatos disponibles de un DOI desde CrossRef.
+
+    Args:
+        request: La solicitud HTTP con el parámetro 'doi'.
+
+    Returns:
+        JsonResponse: Metadatos completos del artículo o error.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -209,6 +235,8 @@ def get_all_metadata_from_doi(request):
 def register_ajax(request):
     """
     Gestiona el registro de usuarios a través de una solicitud AJAX.
+
+    Crea el usuario, lo autentica y lo loguea si el formulario es válido.
     """
     form = RegisterForm(request.POST)
     if form.is_valid():
@@ -239,7 +267,13 @@ def delete_comment(request, pk):
 
 def citation_suggest(request):
     """
-    Sugiere citas incorrectas basadas en un término de búsqueda.
+    Sugiere citas incorrectas basadas en un término de búsqueda (autocomplete).
+
+    Args:
+        request: La solicitud HTTP con el parámetro 'term'.
+
+    Returns:
+        JsonResponse: Lista de sugerencias (DOI original y título).
     """
     term = request.GET.get("term", "")
     qs = IncorrectCitation.objects.filter(
@@ -252,6 +286,8 @@ def citation_suggest(request):
 def get_semantic_citations(request):
     """
     Obtiene las citas de un artículo desde Semantic Scholar y las devuelve en formato JSON.
+
+    También verifica si alguna de las citas ya está registrada en el sistema.
     """
     doi = request.GET.get("doi")
     if not doi:

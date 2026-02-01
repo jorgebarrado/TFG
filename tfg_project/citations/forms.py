@@ -84,6 +84,7 @@ class UserProfileForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario UserProfileForm."""
         model = UserProfile
         fields = [
             "date_of_birth",
@@ -177,6 +178,7 @@ class UserProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario UserProfileForm y configura las clases CSS."""
         super().__init__(*args, **kwargs)
         checkbox_fields = [
             "notify_comments_on_my_reports",
@@ -209,6 +211,7 @@ class DBLPUrlForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario DBLPUrlForm."""
         model = UserProfile
         fields = ["dblp_url"]
 
@@ -219,10 +222,12 @@ class RegisterForm(UserCreationForm):
     """
 
     class Meta:
+        """Metadatos del formulario RegisterForm."""
         model = User
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario RegisterForm con placeholders."""
         super().__init__(*args, **kwargs)
 
         self.fields["username"].widget.attrs.update(
@@ -251,6 +256,7 @@ class ProfileForm(forms.ModelForm):
     """
 
     class Meta:
+        """Metadatos del formulario ProfileForm."""
         model = User
         fields = ("first_name", "username")
         widgets = {
@@ -269,6 +275,7 @@ class CustomPasswordChangeForm(PasswordChangeForm):
     """
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario CustomPasswordChangeForm."""
         super().__init__(*args, **kwargs)
         # Quitar autofocus del campo antiguo para evitar scroll no deseado
         if "old_password" in self.fields:
@@ -284,6 +291,7 @@ class LoginForm(AuthenticationForm):
     """
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario LoginForm con placeholders."""
         super().__init__(*args, **kwargs)
 
         # Usuario / email
@@ -309,6 +317,7 @@ class IncorrectCitationForm(forms.ModelForm):
     """
 
     class Meta:
+        """Metadatos del formulario IncorrectCitationForm."""
         model = IncorrectCitation
         fields = [
             "doi_original",
@@ -343,11 +352,15 @@ class CommentForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario CommentForm."""
         model = Comment
         fields = ["content", "parent_id"]
 
 
 class MessageForm(forms.Form):
+    """
+    Formulario para enviar mensajes privados.
+    """
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

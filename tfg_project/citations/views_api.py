@@ -38,7 +38,7 @@ try:
 except Exception:
 
     def extract_contexts_from_pdf(*args, **kwargs):
-        # Fallback vacío para no romper el arranque; la vista seguirá viva.
+        """Fallback vacío para no romper el arranque si falla la importación."""
         return []
 
 
@@ -273,11 +273,33 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """
+    Devuelve la lista de motores de extracción disponibles.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        JsonResponse: Lista de motores disponibles.
+    """
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """
+    Devuelve los datos necesarios para el lector de reportes.
+
+    Recopila información del reporte, como el PDF, las menciones, snippets y estadísticas
+    de referencias para ser consumidos por el frontend.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        report_id (int): El ID del reporte (IncorrectCitation).
+
+    Returns:
+        JsonResponse: Datos JSON estructurados para el lector.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)

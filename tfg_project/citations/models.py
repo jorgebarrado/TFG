@@ -6,6 +6,13 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil extendido del usuario.
+
+    Almacena información adicional sobre el usuario, como su área de investigación,
+    institución, enlaces sociales y preferencias de notificación.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -123,6 +130,7 @@ class UserProfile(models.Model):
     show_social_links = models.BooleanField(default=True)
 
     def __str__(self):
+        """Devuelve el nombre de usuario asociado al perfil."""
         return self.user.username
 
 
@@ -173,6 +181,7 @@ class IncorrectCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación en cadena del reporte."""
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
@@ -192,6 +201,12 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """
+        Verifica si el comentario es una respuesta a otro comentario.
+
+        Returns:
+            bool: True si es una respuesta, False si es un comentario principal.
+        """
         return self.parent is not None
 
 
@@ -211,6 +226,7 @@ class Vote(models.Model):
     value = models.IntegerField(choices=VOTE_CHOICES)
 
     class Meta:
+        """Metadatos del modelo Vote."""
         unique_together = ("user", "citation")
 
 
@@ -228,25 +244,35 @@ class SavedCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        """Metadatos del modelo SavedCitation."""
         unique_together = ("user", "citation")
 
     def __str__(self):
+        """Devuelve una representación en cadena de la cita guardada."""
         return f"{self.user.username} -> {self.citation.id}"
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación privada entre usuarios.
+    """
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        """Metadatos del modelo Conversation."""
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una representación en cadena de la conversación."""
         users = ", ".join(self.participants.values_list("username", flat=True))
         return f"Conversación entre {users}"
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje dentro de una conversación.
+    """
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -256,14 +282,20 @@ class Message(models.Model):
     is_read = models.BooleanField(default=False)
 
     class Meta:
+        """Metadatos del modelo Message."""
         ordering = ["created_at"]
 
     def __str__(self):
+        """Devuelve una representación en cadena del mensaje."""
         return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario.
+    """
     class NotificationType(models.TextChoices):
+        """Tipos de notificaciones disponibles."""
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
         NEW_MESSAGE = "NEW_MESSAGE", _("Nuevo mensaje")
@@ -292,9 +324,11 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        """Metadatos del modelo Notification."""
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una representación en cadena de la notificación."""
         return f"{self.title} -> {self.user.username}"
 
 
@@ -334,5 +368,5 @@ class CitationReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación en cadena del reporte avanzado."""
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-

@@ -18,6 +18,15 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """
+    Construye un diccionario normalizado con los metadatos del artículo original (autor).
+
+    Args:
+        paper (dict): Datos del paper obtenidos de DBLP.
+
+    Returns:
+        dict: Metadatos normalizados.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +40,15 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """
+    Construye un diccionario normalizado con los metadatos del artículo citante.
+
+    Args:
+        paper (dict): Datos del paper obtenidos de Semantic Scholar.
+
+    Returns:
+        dict: Metadatos normalizados.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +61,11 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """
+    Vista que lista los artículos del usuario actual obtenidos desde DBLP.
+
+    Permite al usuario seleccionar uno de sus artículos para revisar quién lo ha citado.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +101,16 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """
+    Vista que muestra los artículos que citan a un paper específico del usuario.
+
+    Obtiene las citas desde Semantic Scholar y marca aquellas que ya han sido
+    reportadas como incorrectas en el sistema.
+
+    Args:
+        request: La solicitud HTTP.
+        paper_id (int): El índice del paper en la lista obtenida de DBLP.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +196,11 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """
+    Crea un reporte de cita incorrecta desde la vista de revisión (tutor).
+
+    Recibe los DOIs y metadatos via POST y crea una instancia de IncorrectCitation.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 
@@ -175,6 +213,7 @@ def citation_review_create_report(request):
             return redirect("citation_detail", pk=existing.pk)
 
     def _parse_json(name: str) -> dict:
+        """Parsea un campo JSON del POST de forma segura."""
         raw = request.POST.get(name) or ""
         if not raw:
             return {}
