@@ -12,18 +12,27 @@ from .services.notifications import (
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Crea un perfil de usuario automáticamente cuando se crea un usuario.
+    """
     if created:
         UserProfile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
+    """
+    Guarda el perfil de usuario cuando se guarda el usuario.
+    """
     if hasattr(instance, "profile"):
         instance.profile.save()
 
 
 @receiver(post_save, sender=Comment)
 def comment_notification(sender, instance, created, **kwargs):
+    """
+    Envía una notificación cuando se crea un nuevo comentario.
+    """
     if not created:
         return
     notify_new_comment(instance)
@@ -31,6 +40,9 @@ def comment_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Vote)
 def vote_notification(sender, instance, created, **kwargs):
+    """
+    Envía una notificación cuando se registra un nuevo voto.
+    """
     if not created:
         return
     notify_new_vote(instance)
@@ -38,6 +50,9 @@ def vote_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Message)
 def message_notification(sender, instance, created, **kwargs):
+    """
+    Envía una notificación cuando se envía un nuevo mensaje privado.
+    """
     if not created:
         return
     notify_new_message(instance)

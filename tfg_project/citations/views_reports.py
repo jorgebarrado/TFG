@@ -21,7 +21,13 @@ def create_report_wizard(request):
 
 @require_POST
 def ajax_submit_report(request):
-    """Recibe el POST del wizard y crea un CitationReport."""
+    """
+    Recibe el POST del wizard y crea un CitationReport.
+
+    Procesa los datos enviados por el wizard, incluyendo metadatos, DOIs,
+    archivos PDF subidos y explicaciones del usuario, para crear un nuevo
+    registro de reporte.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
     error_type = (request.POST.get("error_type") or "other").strip()
@@ -31,6 +37,16 @@ def ajax_submit_report(request):
         return HttpResponseBadRequest("Faltan DOIs para crear el reporte.")
 
     def parse_json_field(name, default):
+        """
+        Intenta parsear un campo JSON del POST, devolviendo un valor por defecto si falla.
+
+        Args:
+            name (str): El nombre del campo en request.POST.
+            default (Any): El valor a devolver en caso de error o ausencia.
+
+        Returns:
+            Any: El valor parseado o el valor por defecto.
+        """
         raw = request.POST.get(name)
         if not raw:
             return default

@@ -10,6 +10,7 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """Resultado de la detección de una cita por IA."""
     page: int
     paragraph_index: int
     confidence: float
@@ -20,6 +21,13 @@ class AiDetectionResult:
 def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
     """
     Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
+
+    Args:
+        metadata_original (dict): Metadatos del artículo original (A).
+        paragraphs (List[Dict[str, Any]]): Lista de párrafos extraídos del artículo citador (B).
+
+    Returns:
+        str: Prompt formateado para la IA.
     """
     title_field = metadata_original.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
@@ -68,7 +76,16 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 
 def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
     """
-    Llamada real a Gemini para la detección de citas.
+    Llama al modelo Gemini para detectar citas basándose en el prompt.
+
+    Args:
+        prompt (str): El prompt construido.
+
+    Returns:
+        Dict[str, Any]: Respuesta JSON parseada del modelo.
+
+    Raises:
+        RuntimeError: Si la configuración es incorrecta o la respuesta no es válida.
     """
     missing_config_msg = (
         "La detección automática con IA no está configurada en este servidor "
@@ -100,10 +117,19 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
 
 def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str, Any]]:
     """
-    Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles con citation.citation_contexts.
+    Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles.
 
-    Por ahora asumimos que el modelo IncorrectCitation NO tiene todavía campo citing_pdf_uploaded,
-    así que si no está disponible devolvemos un error controlado.
+    Detecta automáticamente en qué partes del PDF citador (B) se menciona
+    el artículo original (A).
+
+    Args:
+        citation (IncorrectCitation): El reporte a analizar.
+
+    Returns:
+        List[Dict[str, Any]]: Lista de contextos detectados.
+
+    Raises:
+        RuntimeError: Si no hay PDF asociado al reporte.
     """
     citation_pdf = getattr(citation, "citing_pdf_uploaded", None)
     if not citation_pdf:

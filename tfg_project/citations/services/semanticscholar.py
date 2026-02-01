@@ -1,4 +1,4 @@
-# citations/services/semanticscholar.py
+"""Funciones para interactuar con la API de Semantic Scholar y descargar PDFs."""
 from __future__ import annotations
 
 import os
