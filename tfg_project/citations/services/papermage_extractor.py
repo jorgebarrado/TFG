@@ -23,6 +23,18 @@ class _Paragraph:
 
 
 class ContextHit(TypedDict):
+    """Representa una coincidencia de contexto de cita hallada en el PDF.
+
+    Attributes:
+        paragraph (str): El texto completo del párrafo donde se encontró la cita.
+        snippet (str): Un fragmento recortado alrededor de la coincidencia.
+        page (int): Número de página (1-based).
+        start (int): Índice de inicio de la coincidencia en el párrafo.
+        end (int): Índice de fin de la coincidencia en el párrafo.
+        pattern (str): El patrón regex que produjo la coincidencia.
+        section (str): Sección del documento ('body' o 'references').
+    """
+
     paragraph: str
     snippet: str
     page: int
@@ -167,32 +179,27 @@ def _make_snippet(
 
 
 def pm_extract_paragraphs(pdf_path: str) -> List[str]:
-    """
-    Extrae párrafos limpios de un PDF usando PaperMage en orden de lectura.
+    """Extrae párrafos limpios de un PDF usando PaperMage en orden de lectura.
 
-    Devuelve:
-        Lista de strings, cada uno representando un párrafo normalizado.
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        list: Lista de strings, cada uno representando un párrafo normalizado.
     """
     document = _load_document(pdf_path)
     return [paragraph.text for paragraph in _iter_paragraphs(document)]
 
 
 def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[ContextHit]:
-    """
-    Busca patrones regex dentro de los párrafos extraídos con PaperMage.
+    """Busca patrones regex dentro de los párrafos extraídos con PaperMage.
 
     Args:
-        pdf_path: Ruta al PDF a analizar.
-        patterns: Lista de patrones regex en forma de string.
+        pdf_path (str): Ruta al PDF a analizar.
+        patterns (list): Lista de patrones regex (strings) para buscar.
 
-    Devuelve:
-        Lista de ContextHit con:
-            - paragraph: texto completo del párrafo.
-            - snippet: fragmento alrededor del match.
-            - page: número de página (1-based).
-            - start: índice de inicio del match dentro del párrafo.
-            - end: índice final del match dentro del párrafo.
-            - pattern: patrón que produjo el match.
+    Returns:
+        list: Lista de objetos ContextHit describiendo las coincidencias encontradas.
     """
     document = _load_document(pdf_path)
     compiled_patterns = _compile_patterns(patterns)
@@ -231,9 +238,13 @@ def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[Contex
 
 
 def pm_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
-    """
-    Variante que devuelve página e índice global por párrafo.
-    Formato: [{"page": int, "index": int, "text": str}, ...]
+    """Variante que devuelve página e índice global por párrafo.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        list: Lista de diccionarios con claves 'page', 'index', 'text'.
     """
     document = _load_document(pdf_path)
     paragraphs: List[dict] = []

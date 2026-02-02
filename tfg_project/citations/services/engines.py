@@ -42,6 +42,11 @@ ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
+    """Enumera los motores de extracción disponibles en el sistema.
+
+    Returns:
+        list: Lista de diccionarios, cada uno describiendo un motor (clave, etiqueta, disponibilidad).
+    """
     return [
         {
             "key": "papermage",
@@ -108,12 +113,24 @@ def _attempt(
 def run_engine(
     engine_requested: str, pdf_path: str
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
-    """
-    Política:
-      - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
-      - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
-      - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
-    Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
+    """Ejecuta el proceso de extracción de texto utilizando el motor solicitado.
+
+    Implementa la siguiente política:
+    - 'papermage': Solo usa PaperMage; falla si no está disponible o errores.
+    - 'papercraft': Solo usa PaperCraft; falla si no está disponible o errores.
+    - 'auto': Intenta PaperMage, luego PaperCraft, y finalmente Generic como fallback.
+
+    Args:
+        engine_requested (str): Nombre del motor solicitado ('auto', 'papermage', 'papercraft', 'generic').
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        tuple: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
+            - engine_used (str): Nombre del motor que tuvo éxito.
+            - paragraphs (list): Lista de textos de los párrafos extraídos.
+            - attempts (list): Historial de intentos realizados.
+            - error_message (str): Mensaje de error si todo falló.
+            - paragraphs_with_positions (list): Lista de dicts con texto y metadatos de posición.
     """
     engine = (engine_requested or "auto").lower().strip()
     attempts: List[EngineAttempt] = []

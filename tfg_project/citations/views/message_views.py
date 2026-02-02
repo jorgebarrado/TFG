@@ -21,6 +21,17 @@ def _other_participants(conversation, current_user):
 
 @login_required
 def inbox(request):
+    """Muestra la bandeja de entrada de conversaciones del usuario.
+
+    Lista las conversaciones ordenadas por actividad reciente, mostrando
+    un conteo de mensajes no leídos y el último mensaje intercambiado.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla 'messages/inbox.html' con la lista de conversaciones.
+    """
     messages_prefetch = Prefetch(
         "messages",
         queryset=Message.objects.select_related("sender").order_by("created_at"),
@@ -51,6 +62,18 @@ def inbox(request):
 
 @login_required
 def conversation_detail(request, conversation_id):
+    """Muestra el detalle de una conversación y permite enviar nuevos mensajes.
+
+    Marca como leídos los mensajes recibidos al abrir la conversación.
+    Procesa el formulario para enviar respuestas.
+
+    Args:
+        request: Objeto HttpRequest.
+        conversation_id (int): ID de la conversación a visualizar.
+
+    Returns:
+        HttpResponse: Renderiza 'messages/conversation.html' o redirige tras enviar mensaje.
+    """
     conversation = get_object_or_404(
         Conversation.objects.filter(participants=request.user).prefetch_related(
             "participants"
@@ -86,6 +109,18 @@ def conversation_detail(request, conversation_id):
 
 @login_required
 def new_conversation(request, username):
+    """Inicia una nueva conversación con un usuario o redirige a una existente.
+
+    Busca si ya existe una conversación privada única entre el usuario actual y el destinatario.
+    Si existe, redirige a ella. Si no, crea una nueva.
+
+    Args:
+        request: Objeto HttpRequest.
+        username (str): Nombre de usuario del destinatario.
+
+    Returns:
+        HttpResponseRedirect: Redirige a la vista de detalle de la conversación.
+    """
     other_user = get_object_or_404(User, username=username)
 
     # 1. Obtener todas las conversaciones donde participan AMBOS

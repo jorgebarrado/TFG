@@ -72,8 +72,9 @@ User = get_user_model()
 
 
 class UserProfileForm(forms.ModelForm):
-    """
-    Formulario para actualizar la info extendida del perfil.
+    """Formulario para actualizar la info extendida del perfil.
+
+    Incluye campos específicos de investigación, redes sociales y preferencias.
     """
 
     country = forms.ChoiceField(
@@ -84,6 +85,8 @@ class UserProfileForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario UserProfileForm."""
+
         model = UserProfile
         fields = [
             "date_of_birth",
@@ -177,6 +180,7 @@ class UserProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario aplicando clases CSS a los campos checkbox."""
         super().__init__(*args, **kwargs)
         checkbox_fields = [
             "notify_comments_on_my_reports",
@@ -209,20 +213,23 @@ class DBLPUrlForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario DBLPUrlForm."""
+
         model = UserProfile
         fields = ["dblp_url"]
 
 
 class RegisterForm(UserCreationForm):
-    """
-    Formulario de registro de nuevos usuarios.
-    """
+    """Formulario de registro de nuevos usuarios."""
 
     class Meta:
+        """Metadatos del formulario RegisterForm."""
+
         model = User
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario agregando placeholders y clases CSS."""
         super().__init__(*args, **kwargs)
 
         self.fields["username"].widget.attrs.update(
@@ -251,6 +258,8 @@ class ProfileForm(forms.ModelForm):
     """
 
     class Meta:
+        """Metadatos del formulario ProfileForm."""
+
         model = User
         fields = ("first_name", "username")
         widgets = {
@@ -264,11 +273,10 @@ class ProfileForm(forms.ModelForm):
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):
-    """
-    Formulario de cambio de contraseña con estilos de Bootstrap.
-    """
+    """Formulario de cambio de contraseña con estilos de Bootstrap."""
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario aplicando clases CSS y ajustando el foco."""
         super().__init__(*args, **kwargs)
         # Quitar autofocus del campo antiguo para evitar scroll no deseado
         if "old_password" in self.fields:
@@ -279,11 +287,10 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 
 class LoginForm(AuthenticationForm):
-    """
-    Formulario de inicio de sesión con placeholders y estilos de Bootstrap.
-    """
+    """Formulario de inicio de sesión con placeholders y estilos de Bootstrap."""
 
     def __init__(self, *args, **kwargs):
+        """Inicializa el formulario configurando widgets y estilos."""
         super().__init__(*args, **kwargs)
 
         # Usuario / email
@@ -304,11 +311,11 @@ class LoginForm(AuthenticationForm):
 
 
 class IncorrectCitationForm(forms.ModelForm):
-    """
-    Formulario para reportar una cita incorrecta.
-    """
+    """Formulario para reportar una cita incorrecta."""
 
     class Meta:
+        """Metadatos del formulario IncorrectCitationForm."""
+
         model = IncorrectCitation
         fields = [
             "doi_original",
@@ -323,9 +330,7 @@ class IncorrectCitationForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
-    """
-    Formulario para crear y responder a comentarios.
-    """
+    """Formulario para crear y responder a comentarios."""
 
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
@@ -343,11 +348,15 @@ class CommentForm(forms.ModelForm):
     )
 
     class Meta:
+        """Metadatos del formulario CommentForm."""
+
         model = Comment
         fields = ["content", "parent_id"]
 
 
 class MessageForm(forms.Form):
+    """Formulario para enviar mensajes privados entre usuarios."""
+
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

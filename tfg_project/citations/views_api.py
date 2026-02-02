@@ -38,6 +38,7 @@ try:
 except Exception:
 
     def extract_contexts_from_pdf(*args, **kwargs):
+        """Función de respaldo vacía cuando PaperMage no está disponible."""
         # Fallback vacío para no romper el arranque; la vista seguirá viva.
         return []
 
@@ -273,11 +274,32 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """Devuelve la lista de motores de extracción disponibles.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+
+    Returns:
+        JsonResponse: Un objeto JSON con la clave 'engines' que contiene
+            la lista de motores soportados y su estado.
+    """
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """Provee los datos necesarios para el lector de PDFs.
+
+    Recupera la información asociada a un reporte de cita incorrecta,
+    incluyendo la URL del PDF, menciones, fragmentos y referencias extraídas.
+
+    Args:
+        request: El objeto HttpRequest de Django.
+        report_id (int): El ID del reporte IncorrectCitation.
+
+    Returns:
+        JsonResponse: Un objeto JSON con los datos del lector.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)
@@ -313,21 +335,18 @@ def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
 
 @require_GET
 def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
-    """
-    API que recibe una URL de PDF y devuelve los contextos de cita detectados.
+    """Recibe una URL de PDF y devuelve los contextos de cita detectados.
 
-    Parámetros GET:
-        - pdf_url: URL del PDF a analizar (obligatorio).
-        - pattern: puede repetirse varias veces para pasar patrones personalizados (opcional).
+    Args:
+        request: El objeto HttpRequest de Django. Puede contener:
+            - pdf_url (str): URL del PDF a analizar (obligatorio).
+            - pattern (list, optional): Patrones personalizados (vía `pattern` múltiple).
 
-    Respuesta:
-        200 OK:
-            {
-              "count": <número de contextos>,
-              "contexts": [ { ...ContextHit... }, ... ]
-            }
-        4xx / 5xx:
-            { "error": "mensaje de error" }
+    Returns:
+        JsonResponse: Un objeto JSON con:
+            - count (int): Número de contextos encontrados.
+            - contexts (list): Lista de contextos (ContextHit).
+            - error (str, optional): Mensaje de error en caso de fallo.
     """
     pdf_url = request.GET.get("pdf_url")
     if not pdf_url:
@@ -365,8 +384,20 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
 
 @require_POST
 def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
-    """
-    API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+    """Recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+
+    Procesa el archivo PDF enviado para extraer las citas que coincidan con
+    patrones predefinidos (referencias numéricas, Autor Año, DOIs).
+
+    Args:
+        request: El objeto HttpRequest de Django (debe ser POST y contener FILES).
+            - pdf_file: El archivo PDF subido.
+
+    Returns:
+        JsonResponse: Un objeto JSON con:
+            - count (int): Número de contextos encontrados.
+            - contexts (list): Lista de contextos hallados.
+            - error (str, optional): Mensaje de error.
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
@@ -410,9 +441,18 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
-    """
-    API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
-    y PaperMage para localizar contextos de cita en los PDFs open access.
+    """Analiza citas semánticas a partir de un DOI original.
+
+    Usa Semantic Scholar para buscar artículos que citan al DOI proporcionado
+    y PaperMage para localizar contextos de cita en los PDFs de acceso abierto.
+
+    Args:
+        request: El objeto HttpRequest de Django. Debe contener:
+            - doi (str): El DOI del artículo original.
+            - max_citing (int, optional): Máximo de artículos citadores a analizar.
+
+    Returns:
+        JsonResponse: Un objeto JSON con el resultado del análisis (SemanticCitationAnalysisResult).
     """
     doi = request.GET.get("doi")
     if not doi:
