@@ -6,11 +6,18 @@ from datetime import datetime, timezone
 
 
 class Trace:
-    """
-    Recolecta pasos ordenados y construye el JSON final para log.
+    """Recolecta pasos ordenados y construye el JSON final para log.
+
+    Utilizado para trazabilidad detallada de la extracción de contextos de cita.
     """
 
     def __init__(self, citing_doi: str = "", target: dict | None = None):
+        """Inicializa una nueva traza.
+
+        Args:
+            citing_doi (str): DOI del artículo citador.
+            target (dict, optional): Datos del artículo objetivo (citado).
+        """
         self.cid = uuid.uuid4().hex
         self.steps: list[dict] = []
         self.started = time.perf_counter()
@@ -29,6 +36,13 @@ class Trace:
         self.error = None
 
     def add(self, step: str, status: str, detail: str = ""):
+        """Registra un paso en el proceso.
+
+        Args:
+            step (str): Nombre del paso (p.ej. 'download').
+            status (str): Estado del paso ('ok', 'error', 'miss').
+            detail (str, optional): Detalles adicionales.
+        """
         self.steps.append(
             {
                 "step": step,
@@ -39,6 +53,14 @@ class Trace:
         )
 
     def as_log_line(self, level: str = "INFO") -> str:
+        """Genera una cadena JSON para escribir en el log.
+
+        Args:
+            level (str, optional): Nivel de log ('INFO', 'ERROR'). Defaults to "INFO".
+
+        Returns:
+            str: Cadena JSON con toda la información de la traza.
+        """
         payload = {
             "ts": self.ts,
             "level": level,
@@ -58,5 +80,10 @@ class Trace:
         return json.dumps(payload, ensure_ascii=False)
 
     def as_public_trace(self) -> list[dict]:
+        """Devuelve la lista de pasos para exponer públicamente (modo debug).
+
+        Returns:
+            list: Lista de diccionarios con los pasos ejecutados.
+        """
         # Para devolver al cliente si debug=1
         return self.steps.copy()

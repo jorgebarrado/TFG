@@ -43,6 +43,17 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """Muestra los artículos del usuario obtenidos desde DBLP para su revisión.
+
+    Permite al usuario seleccionar uno de sus propios artículos para buscar
+    posibles errores de citación.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/tutor_papers.html'.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +89,18 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """Muestra quién cita a un artículo seleccionado y permite crear reportes.
+
+    Consulta a Semantic Scholar para obtener los artículos que citan al paper
+    seleccionado por el usuario.
+
+    Args:
+        request: Objeto HttpRequest.
+        paper_id (int): Índice del paper en la lista devuelta por DBLP.
+
+    Returns:
+        HttpResponse: Renderiza 'citations/tutor_citers.html'.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +186,17 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """Crea un nuevo reporte de cita incorrecta desde el flujo del tutor.
+
+    Recibe los datos del artículo original y del citador, crea la instancia
+    de IncorrectCitation y redirige a su detalle.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        HttpResponseRedirect: Redirige al detalle del reporte creado.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 

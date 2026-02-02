@@ -15,6 +15,16 @@ from .papermage_extractor import ContextHit
 
 
 class AnalyzedCitation(TypedDict):
+    """Representa un artículo que cita al original, junto con el análisis de su contexto.
+
+    Attributes:
+        citing_title (str): Título del artículo citador.
+        citing_year (int, optional): Año de publicación.
+        citing_doi (str, optional): DOI del citador.
+        pdf_url (str, optional): URL del PDF de acceso abierto (si existe).
+        contexts (list): Lista de contextos (ContextHit) hallados en el PDF.
+    """
+
     citing_title: str
     citing_year: Optional[int]
     citing_doi: Optional[str]
@@ -23,6 +33,15 @@ class AnalyzedCitation(TypedDict):
 
 
 class SemanticCitationAnalysisResult(TypedDict):
+    """Resultado global del análisis de citaciones semánticas para un DOI.
+
+    Attributes:
+        original_doi (str): El DOI analizado.
+        citing_count (int): Número total de citadores analizados.
+        analyzed (list): Lista de AnalyzedCitation con los resultados por paper.
+        errors (list): Lista de mensajes de error ocurridos durante el proceso.
+    """
+
     original_doi: str
     citing_count: int
     analyzed: List[AnalyzedCitation]
@@ -33,8 +52,18 @@ def analyze_citations_for_original_doi(
     original_doi: str,
     max_citing_papers: int = 5,
 ) -> SemanticCitationAnalysisResult:
-    """
-    Dado el DOI de un artículo 'A', obtiene citadores desde Semantic Scholar y analiza sus PDFs.
+    """Obtiene artículos que citan a un DOI dado y analiza sus contextos de cita.
+
+    Utiliza Semantic Scholar para encontrar quién cita al artículo original (A),
+    y luego intenta descargar y analizar el PDF de cada citador (B) para encontrar
+    dónde y cómo se menciona a (A).
+
+    Args:
+        original_doi (str): DOI del artículo original (A).
+        max_citing_papers (int, optional): Límite de papers citadores a analizar. Defaults to 5.
+
+    Returns:
+        SemanticCitationAnalysisResult: Estructura con los resultados del análisis y posibles errores.
     """
     result: SemanticCitationAnalysisResult = {
         "original_doi": original_doi,

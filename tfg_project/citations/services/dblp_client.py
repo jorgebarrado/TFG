@@ -11,6 +11,18 @@ class DBLPClientError(RuntimeError):
 
 
 class DBLPPaper(TypedDict):
+    """Representa un artículo o publicación recuperado de DBLP.
+
+    Attributes:
+        title (str): Título de la publicación.
+        year (int, optional): Año de publicación.
+        doi (str, optional): DOI si está disponible.
+        type (str): Tipo de entrada (article, inproceedings, etc.).
+        authors (list): Lista de nombres de autores.
+        url (str, optional): URL principal (ee) del recurso.
+        dblp_key (str, optional): Clave única en DBLP.
+    """
+
     title: str
     year: Optional[int]
     doi: Optional[str]
@@ -41,8 +53,19 @@ def _extract_doi(ee_text: str) -> Optional[str]:
 
 
 def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
-    """
-    Obtiene la lista de publicaciones de un autor desde DBLP.
+    """Obtiene la lista de publicaciones de un autor desde DBLP.
+
+    Parsea el archivo XML del perfil del autor en DBLP y extrae sus publicaciones.
+
+    Args:
+        dblp_url (str): URL del perfil del autor en DBLP (formato HTML o XML).
+        timeout (int, optional): Tiempo máximo de espera para la solicitud. Defaults to 12.
+
+    Returns:
+        list: Lista de diccionarios DBLPPaper con las publicaciones encontradas.
+
+    Raises:
+        DBLPClientError: Si la URL es inválida, hay error de conexión o el XML está mal formado.
     """
     dblp_xml_url = _normalize_dblp_url(dblp_url)
     if not dblp_xml_url:

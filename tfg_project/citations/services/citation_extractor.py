@@ -222,6 +222,20 @@ def _pm_loose_extract(path: str) -> list[dict]:
 def process_manuscript(
     pdf_path: str, *, engine: str = "auto", debug: bool = False
 ) -> Dict[str, Any]:
+    """Procesa un manuscrito para extraer citas utilizando el motor especificado.
+
+    Orquesta la ejecución de los motores de extracción (PaperMage, PaperCraft, Generic)
+    según la configuración solicitada, manejando reintentos y fallbacks en modo 'auto'.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF en el sistema.
+        engine (str, optional): Nombre del motor a usar ('auto', 'papermage', etc.).
+            Defaults to "auto".
+        debug (bool, optional): Si es True, incluye trazas de depuración. Defaults to False.
+
+    Returns:
+        dict: Diccionario con los resultados de la extracción (párrafos, citas, metadatos).
+    """
     engine_used, paragraphs, attempts, err, paragraphs_with_positions = run_engine(
         engine, pdf_path
     )
