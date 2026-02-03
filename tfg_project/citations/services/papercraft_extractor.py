@@ -16,6 +16,14 @@ PC_AVAILABLE = fitz is not None or PyPDF2 is not None
 
 
 def _clean_text(raw: str) -> str:
+    """Limpia y normaliza un bloque de texto crudo.
+
+    Args:
+        raw (str): Texto original.
+
+    Returns:
+        str: Texto limpio sin saltos de línea innecesarios ni espacios múltiples.
+    """
     text = raw.replace("\r\n", "\n")
     text = re.sub(r"[ \t]*\n[ \t]*", " ", text)
     text = re.sub(r"\s+", " ", text)
@@ -23,6 +31,14 @@ def _clean_text(raw: str) -> str:
 
 
 def _split_paragraphs(text: str) -> List[str]:
+    """Divide un texto en párrafos basándose en saltos de línea dobles.
+
+    Args:
+        text (str): Texto completo.
+
+    Returns:
+        List[str]: Lista de párrafos.
+    """
     parts = re.split(r"\n\s*\n", text)
     out: List[str] = []
     for part in parts:
@@ -33,6 +49,14 @@ def _split_paragraphs(text: str) -> List[str]:
 
 
 def _extract_blocks_with_pymupdf(pdf_path: str) -> List[dict]:
+    """Extrae bloques de texto ordenados usando PyMuPDF.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con metadatos de página e índice.
+    """
     paragraphs: List[dict] = []
     index = 0
     with fitz.open(pdf_path) as doc:
@@ -57,6 +81,14 @@ def _extract_blocks_with_pymupdf(pdf_path: str) -> List[dict]:
 
 
 def _extract_text_with_pymupdf(pdf_path: str) -> List[dict]:
+    """Extrae texto plano página por página usando PyMuPDF como fallback a bloques.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con metadatos.
+    """
     paragraphs: List[dict] = []
     index = 0
     with fitz.open(pdf_path) as doc:
@@ -75,6 +107,14 @@ def _extract_text_with_pymupdf(pdf_path: str) -> List[dict]:
 
 
 def _extract_text_with_pypdf2(pdf_path: str) -> str:
+    """Extrae todo el texto del PDF usando PyPDF2.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        str: Texto completo concatenado.
+    """
     text_parts: List[str] = []
     with open(pdf_path, "rb") as handle:
         reader = PyPDF2.PdfReader(handle)
@@ -86,6 +126,14 @@ def _extract_text_with_pypdf2(pdf_path: str) -> str:
     return "\n".join(text_parts)
 
 def _extract_text_with_pypdf2_with_positions(pdf_path: str) -> List[dict]:
+    """Extrae párrafos con posición de página usando PyPDF2.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con metadatos.
+    """
     paragraphs: List[dict] = []
     index = 0
     with open(pdf_path, "rb") as handle:
@@ -108,11 +156,33 @@ def _extract_text_with_pypdf2_with_positions(pdf_path: str) -> List[dict]:
 
 
 def _score_paragraphs(paragraphs: List[dict]) -> tuple[int, int]:
+    """Calcula una puntuación heurística para un conjunto de párrafos extraídos.
+
+    Args:
+        paragraphs (List[dict]): Lista de párrafos.
+
+    Returns:
+        tuple[int, int]: (Total de caracteres, Cantidad de párrafos).
+    """
     total_chars = sum(len(p.get("text", "")) for p in paragraphs)
     return total_chars, len(paragraphs)
 
 
 def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
+    """Extrae párrafos con metadatos posicionales usando PaperCraft (estrategia híbrida).
+
+    Intenta usar PyMuPDF (bloques o texto plano) y elige el mejor resultado.
+    Si falla, hace fallback a PyPDF2.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        List[dict]: Lista de párrafos con metadatos ('page', 'index', 'text').
+
+    Raises:
+        RuntimeError: Si PaperCraft no está disponible (ni fitz ni PyPDF2 instalados).
+    """
     if not PC_AVAILABLE:
         raise RuntimeError("PaperCraft not available in this environment.")
 
@@ -143,5 +213,13 @@ def pc_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
 
 
 def pc_extract_paragraphs(pdf_path: str) -> List[str]:
+    """Extrae lista simple de párrafos usando PaperCraft.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        List[str]: Lista de textos de los párrafos.
+    """
     paragraphs = pc_extract_paragraphs_with_positions(pdf_path)
     return [item["text"] for item in paragraphs]

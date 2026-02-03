@@ -18,6 +18,14 @@ from ..services.semantic_scholar_client import (
 
 
 def _build_original_metadata(paper: dict) -> dict:
+    """Construye metadatos normalizados para el artículo original (DBLP).
+
+    Args:
+        paper (dict): Datos del paper desde DBLP.
+
+    Returns:
+        dict: Metadatos estructurados.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -31,6 +39,14 @@ def _build_original_metadata(paper: dict) -> dict:
 
 
 def _build_citing_metadata(paper: dict) -> dict:
+    """Construye metadatos normalizados para el artículo citador (Semantic Scholar).
+
+    Args:
+        paper (dict): Datos del paper desde Semantic Scholar.
+
+    Returns:
+        dict: Metadatos estructurados.
+    """
     return {
         "title": paper.get("title"),
         "doi": paper.get("doi"),
@@ -43,6 +59,16 @@ def _build_citing_metadata(paper: dict) -> dict:
 
 @login_required
 def citation_review_papers(request):
+    """Muestra la lista de publicaciones del usuario obtenidas desde DBLP.
+
+    Es el primer paso del 'Tutor' o asistente de revisión de citas.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderizado de `citations/tutor_papers.html`.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
 
@@ -78,6 +104,18 @@ def citation_review_papers(request):
 
 @login_required
 def citation_review_citers(request, paper_id: int):
+    """Muestra los artículos que citan a una publicación seleccionada del usuario.
+
+    Segundo paso del 'Tutor'. Obtiene citadores vía Semantic Scholar y permite
+    crear reportes para ellos.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        paper_id (int): Índice del paper en la lista de DBLP.
+
+    Returns:
+        HttpResponse: Renderizado de `citations/tutor_citers.html`.
+    """
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
@@ -163,6 +201,17 @@ def citation_review_citers(request, paper_id: int):
 @require_POST
 @login_required
 def citation_review_create_report(request):
+    """Crea un nuevo reporte de cita incorrecta desde el flujo del Tutor.
+
+    Inicializa el reporte con los metadatos de ambos artículos y lo deja en estado
+    pendiente para que el usuario complete los detalles.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP POST.
+
+    Returns:
+        HttpResponse: Redirección al detalle del reporte recién creado.
+    """
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 

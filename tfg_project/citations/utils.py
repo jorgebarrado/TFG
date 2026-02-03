@@ -6,6 +6,8 @@ import requests
 def get_articles_from_dblp(dblp_url):
     """Obtiene la lista de publicaciones de un autor desde su perfil de DBLP.
 
+    Parsea el XML de DBLP para extraer títulos, DOIs y tipos de publicación.
+
     Args:
         dblp_url (str): La URL de la página de perfil del autor en DBLP
             (puede ser la versión .html o .xml).

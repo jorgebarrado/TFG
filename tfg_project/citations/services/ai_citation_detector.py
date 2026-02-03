@@ -10,6 +10,7 @@ from .papermage_extractor import pm_extract_paragraphs_with_positions
 
 @dataclass
 class AiDetectionResult:
+    """Estructura de datos para almacenar el resultado de una detección por IA."""
     page: int
     paragraph_index: int
     confidence: float
@@ -18,8 +19,18 @@ class AiDetectionResult:
 
 
 def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
-    """
-    Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
+    """Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
+
+    Genera un prompt estructurado que instruye a la IA para identificar menciones del artículo A
+    dentro del texto del artículo B.
+
+    Args:
+        metadata_original (dict): Metadatos del artículo citado (título, autor, año, etc.).
+        paragraphs (List[Dict[str, Any]]): Lista de párrafos extraídos del artículo citador,
+            donde cada dict contiene 'text', 'page' e 'index'.
+
+    Returns:
+        str: El prompt completo listo para ser enviado al LLM.
     """
     title_field = metadata_original.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
@@ -67,8 +78,18 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 
 
 def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
-    """
-    Llamada real a Gemini para la detección de citas.
+    """Realiza la llamada al modelo Gemini para detectar citas.
+
+    Args:
+        prompt (str): El prompt construido con `build_ai_prompt_for_detection`.
+
+    Returns:
+        Dict[str, Any]: La respuesta del modelo parseada como JSON.
+        Se espera que contenga la clave 'matches'.
+
+    Raises:
+        RuntimeError: Si la librería `google.generativeai` no está instalada,
+            si falta la `GOOGLE_API_KEY` o si la respuesta no es un JSON válido.
     """
     missing_config_msg = (
         "La detección automática con IA no está configurada en este servidor "
@@ -99,11 +120,21 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
 
 
 def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str, Any]]:
-    """
-    Extrae párrafos del PDF B, llama a la IA y devuelve contextos compatibles con citation.citation_contexts.
+    """Extrae párrafos del PDF B, llama a la IA y devuelve contextos de cita.
 
-    Por ahora asumimos que el modelo IncorrectCitation NO tiene todavía campo citing_pdf_uploaded,
-    así que si no está disponible devolvemos un error controlado.
+    Detecta automáticamente dónde se cita el artículo original dentro del PDF
+    subido en el reporte.
+
+    Args:
+        citation (IncorrectCitation): La instancia del reporte que contiene
+            los metadatos y el PDF (si existe).
+
+    Returns:
+        List[Dict[str, Any]]: Lista de contextos encontrados, compatibles
+        con el formato `citation_contexts` del modelo.
+
+    Raises:
+        RuntimeError: Si el reporte no tiene un PDF asociado (`citing_pdf_uploaded`).
     """
     citation_pdf = getattr(citation, "citing_pdf_uploaded", None)
     if not citation_pdf:

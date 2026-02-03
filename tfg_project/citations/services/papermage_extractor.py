@@ -23,6 +23,7 @@ class _Paragraph:
 
 
 class ContextHit(TypedDict):
+    """Representa una coincidencia de cita encontrada en el texto."""
     paragraph: str
     snippet: str
     page: int
@@ -40,10 +41,15 @@ def _ensure_papermage_available() -> None:
 
 
 def _load_document(pdf_path: str) -> Document:
-    """
-    Carga un documento PDF usando PaperMage y PDFPlumberParser.
+    """Carga un documento PDF usando PaperMage y PDFPlumberParser.
 
-    Lanza:
+    Args:
+        pdf_path (str): Ruta al archivo PDF.
+
+    Returns:
+        Document: Objeto Document de PaperMage.
+
+    Raises:
         FileNotFoundError: si la ruta no existe o no es un archivo.
         RuntimeError: si PaperMage no está disponible o falla el parseo.
     """
@@ -61,8 +67,13 @@ def _load_document(pdf_path: str) -> Document:
 
 
 def _clean_paragraph(raw: str) -> str:
-    """
-    Normaliza un bloque de texto eliminando saltos raros y espacios duplicados.
+    """Normaliza un bloque de texto eliminando saltos raros y espacios duplicados.
+
+    Args:
+        raw (str): Texto crudo.
+
+    Returns:
+        str: Texto normalizado.
     """
     normalized = raw.replace("\r\n", "\n")
     # Unir líneas en un mismo párrafo
@@ -75,9 +86,13 @@ def _clean_paragraph(raw: str) -> str:
 
 
 def _split_paragraphs(text: str) -> List[str]:
-    """
-    Divide un bloque grande de texto en párrafos, usando dobles saltos de línea
-    como separador lógico.
+    """Divide un bloque grande de texto en párrafos, usando dobles saltos de línea.
+
+    Args:
+        text (str): Texto completo.
+
+    Returns:
+        List[str]: Lista de párrafos.
     """
     chunks = re.split(r"\n\s*\n", text)
     paragraphs: List[str] = []
@@ -89,9 +104,16 @@ def _split_paragraphs(text: str) -> List[str]:
 
 
 def _page_text(page: Entity, symbols: str) -> str:
-    """
-    Reconstruye el texto de una página a partir de sus spans, respetando
-    el orden de lectura. Hace un recorte defensivo de los índices.
+    """Reconstruye el texto de una página a partir de sus spans.
+
+    Respeta el orden de lectura y realiza recortes defensivos de índices.
+
+    Args:
+        page (Entity): Entidad de página de PaperMage.
+        symbols (str): Cadena completa de símbolos del documento.
+
+    Returns:
+        str: Texto de la página.
     """
     spans = sorted(page.spans, key=lambda span: span.start)
     page_text_parts: List[str] = []
@@ -107,8 +129,13 @@ def _page_text(page: Entity, symbols: str) -> str:
 
 
 def _iter_paragraphs(doc: Document) -> Iterable[_Paragraph]:
-    """
-    Itera sobre todos los párrafos del documento, preservando el número de página.
+    """Itera sobre todos los párrafos del documento, preservando el número de página.
+
+    Args:
+        doc (Document): Documento de PaperMage cargado.
+
+    Yields:
+        _Paragraph: Objeto con texto y número de página.
     """
     symbols = getattr(doc, "symbols", None)
     if not symbols:
@@ -131,10 +158,15 @@ def _iter_paragraphs(doc: Document) -> Iterable[_Paragraph]:
 
 
 def _compile_patterns(patterns: Sequence[str]) -> List[Tuple[str, re.Pattern[str]]]:
-    """
-    Compila una lista de patrones regex, devolviendo (pattern_str, pattern_compilado).
+    """Compila una lista de patrones regex.
 
-    Lanza:
+    Args:
+        patterns (Sequence[str]): Lista de patrones en string.
+
+    Returns:
+        List[Tuple[str, re.Pattern[str]]]: Lista de tuplas (patrón original, objeto regex).
+
+    Raises:
         ValueError: si alguno de los patrones no es válido.
     """
     compiled: List[Tuple[str, re.Pattern[str]]] = []
@@ -149,11 +181,18 @@ def _compile_patterns(patterns: Sequence[str]) -> List[Tuple[str, re.Pattern[str
 def _make_snippet(
     text: str, start: int, end: int, padding: int = SNIPPET_PADDING
 ) -> str:
-    """
-    Construye un snippet alrededor del match [start, end), con un padding dado.
+    """Construye un snippet alrededor del match [start, end), con un padding dado.
 
-    Añade '…' al inicio o final si el snippet ha sido recortado respecto al texto
-    original.
+    Añade '…' al inicio o final si el snippet ha sido recortado respecto al texto original.
+
+    Args:
+        text (str): Texto completo.
+        start (int): Inicio del match.
+        end (int): Fin del match.
+        padding (int, optional): Caracteres de contexto extra. Defaults to SNIPPET_PADDING.
+
+    Returns:
+        str: El snippet generado.
     """
     left = max(start - padding, 0)
     right = min(end + padding, len(text))
@@ -167,32 +206,27 @@ def _make_snippet(
 
 
 def pm_extract_paragraphs(pdf_path: str) -> List[str]:
-    """
-    Extrae párrafos limpios de un PDF usando PaperMage en orden de lectura.
+    """Extrae párrafos limpios de un PDF usando PaperMage en orden de lectura.
 
-    Devuelve:
-        Lista de strings, cada uno representando un párrafo normalizado.
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[str]: Lista de párrafos normalizados.
     """
     document = _load_document(pdf_path)
     return [paragraph.text for paragraph in _iter_paragraphs(document)]
 
 
 def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[ContextHit]:
-    """
-    Busca patrones regex dentro de los párrafos extraídos con PaperMage.
+    """Busca patrones regex dentro de los párrafos extraídos con PaperMage.
 
     Args:
-        pdf_path: Ruta al PDF a analizar.
-        patterns: Lista de patrones regex en forma de string.
+        pdf_path (str): Ruta al PDF a analizar.
+        patterns (List[str]): Lista de patrones regex en forma de string.
 
-    Devuelve:
-        Lista de ContextHit con:
-            - paragraph: texto completo del párrafo.
-            - snippet: fragmento alrededor del match.
-            - page: número de página (1-based).
-            - start: índice de inicio del match dentro del párrafo.
-            - end: índice final del match dentro del párrafo.
-            - pattern: patrón que produjo el match.
+    Returns:
+        List[ContextHit]: Lista de coincidencias encontradas con metadatos de contexto.
     """
     document = _load_document(pdf_path)
     compiled_patterns = _compile_patterns(patterns)
@@ -231,9 +265,13 @@ def extract_contexts_from_pdf(pdf_path: str, patterns: List[str]) -> List[Contex
 
 
 def pm_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
-    """
-    Variante que devuelve página e índice global por párrafo.
-    Formato: [{"page": int, "index": int, "text": str}, ...]
+    """Variante que devuelve página e índice global por párrafo.
+
+    Args:
+        pdf_path (str): Ruta al PDF.
+
+    Returns:
+        List[dict]: Lista de diccionarios con claves 'page', 'index', 'text'.
     """
     document = _load_document(pdf_path)
     paragraphs: List[dict] = []

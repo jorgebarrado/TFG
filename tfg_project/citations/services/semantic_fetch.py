@@ -5,8 +5,7 @@ CR_BASE = "https://api.crossref.org"
 
 
 def _safe_get(url, params=None, timeout=12):
-    """
-    Realiza una solicitud GET a una URL de forma segura, manejando errores de conexión y timeouts.
+    """Realiza una solicitud GET a una URL de forma segura, manejando errores de conexión y timeouts.
 
     Args:
         url (str): La URL a la que se realizará la solicitud.
@@ -27,8 +26,7 @@ def _safe_get(url, params=None, timeout=12):
 
 
 def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
-    """
-    Obtiene el paperId y el número de citas de un artículo desde Semantic Scholar.
+    """Obtiene el paperId y el número de citas de un artículo desde Semantic Scholar.
 
     Args:
         doi (str): El DOI del artículo.
@@ -44,8 +42,7 @@ def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
 
 
 def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
-    """
-    Obtiene una lista de citas para un artículo desde Semantic Scholar.
+    """Obtiene una lista de citas para un artículo desde Semantic Scholar.
 
     Args:
         doi (str): El DOI del artículo.
@@ -93,8 +90,7 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
 
 
 def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
-    """
-    Obtiene citas de CrossRef como alternativa si Semantic Scholar no devuelve resultados.
+    """Obtiene citas de CrossRef como alternativa si Semantic Scholar no devuelve resultados.
 
     Args:
         doi (str): El DOI del artículo.
@@ -140,8 +136,7 @@ def get_crossref_citations(doi: str, rows: int = 100) -> list[dict]:
 
 
 def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
-    """
-    Obtiene citas para un DOI, intentando primero con Semantic Scholar y luego con CrossRef.
+    """Obtiene citas para un DOI, intentando primero con Semantic Scholar y luego con CrossRef.
 
     Args:
         doi (str): El DOI del artículo.

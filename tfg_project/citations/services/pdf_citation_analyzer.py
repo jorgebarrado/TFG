@@ -21,8 +21,16 @@ class PDFDownloadError(RuntimeError):
 
 
 def _download_pdf_to_temp(pdf_url: str) -> Path:
-    """
-    Descarga un PDF desde una URL a un archivo temporal y devuelve su ruta.
+    """Descarga un PDF desde una URL a un archivo temporal y devuelve su ruta.
+
+    Args:
+        pdf_url (str): URL del PDF a descargar.
+
+    Returns:
+        Path: Ruta al archivo temporal descargado.
+
+    Raises:
+        PDFDownloadError: Si hay un error de conexión, timeout o código de estado HTTP no 200.
     """
     try:
         response = requests.get(pdf_url, stream=True, timeout=20)
@@ -49,8 +57,17 @@ def analyze_pdf_citations_from_url(
     pdf_url: str,
     patterns: Optional[List[str]] = None,
 ) -> List[ContextHit]:
-    """
-    Descarga un PDF desde una URL y devuelve los contextos de cita detectados.
+    """Descarga un PDF desde una URL y devuelve los contextos de cita detectados.
+
+    Coordina la descarga del PDF y la extracción de citas usando PaperMage.
+
+    Args:
+        pdf_url (str): URL del PDF.
+        patterns (Optional[List[str]], optional): Lista de patrones regex personalizados.
+            Si es None, usa DEFAULT_PATTERNS.
+
+    Returns:
+        List[ContextHit]: Lista de contextos de citas encontrados.
     """
     if patterns is None:
         patterns = DEFAULT_PATTERNS
