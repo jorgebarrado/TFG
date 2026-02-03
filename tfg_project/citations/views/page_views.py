@@ -23,8 +23,15 @@ from django.shortcuts import get_object_or_404, render
 from ..models import IncorrectCitation
 
 def citation_list(request):
-    """
-    Muestra una lista paginada de citas incorrectas, con opciones de filtrado.
+    """Muestra una lista paginada de citas incorrectas, con opciones de filtrado.
+
+    Permite filtrar por área de publicación, tipo de cita, año y búsqueda por texto.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/citation_list.html`.
     """
     qs = (
         IncorrectCitation.objects.select_related("author")
@@ -75,8 +82,15 @@ def citation_list(request):
 
 
 def home(request):
-    """
-    Renderiza la pogina de inicio.
+    """Renderiza la página de inicio.
+
+    Muestra un buscador, explicación del proyecto y modales de login/registro si se solicitan.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/home.html`.
     """
     show_login_modal = request.GET.get("show_login_modal") == "1"
     dblp_form = None
@@ -106,6 +120,19 @@ def home(request):
 
 
 def citation_detail(request, pk):
+    """Muestra el detalle completo de un reporte de cita.
+
+    Incluye metadatos, contextos de cita, comentarios, reportes relacionados y populares.
+    Maneja también el envío de nuevos comentarios.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        pk (int): ID del reporte (IncorrectCitation).
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/citation_detail.html` o
+        fragmentos HTML para HTMX (comentarios).
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
@@ -180,55 +207,17 @@ def citation_detail(request, pk):
     }
     return render(request, "citations/citation_detail.html", context)
 
-    is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
-
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.citation = citation
-            comment.author = request.user
-
-            parent_id = request.POST.get("parent_id")
-            if parent_id:
-                comment.parent_id = int(parent_id)
-
-            comment.save()
-
-            if is_hx_request:
-                response = render(
-                    request,
-                    "citations/partials/_comment.html",
-                    {"comment": comment},
-                )
-                response["HX-Trigger"] = "comment-added"
-                return response
-
-            return redirect("citation_detail", pk=pk)
-
-        if is_hx_request:
-            error_response = render(
-                request,
-                "citations/partials/_comment_errors.html",
-                {"errors": form.errors},
-                status=400,
-            )
-            error_response["HX-Retarget"] = "#commentFeedback"
-            error_response["HX-Reswap"] = "innerHTML"
-            return error_response
-    else:
-        form = CommentForm()
-
-    context = {
-        "citation": citation,
-        "comment_form": form,
-        "comments": comments,
-        "other_area_reports": other_area_reports,
-        "popular_reports": popular_reports,
-    }
-    return render(request, "citations/citation_detail.html", context)
 
 def citation_preview(request, pk):
+    """Devuelve una vista previa de un reporte de cita (para modales o popovers).
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        pk (int): ID del reporte.
+
+    Returns:
+        HttpResponse: Renderizado parcial `citations/partials/_citation_preview.html`.
+    """
     citation = get_object_or_404(
         IncorrectCitation.objects
             .select_related("author")
@@ -283,8 +272,16 @@ def citation_preview(request, pk):
     )
 
 def semantic_citations_view(request):
-    """
-    Muestra las citas de un art??culo obtenidas de Semantic Scholar.
+    """Muestra las citas de un artículo obtenidas de Semantic Scholar.
+
+    Permite ver qué otros artículos citan al DOI proporcionado y si ya existen
+    reportes para ellos en el sistema.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP. Requiere parámetro GET `doi`.
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/semantic_citations.html`.
     """
     doi = request.GET.get("doi")
     if not doi:
@@ -315,6 +312,17 @@ def semantic_citations_view(request):
 
 
 def citation_reader(request, report_id: int):
+    """Vista principal del lector (Reader) de PDFs para un reporte.
+
+    Inicializa el visor de PDF con los datos del reporte seleccionado.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        report_id (int): ID del reporte (IncorrectCitation).
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/reader.html`.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
@@ -326,6 +334,14 @@ def citation_reader(request, report_id: int):
 
 
 def citation_reader_preview(request):
+    """Vista de previsualización del lector de PDFs.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderizado de la plantilla `citations/reader_preview.html`.
+    """
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",
