@@ -63,9 +63,7 @@ def vote_view(request):
         "downvotes": downvotes,
         "user_vote": user_vote,
     }
-    return render(
-        request, "citations/partials/_vote_buttons.html", context
-    )
+    return render(request, "citations/partials/_vote_buttons.html", context)
 
 
 @require_POST
@@ -88,9 +86,7 @@ def toggle_saved(request):
         is_saved = True
 
     context = {"citation": citation, "is_saved": is_saved}
-    return render(
-        request, "citations/partials/_save_button.html", context
-    )
+    return render(request, "citations/partials/_save_button.html", context)
 
 
 def ajax_submit_citation(request):
@@ -100,9 +96,10 @@ def ajax_submit_citation(request):
     """
 
     def _is_ajax(req):
-        return req.headers.get("HX-Request") == "true" or req.headers.get(
-            "X-Requested-With"
-        ) == "XMLHttpRequest"
+        return (
+            req.headers.get("HX-Request") == "true"
+            or req.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
     if request.method != "POST":
         if _is_ajax(request):
@@ -262,7 +259,9 @@ def get_semantic_citations(request):
     registered_citations = IncorrectCitation.objects.filter(
         doi_original=doi, doi_incorrect__in=citing_dois
     ).values("doi_incorrect", "id")
-    registered_map = {item["doi_incorrect"]: item["id"] for item in registered_citations}
+    registered_map = {
+        item["doi_incorrect"]: item["id"] for item in registered_citations
+    }
 
     for c in citations:
         citing_doi = c.get("doi")
@@ -272,9 +271,11 @@ def get_semantic_citations(request):
         else:
             c["is_registered"] = False
 
-    return JsonResponse({
-        "doi": doi,
-        "citation_count": citation_count,
-        "citations": citations,
-        "source": source,
-    })
+    return JsonResponse(
+        {
+            "doi": doi,
+            "citation_count": citation_count,
+            "citations": citations,
+            "source": source,
+        }
+    )
