@@ -6,6 +6,44 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Perfil extendido de usuario que complementa al modelo User de Django.
+
+    Almacena información adicional sobre el investigador, sus preferencias,
+    enlaces sociales y configuración de notificaciones.
+
+    Attributes:
+        user (OneToOneField): Relación uno a uno con el modelo User.
+        dblp_url (URLField): URL del perfil de DBLP del usuario.
+        date_of_birth (DateField): Fecha de nacimiento.
+        country (CharField): País de residencia.
+        preferred_language (CharField): Idioma preferido para la interfaz ('es' o 'en').
+        research_area (CharField): Área principal de investigación (ej. Computer Science).
+        profession (CharField): Rol profesional (ej. PhD Student, Professor).
+        institution (CharField): Institución a la que pertenece.
+        contact_email (EmailField): Correo electrónico visible para contacto público.
+        social_link_1 (URLField): Primer enlace a red social o web personal.
+        social_link_2 (URLField): Segundo enlace a red social.
+        social_link_3 (URLField): Tercer enlace a red social.
+        social_link_4 (URLField): Cuarto enlace a red social.
+        notify_comments_on_my_reports (BooleanField): Preferencia para recibir notificaciones
+            de comentarios en reportes propios.
+        notify_comments_on_followed (BooleanField): Preferencia para recibir notificaciones
+            de comentarios en reportes seguidos.
+        notify_votes_on_my_reports (BooleanField): Preferencia para recibir notificaciones
+            de votos en reportes propios.
+        notify_news_and_updates (BooleanField): Preferencia para recibir noticias de la plataforma.
+        avatar (ImageField): Imagen de perfil del usuario.
+        bio (TextField): Biografía corta o descripción.
+        twitter_url (URLField): URL de Twitter/X (legacy).
+        github_url (URLField): URL de GitHub (legacy).
+        linkedin_url (URLField): URL de LinkedIn (legacy).
+        personal_website (URLField): Sitio web personal (legacy).
+        is_public (BooleanField): Indica si el perfil es visible públicamente.
+        show_activity (BooleanField): Indica si se muestra la actividad reciente en el perfil.
+        show_social_links (BooleanField): Indica si se muestran los enlaces sociales.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -123,6 +161,7 @@ class UserProfile(models.Model):
     show_social_links = models.BooleanField(default=True)
 
     def __str__(self):
+        """Devuelve el nombre de usuario asociado al perfil."""
         return self.user.username
 
 
@@ -149,7 +188,19 @@ AREA_CHOICES = [
 
 class IncorrectCitation(models.Model):
     """
-    Representa un reporte de una cita incorrecta.
+    Representa un reporte de una cita incorrecta entre dos artículos científicos.
+
+    Attributes:
+        author (ForeignKey): Usuario que creó el reporte.
+        doi_original (CharField): DOI del artículo original (el que debería haber sido citado o el citado).
+        doi_incorrect (CharField): DOI del artículo que cita incorrectamente.
+        incorrect_reason (TextField): Explicación del usuario sobre por qué la cita es incorrecta.
+        metadata_original (JSONField): Metadatos en JSON del artículo original (título, autores, etc.).
+        metadata_incorrect (JSONField): Metadatos en JSON del artículo citador.
+        citation_contexts (JSONField): Fragmentos de texto donde aparece la cita.
+        citation_type (CharField): Tipo de error de citación (ej. malinterpretación).
+        publication_area (CharField): Área científica de la publicación.
+        created_at (DateTimeField): Fecha y hora de creación del reporte.
     """
 
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -173,12 +224,22 @@ class IncorrectCitation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una representación legible del reporte."""
         return f"{self.doi_original} citado incorrectamente por {self.doi_incorrect}"
 
 
 class Comment(models.Model):
     """
-    Representa un comentario en un reporte de cita incorrecta.
+    Representa un comentario realizado por un usuario en un reporte de cita incorrecta.
+
+    Permite hilos de conversación mediante una referencia al comentario padre.
+
+    Attributes:
+        citation (ForeignKey): El reporte al que pertenece el comentario.
+        author (ForeignKey): Usuario que escribió el comentario.
+        content (TextField): Contenido textual del comentario.
+        created_at (DateTimeField): Fecha de creación.
+        parent (ForeignKey): Referencia a un comentario padre para respuestas anidadas.
     """
 
     citation = models.ForeignKey(
@@ -192,12 +253,18 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """Determina si el comentario es una respuesta a otro comentario."""
         return self.parent is not None
 
 
 class Vote(models.Model):
     """
-    Representa un voto (positivo o negativo) de un usuario en un reporte.
+    Representa un voto (positivo o negativo) emitido por un usuario sobre un reporte.
+
+    Attributes:
+        user (ForeignKey): Usuario que emite el voto.
+        citation (ForeignKey): Reporte votado.
+        value (IntegerField): Valor del voto (1 para positivo, -1 para negativo).
     """
 
     VOTE_CHOICES = (
@@ -216,7 +283,12 @@ class Vote(models.Model):
 
 class SavedCitation(models.Model):
     """
-    Representa una cita incorrecta guardada por un usuario.
+    Representa la acción de un usuario de guardar un reporte para verlo después.
+
+    Attributes:
+        user (ForeignKey): Usuario que guarda el reporte.
+        citation (ForeignKey): El reporte guardado.
+        created_at (DateTimeField): Fecha en que se guardó.
     """
 
     user = models.ForeignKey(
@@ -231,10 +303,19 @@ class SavedCitation(models.Model):
         unique_together = ("user", "citation")
 
     def __str__(self):
+        """Representación en cadena de la cita guardada."""
         return f"{self.user.username} -> {self.citation.id}"
 
 
 class Conversation(models.Model):
+    """
+    Representa un hilo de conversación privada entre usuarios.
+
+    Attributes:
+        participants (ManyToManyField): Usuarios que participan en la conversación.
+        created_at (DateTimeField): Fecha de inicio de la conversación.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -242,11 +323,23 @@ class Conversation(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Devuelve una descripción de la conversación con los participantes."""
         users = ", ".join(self.participants.values_list("username", flat=True))
         return f"Conversación entre {users}"
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+
+    Attributes:
+        conversation (ForeignKey): La conversación a la que pertenece el mensaje.
+        sender (ForeignKey): Usuario que envió el mensaje.
+        content (TextField): Contenido del mensaje.
+        created_at (DateTimeField): Fecha de envío.
+        is_read (BooleanField): Estado de lectura del mensaje.
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -259,10 +352,27 @@ class Message(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        """Representación en cadena del mensaje."""
+        return (
+            f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        )
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario sobre eventos en la plataforma.
+
+    Attributes:
+        user (ForeignKey): Destinatario de la notificación.
+        actor (ForeignKey): Usuario que generó la acción (opcional).
+        notification_type (CharField): Tipo de evento (comentario, voto, mensaje, sistema).
+        title (CharField): Título de la notificación.
+        message (CharField): Cuerpo del mensaje de la notificación.
+        url (CharField): URL de destino al hacer clic en la notificación.
+        is_read (BooleanField): Indica si la notificación ha sido leída.
+        created_at (DateTimeField): Fecha de creación.
+    """
+
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -295,6 +405,7 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Representación en cadena de la notificación."""
         return f"{self.title} -> {self.user.username}"
 
 
@@ -302,23 +413,51 @@ class Notification(models.Model):
 # Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Modelo para el flujo avanzado de creación de reportes (Wizard).
+
+    Este modelo está diseñado para almacenar reportes enriquecidos con
+    metadatos completos, archivos PDF subidos y análisis detallado,
+    aunque actualmente el flujo principal utiliza IncorrectCitation.
+
+    Attributes:
+        created_by (ForeignKey): Usuario que inicia el reporte.
+        original_doi (CharField): DOI del artículo citado.
+        original_metadata (JSONField): Metadatos del artículo citado.
+        original_pdf_url (URLField): URL del PDF del artículo citado.
+        original_pdf_uploaded (FileField): Archivo PDF subido del artículo citado.
+        original_snippet (TextField): Fragmento de texto relevante del original.
+        citing_doi (CharField): DOI del artículo que cita.
+        citing_metadata (JSONField): Metadatos del artículo que cita.
+        citing_pdf_url (URLField): URL del PDF del artículo que cita.
+        citing_pdf_uploaded (FileField): Archivo PDF subido del artículo que cita.
+        citing_paragraphs (JSONField): Lista de párrafos extraídos del artículo que cita.
+        citing_pages (JSONField): Información de paginación.
+        error_type (CharField): Tipo de error reportado.
+        user_explanation (TextField): Explicación detallada del usuario.
+        ai_assessment (JSONField): Resultado de la evaluación automática por IA.
+        created_at (DateTimeField): Fecha de creación.
     """
 
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     # Artículo original (A)
     original_doi = models.CharField(max_length=255)
     original_metadata = models.JSONField(null=True, blank=True)
     original_pdf_url = models.URLField(null=True, blank=True)
-    original_pdf_uploaded = models.FileField(upload_to="original_pdfs/", null=True, blank=True)
+    original_pdf_uploaded = models.FileField(
+        upload_to="original_pdfs/", null=True, blank=True
+    )
     original_snippet = models.TextField(null=True, blank=True)
 
     # Artículo que cita (B)
     citing_doi = models.CharField(max_length=255)
     citing_metadata = models.JSONField(null=True, blank=True)
     citing_pdf_url = models.URLField(null=True, blank=True)
-    citing_pdf_uploaded = models.FileField(upload_to="citing_pdfs/", null=True, blank=True)
+    citing_pdf_uploaded = models.FileField(
+        upload_to="citing_pdfs/", null=True, blank=True
+    )
 
     # Párrafos seleccionados donde aparece la cita
     citing_paragraphs = models.JSONField(null=True, blank=True)  # lista de dicts
@@ -334,5 +473,5 @@ class CitationReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Devuelve una descripción breve del reporte."""
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-

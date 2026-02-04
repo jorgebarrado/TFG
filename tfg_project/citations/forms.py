@@ -73,7 +73,10 @@ User = get_user_model()
 
 class UserProfileForm(forms.ModelForm):
     """
-    Formulario para actualizar la info extendida del perfil.
+    Formulario para actualizar la información extendida del perfil de usuario.
+
+    Permite editar campos como biografía, país, idioma, institución, rol,
+    enlaces sociales y preferencias de notificación.
     """
 
     country = forms.ChoiceField(
@@ -194,7 +197,9 @@ class UserProfileForm(forms.ModelForm):
 
 class DBLPUrlForm(forms.ModelForm):
     """
-    Formulario reducido para actualizar solo la URL de DBLP.
+    Formulario reducido para actualizar únicamente la URL del perfil de DBLP.
+
+    Se utiliza en la página de inicio o en modales rápidos.
     """
 
     dblp_url = forms.URLField(
@@ -216,6 +221,8 @@ class DBLPUrlForm(forms.ModelForm):
 class RegisterForm(UserCreationForm):
     """
     Formulario de registro de nuevos usuarios.
+
+    Extiende UserCreationForm de Django para aplicar estilos Bootstrap.
     """
 
     class Meta:
@@ -247,7 +254,7 @@ class RegisterForm(UserCreationForm):
 
 class ProfileForm(forms.ModelForm):
     """
-    Formulario para actualizar el nombre y nombre de usuario de un usuario.
+    Formulario para actualizar datos básicos del modelo User (nombre, username).
     """
 
     class Meta:
@@ -265,7 +272,7 @@ class ProfileForm(forms.ModelForm):
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     """
-    Formulario de cambio de contraseña con estilos de Bootstrap.
+    Formulario de cambio de contraseña personalizado con estilos de Bootstrap.
     """
 
     def __init__(self, *args, **kwargs):
@@ -280,7 +287,7 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
 class LoginForm(AuthenticationForm):
     """
-    Formulario de inicio de sesión con placeholders y estilos de Bootstrap.
+    Formulario de inicio de sesión personalizado con placeholders y estilos Bootstrap.
     """
 
     def __init__(self, *args, **kwargs):
@@ -305,7 +312,10 @@ class LoginForm(AuthenticationForm):
 
 class IncorrectCitationForm(forms.ModelForm):
     """
-    Formulario para reportar una cita incorrecta.
+    Formulario para crear o editar un reporte de cita incorrecta.
+
+    Incluye campos para los DOIs, la razón del reporte, el tipo de error
+    y el área de publicación.
     """
 
     class Meta:
@@ -324,7 +334,9 @@ class IncorrectCitationForm(forms.ModelForm):
 
 class CommentForm(forms.ModelForm):
     """
-    Formulario para crear y responder a comentarios.
+    Formulario para crear y responder a comentarios en reportes.
+
+    Utiliza un campo oculto `parent_id` para gestionar respuestas anidadas.
     """
 
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
@@ -348,6 +360,10 @@ class CommentForm(forms.ModelForm):
 
 
 class MessageForm(forms.Form):
+    """
+    Formulario simple para enviar mensajes privados en una conversación.
+    """
+
     content = forms.CharField(
         label="",
         widget=forms.Textarea(

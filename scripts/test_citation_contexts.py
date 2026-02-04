@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -26,8 +25,8 @@ if not PDF_PATH.is_file():
 
 # --- Patrones de cita a buscar ---
 patterns = [
-    r"\[(\d+)\]",                      # citas tipo [12]
-    r"\b[A-Z][a-z]+ et al\., \d{4}\b", # citas estilo "Smith et al., 2017"
+    r"\[(\d+)\]",  # citas tipo [12]
+    r"\b[A-Z][a-z]+ et al\., \d{4}\b",  # citas estilo "Smith et al., 2017"
     r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+",  # DOI en el texto
 ]
 

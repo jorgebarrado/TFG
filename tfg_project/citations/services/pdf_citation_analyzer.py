@@ -27,7 +27,9 @@ def _download_pdf_to_temp(pdf_url: str) -> Path:
     try:
         response = requests.get(pdf_url, stream=True, timeout=20)
     except requests.RequestException as exc:
-        raise PDFDownloadError(f"No se pudo conectar con la URL del PDF: {exc}") from exc
+        raise PDFDownloadError(
+            f"No se pudo conectar con la URL del PDF: {exc}"
+        ) from exc
 
     if response.status_code != 200:
         raise PDFDownloadError(
