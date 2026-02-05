@@ -6,6 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserProfile(models.Model):
+    """
+    Extensión del modelo User de Django para almacenar información adicional del usuario.
+    """
+
     LANGUAGE_CHOICES = [
         ("", _("Sin preferencia")),
         ("es", _("Español")),
@@ -192,6 +196,7 @@ class Comment(models.Model):
     )
 
     def is_reply(self):
+        """Devuelve True si este comentario es una respuesta a otro comentario."""
         return self.parent is not None
 
 
@@ -235,6 +240,10 @@ class SavedCitation(models.Model):
 
 
 class Conversation(models.Model):
+    """
+    Representa una conversación de mensajería privada entre usuarios.
+    """
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -247,6 +256,10 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    """
+    Representa un mensaje individual dentro de una conversación.
+    """
+
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
@@ -263,6 +276,10 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
+    """
+    Representa una notificación para un usuario.
+    """
+
     class NotificationType(models.TextChoices):
         NEW_COMMENT = "NEW_COMMENT", _("Nuevo comentario")
         NEW_VOTE = "NEW_VOTE", _("Nuevo voto")
@@ -335,4 +352,3 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-
