@@ -40,6 +40,18 @@ CIT_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 
 
 def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
+    """Crea un fragmento de texto (snippet) alrededor de una posición dada.
+
+    Args:
+        text (str): El texto completo del párrafo.
+        start (int): Índice de inicio de la coincidencia.
+        end (int): Índice de fin de la coincidencia.
+        padding (int, optional): Número de caracteres a incluir antes y después.
+            Por defecto es 80.
+
+    Returns:
+        str: El fragmento de texto extraído, con "..." si hubo recorte.
+    """
     left = max(start - padding, 0)
     right = min(end + padding, len(text))
     prefix = "..." if left > 0 else ""
@@ -48,6 +60,16 @@ def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
 
 
 def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
+    """Busca menciones de citas (numéricas, autor-año o DOIs) en un párrafo.
+
+    Args:
+        paragraph (str): El texto del párrafo a analizar.
+
+    Returns:
+        List[Dict[str, Any]]: Una lista de diccionarios, donde cada uno representa
+        una mención encontrada y contiene detalles como el tipo, la coincidencia,
+        posiciones y un snippet.
+    """
     hits: List[Dict[str, Any]] = []
     for m in CIT_NUMERIC.finditer(paragraph):
         hits.append(
@@ -86,6 +108,14 @@ def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
 
 
 def _extract_text_from_pdf_generic(path: str) -> str:
+    """Extrae todo el texto de un PDF utilizando PyPDF2 como método genérico.
+
+    Args:
+        path (str): Ruta al archivo PDF.
+
+    Returns:
+        str: El texto extraído concatenado, o cadena vacía si falla o no hay librería.
+    """
     if PyPDF2 is None:
         return ""
     text_parts: list[str] = []
@@ -106,6 +136,20 @@ def _build_results(
     paragraphs: List[str],
     paragraphs_with_positions: List[dict] | None = None,
 ) -> Tuple[List[Dict[str, Any]], int]:
+    """Construye la estructura de resultados a partir de una lista de párrafos.
+
+    Analiza cada párrafo en busca de citas y genera una lista plana de resultados.
+
+    Args:
+        paragraphs (List[str]): Lista de cadenas de texto (párrafos).
+        paragraphs_with_positions (List[dict] | None, optional): Lista opcional de
+            diccionarios con información de posición ('text', 'page', etc.).
+
+    Returns:
+        Tuple[List[Dict[str, Any]], int]: Una tupla con:
+            - La lista de resultados (citas encontradas con metadatos).
+            - El conteo total de citas encontradas.
+    """
     flat: List[Dict[str, Any]] = []
     total = 0
     if paragraphs_with_positions:
@@ -145,6 +189,14 @@ def _build_results(
 
 
 def _split_paragraphs(text: str) -> list[str]:
+    """Divide un texto largo en párrafos basándose en dobles saltos de línea.
+
+    Args:
+        text (str): El texto completo a dividir.
+
+    Returns:
+        list[str]: Lista de párrafos limpios.
+    """
     # separa por doble salto o líneas largas
     raw = re.split(r"\n\s*\n", text)
     paras: list[str] = []
@@ -160,6 +212,14 @@ def _split_paragraphs(text: str) -> list[str]:
 
 
 def _find_citations_in_paragraph(p: str) -> list[dict]:
+    """Busca citas numéricas y de autor-año en un párrafo específico.
+
+    Args:
+        p (str): El párrafo de texto.
+
+    Returns:
+        list[dict]: Lista de diccionarios con las citas encontradas.
+    """
     out: list[dict] = []
     # [n]
     for m in NUMERIC_CITE.finditer(p):
@@ -195,6 +255,14 @@ def _find_citations_in_paragraph(p: str) -> list[dict]:
 
 
 def _generic_extract_contexts(path: str) -> list[dict]:
+    """Extrae contextos de citas usando el método genérico (PyPDF2 + regex).
+
+    Args:
+        path (str): Ruta al archivo PDF.
+
+    Returns:
+        list[dict]: Lista de contextos de citas encontrados.
+    """
     text = _extract_text_from_pdf_generic(path)
     if not text:
         return []
@@ -207,6 +275,14 @@ def _generic_extract_contexts(path: str) -> list[dict]:
 
 
 def _pm_loose_extract(path: str) -> list[dict]:
+    """Intenta extraer contextos usando PaperMage si está disponible.
+
+    Args:
+        path (str): Ruta al archivo PDF.
+
+    Returns:
+        list[dict]: Lista de contextos de citas encontrados.
+    """
     if pm_extract_paragraphs is None:
         return []
     try:
@@ -222,6 +298,22 @@ def _pm_loose_extract(path: str) -> list[dict]:
 def process_manuscript(
     pdf_path: str, *, engine: str = "auto", debug: bool = False
 ) -> Dict[str, Any]:
+    """Procesa un manuscrito PDF para extraer referencias y contextos de cita.
+
+    Utiliza el motor especificado (o selecciona uno automáticamente) para extraer
+    el texto y analizar las citas dentro del documento.
+
+    Args:
+        pdf_path (str): Ruta al archivo PDF del manuscrito.
+        engine (str, optional): Motor de extracción a usar ('auto', 'papermage',
+            'papercraft', 'generic'). Por defecto es 'auto'.
+        debug (bool, optional): Si es True, incluye información de depuración
+            en la respuesta. Por defecto es False.
+
+    Returns:
+        Dict[str, Any]: Un diccionario con los resultados del procesamiento.
+            Contiene claves como 'ok', 'results', 'summary' y opcionalmente 'trace'.
+    """
     engine_used, paragraphs, attempts, err, paragraphs_with_positions = run_engine(
         engine, pdf_path
     )
