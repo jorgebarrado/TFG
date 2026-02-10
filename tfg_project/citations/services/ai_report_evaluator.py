@@ -6,6 +6,14 @@ from citations.models import IncorrectCitation
 
 
 def _extract_basic(meta: dict) -> tuple[str, str, Any]:
+    """Extrae información básica (título, autores, año) de los metadatos.
+
+    Args:
+        meta (dict): Diccionario de metadatos (formato CrossRef/SemanticScholar).
+
+    Returns:
+        tuple[str, str, Any]: Una tupla con (título, autores en string, año).
+    """
     title_field = meta.get("title")
     title = title_field[0] if isinstance(title_field, list) else title_field or ""
 
@@ -26,6 +34,17 @@ def _extract_basic(meta: dict) -> tuple[str, str, Any]:
 
 
 def _build_report_prompt(citation: IncorrectCitation) -> str:
+    """Construye el prompt para evaluar un reporte de cita incorrecta usando IA.
+
+    Prepara la información de los artículos A y B, el tipo de error reportado por el usuario
+    y los fragmentos de contexto disponibles para que la IA realice su evaluación.
+
+    Args:
+        citation (IncorrectCitation): El objeto del reporte a evaluar.
+
+    Returns:
+        str: El prompt completo para enviar al modelo de IA.
+    """
     meta_a = citation.metadata_original or {}
     meta_b = citation.metadata_incorrect or {}
     contexts: List[Dict[str, Any]] = citation.citation_contexts or []
@@ -79,8 +98,19 @@ def _build_report_prompt(citation: IncorrectCitation) -> str:
 
 
 def analyze_report_with_ai(citation: IncorrectCitation) -> Dict[str, Any]:
-    """
-    Llama a OpenAI para evaluar el reporte y guarda el resultado en ai_assessment.
+    """Llama a OpenAI para evaluar el reporte y guarda el resultado.
+
+    Utiliza el modelo GPT-4o-mini (gpt-4.1-mini en el código original) para analizar la validez
+    del reporte de cita incorrecta basándose en los metadatos y contextos.
+
+    Args:
+        citation (IncorrectCitation): El reporte a evaluar.
+
+    Returns:
+        Dict[str, Any]: El resultado de la evaluación en formato diccionario (JSON).
+
+    Raises:
+        RuntimeError: Si la configuración de OpenAI falta (librería o API Key).
     """
     missing_config_msg = (
         "La evaluación automática con IA no está configurada en este servidor "

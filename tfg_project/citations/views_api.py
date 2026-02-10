@@ -273,11 +273,31 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_extractor_engines(request: HttpRequest) -> JsonResponse:
+    """Devuelve la lista de motores de extracción disponibles.
+
+    Args:
+        request: Objeto HttpRequest.
+
+    Returns:
+        JsonResponse: Objeto JSON con la lista de motores.
+    """
     return JsonResponse({"engines": list_extractor_engines()}, status=200)
 
 
 @require_GET
 def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
+    """Devuelve los datos necesarios para inicializar el Reader frontend.
+
+    Recopila información del reporte, metadatos, PDF y menciones para
+    que el lector pueda visualizarlos.
+
+    Args:
+        request: Objeto HttpRequest.
+        report_id (int): ID del reporte (IncorrectCitation).
+
+    Returns:
+        JsonResponse: Datos del reporte y citas.
+    """
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     pdf_url = resolve_pdf_url(citation.metadata_incorrect, citation.doi_incorrect)
     mentions = build_mentions(citation.citation_contexts)
@@ -313,8 +333,7 @@ def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
 
 @require_GET
 def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
-    """
-    API que recibe una URL de PDF y devuelve los contextos de cita detectados.
+    """API que recibe una URL de PDF y devuelve los contextos de cita detectados.
 
     Parámetros GET:
         - pdf_url: URL del PDF a analizar (obligatorio).
@@ -365,8 +384,13 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
 
 @require_POST
 def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
-    """
-    API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+    """API que recibe un PDF subido por el usuario y devuelve los contextos de cita detectados.
+
+    Args:
+        request: Objeto HttpRequest con archivo 'pdf_file'.
+
+    Returns:
+        JsonResponse: Contextos detectados o error.
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
@@ -410,9 +434,14 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
-    """
-    API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
+    """API que dado un DOI original, usa Semantic Scholar para buscar quién lo cita
     y PaperMage para localizar contextos de cita en los PDFs open access.
+
+    Args:
+        request: Objeto HttpRequest con parámetro 'doi' y opcional 'max_citing'.
+
+    Returns:
+        JsonResponse: Resultados del análisis semántico.
     """
     doi = request.GET.get("doi")
     if not doi:
