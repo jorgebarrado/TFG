@@ -69,11 +69,15 @@ if (mount) {
   const apiUrl = mount.dataset.apiUrl || "";
   const pdfUrl = mount.dataset.pdfUrl || "";
   const reportId = mount.dataset.reportId || "";
+  const reportOriginalDoi = mount.dataset.originalDoi || "";
+  const reportIncorrectDoi = mount.dataset.incorrectDoi || "";
   ReactDOM.render(
     <ReaderApp
       apiUrl={apiUrl}
       pdfUrl={pdfUrl}
       reportId={reportId}
+      reportOriginalDoi={reportOriginalDoi}
+      reportIncorrectDoi={reportIncorrectDoi}
       previewFile={previewFile}
       previewSnippets={previewSnippets}
       previewStats={previewStats}
