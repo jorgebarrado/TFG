@@ -1,5 +1,8 @@
 """Views for pages that render complete HTML pages."""
 
+import os
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
@@ -21,6 +24,18 @@ from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.reader_data import extract_pdf_url_from_metadata
 from django.shortcuts import get_object_or_404, render
 from ..models import IncorrectCitation
+
+
+def _reader_build_stamp() -> str:
+    """Return reader.js mtime as a cache-busting stamp for templates."""
+    reader_js = os.path.join(
+        settings.BASE_DIR, "citations", "static", "reader", "reader.js"
+    )
+    try:
+        return str(int(os.path.getmtime(reader_js)))
+    except OSError:
+        return ""
+
 
 def citation_list(request):
     """
@@ -321,6 +336,7 @@ def citation_reader(request, report_id: int):
         "citation": citation,
         "pdf_url": pdf_url or "",
         "report_id": report_id,
+        "reader_build": _reader_build_stamp(),
     }
     return render(request, "citations/reader.html", context)
 
@@ -329,5 +345,6 @@ def citation_reader_preview(request):
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",
+        "reader_build": _reader_build_stamp(),
     }
     return render(request, "citations/reader_preview.html", context)

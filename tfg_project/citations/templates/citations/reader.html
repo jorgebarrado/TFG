@@ -2,31 +2,21 @@
 {% load static %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="glass-card p-3 p-md-4">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-      <div>
-        <h2 class="mb-1">PaperCraft Reader</h2>
-        <div class="small text-muted">
-          Report #{{ report_id }}
-        </div>
-      </div>
-      <a href="{% url 'citation_detail' citation.id %}" class="btn btn-outline-secondary btn-sm">
-        Back to report
-      </a>
-    </div>
-
-    <div
-      id="reader-root"
-      data-api-url="{% url 'api_reader_data' report_id=report_id %}"
-      data-pdf-url="{{ pdf_url|default:'' }}"
-      data-report-id="{{ report_id }}"
-    ></div>
-  </div>
-</div>
+<div
+  id="reader-root"
+  class="reader-root-fullscreen"
+  data-api-url="{% url 'api_reader_data' report_id=report_id %}"
+  data-pdf-url="{{ pdf_url|default:'' }}"
+  data-report-id="{{ report_id }}"
+  data-original-doi="{{ citation.doi_original|default:'' }}"
+  data-incorrect-doi="{{ citation.doi_incorrect|default:'' }}"
+></div>
 {% endblock %}
 
 {% block scripts %}
-<link rel="stylesheet" href="{% static 'reader/reader.css' %}">
-<script src="{% static 'reader/reader.js' %}"></script>
+<link rel="stylesheet" href="{% static 'reader/reader.css' %}?v={{ reader_build }}">
+<script src="{% static 'reader/reader.js' %}?v={{ reader_build }}"></script>
+<script>
+  document.body.classList.add("reader-fullscreen");
+</script>
 {% endblock %}

@@ -32,8 +32,8 @@ const REFERENCE_FILTERS = [
 
 const DOI_REGEX = /10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+/i;
 const DOI_URL_REGEX = /https?:\/\/(?:dx\.)?doi\.org\/([^\s]+)/i;
-const BRACKET_REGEX = /\[(\d+)\]/;
-const INLINE_CITATION_REGEX = /\[(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\]/g;
+const BRACKET_REGEX = /\[\s*(\d+)\s*\]/;
+const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]/g;
 const ENGINES_ENDPOINT = "/citations/api/extractor-engines/";
 const EXTRACT_ENDPOINT = "/citations/api/extract-citations/";
 
@@ -274,22 +274,21 @@ function collectCitationHitsForPage(pageEl) {
   return hits;
 }
 
-function useHighlightedSnippet(mention, onHighlight) {
-  const lastTokenRef = useRef("");
-
+function useHighlightedSnippet(mention, onHighlight, viewerRef) {
   useEffect(() => {
     const pageNumber = Number(mention?.page);
     if (!mention || !Number.isFinite(pageNumber)) {
       return;
     }
-
-    const token = `${pageNumber}-${mention.snippet?.slice(0, 64) || ""}-${mention.reference_index || ""}`;
-    if (lastTokenRef.current === token) {
-      return;
-    }
-    lastTokenRef.current = token;
+    let cancelled = false;
+    let attempts = 0;
+    let retryTimer = null;
+    const maxAttempts = 14;
+    const retryDelayMs = 220;
 
     const run = () => {
+      if (cancelled) return;
+      let highlightAnchor = null;
       document
         .querySelectorAll(".reader-highlight")
         .forEach((el) => el.classList.remove("reader-highlight"));
@@ -301,20 +300,62 @@ function useHighlightedSnippet(mention, onHighlight) {
         `.pdf-reader__page[data-page-number="${pageNumber}"]`
       );
       if (!pageEl) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimer = window.setTimeout(run, retryDelayMs);
+        } else if (typeof onHighlight === "function") {
+          onHighlight({ matched: false, page: pageNumber, anchorRect: null });
+        }
         return;
       }
       const textLayer = pageEl.querySelector(".textLayer");
       if (!textLayer) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimer = window.setTimeout(run, retryDelayMs);
+        } else if (typeof onHighlight === "function") {
+          onHighlight({ matched: false, page: pageNumber, anchorRect: null });
+        }
         return;
       }
 
       const { text, nodes } = buildTextLayerIndex(textLayer);
-      if (!text) return;
+      if (!text) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimer = window.setTimeout(run, retryDelayMs);
+        } else if (typeof onHighlight === "function") {
+          onHighlight({ matched: false, page: pageNumber, anchorRect: null });
+        }
+        return;
+      }
       const highlightMode = mention.highlightMode || "snippet";
       const snippetText = String(mention.highlight_snippet || mention.snippet || "").trim();
       const referenceIndex = Number(mention.reference_index);
       let matched = false;
 
+      const captureAnchorFromIndices = (indices) => {
+        if (!indices?.length) return;
+        const pageRect = pageEl.getBoundingClientRect();
+        for (const idx of indices) {
+          const span = nodes[idx]?.span;
+          if (!span) continue;
+          const rect = span.getBoundingClientRect();
+          if (rect.width < 2 || rect.height < 2) continue;
+          highlightAnchor = {
+            page: pageNumber,
+            anchorRect: {
+              left: Math.max(0, rect.left - pageRect.left),
+              top: Math.max(0, rect.top - pageRect.top),
+              width: rect.width,
+              height: rect.height,
+            },
+          };
+          return;
+        }
+      };
+
+      let didScrollToParagraph = false;
       const applyParagraphHighlight = (indices) => {
         if (!indices.length) return;
         const matchedRects = indices
@@ -329,12 +370,24 @@ function useHighlightedSnippet(mention, onHighlight) {
         if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
           lineHeight = 16;
         }
-        const lineGapThreshold = lineHeight * 1.6;
+        const lineGapThreshold = Math.max(lineHeight * 2.15, 20);
+        const lineBucket = Math.max(2, Math.round(lineHeight * 0.6));
+        const anchorLeft = Math.min(...matchedRects.map((rect) => rect.left));
+        const anchorRight = Math.max(...matchedRects.map((rect) => rect.right));
+        const anchorCenterX = (anchorLeft + anchorRight) / 2;
+        const columnPadding = Math.max(lineHeight * 2.25, 56);
         const lineMap = new Map();
         nodes.forEach((node) => {
           const rect = node.span.getBoundingClientRect();
           if (rect.width < 2 || rect.height < 2) return;
-          const key = Math.round(rect.top);
+          const overlap =
+            Math.min(rect.right, anchorRight + columnPadding) -
+            Math.max(rect.left, anchorLeft - columnPadding);
+          const centerX = (rect.left + rect.right) / 2;
+          const nearColumn =
+            overlap > 0 || Math.abs(centerX - anchorCenterX) <= columnPadding;
+          if (!nearColumn) return;
+          const key = Math.round(rect.top / lineBucket) * lineBucket;
           const current = lineMap.get(key) || {
             top: rect.top,
             bottom: rect.bottom,
@@ -347,23 +400,33 @@ function useHighlightedSnippet(mention, onHighlight) {
           current.right = Math.max(current.right, rect.right);
           lineMap.set(key, current);
         });
-        const lineKeys = Array.from(lineMap.keys()).sort((a, b) => a - b);
-        if (!lineKeys.length) return;
+        const lines = Array.from(lineMap.values()).sort((a, b) => a.top - b.top);
+        if (!lines.length) return;
         const minTop = Math.min(...matchedRects.map((rect) => rect.top));
         const maxBottom = Math.max(...matchedRects.map((rect) => rect.bottom));
-        let startLine = lineKeys.findIndex((top) => top >= minTop - 1);
-        let endLine = lineKeys.findIndex((top) => top >= maxBottom - 1);
+        let startLine = lines.findIndex((line) => line.bottom >= minTop - 1);
+        let endLine = -1;
+        for (let i = lines.length - 1; i >= 0; i -= 1) {
+          if (lines[i].top <= maxBottom + 1) {
+            endLine = i;
+            break;
+          }
+        }
         if (startLine === -1) startLine = 0;
-        if (endLine === -1) endLine = lineKeys.length - 1;
+        if (endLine === -1) endLine = lines.length - 1;
+        const maxParagraphLines = 14;
         while (
           startLine > 0 &&
-          lineKeys[startLine] - lineKeys[startLine - 1] <= lineGapThreshold
+          lines[startLine].top - lines[startLine - 1].bottom <=
+            lineGapThreshold &&
+          endLine - (startLine - 1) + 1 <= maxParagraphLines
         ) {
           startLine -= 1;
         }
         while (
-          endLine < lineKeys.length - 1 &&
-          lineKeys[endLine + 1] - lineKeys[endLine] <= lineGapThreshold
+          endLine < lines.length - 1 &&
+          lines[endLine + 1].top - lines[endLine].bottom <= lineGapThreshold &&
+          endLine + 1 - startLine + 1 <= maxParagraphLines
         ) {
           endLine += 1;
         }
@@ -378,19 +441,61 @@ function useHighlightedSnippet(mention, onHighlight) {
         }
         layer.innerHTML = "";
         const pageRect = pageEl.getBoundingClientRect();
+        const verticalPad = Math.max(1, Math.round(lineHeight * 0.08));
+        const horizontalPad = 2;
         for (let i = startLine; i <= endLine; i += 1) {
-          const line = lineMap.get(lineKeys[i]);
+          const line = lines[i];
           if (!line) continue;
-          const width = line.right - line.left;
-          const height = line.bottom - line.top;
+          const left = Math.max(0, line.left - pageRect.left - horizontalPad);
+          const top = Math.max(0, line.top - pageRect.top - verticalPad);
+          const width = Math.min(
+            pageRect.width - left,
+            line.right - line.left + horizontalPad * 2
+          );
+          const height = line.bottom - line.top + verticalPad * 2;
           if (width < 2 || height < 2) continue;
           const block = document.createElement("div");
           block.className = "reader-paragraph-hit";
-          block.style.left = `${line.left - pageRect.left}px`;
-          block.style.top = `${line.top - pageRect.top}px`;
+          block.style.left = `${left}px`;
+          block.style.top = `${top}px`;
           block.style.width = `${width}px`;
           block.style.height = `${height}px`;
           layer.appendChild(block);
+        }
+        const firstLine = lines[startLine];
+        if (firstLine) {
+          highlightAnchor = {
+            page: pageNumber,
+            anchorRect: {
+              left: Math.max(0, firstLine.left - pageRect.left),
+              top: Math.max(0, firstLine.top - pageRect.top),
+              width: Math.max(2, firstLine.right - firstLine.left),
+              height: Math.max(2, firstLine.bottom - firstLine.top),
+            },
+          };
+        }
+
+        if (!didScrollToParagraph) {
+          if (firstLine) {
+            const paragraphTop = Math.max(
+              0,
+              firstLine.top - pageRect.top - verticalPad
+            );
+            const viewerEl = viewerRef?.current || pageEl.closest(".reader-scroll");
+            if (viewerEl) {
+              const viewerRect = viewerEl.getBoundingClientRect();
+              const currentPageRect = pageEl.getBoundingClientRect();
+              const targetTop = Math.max(
+                0,
+                viewerEl.scrollTop +
+                  (currentPageRect.top - viewerRect.top) +
+                  paragraphTop -
+                  8
+              );
+              viewerEl.scrollTo({ top: targetTop, behavior: "smooth" });
+              didScrollToParagraph = true;
+            }
+          }
         }
       };
 
@@ -417,13 +522,17 @@ function useHighlightedSnippet(mention, onHighlight) {
       }
 
       if (snippetText) {
+        const normalizedSnippetText = snippetText
+          .replace(/^\s*\.{2,}\s*/, "")
+          .replace(/\s*\.{2,}\s*$/, "")
+          .trim();
         const tokenLimit = highlightMode === "paragraph" ? 16 : HIGHLIGHT_TOKEN_LIMIT;
-        const tokens = snippetText.split(/\s+/).slice(0, tokenLimit);
+        const tokens = normalizedSnippetText.split(/\s+/).slice(0, tokenLimit);
         const pattern = tokens.map(escapeRegExp).join("\\s+");
         try {
           const regex = new RegExp(pattern, "i");
           const match = regex.exec(text);
-          if (!matched && match) {
+          if ((highlightMode === "paragraph" || !matched) && match) {
             const startOffset = match.index;
             const endOffset = match.index + match[0].length;
             const matchedIndices = [];
@@ -436,6 +545,7 @@ function useHighlightedSnippet(mention, onHighlight) {
             if (highlightMode === "paragraph") {
               applyParagraphHighlight(matchedIndices);
             } else {
+              captureAnchorFromIndices(matchedIndices);
               matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
             }
           }
@@ -444,7 +554,7 @@ function useHighlightedSnippet(mention, onHighlight) {
         }
       }
 
-      if (!matched && snippetText) {
+      if (snippetText && (!matched || highlightMode === "paragraph")) {
         const normalized = snippetText.toLowerCase().replace(/\s+/g, " ").trim();
         const keywords = normalized
           .split(" ")
@@ -462,19 +572,29 @@ function useHighlightedSnippet(mention, onHighlight) {
           if (highlightMode === "paragraph") {
             applyParagraphHighlight(matchedIndices);
           } else {
+            captureAnchorFromIndices(matchedIndices);
             matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
           }
         }
       }
 
       if (typeof onHighlight === "function") {
-        onHighlight(matched);
+        onHighlight({
+          matched,
+          page: pageNumber,
+          anchorRect: highlightAnchor?.anchorRect || null,
+        });
       }
     };
 
-    const timer = setTimeout(run, 350);
-    return () => clearTimeout(timer);
-  }, [mention, onHighlight]);
+    retryTimer = window.setTimeout(run, 180);
+    return () => {
+      cancelled = true;
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [mention, onHighlight, viewerRef]);
 }
 
 function ScrollRootBinder({ viewerRef }) {
@@ -624,7 +744,7 @@ function PdfPages() {
 }
 
 function PdfViewer({ pdfUrl, selectedMention, onHighlight, viewerRef }) {
-  useHighlightedSnippet(selectedMention, onHighlight);
+  useHighlightedSnippet(selectedMention, onHighlight, viewerRef);
 
   if (!pdfUrl) {
     return <div className="reader-empty">No hay PDF disponible.</div>;
@@ -652,6 +772,8 @@ export default function ReaderApp({
   apiUrl,
   pdfUrl,
   reportId,
+  reportOriginalDoi = "",
+  reportIncorrectDoi = "",
   previewFile,
   previewSnippets = [],
   previewStats = null,
@@ -675,6 +797,10 @@ export default function ReaderApp({
   const [referenceFilter, setReferenceFilter] = useState("all");
   const [selectedSnippet, setSelectedSnippet] = useState(null);
   const [highlightNotice, setHighlightNotice] = useState("");
+  const [selectedSnippetAnchor, setSelectedSnippetAnchor] = useState(null);
+  const [selectedSnippetPopoverStyle, setSelectedSnippetPopoverStyle] = useState(
+    null
+  );
   const [activeReferenceKey, setActiveReferenceKey] = useState("");
   const [activeCitation, setActiveCitation] = useState(null);
   const [citationPopoverStyle, setCitationPopoverStyle] = useState(null);
@@ -694,6 +820,7 @@ export default function ReaderApp({
 
   const viewerRef = useRef(null);
   const viewerShellRef = useRef(null);
+  const snippetPopoverRef = useRef(null);
   const referenceElements = useRef(new Map());
   const citationHitMapRef = useRef(new Map());
   const activeCitationRef = useRef(null);
@@ -791,6 +918,8 @@ export default function ReaderApp({
 
   useEffect(() => {
     setSelectedSnippet(null);
+    setSelectedSnippetAnchor(null);
+    setSelectedSnippetPopoverStyle(null);
     setHighlightNotice("");
   }, [snippetsData]);
 
@@ -1168,10 +1297,74 @@ export default function ReaderApp({
     });
   };
 
+  const updateSelectedSnippetPopoverPosition = () => {
+    const shellEl = viewerShellRef.current;
+    const viewerEl = viewerRef.current;
+    if (!shellEl || !viewerEl || !selectedSnippet) {
+      setSelectedSnippetPopoverStyle(null);
+      return;
+    }
+
+    const shellRect = shellEl.getBoundingClientRect();
+    const toolbarEl = shellEl.querySelector(".reader-toolbar");
+    const toolbarBottom = toolbarEl
+      ? toolbarEl.getBoundingClientRect().bottom - shellRect.top
+      : 0;
+
+    const popEl = snippetPopoverRef.current;
+    const popWidth = Math.max(260, popEl?.offsetWidth || 300);
+    const popHeight = Math.max(140, popEl?.offsetHeight || 220);
+    const minTop = Math.max(10, toolbarBottom + 8);
+    const maxTop = Math.max(minTop, shellEl.clientHeight - popHeight - 10);
+    const maxLeft = Math.max(10, shellEl.clientWidth - popWidth - 10);
+
+    let top = minTop;
+    let left = maxLeft;
+
+    if (selectedSnippetAnchor?.anchorRect && Number.isFinite(selectedSnippetAnchor.page)) {
+      const pageEl = viewerEl.querySelector(
+        `.pdf-reader__page[data-page-number="${selectedSnippetAnchor.page}"]`
+      );
+      if (pageEl) {
+        const pageRect = pageEl.getBoundingClientRect();
+        const anchorLeft =
+          pageRect.left - shellRect.left + selectedSnippetAnchor.anchorRect.left;
+        const anchorTop =
+          pageRect.top - shellRect.top + selectedSnippetAnchor.anchorRect.top;
+        const anchorWidth = Math.max(2, selectedSnippetAnchor.anchorRect.width || 0);
+        const rightCandidate = anchorLeft + anchorWidth + 12;
+        const leftCandidate = anchorLeft - popWidth - 12;
+
+        if (rightCandidate + popWidth <= shellEl.clientWidth - 10) {
+          left = rightCandidate;
+        } else if (leftCandidate >= 10) {
+          left = leftCandidate;
+        } else {
+          left = Math.min(Math.max(10, anchorLeft + 10), maxLeft);
+        }
+        top = anchorTop - 6;
+      }
+    }
+
+    setSelectedSnippetPopoverStyle({
+      top: Math.min(Math.max(minTop, top), maxTop),
+      left: Math.min(Math.max(10, left), maxLeft),
+    });
+  };
+
   useEffect(() => {
     if (!viewerRef.current) return;
     updateCitationPopoverPosition();
   }, [activeCitation]);
+
+  useEffect(() => {
+    if (!selectedSnippet) {
+      setSelectedSnippetPopoverStyle(null);
+      return;
+    }
+    const timer = window.setTimeout(updateSelectedSnippetPopoverPosition, 0);
+    return () => window.clearTimeout(timer);
+  }, [selectedSnippet, selectedSnippetAnchor]);
 
   useEffect(() => {
     const viewerEl = viewerRef.current;
@@ -1180,6 +1373,18 @@ export default function ReaderApp({
     viewerEl.addEventListener("scroll", onScroll);
     return () => viewerEl.removeEventListener("scroll", onScroll);
   }, [activeCitation]);
+
+  useEffect(() => {
+    const viewerEl = viewerRef.current;
+    if (!viewerEl || !selectedSnippet) return;
+    const onMove = () => updateSelectedSnippetPopoverPosition();
+    viewerEl.addEventListener("scroll", onMove);
+    window.addEventListener("resize", onMove);
+    return () => {
+      viewerEl.removeEventListener("scroll", onMove);
+      window.removeEventListener("resize", onMove);
+    };
+  }, [selectedSnippet, selectedSnippetAnchor]);
 
   useEffect(() => {
     setActiveCitation(null);
@@ -1296,6 +1501,7 @@ export default function ReaderApp({
   }, [highlightReferenceId]);
 
   const handleSnippetClick = (snippet) => {
+    setSelectedSnippetAnchor(null);
     setSelectedSnippet(snippet);
     setHighlightNotice("");
     const pageNumber = Number(snippet?.page);
@@ -1304,12 +1510,39 @@ export default function ReaderApp({
     }
   };
 
-  const handleHighlight = (matched) => {
+  const handleHighlight = (result) => {
     if (!selectedSnippet) return;
+    const matched =
+      typeof result === "object" && result !== null
+        ? Boolean(result.matched)
+        : Boolean(result);
+    const anchorRect =
+      typeof result === "object" && result !== null ? result.anchorRect : null;
+    const page =
+      typeof result === "object" && result !== null ? Number(result.page) : null;
+
     if (matched) {
       setHighlightNotice("");
     } else {
       setHighlightNotice("No se encontro el texto exacto; resaltado aproximado.");
+    }
+    if (
+      anchorRect &&
+      Number.isFinite(page) &&
+      Number.isFinite(Number(anchorRect.left)) &&
+      Number.isFinite(Number(anchorRect.top))
+    ) {
+      setSelectedSnippetAnchor({
+        page,
+        anchorRect: {
+          left: Number(anchorRect.left),
+          top: Number(anchorRect.top),
+          width: Math.max(2, Number(anchorRect.width || 0)),
+          height: Math.max(2, Number(anchorRect.height || 0)),
+        },
+      });
+    } else if (!matched) {
+      setSelectedSnippetAnchor(null);
     }
   };
 
@@ -1338,6 +1571,32 @@ export default function ReaderApp({
   const copyToClipboard = (value) => {
     if (!value) return;
     navigator.clipboard?.writeText(value).catch(() => {});
+  };
+
+  const selectedReference = useMemo(() => {
+    const refIndex = Number(selectedSnippet?.reference_index);
+    if (!Number.isFinite(refIndex)) return null;
+    return referenceByIndex.get(refIndex) || null;
+  }, [selectedSnippet, referenceByIndex]);
+
+  const handleCreateReport = () => {
+    const modalEl = document.getElementById("reportModal");
+    const bootstrapApi = window.bootstrap;
+    if (!modalEl || !bootstrapApi?.Modal) {
+      return;
+    }
+
+    if (typeof window.prefillReportModal === "function") {
+      window.prefillReportModal({
+        originalDoi: selectedReference?.doi || reportOriginalDoi || "",
+        incorrectDoi: reportIncorrectDoi || "",
+        originalMetadata: "",
+        incorrectMetadata: "",
+      });
+    }
+
+    const modal = bootstrapApi.Modal.getOrCreateInstance(modalEl);
+    modal.show();
   };
 
   const ensurePdfFile = async () => {
@@ -1463,6 +1722,7 @@ export default function ReaderApp({
         highlight_snippet: inlineSnippet?.snippet || "",
         highlightMode: "paragraph",
       });
+      setSelectedSnippetAnchor(null);
     }
   };
 
@@ -1487,6 +1747,7 @@ export default function ReaderApp({
         highlight_snippet: inlineSnippet?.snippet || "",
         highlightMode: "paragraph",
       });
+      setSelectedSnippetAnchor(null);
       const targetPage = inlineSnippet?.page || linkedSnippet.page;
       if (Number.isFinite(Number(targetPage))) {
         scrollToPdfPageIndex(Number(targetPage) - 1);
@@ -1548,6 +1809,8 @@ export default function ReaderApp({
     setReferencesData([]);
     setStats(null);
     setSelectedSnippet(null);
+    setSelectedSnippetAnchor(null);
+    setSelectedSnippetPopoverStyle(null);
     setActiveCitation(null);
     setExtractStatus({ loading: false, error: "", message: "PDF actualizado." });
   };
@@ -1996,7 +2259,11 @@ export default function ReaderApp({
           />
 
           {selectedSnippet && (
-            <div className="reader-popover">
+            <div
+              ref={snippetPopoverRef}
+              className="reader-popover"
+              style={selectedSnippetPopoverStyle || undefined}
+            >
               <div className="reader-popover-title">Snippet</div>
               <div className="reader-popover-item">
                 <strong>Type:</strong> {selectedSnippet.type}
@@ -2011,6 +2278,15 @@ export default function ReaderApp({
                 </div>
               )}
               <div className="reader-popover-snippet">{selectedSnippet.snippet}</div>
+              <div className="reader-popover-actions">
+                <button
+                  type="button"
+                  className="reader-action"
+                  onClick={handleCreateReport}
+                >
+                  Crear reporte
+                </button>
+              </div>
             </div>
           )}
 
