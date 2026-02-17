@@ -47,7 +47,7 @@ body {
 
 .reader-app {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
   gap: 16px;
   min-height: 70vh;
 }
@@ -332,6 +332,7 @@ body.reader-fullscreen .reader-sidebar {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  margin-bottom: 10px;
 }
 
 .reader-tab {
@@ -352,7 +353,7 @@ body.reader-fullscreen .reader-sidebar {
 }
 
 .reader-panel {
-  margin-top: 12px;
+  margin-top: 0;
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -716,6 +717,7 @@ body.reader-fullscreen .reader-main {
   max-height: calc(100% - 24px);
   overflow: auto;
   z-index: 9;
+  margin-right: 8px;
 }
 
 .reader-popover-title {
