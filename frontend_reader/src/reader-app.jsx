@@ -1314,41 +1314,105 @@ export default function ReaderApp({
     const popEl = snippetPopoverRef.current;
     const popWidth = Math.max(260, popEl?.offsetWidth || 300);
     const popHeight = Math.max(140, popEl?.offsetHeight || 220);
-    const minTop = Math.max(10, toolbarBottom + 8);
-    const maxTop = Math.max(minTop, shellEl.clientHeight - popHeight - 10);
-    const maxLeft = Math.max(10, shellEl.clientWidth - popWidth - 10);
+    const minTop = Math.max(12, toolbarBottom + 6);
+    const maxTop = Math.max(minTop, shellEl.clientHeight - popHeight - 12);
+    const minLeft = 12;
+    const maxLeft = Math.max(minLeft, shellEl.clientWidth - popWidth - 12);
 
     let top = minTop;
     let left = maxLeft;
+    let anchorPageRect = null;
+    let anchorRect = null;
 
     if (selectedSnippetAnchor?.anchorRect && Number.isFinite(selectedSnippetAnchor.page)) {
       const pageEl = viewerEl.querySelector(
         `.pdf-reader__page[data-page-number="${selectedSnippetAnchor.page}"]`
       );
       if (pageEl) {
-        const pageRect = pageEl.getBoundingClientRect();
-        const anchorLeft =
-          pageRect.left - shellRect.left + selectedSnippetAnchor.anchorRect.left;
-        const anchorTop =
-          pageRect.top - shellRect.top + selectedSnippetAnchor.anchorRect.top;
-        const anchorWidth = Math.max(2, selectedSnippetAnchor.anchorRect.width || 0);
-        const rightCandidate = anchorLeft + anchorWidth + 12;
-        const leftCandidate = anchorLeft - popWidth - 12;
+        anchorPageRect = pageEl.getBoundingClientRect();
+        anchorRect = {
+          left: Number(selectedSnippetAnchor.anchorRect.left),
+          top: Number(selectedSnippetAnchor.anchorRect.top),
+          width: Math.max(2, Number(selectedSnippetAnchor.anchorRect.width || 0)),
+          height: Math.max(2, Number(selectedSnippetAnchor.anchorRect.height || 0)),
+        };
+      }
+    }
 
-        if (rightCandidate + popWidth <= shellEl.clientWidth - 10) {
-          left = rightCandidate;
-        } else if (leftCandidate >= 10) {
-          left = leftCandidate;
-        } else {
-          left = Math.min(Math.max(10, anchorLeft + 10), maxLeft);
+    if (!anchorRect && Number.isFinite(Number(selectedSnippet.page))) {
+      const pageEl = viewerEl.querySelector(
+        `.pdf-reader__page[data-page-number="${Number(selectedSnippet.page)}"]`
+      );
+      if (pageEl) {
+        const pageRect = pageEl.getBoundingClientRect();
+        anchorPageRect = pageRect;
+        const refIndex = Number(selectedSnippet.reference_index);
+        if (Number.isFinite(refIndex)) {
+          const citationHits = Array.from(pageEl.querySelectorAll(".citation-hit"));
+          const matchHit = citationHits.find((hit) => {
+            const refs = (hit.dataset.citationRefs || "")
+              .split(",")
+              .map((value) => Number(value.trim()))
+              .filter((value) => Number.isFinite(value));
+            return refs.includes(refIndex);
+          });
+          if (matchHit) {
+            const rect = matchHit.getBoundingClientRect();
+            anchorRect = {
+              left: Math.max(0, rect.left - pageRect.left),
+              top: Math.max(0, rect.top - pageRect.top),
+              width: Math.max(2, rect.width),
+              height: Math.max(2, rect.height),
+            };
+          }
         }
-        top = anchorTop - 6;
+
+        if (!anchorRect) {
+          const paragraphHit = pageEl.querySelector(".reader-paragraph-hit");
+          if (paragraphHit) {
+            const rect = paragraphHit.getBoundingClientRect();
+            anchorRect = {
+              left: Math.max(0, rect.left - pageRect.left),
+              top: Math.max(0, rect.top - pageRect.top),
+              width: Math.max(2, rect.width),
+              height: Math.max(2, rect.height),
+            };
+          }
+        }
+      }
+    }
+
+    if (anchorRect && anchorPageRect) {
+      const anchorLeft = anchorPageRect.left - shellRect.left + anchorRect.left;
+      const anchorTop = anchorPageRect.top - shellRect.top + anchorRect.top;
+      const anchorWidth = Math.max(2, anchorRect.width || 0);
+      const anchorHeight = Math.max(2, anchorRect.height || 0);
+      const rightCandidate = anchorLeft + anchorWidth + 8;
+      const leftCandidate = anchorLeft - popWidth - 8;
+      const nearPageRight = anchorPageRect.right - shellRect.left + 8;
+
+      if (rightCandidate + popWidth <= shellEl.clientWidth - minLeft) {
+        left = rightCandidate;
+      } else if (leftCandidate >= minLeft) {
+        left = leftCandidate;
+      } else {
+        left = Math.min(Math.max(minLeft, nearPageRight), maxLeft);
+      }
+      top = anchorTop + anchorHeight / 2 - popHeight / 2;
+    } else if (Number.isFinite(Number(selectedSnippet.page))) {
+      const pageEl = viewerEl.querySelector(
+        `.pdf-reader__page[data-page-number="${Number(selectedSnippet.page)}"]`
+      );
+      if (pageEl) {
+        const pageRect = pageEl.getBoundingClientRect();
+        left = Math.min(Math.max(minLeft, pageRect.right - shellRect.left + 8), maxLeft);
+        top = pageRect.top - shellRect.top + 24;
       }
     }
 
     setSelectedSnippetPopoverStyle({
       top: Math.min(Math.max(minTop, top), maxTop),
-      left: Math.min(Math.max(10, left), maxLeft),
+      left: Math.min(Math.max(minLeft, left), maxLeft),
     });
   };
 
@@ -1932,82 +1996,61 @@ export default function ReaderApp({
     </div>
   );
 
+  const tabsBar = (
+    <div className="reader-tabs">
+      <button
+        type="button"
+        className={
+          activeTab === "snippets"
+            ? "reader-tab is-active"
+            : "reader-tab"
+        }
+        onClick={() => setActiveTab("snippets")}
+      >
+        Snippets
+      </button>
+      <button
+        type="button"
+        className={
+          activeTab === "references"
+            ? "reader-tab is-active"
+            : "reader-tab"
+        }
+        onClick={() => setActiveTab("references")}
+      >
+        References
+      </button>
+      <button
+        type="button"
+        className={
+          activeTab === "stats"
+            ? "reader-tab is-active"
+            : "reader-tab"
+        }
+        onClick={() => setActiveTab("stats")}
+      >
+        Stats
+      </button>
+      <button
+        type="button"
+        className={
+          activeTab === "extract"
+            ? "reader-tab is-active"
+            : "reader-tab"
+        }
+        onClick={() => setActiveTab("extract")}
+      >
+        Extraer
+      </button>
+    </div>
+  );
+
   return (
     <div className="reader-app">
       <aside className="reader-sidebar">
-        <div className="reader-card">
-          <div className="reader-card-title">Report</div>
-          <div className="reader-card-meta">ID: {reportId || "n/a"}</div>
-          <div className="reader-card-meta">
-            Snippets: {effectiveStats.snippets_total}
-          </div>
-          <div className="reader-card-meta">
-            References: {effectiveStats.references_total}
-          </div>
-          <div className="reader-card-meta">DOIs: {effectiveStats.dois_total}</div>
-          {effectiveStats.engine_used && (
-            <div className="reader-card-meta">
-              Engine: {effectiveStats.engine_used}
-            </div>
-          )}
-          {Number.isFinite(Number(effectiveStats.time_ms)) && (
-            <div className="reader-card-meta">
-              Time: {Number(effectiveStats.time_ms)} ms
-            </div>
-          )}
-          {loading && <div className="reader-muted">Loading data...</div>}
-          {error && <div className="reader-error">{error}</div>}
-        </div>
-
-        <div className="reader-tabs">
-          <button
-            type="button"
-            className={
-              activeTab === "snippets"
-                ? "reader-tab is-active"
-                : "reader-tab"
-            }
-            onClick={() => setActiveTab("snippets")}
-          >
-            Snippets
-          </button>
-          <button
-            type="button"
-            className={
-              activeTab === "references"
-                ? "reader-tab is-active"
-                : "reader-tab"
-            }
-            onClick={() => setActiveTab("references")}
-          >
-            References
-          </button>
-          <button
-            type="button"
-            className={
-              activeTab === "stats"
-                ? "reader-tab is-active"
-                : "reader-tab"
-            }
-            onClick={() => setActiveTab("stats")}
-          >
-            Stats
-          </button>
-          <button
-            type="button"
-            className={
-              activeTab === "extract"
-                ? "reader-tab is-active"
-                : "reader-tab"
-            }
-            onClick={() => setActiveTab("extract")}
-          >
-            Extraer
-          </button>
-        </div>
-
         {activeTab === "snippets" && (
           <div className="reader-card reader-panel">
+            {tabsBar}
             <div className="reader-card-title">Snippets</div>
             <div className="reader-search">
               <input
@@ -2120,6 +2163,7 @@ export default function ReaderApp({
 
         {activeTab === "references" && (
           <div className="reader-card reader-panel">
+            {tabsBar}
             <div className="reader-card-title">References</div>
             <div className="reader-search">
               <input
@@ -2206,8 +2250,13 @@ export default function ReaderApp({
 
         {activeTab === "stats" && (
           <div className="reader-card reader-panel">
+            {tabsBar}
             <div className="reader-card-title">Stats</div>
             <div className="reader-stats">
+              <div className="reader-stat-card">
+                <div className="reader-stat-label">Report ID</div>
+                <div className="reader-stat-value">{reportId || "n/a"}</div>
+              </div>
               <div className="reader-stat-card">
                 <div className="reader-stat-label">Pages</div>
                 <div className="reader-stat-value">{effectiveStats.pages_total}</div>
@@ -2231,12 +2280,15 @@ export default function ReaderApp({
             {Number.isFinite(Number(effectiveStats.time_ms)) && (
               <div className="reader-muted">Time: {effectiveStats.time_ms} ms</div>
             )}
+            {loading && <div className="reader-muted">Loading data...</div>}
+            {error && <div className="reader-error">{error}</div>}
             {BUILD_ID && <div className="reader-muted">Build: {BUILD_ID}</div>}
           </div>
         )}
 
         {activeTab === "extract" && (
           <div className="reader-card reader-panel">
+            {tabsBar}
             <div className="reader-card-title">Extraccion</div>
             {extractionToolbar}
           </div>
