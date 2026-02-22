@@ -157,6 +157,118 @@ class UserViewsTests(LoggedInTestCase):
         self.assertIn(self.saved1, response.context["saved"])
 
 
+class ReportEditTests(LoggedInTestCase):
+    def test_creator_can_edit_report(self):
+        self.client.login(username="user1", password="password")
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "doi_original": self.report1.doi_original,
+                "doi_incorrect": self.report1.doi_incorrect,
+                "incorrect_reason": "Motivo actualizado por el autor",
+                "citation_type": self.report1.citation_type,
+                "publication_area": self.report1.publication_area,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.incorrect_reason, "Motivo actualizado por el autor")
+
+    def test_admin_can_edit_report(self):
+        admin = User.objects.create_superuser(
+            username="admin", email="admin@test.com", password="password"
+        )
+        self.client.force_login(admin)
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "doi_original": self.report1.doi_original,
+                "doi_incorrect": self.report1.doi_incorrect,
+                "incorrect_reason": "Motivo actualizado por admin",
+                "citation_type": self.report1.citation_type,
+                "publication_area": self.report1.publication_area,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.incorrect_reason, "Motivo actualizado por admin")
+
+    def test_non_owner_non_admin_cannot_edit_report(self):
+        self.client.login(username="user2", password="password")
+        old_reason = self.report1.incorrect_reason
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "doi_original": self.report1.doi_original,
+                "doi_incorrect": self.report1.doi_incorrect,
+                "incorrect_reason": "No deberia poder editar",
+                "citation_type": self.report1.citation_type,
+                "publication_area": self.report1.publication_area,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.incorrect_reason, old_reason)
+
+    def test_creator_can_edit_single_block_reason(self):
+        self.client.login(username="user1", password="password")
+        old_doi_original = self.report1.doi_original
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "section": "reason",
+                "incorrect_reason": "Motivo actualizado solo en bloque",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.incorrect_reason, "Motivo actualizado solo en bloque")
+        self.assertEqual(self.report1.doi_original, old_doi_original)
+
+    def test_creator_can_edit_header_title(self):
+        self.client.login(username="user1", password="password")
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "section": "header",
+                "report_title": "Titulo personalizado del reporte",
+                "doi_original": self.report1.doi_original,
+                "citation_type": self.report1.citation_type,
+                "publication_area": self.report1.publication_area,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(
+            (self.report1.metadata_original or {}).get("title_override"),
+            "Titulo personalizado del reporte",
+        )
+
+    def test_creator_can_edit_all_from_global_form(self):
+        self.client.login(username="user1", password="password")
+        response = self.client.post(
+            reverse("citation_edit", args=[self.report1.id]),
+            {
+                "section": "all",
+                "report_title": "Titulo global",
+                "doi_original": "10.1000/original-global",
+                "doi_incorrect": "10.1000/incorrect-global",
+                "incorrect_reason": "Motivo global actualizado",
+                "citation_type": self.report1.citation_type,
+                "publication_area": self.report1.publication_area,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.doi_original, "10.1000/original-global")
+        self.assertEqual(self.report1.doi_incorrect, "10.1000/incorrect-global")
+        self.assertEqual(self.report1.incorrect_reason, "Motivo global actualizado")
+        self.assertEqual(
+            (self.report1.metadata_original or {}).get("title_override"),
+            "Titulo global",
+        )
+
+
 class MetadataTests(TestCase):
     def test_get_metadata_without_doi(self):
         response = self.client.get(reverse("get_all_metadata"))

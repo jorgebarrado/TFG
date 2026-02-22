@@ -155,11 +155,10 @@
                     </button>
                     <button
                       type="button"
-                      class="mt-2 w-100 btn btn-outline-secondary fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2"
-                      data-bs-toggle="modal"
-                      data-bs-target="#extractModal">
-                      <span>{% trans "Extraer citas (nuevo)" %}</span>
-                      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                      id="pdf-open-reader-btn"
+                      class="mt-2 w-100 btn btn-outline-secondary fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2">
+                      <span>{% trans "Abrir visor" %}</span>
+                      <i class="fa-solid fa-book-open-reader text-xs"></i>
                     </button>
 
                   </div>
@@ -268,482 +267,20 @@
 {% endblock content %}
 {% block scripts %}
 <script>
-(function () {
-  const form = document.getElementById("pdf-extract-form");
-  if (!form) return;
-
-  const modalEl = document.getElementById("extractPdfCitationsModal");
-  const fileInput = document.getElementById("pdf-file-input");
-  const fileSummaryBox = document.getElementById("pdf-extract-file-summary");
-  const statusBox = document.getElementById("pdf-extract-status");
-  const resultsBox = document.getElementById("pdf-extract-results");
-  const controlsBox = document.getElementById("pdf-extract-controls");
-
-  const searchInput = document.getElementById("pdf-extract-search");
-  const typeFilterSelect = document.getElementById("pdf-extract-pattern-filter");
-  const sectionFilterSelect = document.getElementById("pdf-extract-section-filter");
-  const pageFilterInput = document.getElementById("pdf-extract-page-filter");
-  const clearFiltersBtn = document.getElementById("pdf-extract-clear-filters");
-
-  const exportBtn = document.getElementById("pdf-extract-export-btn");
-  const exportBtnMobile = document.getElementById("pdf-extract-export-btn-mobile");
-
-  let allContexts = [];
-  let lastPage = null;  // usaremos la カltima pスgina como "referencias"
-
-  function resetExtractionState() {
-    if (fileInput) fileInput.value = "";
-    if (fileSummaryBox) {
-      fileSummaryBox.classList.add("d-none");
-      fileSummaryBox.innerHTML = "";
-    }
-    if (statusBox) {
-      statusBox.textContent = 'Selecciona un PDF y pulsa "Extraer citas".';
-    }
-    if (resultsBox) resultsBox.innerHTML = "";
-    if (controlsBox) controlsBox.classList.add("d-none");
-    setExportEnabled(false);
-    resetFilters();
-    allContexts = [];
-    lastPage = null;
-
-    const dropzoneText = document.getElementById("pdf-dropzone-text");
-    const dropzoneClear = document.getElementById("pdf-dropzone-clear");
-    if (dropzoneText) {
-      dropzoneText.textContent = "Arrastra un PDF aqui o haz clic para seleccionarlo.";
-    }
-    if (dropzoneClear) {
-      dropzoneClear.classList.add("d-none");
-    }
-    form.classList.remove("d-none");
-  }
-
-  if (modalEl) {
-    modalEl.addEventListener("hidden.bs.modal", () => {
-      resetExtractionState();
-    });
-  }
-
-  // --- envío del formulario (subida y análisis del PDF) ---
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const file = fileInput.files[0];
-    if (!file) {
-      alert("Por favor, selecciona un archivo PDF.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("pdf_file", file);
-
-    const csrfTokenInput = document.querySelector("input[name='csrfmiddlewaretoken']");
-    const csrfToken = csrfTokenInput ? csrfTokenInput.value : "";
-
-    statusBox.textContent = "Procesando el PDF, por favor espera...";
-    resultsBox.innerHTML = "";
-    controlsBox.classList.add("d-none");
-    setExportEnabled(false);
-    allContexts = [];
-    lastPage = null;
-
-    fetch("{% url 'api_pdf_citation_contexts_upload' %}", {
-      method: "POST",
-      headers: { "X-CSRFToken": csrfToken },
-      body: formData,
-    })
-      .then(response => response.json().then(data => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          statusBox.textContent = data.error || "Se ha producido un error al procesar el PDF.";
-          return;
-        }
-
-        const rawContexts = data.contexts || [];
-        if (!rawContexts.length) {
-          statusBox.textContent = "No se han encontrado citas con los patrones configurados.";
-          resultsBox.innerHTML = "<p class='text-muted mb-0'>Prueba con otro PDF o revisa los patrones de búsqueda.</p>";
-          return;
-        }
-
-        // Preprocesar: calcular matchText y tipo de cita independiente del 'pattern'
-        allContexts = rawContexts.map((ctx) => {
-          const paragraph = ctx.paragraph || "";
-          const start = Number.isInteger(ctx.start) ? ctx.start : -1;
-          const end = Number.isInteger(ctx.end) ? ctx.end : -1;
-          let matchText = "";
-          if (start >= 0 && end > start && end <= paragraph.length) {
-            matchText = paragraph.slice(start, end);
-          } else if (ctx.snippet) {
-            matchText = ctx.snippet;
-          }
-          const type = classifyMatch(matchText);
-          const page = typeof ctx.page === "number" ? ctx.page : null;
-          return Object.assign({}, ctx, { matchText, type, page });
-        });
-
-        // calcular última página (referencias)
-        const pagesArray = allContexts
-          .map(c => c.page)
-          .filter(p => typeof p === "number" && !Number.isNaN(p));
-        lastPage = pagesArray.length ? Math.max(...pagesArray) : null;
-
-        const pagesSet = new Set(pagesArray);
-        statusBox.textContent =
-          `Se han encontrado ${allContexts.length} posibles contextos de cita ` +
-          (pagesSet.size ? `en ${pagesSet.size} página(s).` : "");
-
-        // resumen compacto del archivo y ocultar formulario grande
-        if (fileSummaryBox) {
-          fileSummaryBox.innerHTML = `
-            Analizando: <strong>${escapeHtml(file.name)}</strong>
-            <button type="button" class="btn btn-link btn-sm ms-2 p-0" id="pdf-extract-change-file">
-              Cambiar PDF
-            </button>
-          `;
-          fileSummaryBox.classList.remove("d-none");
-          form.classList.add("d-none");
-
-          const changeBtn = document.getElementById("pdf-extract-change-file");
-          if (changeBtn) {
-            changeBtn.addEventListener("click", () => {
-              form.classList.remove("d-none");
-              fileSummaryBox.classList.add("d-none");
-              resultsBox.innerHTML = "";
-              controlsBox.classList.add("d-none");
-              statusBox.textContent = 'Selecciona un PDF y pulsa "Extraer citas".';
-              setExportEnabled(false);
-              allContexts = [];
-              lastPage = null;
-            });
-          }
-        }
-
-        controlsBox.classList.remove("d-none");
-        setExportEnabled(true);
-        resetFilters();
-        attachFilterListenersOnce();
-        renderContexts();
-      })
-      .catch(error => {
-        console.error(error);
-        statusBox.textContent = "Error inesperado al llamar a la API.";
-      });
-  });
-
-  // --- filtros y export ---
-
-  let listenersAttached = false;
-  function attachFilterListenersOnce() {
-    if (listenersAttached) return;
-    listenersAttached = true;
-
-    if (searchInput) {
-      searchInput.addEventListener("input", debounce(renderContexts, 200));
-    }
-    if (typeFilterSelect) {
-      typeFilterSelect.addEventListener("change", renderContexts);
-    }
-    if (sectionFilterSelect) {
-      sectionFilterSelect.addEventListener("change", renderContexts);
-    }
-    if (pageFilterInput) {
-      pageFilterInput.addEventListener("input", debounce(renderContexts, 200));
-    }
-    if (clearFiltersBtn) {
-      clearFiltersBtn.addEventListener("click", () => {
-        resetFilters();
-        renderContexts();
-      });
-    }
-    if (exportBtn) exportBtn.addEventListener("click", exportAsJson);
-    if (exportBtnMobile) exportBtnMobile.addEventListener("click", exportAsJson);
-  }
-
-  function resetFilters() {
-    if (searchInput) searchInput.value = "";
-    if (typeFilterSelect) typeFilterSelect.value = "all";
-    if (sectionFilterSelect) sectionFilterSelect.value = "all";
-    if (pageFilterInput) pageFilterInput.value = "";
-  }
-
-  function setExportEnabled(enabled) {
-    if (exportBtn) exportBtn.disabled = !enabled;
-    if (exportBtnMobile) exportBtnMobile.disabled = !enabled;
-  }
-
-  function exportAsJson() {
-    if (!allContexts.length) return;
-    const blob = new Blob([JSON.stringify(allContexts, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "pdf_citation_contexts.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function applyFilters() {
-    const text = (searchInput?.value || "").toLowerCase();
-    const typeFilter = typeFilterSelect?.value || "all";
-    const sectionFilter = sectionFilterSelect?.value || "all";
-    const pageVal = pageFilterInput?.value.trim();
-    const pageNum = pageVal ? parseInt(pageVal, 10) : null;
-
-    return allContexts.filter(ctx => {
-      const paragraph = ctx.paragraph || "";
-      const snippet = ctx.snippet || "";
-      const haystack = (paragraph + " " + snippet).toLowerCase();
-
-      if (text && !haystack.includes(text)) return false;
-      if (pageNum && ctx.page !== pageNum) return false;
-
-      // sección: usamos la última página como "referencias"
-      if (sectionFilter === "body" && lastPage !== null && ctx.page === lastPage) {
-        return false;
-      }
-      if (sectionFilter === "references" && lastPage !== null && ctx.page !== lastPage) {
-        return false;
-      }
-
-      if (typeFilter !== "all") {
-        const t = ctx.type || "other";
-        if (t !== typeFilter) return false;
-      }
-
-      return true;
-    });
-  }
-
-  // --- render de resultados ---
-
-  function renderContexts() {
-    resultsBox.innerHTML = "";
-
-    if (!allContexts.length) {
-      resultsBox.innerHTML = "<p class='text-muted mb-0'>No hay resultados que mostrar.</p>";
-      return;
-    }
-
-    const filtered = applyFilters();
-    if (!filtered.length) {
-      resultsBox.innerHTML = "<p class='text-muted mb-0'>No hay resultados que coincidan con los filtros actuales.</p>";
-      return;
-    }
-
-    // agrupar por página
-    const byPage = new Map();
-    filtered.forEach((ctx) => {
-      const page = ctx.page ?? "?";
-      if (!byPage.has(page)) byPage.set(page, []);
-      byPage.get(page).push(ctx);
-    });
-
-    const container = document.createElement("div");
-
-    const pagesSorted = Array.from(byPage.keys()).sort((a, b) => {
-      const na = parseInt(a, 10);
-      const nb = parseInt(b, 10);
-      if (isNaN(na) || isNaN(nb)) return String(a).localeCompare(String(b));
-      return na - nb;
-    });
-
-    let globalIndex = 1;
-
-    pagesSorted.forEach(pageKey => {
-      const contexts = byPage.get(pageKey) || [];
-
-      const pageHeader = document.createElement("div");
-      pageHeader.className = "d-flex justify-content-between align-items-center mb-2 mt-3";
-      pageHeader.innerHTML = `
-        <div class="fw-semibold">
-          Página ${escapeHtml(String(pageKey))}
-          <span class="badge bg-light text-muted ms-1">${contexts.length} cita(s)</span>
-        </div>
-        <div class="small text-muted">Pulsa en “Ver contexto” para desplegar el párrafo completo.</div>
-      `;
-      container.appendChild(pageHeader);
-
-      contexts.forEach(ctx => {
-        const card = document.createElement("div");
-        card.className = "card mb-2";
-
-        const typeLabelMap = {
-          numeric: "Cita numérica [n]",
-          author: "Cita tipo “Apellido et al., año”",
-          doi: "DOI en el texto",
-          other: "Otro tipo de cita",
-        };
-        const typeLabel = typeLabelMap[ctx.type || "other"] || "Otro tipo de cita";
-
-        const header = document.createElement("div");
-        header.className = "card-header py-2 d-flex justify-content-between align-items-center";
-        header.innerHTML = `
-          <div class="small">
-            <span class="badge bg-secondary me-2">#${globalIndex}</span>
-            <span class="fw-semibold">${escapeHtml(typeLabel)}</span>
-          </div>
-          <small class="text-muted">Página ${escapeHtml(String(pageKey))}</small>
-        `;
-
-        const body = document.createElement("div");
-        body.className = "card-body pt-2 pb-2";
-
-        // texto citado
-        const meta = document.createElement("div");
-        meta.className = "small text-muted mb-2";
-        meta.innerHTML = `
-          <div><span class="fw-semibold">Texto citado:</span> ${
-            ctx.matchText
-              ? `<code>${escapeHtml(ctx.matchText)}</code>`
-              : "<span class='text-muted'>No disponible</span>"
-          }</div>
-        `;
-        body.appendChild(meta);
-
-        // contexto con <mark>
-        const paragraph = ctx.paragraph || "";
-        const start = Number.isInteger(ctx.start) ? ctx.start : -1;
-        const end = Number.isInteger(ctx.end) ? ctx.end : -1;
-        let highlightedHtml;
-
-        if (start >= 0 && end > start && end <= paragraph.length) {
-          const before = paragraph.slice(0, start);
-          const match = paragraph.slice(start, end);
-          const after = paragraph.slice(end);
-          highlightedHtml =
-            escapeHtml(before) +
-            "<mark>" + escapeHtml(match) + "</mark>" +
-            escapeHtml(after);
-        } else if (ctx.snippet) {
-          highlightedHtml = escapeHtml(ctx.snippet);
-        } else {
-          highlightedHtml = escapeHtml(paragraph);
-        }
-
-        const paragraphEl = document.createElement("p");
-        paragraphEl.className = "card-text small mb-2";
-        paragraphEl.style.whiteSpace = "pre-wrap";
-        paragraphEl.style.display = "none";
-        paragraphEl.innerHTML = highlightedHtml;
-
-        const toggleBtn = document.createElement("button");
-        toggleBtn.type = "button";
-        toggleBtn.className = "btn btn-link btn-sm ps-0";
-        toggleBtn.textContent = "Ver contexto";
-        let expanded = false;
-
-        toggleBtn.addEventListener("click", () => {
-          expanded = !expanded;
-          if (expanded) {
-            paragraphEl.style.display = "block";
-            toggleBtn.textContent = "Ocultar contexto";
-          } else {
-            paragraphEl.style.display = "none";
-            toggleBtn.textContent = "Ver contexto";
-          }
-        });
-
-        body.appendChild(toggleBtn);
-        body.appendChild(paragraphEl);
-
-        const actions = document.createElement("div");
-        actions.className = "mt-2 d-flex flex-wrap gap-2";
-
-        const copyBtn = document.createElement("button");
-        copyBtn.type = "button";
-        copyBtn.className = "btn btn-sm btn-outline-secondary";
-        copyBtn.textContent = "Copiar fragmento";
-        copyBtn.addEventListener("click", () => {
-          const textToCopy = ctx.snippet || ctx.paragraph || "";
-          if (!textToCopy) return;
-          navigator.clipboard.writeText(textToCopy)
-            .then(() => { statusBox.textContent = "Fragmento copiado al portapapeles."; })
-            .catch(() => { statusBox.textContent = "No se pudo copiar el fragmento."; });
-        });
-
-        const reportLink = document.createElement("button");
-        reportLink.type = "button";
-        reportLink.className = "btn btn-sm btn-primary";
-        reportLink.setAttribute("data-bs-toggle", "modal");
-        reportLink.setAttribute("data-bs-target", "#reportModal");
-        reportLink.textContent = "Crear reporte desde esta cita";
-
-        actions.appendChild(copyBtn);
-        actions.appendChild(reportLink);
-
-        body.appendChild(actions);
-
-        card.appendChild(header);
-        card.appendChild(body);
-        container.appendChild(card);
-
-        globalIndex += 1;
-      });
-    });
-
-    resultsBox.appendChild(container);
-  }
-
-  // --- clasificación por texto matcheado, no por patrón ---
-  function classifyMatch(text) {
-    if (!text) return "other";
-    const t = text.trim();
-
-    // DOI: algo tipo 10.1145/3137065.3137069
-    if (/^10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+$/i.test(t)) {
-      return "doi";
-    }
-
-    // Numérica: [4], [4, 7], [4-7], etc.
-    if (/^\[\s*\d+(?:\s*[,�-]\s*\d+)*\s*\]$/.test(t)) {
-      return "numeric";
-    }
-
-    // Autor-año: "Apellido et al., 2017"
-    if (/et al\.,?\s*\d{4}/i.test(t)) {
-      return "author";
-    }
-
-    return "other";
-  }
-
-  // --- utilidades ---
-  function escapeHtml(text) {
-    if (!text) return "";
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function debounce(fn, delay) {
-    let timeoutId;
-    return function (...args) {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
-})();
-</script>
-<script>
   document.addEventListener('DOMContentLoaded', () => {
     const card = document.getElementById('pdf-upload-card');
     if (!card) return;
 
     const innerCard = card.querySelector('.glass-card');
-    const modalEl = document.getElementById('extractPdfCitationsModal');
-    const fileInput = document.getElementById('pdf-file-input');
-    const modalSummary = document.getElementById('pdf-extract-file-summary');
+    const modalEl = document.getElementById('extractModal');
+    const extractFileInput = document.getElementById('extract-file');
     const processBtn = document.getElementById('pdf-process-btn');
+    const openReaderBtn = document.getElementById('pdf-open-reader-btn');
     const cardSummary = document.getElementById('pdf-card-file-summary');
     const cardDropzoneText = document.getElementById('pdf-card-dropzone-text');
     const cardDropzoneClear = document.getElementById('pdf-card-dropzone-clear');
     const cardDropzone = document.getElementById('pdf-card-dropzone');
+    const READER_PREVIEW = '/citations/reader/preview/';
     let pendingFile = null;
 
     const pickerInput = document.createElement('input');
@@ -783,48 +320,75 @@
       cardSummary.classList.add('d-none');
     }
 
-    function resetModalSelection() {
-      if (fileInput) {
-        fileInput.value = '';
-      }
-      const modalDropzoneText = document.getElementById('pdf-dropzone-text');
-      const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
-      if (modalDropzoneText) {
-        modalDropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo.';
-      }
-      if (modalDropzoneClear) {
-        modalDropzoneClear.classList.add('d-none');
-      }
-      if (modalSummary) {
-        modalSummary.classList.add('d-none');
-      }
+    function clearModalSelection() {
+      if (!extractFileInput) return;
+      extractFileInput.value = '';
+      extractFileInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function applyPdfFileToModal(file) {
-      if (!file || !fileInput) return;
+      if (!file || !extractFileInput) return;
       if (file.type !== 'application/pdf') {
         return;
       }
       const dt = new DataTransfer();
       dt.items.add(file);
-      fileInput.files = dt.files;
-      const modalDropzone = document.getElementById('pdf-dropzone');
-      const modalDropzoneText = document.getElementById('pdf-dropzone-text');
-      const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
-      if (modalDropzone) {
-        const sizeKb = Math.round(file.size / 1024);
-        if (modalDropzoneText) {
-          modalDropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
-        } else {
-          modalDropzone.textContent = `${file.name} - ${sizeKb} KB`;
+      extractFileInput.files = dt.files;
+      extractFileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function openReaderPreview(file) {
+      const previewWin = window.open(READER_PREVIEW, '_blank');
+      if (!previewWin || !file) return;
+
+      const payload = {
+        type: 'reader:payload',
+        file,
+        snippets: [],
+        references: [],
+        stats: null,
+      };
+      const targetOrigin = window.location.origin;
+      let attempts = 0;
+      let timerId = null;
+
+      const sendPayload = () => {
+        try {
+          previewWin.postMessage(payload, targetOrigin);
+        } catch (e) {
+          // noop
         }
-        if (modalDropzoneClear) {
-          modalDropzoneClear.classList.remove('d-none');
+      };
+
+      const cleanup = () => {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
         }
-      }
-      if (modalSummary) {
-        modalSummary.classList.add('d-none');
-      }
+        window.removeEventListener('message', onReady);
+      };
+
+      const onReady = (event) => {
+        if (event.origin !== targetOrigin) return;
+        if (!event.data || event.data.type !== 'reader:ready') return;
+        sendPayload();
+        cleanup();
+      };
+
+      window.addEventListener('message', onReady);
+      sendPayload();
+      timerId = setInterval(() => {
+        if (!previewWin || previewWin.closed) {
+          cleanup();
+          return;
+        }
+        attempts += 1;
+        if (attempts > 10) {
+          cleanup();
+          return;
+        }
+        sendPayload();
+      }, 800);
     }
 
     ['dragenter', 'dragover'].forEach((evt) => {
@@ -874,30 +438,29 @@
         pendingFile = null;
         pickerInput.value = '';
         setCardSummary(null);
+        clearModalSelection();
       });
     }
 
     if (processBtn) {
       processBtn.addEventListener('click', () => {
         if (!modalEl) return;
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
         if (pendingFile) {
           applyPdfFileToModal(pendingFile);
           return;
         }
-        resetModalSelection();
+        clearModalSelection();
       });
     }
 
-    const modalDropzoneClear = document.getElementById('pdf-dropzone-clear');
-    if (modalDropzoneClear) {
-      modalDropzoneClear.addEventListener('click', () => {
-        pendingFile = null;
-        pickerInput.value = '';
-        setCardSummary(null);
+    if (openReaderBtn) {
+      openReaderBtn.addEventListener('click', () => {
+        openReaderPreview(pendingFile);
       });
     }
   });
 </script>
 {% endblock %}
+

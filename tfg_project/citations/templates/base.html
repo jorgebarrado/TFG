@@ -123,7 +123,7 @@
             </a>
           </li>
           <li>
-            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractPdfCitationsModal">
+            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractModal">
               {% trans "Extraer citas (PDF)" %}
             </button>
           </li>
@@ -271,10 +271,10 @@
 </div>
 
 {# Modales globales, siempre al final del body #}
+{% block page_modals %}{% endblock %}
 {% include 'citations/modals/login_modal.html' %}
 {% include 'citations/modals/register_modal.html' %}
 {% include 'citations/modals/report_modal.html' %}
-{% include 'citations/modals/extract_pdf_modal.html' %}
 {% include 'citations/modals/extract_modal.html' %}
 {% include 'citations/modals/context_modal.html' %}
 {% include 'citations/modals/doi_modal.html' %}

@@ -309,6 +309,10 @@
   }
   if (modalEl) {
     modalEl.addEventListener('show.bs.modal', () => {
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      extractionResult = null;
       hideAllFeedback();
       loadEngines();
     });

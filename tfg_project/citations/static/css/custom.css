@@ -335,6 +335,78 @@ body.sidebar-open .sidebar-overlay {
   box-shadow: 0 18px 55px rgba(15,23,42,0.14);
 }
 
+.report-hero-inline__edit-btn {
+  border-radius: 0.6rem;
+}
+
+.report-edit-form[data-edit-form="header"] {
+  padding-top: 0.15rem;
+}
+
+.report-hero-edit {
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 22px rgba(15,23,42,0.08);
+  padding: 1.25rem;
+}
+
+.report-hero-edit__header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.report-hero-edit__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  color: #64748b;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.report-hero-edit__title-input {
+  font-weight: 700;
+  color: #0f172a;
+  max-width: 34rem;
+}
+
+.report-hero-edit__doi-input {
+  max-width: 26rem;
+}
+
+.report-hero-edit__actions .btn {
+  border-radius: 0.55rem;
+  font-weight: 600;
+}
+
+.report-hero-edit__actions .btn-primary {
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+.report-hero-edit .form-control,
+.report-hero-edit .form-select {
+  border-radius: 0.75rem;
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.report-hero-edit .form-control:focus,
+.report-hero-edit .form-select:focus {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 .2rem rgba(37, 99, 235, 0.12);
+}
+
+.report-edit-form[data-edit-form="header"] .form-control,
+.report-edit-form[data-edit-form="header"] .form-select {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.report-edit-form[data-edit-form="header"] .form-control:focus,
+.report-edit-form[data-edit-form="header"] .form-select:focus {
+  background: rgba(255, 255, 255, 0.78);
+}
+
 .muted-label {
   text-transform: uppercase;
   letter-spacing: .12em;
@@ -353,6 +425,23 @@ body.sidebar-open .sidebar-overlay {
 .surface-card h4,
 .surface-card h5 {
   color: #0f172a;
+}
+
+.pdf-preview-shell {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.pdf-preview-frame {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.pdf-preview-modal-body {
+  height: min(82vh, 980px);
+  overflow: hidden;
 }
 
 .badge-soft {
