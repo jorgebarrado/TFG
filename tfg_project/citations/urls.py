@@ -19,6 +19,17 @@ urlpatterns = [
     ),
     path("list/", page_views.citation_list, name="citation_list"),
     path("report/<int:pk>/", page_views.citation_detail, name="citation_detail"),
+    path(
+        "report/<int:pk>/uploaded-pdf/",
+        page_views.citation_uploaded_pdf,
+        name="citation_uploaded_pdf",
+    ),
+    path(
+        "report/<int:pk>/uploaded-pdf/<str:article>/",
+        page_views.citation_uploaded_pdf,
+        name="citation_uploaded_pdf_article",
+    ),
+    path("report/<int:pk>/edit/", page_views.citation_edit, name="citation_edit"),
     # TODO: flujo avanzado de reportes (CitationReport) pendiente de activar; el flujo real usa IncorrectCitation.
     path(
         "report/wizard/",

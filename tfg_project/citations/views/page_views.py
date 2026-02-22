@@ -1,17 +1,29 @@
 """Views for pages that render complete HTML pages."""
 
 import os
+import uuid
+from urllib.parse import unquote, urlparse
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.db.models.functions import ExtractYear
-from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.db.models import Count, Q
-from ..forms import CommentForm, DBLPUrlForm, LoginForm, RegisterForm
+from django.db.models.functions import ExtractYear
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.template.loader import render_to_string
+from ..forms import (
+    CommentForm,
+    DBLPUrlForm,
+    IncorrectCitationForm,
+    LoginForm,
+    RegisterForm,
+)
 from ..models import (
     AREA_CHOICES,
     Comment,
@@ -22,8 +34,6 @@ from ..models import (
 )
 from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.reader_data import extract_pdf_url_from_metadata
-from django.shortcuts import get_object_or_404, render
-from ..models import IncorrectCitation
 
 
 def _reader_build_stamp() -> str:
@@ -35,6 +45,91 @@ def _reader_build_stamp() -> str:
         return str(int(os.path.getmtime(reader_js)))
     except OSError:
         return ""
+
+
+def _can_edit_report(user, citation) -> bool:
+    return user.is_authenticated and (user == citation.author or user.is_superuser)
+
+
+EDITABLE_REPORT_FIELDS = (
+    "doi_original",
+    "doi_incorrect",
+    "incorrect_reason",
+    "citation_type",
+    "publication_area",
+)
+
+EDIT_SECTIONS = {
+    "original": ("doi_original",),
+    "incorrect": ("doi_incorrect",),
+    "classification": ("citation_type", "publication_area"),
+    "header": ("doi_original", "citation_type", "publication_area"),
+    "reason": ("incorrect_reason",),
+    "all": EDITABLE_REPORT_FIELDS,
+}
+
+
+def _base_edit_data(citation):
+    return {field: getattr(citation, field) for field in EDITABLE_REPORT_FIELDS}
+
+
+def _extract_report_title(citation) -> str:
+    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    override = str(metadata.get("title_override") or "").strip()
+    if override:
+        return override
+    title = metadata.get("title")
+    if isinstance(title, list):
+        title = title[0] if title else ""
+    return str(title or "").strip()
+
+
+def _set_report_title(citation, title_value: str) -> None:
+    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    metadata = dict(metadata)
+    clean_title = str(title_value or "").strip()
+    if clean_title:
+        metadata["title_override"] = clean_title
+    else:
+        metadata.pop("title_override", None)
+    citation.metadata_original = metadata
+
+
+def _get_uploaded_pdf_path(
+    citation,
+    metadata_attr: str = "metadata_incorrect",
+    path_keys=("uploaded_pdf_path",),
+) -> str:
+    metadata_raw = getattr(citation, metadata_attr, None)
+    metadata = metadata_raw if isinstance(metadata_raw, dict) else {}
+    candidates = []
+    for key in path_keys:
+        stored_path = str(metadata.get(key) or "").strip()
+        if stored_path:
+            candidates.extend(
+                [
+                    stored_path,
+                    stored_path.replace("\\", "/"),
+                    stored_path.replace("/", os.sep),
+                ]
+            )
+
+    legacy_url = str(metadata.get("url") or metadata.get("URL") or "").strip()
+    media_url = str(getattr(settings, "MEDIA_URL", "") or "")
+    if legacy_url:
+        parsed = urlparse(legacy_url)
+        legacy_path = parsed.path or legacy_url
+        if media_url and legacy_path.startswith(media_url):
+            candidates.append(legacy_path[len(media_url) :].lstrip("/"))
+        if legacy_path.startswith("/media/"):
+            candidates.append(legacy_path[len("/media/") :].lstrip("/"))
+        candidates.append(legacy_path.lstrip("/"))
+
+    for candidate in candidates:
+        normalized = unquote(str(candidate or "").strip())
+        if normalized and default_storage.exists(normalized):
+            return normalized
+    return ""
 
 
 def citation_list(request):
@@ -186,12 +281,56 @@ def citation_detail(request, pk):
     else:
         form = CommentForm()
 
+    original_uploaded_pdf_path = _get_uploaded_pdf_path(
+        citation,
+        metadata_attr="metadata_original",
+        path_keys=("uploaded_pdf_path", "uploaded_pdf_path_original"),
+    )
+    if original_uploaded_pdf_path and default_storage.exists(original_uploaded_pdf_path):
+        original_pdf_url = reverse(
+            "citation_uploaded_pdf_article",
+            kwargs={"pk": citation.pk, "article": "original"},
+        )
+    else:
+        original_pdf_url = extract_pdf_url_from_metadata(citation.metadata_original)
+
+    incorrect_uploaded_pdf_path = _get_uploaded_pdf_path(
+        citation,
+        metadata_attr="metadata_incorrect",
+        path_keys=("uploaded_pdf_path", "uploaded_pdf_path_incorrect"),
+    )
+    if incorrect_uploaded_pdf_path and default_storage.exists(incorrect_uploaded_pdf_path):
+        incorrect_pdf_url = reverse(
+            "citation_uploaded_pdf_article",
+            kwargs={"pk": citation.pk, "article": "incorrect"},
+        )
+    else:
+        incorrect_pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
+
+    can_edit_report = _can_edit_report(request.user, citation)
+    report_edit_mode = can_edit_report and (
+        request.GET.get("edit") == "1" or request.GET.get("edit_header") == "1"
+    )
+    header_edit_mode = report_edit_mode
+    report_title = _extract_report_title(citation)
+    report_title_display = report_title or f"Reporte #{citation.id}"
+
     context = {
         "citation": citation,
         "comment_form": form,
         "comments": comments,
         "other_area_reports": other_area_reports,
         "popular_reports": popular_reports,
+        "pdf_url": incorrect_pdf_url or "",
+        "original_pdf_url": original_pdf_url or "",
+        "incorrect_pdf_url": incorrect_pdf_url or "",
+        "can_edit_report": can_edit_report,
+        "report_edit_mode": report_edit_mode,
+        "header_edit_mode": header_edit_mode,
+        "report_title": report_title,
+        "report_title_display": report_title_display,
+        "citation_type_choices": IncorrectCitation._meta.get_field("citation_type").choices,
+        "publication_area_choices": AREA_CHOICES,
     }
     return render(request, "citations/citation_detail.html", context)
 
@@ -242,6 +381,120 @@ def citation_detail(request, pk):
         "popular_reports": popular_reports,
     }
     return render(request, "citations/citation_detail.html", context)
+
+
+@login_required
+def citation_edit(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    if not _can_edit_report(request.user, citation):
+        messages.error(request, "No tienes permiso para editar este reporte.")
+        return redirect("citation_detail", pk=pk)
+
+    if request.method != "POST":
+        return redirect("citation_detail", pk=pk)
+
+    section = request.POST.get("section", "all")
+    allowed_fields = EDIT_SECTIONS.get(section)
+    if not allowed_fields:
+        messages.error(request, "Seccion de edicion no valida.")
+        return redirect("citation_detail", pk=pk)
+
+    data = _base_edit_data(citation)
+    for field in allowed_fields:
+        if field in request.POST:
+            posted_value = request.POST.get(field)
+            if posted_value != "":
+                data[field] = posted_value
+
+    uploaded_pdf_saved = False
+
+    uploaded_original_pdf = request.FILES.get("uploaded_pdf_original_file")
+    if uploaded_original_pdf:
+        original_name = uploaded_original_pdf.name or "uploaded_original.pdf"
+        if not original_name.lower().endswith(".pdf"):
+            original_name = f"{original_name}.pdf"
+        upload_path = default_storage.save(
+            f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{original_name}",
+            uploaded_original_pdf,
+        )
+        metadata_original = (
+            citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+        )
+        metadata_original = dict(metadata_original)
+        metadata_original["uploaded_pdf_path"] = upload_path
+        metadata_original["uploaded_pdf_path_original"] = upload_path
+        metadata_original["url"] = default_storage.url(upload_path)
+        citation.metadata_original = metadata_original
+        citation.save(update_fields=["metadata_original"])
+        uploaded_pdf_saved = True
+
+    uploaded_incorrect_pdf = request.FILES.get("uploaded_pdf_incorrect_file") or request.FILES.get("uploaded_pdf_file")
+    if uploaded_incorrect_pdf:
+        original_name = uploaded_incorrect_pdf.name or "uploaded.pdf"
+        if not original_name.lower().endswith(".pdf"):
+            original_name = f"{original_name}.pdf"
+        upload_path = default_storage.save(
+            f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{original_name}",
+            uploaded_incorrect_pdf,
+        )
+        metadata_incorrect = (
+            citation.metadata_incorrect if isinstance(citation.metadata_incorrect, dict) else {}
+        )
+        metadata_incorrect = dict(metadata_incorrect)
+        metadata_incorrect["uploaded_pdf_path"] = upload_path
+        metadata_incorrect["uploaded_pdf_path_incorrect"] = upload_path
+        metadata_incorrect["url"] = default_storage.url(upload_path)
+        citation.metadata_incorrect = metadata_incorrect
+        citation.save(update_fields=["metadata_incorrect"])
+        uploaded_pdf_saved = True
+
+    form = IncorrectCitationForm(data=data, instance=citation)
+    if form.is_valid():
+        form.save()
+        if section in {"header", "all"}:
+            _set_report_title(citation, request.POST.get("report_title", ""))
+            citation.save(update_fields=["metadata_original"])
+        messages.success(request, "Reporte actualizado correctamente.")
+    else:
+        if uploaded_pdf_saved:
+            messages.warning(
+                request,
+                "El PDF se guardó, pero hay campos del reporte que debes revisar.",
+            )
+        else:
+            messages.error(request, "Revisa los datos del formulario de edicion.")
+
+    return redirect("citation_detail", pk=pk)
+
+
+@xframe_options_sameorigin
+def citation_uploaded_pdf(request, pk, article: str = "incorrect"):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    normalized_article = (article or "incorrect").lower()
+    if normalized_article == "original":
+        upload_path = _get_uploaded_pdf_path(
+            citation,
+            metadata_attr="metadata_original",
+            path_keys=("uploaded_pdf_path", "uploaded_pdf_path_original"),
+        )
+        download_name = "articulo_original.pdf"
+    elif normalized_article == "incorrect":
+        upload_path = _get_uploaded_pdf_path(
+            citation,
+            metadata_attr="metadata_incorrect",
+            path_keys=("uploaded_pdf_path", "uploaded_pdf_path_incorrect"),
+        )
+        download_name = "articulo_incorrecto.pdf"
+    else:
+        raise Http404("Tipo de artículo no válido.")
+
+    if not upload_path or not default_storage.exists(upload_path):
+        raise Http404("No hay PDF subido para este reporte.")
+    pdf_file = default_storage.open(upload_path, "rb")
+    response = FileResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{download_name}"'
+    return response
+
 
 def citation_preview(request, pk):
     citation = get_object_or_404(
@@ -331,7 +584,11 @@ def semantic_citations_view(request):
 
 def citation_reader(request, report_id: int):
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
-    pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
+    uploaded_pdf_path = _get_uploaded_pdf_path(citation)
+    if uploaded_pdf_path and default_storage.exists(uploaded_pdf_path):
+        pdf_url = reverse("citation_uploaded_pdf", kwargs={"pk": citation.pk})
+    else:
+        pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
     context = {
         "citation": citation,
         "pdf_url": pdf_url or "",

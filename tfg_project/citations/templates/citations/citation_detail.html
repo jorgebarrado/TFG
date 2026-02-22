@@ -15,24 +15,65 @@
 
     {% trans "Título no disponible" as fallback_title %}
     <section class="hero-card mb-5">
-        <div class="row g-4 align-items-start">
-            <div class="col-lg-8">
-                <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
-                <h1 class="display-5 fw-bold mb-2">{% trans "Reporte" %} #{{ citation.id }}</h1>
-                <p class="lead mb-3" id="reportOriginalTitle">
-                    {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
-                </p>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
-                    <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+        <div class="report-edit-block report-hero-inline" data-edit-block="header">
+            <div class="report-edit-display{% if report_edit_mode %} d-none{% endif %}">
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-8">
+                        {% if can_edit_report %}
+                        <div class="mb-2">
+                            <a href="{% url 'citation_detail' citation.id %}?edit=1" class="btn btn-outline-secondary btn-sm report-hero-inline__edit-btn">
+                                {% trans "Editar" %}
+                            </a>
+                        </div>
+                        {% endif %}
+                        <h1 class="display-5 fw-bold mb-2">{{ report_title_display }}</h1>
+                        <p class="lead mb-3" id="reportOriginalTitle">
+                            {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                            <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
+                            <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+                            {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
+                            {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-                    {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
-                    {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
+
+            {% if can_edit_report %}
+            <form id="report-global-edit-form" method="post" action="{% url 'citation_edit' citation.id %}" enctype="multipart/form-data" class="report-edit-form{% if not report_edit_mode %} d-none{% endif %}" data-edit-form="header">
+                {% csrf_token %}
+                <input type="hidden" name="section" value="{% if report_edit_mode %}all{% else %}header{% endif %}">
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-8">
+                        <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
+                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input mb-3" value="{{ report_title_display }}">
+                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                            <select name="publication_area" class="form-select form-select-sm w-auto">
+                                {% for value, label in publication_area_choices %}
+                                <option value="{{ value }}"{% if value == citation.publication_area %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="citation_type" class="form-select form-select-sm w-auto">
+                                {% for value, label in citation_type_choices %}
+                                <option value="{{ value }}"{% if value == citation.citation_type %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-wrap justify-content-lg-end gap-2 report-hero-edit__actions">
+                            <a href="{% url 'citation_detail' citation.id %}" class="btn btn-outline-secondary btn-sm">{% trans "Cancelar" %}</a>
+                            <button type="submit" class="btn btn-primary btn-sm">{% trans "Guardar cambios" %}</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </form>
+            {% endif %}
         </div>
         <div class="text-muted small mt-3">
             {% if citation.author %}
@@ -48,9 +89,7 @@
         </div>
     </section>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <section class="mb-4">
+    <section class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="mb-0">{% trans "Artículos implicados" %}</h4>
                 </div>
@@ -66,12 +105,40 @@
                                     <a href="https://doi.org/{{ citation.doi_original }}" target="_blank" class="btn btn-outline-secondary btn-sm">
                                         {% trans "Ver DOI" %}
                                     </a>
-                                    {% if citation.original_pdf_uploaded %}
-                                    <a href="{{ citation.original_pdf_uploaded.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                        {% trans "Ver PDF subido" %}
-                                    </a>
-                                    {% endif %}
                                 </div>
+                                <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
+                                {% if original_pdf_url %}
+                                    <div class="ratio ratio-4x3 mb-3 pdf-preview-shell">
+                                        <iframe
+                                            src="{{ original_pdf_url }}#toolbar=0&navpanes=0&view=FitH&zoom=page-width"
+                                            title="{% trans 'Vista previa del PDF' %}"
+                                            class="w-100 h-100 border-0 pdf-preview-frame"
+                                            loading="lazy">
+                                        </iframe>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted small mb-3">{% trans "No hay PDF disponible para previsualizar" %}</p>
+                                {% endif %}
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% if original_pdf_url %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#pdfPreviewOriginalModal">
+                                        {% trans "Ampliar" %}
+                                    </button>
+                                    {% endif %}
+                                    <a href="{% url 'citation_reader' citation.id %}" class="btn btn-sm btn-outline-primary">
+                                        {% trans "Abrir visor completo" %}
+                                    </a>
+                                </div>
+                                {% if can_edit_report %}
+                                <div class="mt-3 report-edit-block" data-edit-block="original">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="original">
+                                        <label class="form-label small mb-1">{% trans "DOI original" %}</label>
+                                        <input type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" class="form-control form-control-sm">
+                                        <label class="form-label small mb-1 mt-2">{% trans "PDF artículo original" %}</label>
+                                        <input type="file" name="uploaded_pdf_original_file" form="report-global-edit-form" accept="application/pdf" class="form-control form-control-sm">
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -79,9 +146,6 @@
                         <div class="card h-100 surface-card">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
-                                <p class="mb-1 fw-semibold">
-                                    {{ citation.metadata_incorrect_title|default:citation.doi_incorrect|default:fallback_title }}
-                                </p>
                                 <div class="border rounded-3 p-3" id="metadataIncorrect">
                                     <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
                                 </div>
@@ -89,18 +153,48 @@
                                     <a href="https://doi.org/{{ citation.doi_incorrect }}" target="_blank" class="btn btn-outline-secondary btn-sm">
                                         {% trans "Ver DOI" %}
                                     </a>
-                                    {% if citation.citing_pdf_uploaded %}
-                                    <a href="{{ citation.citing_pdf_uploaded.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                        {% trans "Ver PDF subido" %}
-                                    </a>
-                                    {% endif %}
                                 </div>
+                                <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
+                                {% if incorrect_pdf_url %}
+                                    <div class="ratio ratio-4x3 mb-3 pdf-preview-shell">
+                                        <iframe
+                                            src="{{ incorrect_pdf_url }}#toolbar=0&navpanes=0&view=FitH&zoom=page-width"
+                                            title="{% trans 'Vista previa del PDF' %}"
+                                            class="w-100 h-100 border-0 pdf-preview-frame"
+                                            loading="lazy">
+                                        </iframe>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted small mb-3">{% trans "No hay PDF disponible para previsualizar" %}</p>
+                                {% endif %}
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% if incorrect_pdf_url %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#pdfPreviewModal">
+                                        {% trans "Ampliar" %}
+                                    </button>
+                                    {% endif %}
+                                    <a href="{% url 'citation_reader' citation.id %}" class="btn btn-sm btn-outline-primary">
+                                        {% trans "Abrir visor completo" %}
+                                    </a>
+                                </div>
+                                {% if can_edit_report %}
+                                <div class="mt-3 report-edit-block" data-edit-block="incorrect">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="incorrect">
+                                        <label class="form-label small mb-1">{% trans "DOI incorrecto" %}</label>
+                                        <input type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" class="form-control form-control-sm">
+                                        <label class="form-label small mb-1 mt-2">{% trans "PDF artículo incorrecto" %}</label>
+                                        <input type="file" name="uploaded_pdf_incorrect_file" form="report-global-edit-form" accept="application/pdf" class="form-control form-control-sm">
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+    </section>
 
+    <div class="row g-4">
+        <div class="col-12">
             <section class="mb-4">
                 <div class="card surface-card">
                     <div class="card-body">
@@ -128,63 +222,32 @@
                     </div>
                 </div>
             </section>
+        </div>
+    </div>
 
+    <div class="row g-4">
+        <div class="col-12">
             <section class="mb-4">
                 <div class="card surface-card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">{% trans "Motivo / Explicación" %}</h5>
-                        <p class="mb-0">{{ citation.incorrect_reason }}</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="mb-4">
-                <div class="card surface-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">{% trans "Análisis automático (IA)" %}</h5>
-                        <form method="post" action="{% url 'citation_ai_evaluate' citation.id %}">
-                            {% csrf_token %}
-                            <button class="btn btn-outline-primary btn-sm">
-                                {% trans "Evaluar reporte con IA" %}
-                            </button>
-                        </form>
-                    </div>
-                    <div class="card-body">
-                        {% if citation.ai_assessment %}
-                            <div class="mb-2">
-                                <div class="small text-muted">{% trans "Veredicto IA" %}</div>
-                                <div class="fw-semibold">
-                                    {{ citation.ai_assessment.evaluation }} ({{ citation.ai_assessment.confidence|floatformat:2 }})
-                                </div>
+                        <p class="mb-0{% if report_edit_mode %} d-none{% endif %}">{{ citation.incorrect_reason }}</p>
+                        {% if can_edit_report %}
+                        <div class="mt-3 report-edit-block" data-edit-block="reason">
+                            <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="reason">
+                                <label class="form-label small mb-1">{% trans "Explicación" %}</label>
+                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3">{{ citation.incorrect_reason }}</textarea>
                             </div>
-                            <div class="mb-2">
-                                <div class="small text-muted">{% trans "Tipo de error sugerido" %}</div>
-                                <div>
-                                    {{ citation.ai_assessment.suggested_error_type }}
-                                    {% if citation.ai_assessment.matches_user_type %}
-                                        <span class="badge bg-success ms-2">{% trans "Coincide con el usuario" %}</span>
-                                    {% else %}
-                                        <span class="badge bg-warning text-dark ms-2">{% trans "No coincide con el usuario" %}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <div class="small text-muted">{% trans "Explicación IA" %}</div>
-                                <p class="mb-1" style="white-space: pre-wrap;">{{ citation.ai_assessment.reasoning }}</p>
-                            </div>
-                            <div>
-                                <div class="small text-muted">{% trans "Notas para el autor del artículo B" %}</div>
-                                <p class="mb-0" style="white-space: pre-wrap;">{{ citation.ai_assessment.notes_for_author }}</p>
-                            </div>
-                        {% else %}
-                            <p class="text-muted mb-0">
-                                {% trans "Este reporte todavía no tiene análisis automático. Pulsa el botón para generar uno." %}
-                            </p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
             </section>
+        </div>
+    </div>
 
+    <div class="row g-4">
+        <div class="col-lg-8">
             <section class="mb-4">
                 <div class="card surface-card">
                     <div class="card-body">
@@ -265,8 +328,10 @@
                     {% else %}
                         <p class="text-muted small mb-0">{% trans "Pronto mostraremos otros reportes relacionados en esta sección." %}</p>
                     {% endif %}
+        </div>
     </div>
-</div>
+    </div>
+    </div>
 
 <!-- Modal confirmación eliminar -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -289,6 +354,53 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block page_modals %}
+{% if original_pdf_url %}
+<div class="modal fade" id="pdfPreviewOriginalModal" tabindex="-1" aria-labelledby="pdfPreviewOriginalModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pdfPreviewOriginalModalLabel">{% trans "Vista previa ampliada" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="pdf-preview-modal-body">
+          <iframe
+            src="{{ original_pdf_url }}#view=FitH&zoom=page-width"
+            title="{% trans 'Vista previa ampliada del PDF' %}"
+            class="w-100 h-100 border-0 pdf-preview-frame"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% if incorrect_pdf_url %}
+<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pdfPreviewModalLabel">{% trans "Vista previa ampliada" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="pdf-preview-modal-body">
+          <iframe
+            src="{{ incorrect_pdf_url }}#view=FitH&zoom=page-width"
+            title="{% trans 'Vista previa ampliada del PDF' %}"
+            class="w-100 h-100 border-0 pdf-preview-frame"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -381,6 +493,43 @@
                 commentFeedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
+
+        const openEditBlock = (blockName) => {
+            document.querySelectorAll('[data-edit-block]').forEach((currentBlock) => {
+                currentBlock.querySelector('.report-edit-form')?.classList.add('d-none');
+                currentBlock.querySelector('.report-edit-display')?.classList.remove('d-none');
+            });
+            const block = document.querySelector(`[data-edit-block="${blockName}"]`);
+            if (!block) return;
+            block.querySelector('.report-edit-display')?.classList.add('d-none');
+            block.querySelector('.report-edit-form')?.classList.remove('d-none');
+            block.querySelector('.report-edit-form input, .report-edit-form textarea, .report-edit-form select')?.focus();
+        };
+
+        const closeEditBlock = (blockName) => {
+            const block = document.querySelector(`[data-edit-block="${blockName}"]`);
+            if (!block) return;
+            const form = block.querySelector('.report-edit-form');
+            form?.classList.add('d-none');
+            form?.reset();
+            block.querySelector('.report-edit-display')?.classList.remove('d-none');
+        };
+
+        document.addEventListener('click', (event) => {
+            const editToggle = event.target.closest('[data-edit-toggle]');
+            if (editToggle) {
+                event.preventDefault();
+                openEditBlock(editToggle.getAttribute('data-edit-toggle'));
+                return;
+            }
+
+            const editCancel = event.target.closest('[data-edit-cancel]');
+            if (editCancel) {
+                event.preventDefault();
+                closeEditBlock(editCancel.getAttribute('data-edit-cancel'));
+            }
+        });
+
     });
 </script>
 
@@ -425,7 +574,7 @@ function renderMetadata(doi, elementId) {
                                 d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
                         </svg>
                     </span>
-                    <span class="copy-confirm text-success small d-none">{% trans "Copiado ✅" %}</span>
+                    <span class="copy-confirm text-success small d-none">{% trans "Copiado." %}</span>
                 </div>
 
                 ${hasExtras ? `
@@ -619,3 +768,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 {% endblock %}
+
+
+
+
