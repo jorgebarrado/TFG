@@ -47,6 +47,11 @@ urlpatterns = [
         name="citation_ai_detect",
     ),
     path(
+        "reports/<int:pk>/extract-contexts/",
+        page_views.citation_extract_contexts,
+        name="citation_extract_contexts",
+    ),
+    path(
         "reports/<int:pk>/ai-evaluate/",
         views_ai.citation_ai_evaluate,
         name="citation_ai_evaluate",
