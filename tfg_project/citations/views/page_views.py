@@ -1,6 +1,7 @@
 """Views for pages that render complete HTML pages."""
 
 import os
+import tempfile
 import uuid
 from urllib.parse import unquote, urlparse
 
@@ -16,6 +17,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
 from ..forms import (
     CommentForm,
@@ -33,7 +35,10 @@ from ..models import (
     Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
+from ..services.citation_extractor import process_manuscript
+from ..services.engines import ALLOWED_ENGINES
 from ..services.reader_data import extract_pdf_url_from_metadata
+from ..services.semanticscholar import download_pdf_to_temp
 
 
 def _reader_build_stamp() -> str:
@@ -549,6 +554,114 @@ def citation_preview(request, pk):
             "save_button_html": save_button_html,
         }
     )
+
+
+@login_required
+@require_POST
+def citation_extract_contexts(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    if not _can_edit_report(request.user, citation):
+        messages.error(request, "No tienes permiso para actualizar los parrafos de cita.")
+        return redirect("citation_detail", pk=pk)
+
+    if request.POST.get("context_selection") == "1":
+        existing_contexts = (
+            citation.citation_contexts if isinstance(citation.citation_contexts, list) else []
+        )
+        selected_indices = set()
+        for raw_idx in request.POST.getlist("selected_context_index"):
+            try:
+                idx = int(raw_idx)
+            except (TypeError, ValueError):
+                continue
+            if idx >= 0:
+                selected_indices.add(idx)
+
+        selected_contexts = [
+            ctx for idx, ctx in enumerate(existing_contexts) if idx in selected_indices
+        ]
+        citation.citation_contexts = selected_contexts
+        citation.save(update_fields=["citation_contexts"])
+        messages.success(
+            request,
+            f"Seleccion actualizada: {len(selected_contexts)} parrafos guardados.",
+        )
+        return redirect("citation_detail", pk=pk)
+
+    engine = (request.POST.get("engine") or "generic").strip().lower()
+    if engine not in ALLOWED_ENGINES:
+        messages.error(request, "Herramienta de extraccion no valida.")
+        return redirect("citation_detail", pk=pk)
+
+    tmp_path = ""
+    uploaded_pdf_path = _get_uploaded_pdf_path(
+        citation,
+        metadata_attr="metadata_incorrect",
+        path_keys=("uploaded_pdf_path", "uploaded_pdf_path_incorrect"),
+    )
+    if uploaded_pdf_path and default_storage.exists(uploaded_pdf_path):
+        suffix = os.path.splitext(uploaded_pdf_path)[1] or ".pdf"
+        with default_storage.open(uploaded_pdf_path, "rb") as stored_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+                for chunk in stored_file.chunks():
+                    tmp_file.write(chunk)
+                tmp_path = tmp_file.name
+    else:
+        pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
+        if not pdf_url:
+            messages.error(request, "No hay PDF disponible para extraer parrafos.")
+            return redirect("citation_detail", pk=pk)
+        tmp_path = download_pdf_to_temp(pdf_url) or ""
+
+    if not tmp_path:
+        messages.error(request, "No se pudo preparar el PDF para el extractor.")
+        return redirect("citation_detail", pk=pk)
+
+    try:
+        data = process_manuscript(tmp_path, engine=engine, debug=False)
+        if not data.get("ok", False):
+            messages.error(
+                request,
+                data.get("error") or "No se pudieron extraer parrafos con el motor seleccionado.",
+            )
+            return redirect("citation_detail", pk=pk)
+
+        contexts = []
+        for item in data.get("results") or []:
+            if not isinstance(item, dict):
+                continue
+            paragraph = str(item.get("paragraph") or "").strip()
+            snippet = str(item.get("snippet") or "").strip()
+            if not paragraph and not snippet:
+                continue
+            contexts.append(
+                {
+                    "page": item.get("page"),
+                    "pattern": item.get("type") or item.get("pattern") or "",
+                    "snippet": snippet,
+                    "paragraph": paragraph,
+                    "start": item.get("start"),
+                    "end": item.get("end"),
+                    "confidence": item.get("confidence") or 0,
+                }
+            )
+
+        citation.citation_contexts = contexts
+        citation.save(update_fields=["citation_contexts"])
+        messages.success(
+            request,
+            f"Extractor aplicado: {len(contexts)} fragmentos guardados.",
+        )
+        return redirect("citation_detail", pk=pk)
+    except Exception as exc:  # pylint: disable=broad-except
+        messages.error(request, f"No se pudo ejecutar el extractor: {exc}")
+        return redirect("citation_detail", pk=pk)
+    finally:
+        try:
+            if tmp_path:
+                os.remove(tmp_path)
+        except OSError:
+            pass
 
 def semantic_citations_view(request):
     """
