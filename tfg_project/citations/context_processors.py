@@ -1,5 +1,5 @@
 from .forms import LoginForm, RegisterForm
-from .models import Notification
+from .models import IncorrectCitation, Notification
 
 
 def login_register_forms(request):
@@ -29,4 +29,19 @@ def notifications_context(request):
     return {
         "notifications_unread_count": unread_count,
         "notifications_latest": latest,
+    }
+
+
+def next_report_number_context(request):
+    try:
+        latest_id = (
+            IncorrectCitation.objects.order_by("-id").values_list("id", flat=True).first()
+            or 0
+        )
+        next_report_number = int(latest_id) + 1
+    except Exception:  # pylint: disable=broad-except
+        next_report_number = 1
+
+    return {
+        "next_report_number": next_report_number,
     }

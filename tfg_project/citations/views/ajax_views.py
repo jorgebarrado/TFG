@@ -1,10 +1,12 @@
 """Views that handle AJAX requests and return JSON responses."""
 
 import json
+import uuid
 import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -112,6 +114,14 @@ def ajax_submit_citation(request):
 
     form = IncorrectCitationForm(request.POST)
     if form.is_valid():
+        report_title = (request.POST.get("report_title") or "").strip()
+        if not report_title:
+            error_msg = _("El titulo del reporte es obligatorio.")
+            if _is_ajax(request):
+                return JsonResponse({"errors": {"report_title": [error_msg]}}, status=400)
+            messages.error(request, error_msg)
+            return redirect("home")
+
         doi_original = form.cleaned_data.get("doi_original")
         doi_incorrect = form.cleaned_data.get("doi_incorrect")
 
@@ -157,6 +167,55 @@ def ajax_submit_citation(request):
                 pass
 
         citation.save()
+
+        metadata_fields_to_update = []
+        updated_original = (
+            citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+        )
+        updated_original = dict(updated_original)
+        updated_incorrect = (
+            citation.metadata_incorrect if isinstance(citation.metadata_incorrect, dict) else {}
+        )
+        updated_incorrect = dict(updated_incorrect)
+
+        updated_original["title_override"] = report_title
+        citation.metadata_original = updated_original
+        metadata_fields_to_update.append("metadata_original")
+
+        uploaded_original_pdf = request.FILES.get("uploaded_pdf_original_file")
+        if uploaded_original_pdf:
+            original_name = uploaded_original_pdf.name or "uploaded_original.pdf"
+            if not original_name.lower().endswith(".pdf"):
+                original_name = f"{original_name}.pdf"
+            upload_path = default_storage.save(
+                f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{original_name}",
+                uploaded_original_pdf,
+            )
+            updated_original["uploaded_pdf_path"] = upload_path
+            updated_original["uploaded_pdf_path_original"] = upload_path
+            updated_original["url"] = default_storage.url(upload_path)
+            citation.metadata_original = updated_original
+            if "metadata_original" not in metadata_fields_to_update:
+                metadata_fields_to_update.append("metadata_original")
+
+        uploaded_incorrect_pdf = request.FILES.get("uploaded_pdf_incorrect_file") or request.FILES.get("uploaded_pdf_file")
+        if uploaded_incorrect_pdf:
+            incorrect_name = uploaded_incorrect_pdf.name or "uploaded_incorrect.pdf"
+            if not incorrect_name.lower().endswith(".pdf"):
+                incorrect_name = f"{incorrect_name}.pdf"
+            upload_path = default_storage.save(
+                f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{incorrect_name}",
+                uploaded_incorrect_pdf,
+            )
+            updated_incorrect["uploaded_pdf_path"] = upload_path
+            updated_incorrect["uploaded_pdf_path_incorrect"] = upload_path
+            updated_incorrect["url"] = default_storage.url(upload_path)
+            citation.metadata_incorrect = updated_incorrect
+            if "metadata_incorrect" not in metadata_fields_to_update:
+                metadata_fields_to_update.append("metadata_incorrect")
+
+        if metadata_fields_to_update:
+            citation.save(update_fields=metadata_fields_to_update)
 
         if _is_ajax(request):
             return JsonResponse(

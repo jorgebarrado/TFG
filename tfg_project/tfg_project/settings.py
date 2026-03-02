@@ -87,6 +87,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "citations.context_processors.login_register_forms",
                 "citations.context_processors.notifications_context",
+                "citations.context_processors.next_report_number_context",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
