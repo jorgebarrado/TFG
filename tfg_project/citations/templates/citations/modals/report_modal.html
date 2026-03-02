@@ -1,91 +1,194 @@
 {% load i18n %}
 
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <form method="post" id="reportForm" action="{% url 'ajax_submit' %}">
-          {% csrf_token %}
-          <div class="modal-header">
-            <h5 class="modal-title" id="reportModalLabel">{% trans "Crear nuevo reporte" %}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-sm">
+      <form method="post" id="reportForm" action="{% url 'ajax_submit' %}" enctype="multipart/form-data" class="report-modal-form">
+        {% csrf_token %}
+        <div class="modal-header px-4 py-3 border-bottom">
+          <h5 class="modal-title fw-semibold" id="reportModalLabel">{% trans "Crear nuevo reporte" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+        </div>
+
+        <div class="modal-body text-start p-4">
+          <div class="mb-3">
+            <label for="id_report_title" class="form-label">{% trans "Titulo del reporte" %}</label>
+            <input
+              id="id_report_title"
+              type="text"
+              class="form-control form-control-lg"
+              name="report_title"
+              value="Reporte #{{ next_report_number }}"
+              required
+            >
           </div>
-          <div class="modal-body text-start">
-              <!-- DOI original -->
-              <div class="mb-3">
-                <label for="id_doi_original" class="form-label">{% trans "DOI original:" %}</label>
-                <input id="id_doi_original" type="text" class="form-control" name="doi_original" required>
-                <div id="meta_original"></div>
-              </div>
 
-              <!-- DOI incorrecto -->
-              <div class="mb-3">
-                <label for="id_doi_incorrect" class="form-label">{% trans "DOI incorrecto:" %}</label>
-                <input id="id_doi_incorrect" type="text" class="form-control" name="doi_incorrect" required>
-                <div id="meta_incorrect"></div>
-              </div>
-
-              <input type="hidden" name="original_metadata_json" id="id_original_metadata_json">
-              <input type="hidden" name="citing_metadata_json" id="id_citing_metadata_json">
-
-            <div class="mb-3">
-              <label for="incorrect_reason" class="form-label">{% trans "Motivo:" %}</label>
-              <textarea class="form-control" name="incorrect_reason" rows="3" required></textarea>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="id_doi_original" class="form-label">{% trans "DOI original" %}</label>
+              <input
+                id="id_doi_original"
+                type="text"
+                class="form-control"
+                name="doi_original"
+                placeholder="10.1000/xyz123"
+                required
+              >
+              <div id="meta_original" class="mt-2"></div>
             </div>
-            <div class="mb-3">
-              <label for="citation_type" class="form-label">{% trans "Tipo de error:" %}</label>
+            <div class="col-md-6">
+              <label for="id_doi_incorrect" class="form-label">{% trans "DOI incorrecto" %}</label>
+              <input
+                id="id_doi_incorrect"
+                type="text"
+                class="form-control"
+                name="doi_incorrect"
+                placeholder="10.1000/err456"
+                required
+              >
+              <div id="meta_incorrect" class="mt-2"></div>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label for="id_uploaded_pdf_original_file" class="form-label">
+                {% trans "PDF original" %} <span class="text-muted small">({% trans "opcional" %})</span>
+              </label>
+              <input
+                id="id_uploaded_pdf_original_file"
+                type="file"
+                class="d-none js-report-file-input"
+                name="uploaded_pdf_original_file"
+                accept="application/pdf"
+              >
+              <label for="id_uploaded_pdf_original_file" class="report-upload-box position-relative" data-input-id="id_uploaded_pdf_original_file">
+                <button
+                  type="button"
+                  id="id_uploaded_pdf_original_file_clear"
+                  class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
+                  aria-label="{% trans 'Quitar PDF original' %}"
+                >
+                  &times;
+                </button>
+                <i class="bi bi-upload"></i>
+                <span id="id_uploaded_pdf_original_file_text"><span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span></span>
+                <span id="id_uploaded_pdf_original_file_name" class="small text-muted d-none">{% trans "Ningun archivo seleccionado" %}</span>
+              </label>
+            </div>
+            <div class="col-md-6">
+              <label for="id_uploaded_pdf_incorrect_file" class="form-label">
+                {% trans "PDF incorrecto" %} <span class="text-muted small">({% trans "opcional" %})</span>
+              </label>
+              <input
+                id="id_uploaded_pdf_incorrect_file"
+                type="file"
+                class="d-none js-report-file-input"
+                name="uploaded_pdf_incorrect_file"
+                accept="application/pdf"
+              >
+              <label for="id_uploaded_pdf_incorrect_file" class="report-upload-box position-relative" data-input-id="id_uploaded_pdf_incorrect_file">
+                <button
+                  type="button"
+                  id="id_uploaded_pdf_incorrect_file_clear"
+                  class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
+                  aria-label="{% trans 'Quitar PDF incorrecto' %}"
+                >
+                  &times;
+                </button>
+                <i class="bi bi-upload"></i>
+                <span id="id_uploaded_pdf_incorrect_file_text"><span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span></span>
+                <span id="id_uploaded_pdf_incorrect_file_name" class="small text-muted d-none">{% trans "Ningun archivo seleccionado" %}</span>
+              </label>
+            </div>
+          </div>
+
+          <input type="hidden" name="original_metadata_json" id="id_original_metadata_json">
+          <input type="hidden" name="citing_metadata_json" id="id_citing_metadata_json">
+
+          <div class="mt-3">
+            <label for="incorrect_reason" class="form-label">{% trans "Motivo" %}</label>
+            <textarea
+              class="form-control"
+              name="incorrect_reason"
+              rows="4"
+              placeholder="{% trans 'Describa el motivo del reporte...' %}"
+              required
+            ></textarea>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label for="citation_type" class="form-label">{% trans "Tipo de error" %}</label>
               <select class="form-select" name="citation_type" required>
-                <option value="">{% trans "Seleccione..." %}</option>
+                <option value="">{% trans "Seleccione el tipo..." %}</option>
                 <option value="not said">{% trans "Not Said" %}</option>
                 <option value="misinterpretation">{% trans "Misinterpretation" %}</option>
                 <option value="contextual misattribution">{% trans "Contextual Misattribution" %}</option>
               </select>
             </div>
-            <div class="mb-3">
-              <label for="publication_area" class="form-label">{% trans "Área de publicación" %}:</label>
+            <div class="col-md-6">
+              <label for="publication_area" class="form-label">{% trans "Area de publicacion" %}</label>
               <select class="form-select" name="publication_area" required>
-                  <option value="">{% trans "Seleccione área..." %}</option>
-                  <option value="ENG">{% trans "Engineering" %}</option>
-                  <option value="PHY">{% trans "Physical Sciences" %}</option>
-                  <option value="ENV">{% trans "Environmental Sciences" %}</option>
-                  <option value="MAT">{% trans "Mathematics" %}</option>
-                  <option value="CIS">{% trans "Computer and Information Sciences" %}</option>
-                  <option value="LIF">{% trans "Life Sciences" %}</option>
-                  <option value="PSY">{% trans "Psychology" %}</option>
-                  <option value="SOC">{% trans "Social Sciences" %}</option>
-                  <option value="OTH">{% trans "Other Sciences" %}</option>
-                  <option value="EDU">{% trans "Education" %}</option>
-                  <option value="LAW">{% trans "Law" %}</option>
-                  <option value="HUM">{% trans "Humanities" %}</option>
-                  <option value="ART">{% trans "Visual and Performing Arts" %}</option>
-                  <option value="BUS">{% trans "Business and Management" %}</option>
-                  <option value="COM">{% trans "Communication and Journalism" %}</option>
-                  <option value="SWK">{% trans "Social Work" %}</option>
-                  <option value="NON">{% trans "Other Non-Science & Engineering Fields" %}</option>
+                <option value="">{% trans "Seleccione el area..." %}</option>
+                <option value="ENG">{% trans "Engineering" %}</option>
+                <option value="PHY">{% trans "Physical Sciences" %}</option>
+                <option value="ENV">{% trans "Environmental Sciences" %}</option>
+                <option value="MAT">{% trans "Mathematics" %}</option>
+                <option value="CIS">{% trans "Computer and Information Sciences" %}</option>
+                <option value="LIF">{% trans "Life Sciences" %}</option>
+                <option value="PSY">{% trans "Psychology" %}</option>
+                <option value="SOC">{% trans "Social Sciences" %}</option>
+                <option value="OTH">{% trans "Other Sciences" %}</option>
+                <option value="EDU">{% trans "Education" %}</option>
+                <option value="LAW">{% trans "Law" %}</option>
+                <option value="HUM">{% trans "Humanities" %}</option>
+                <option value="ART">{% trans "Visual and Performing Arts" %}</option>
+                <option value="BUS">{% trans "Business and Management" %}</option>
+                <option value="COM">{% trans "Communication and Journalism" %}</option>
+                <option value="SWK">{% trans "Social Work" %}</option>
+                <option value="NON">{% trans "Other Non-Science & Engineering Fields" %}</option>
               </select>
+            </div>
           </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-success">{% trans "Enviar" %}</button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <div class="modal-footer px-4 py-3 border-top">
+          <button type="button" class="btn btn-link text-secondary text-decoration-none me-auto" data-bs-dismiss="modal">
+            {% trans "Cancelar" %}
+          </button>
+          <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-send me-1"></i>{% trans "Enviar Reporte" %}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
 <script>
-  function attachDoiListener(id, targetCard) {
+function attachDoiListener(id, targetCard, targetMetaInputId) {
   const input = document.getElementById(id);
+  const hiddenInput = document.getElementById(targetMetaInputId);
   if (!input) return;
   let timer;
   input.addEventListener('input', () => {
     clearTimeout(timer);
     const doi = input.value.trim();
-    if (doi.length < 5) { document.getElementById(targetCard).innerHTML = ''; return; }
+    if (doi.length < 5) {
+      document.getElementById(targetCard).innerHTML = '';
+      if (hiddenInput) hiddenInput.value = '';
+      return;
+    }
     timer = setTimeout(() => {
       fetch(`/citations/api/doi/?doi=${encodeURIComponent(doi)}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
-          if (!data) return;
+          if (!data) {
+            if (hiddenInput) hiddenInput.value = '';
+            return;
+          }
+          if (hiddenInput) hiddenInput.value = JSON.stringify(data);
           document.getElementById(targetCard).innerHTML = `
             <div class="card mt-2">
               <div class="card-body p-2">
@@ -100,13 +203,20 @@
     }, 800);
   });
 }
-attachDoiListener('id_doi_original',  'meta_original');
-attachDoiListener('id_doi_incorrect', 'meta_incorrect');
+
+attachDoiListener('id_doi_original', 'meta_original', 'id_original_metadata_json');
+attachDoiListener('id_doi_incorrect', 'meta_incorrect', 'id_citing_metadata_json');
 
 const originalInput = document.getElementById('id_doi_original');
 const incorrectInput = document.getElementById('id_doi_incorrect');
+const reportTitleInput = document.getElementById('id_report_title');
 const originalMetaInput = document.getElementById('id_original_metadata_json');
 const incorrectMetaInput = document.getElementById('id_citing_metadata_json');
+const originalPdfInput = document.getElementById('id_uploaded_pdf_original_file');
+const incorrectPdfInput = document.getElementById('id_uploaded_pdf_incorrect_file');
+const defaultReportTitle = 'Reporte #{{ next_report_number|default:1 }}';
+const noFileText = "{% trans 'Ningun archivo seleccionado' %}";
+const defaultDropMarkup = `<span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span>`;
 
 if (originalInput && originalMetaInput) {
   originalInput.addEventListener('input', () => {
@@ -120,7 +230,89 @@ if (incorrectInput && incorrectMetaInput) {
   });
 }
 
+function initReportFileInput(fileInput, fileNameId, clearButtonId, dropTextId) {
+  if (!fileInput) return;
+  const fileNameEl = document.getElementById(fileNameId);
+  const clearButton = document.getElementById(clearButtonId);
+  const dropTextEl = document.getElementById(dropTextId);
+  const dropZone = document.querySelector(`.report-upload-box[data-input-id="${fileInput.id}"]`);
+
+  const renderName = () => {
+    if (!fileNameEl) return;
+    const pickedFile = fileInput.files && fileInput.files[0];
+    if (pickedFile) {
+      const sizeKb = Math.round(pickedFile.size / 1024);
+      const fileLabel = `${pickedFile.name} - ${sizeKb} KB`;
+      fileNameEl.textContent = fileLabel;
+      if (dropTextEl) {
+        dropTextEl.textContent = fileLabel;
+      }
+    } else {
+      fileNameEl.textContent = noFileText;
+      if (dropTextEl) {
+        dropTextEl.innerHTML = defaultDropMarkup;
+      }
+    }
+    if (clearButton) {
+      clearButton.classList.toggle('d-none', !pickedFile);
+    }
+  };
+
+  fileInput.addEventListener('change', renderName);
+  renderName();
+
+  if (!dropZone) return;
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropZone.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      dropZone.classList.add('is-dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach((eventName) => {
+    dropZone.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      dropZone.classList.remove('is-dragover');
+    });
+  });
+  dropZone.addEventListener('drop', (event) => {
+    if (!event.dataTransfer || !event.dataTransfer.files || !event.dataTransfer.files.length) return;
+    try {
+      fileInput.files = event.dataTransfer.files;
+      renderName();
+    } catch (err) {
+      fileInput.click();
+    }
+  });
+
+  if (clearButton) {
+    clearButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      fileInput.value = '';
+      renderName();
+    });
+  }
+}
+
+initReportFileInput(
+  originalPdfInput,
+  'id_uploaded_pdf_original_file_name',
+  'id_uploaded_pdf_original_file_clear',
+  'id_uploaded_pdf_original_file_text'
+);
+initReportFileInput(
+  incorrectPdfInput,
+  'id_uploaded_pdf_incorrect_file_name',
+  'id_uploaded_pdf_incorrect_file_clear',
+  'id_uploaded_pdf_incorrect_file_text'
+);
+
 function prefillReportModal(payload) {
+  if (reportTitleInput) {
+    reportTitleInput.value = payload.reportTitle || defaultReportTitle;
+  }
   if (originalInput) {
     originalInput.value = payload.originalDoi || '';
     originalInput.dispatchEvent(new Event('input'));
@@ -135,8 +327,25 @@ function prefillReportModal(payload) {
   if (incorrectMetaInput) {
     incorrectMetaInput.value = payload.incorrectMetadata || '';
   }
+  if (originalPdfInput) {
+    originalPdfInput.value = '';
+    const originalNameEl = document.getElementById('id_uploaded_pdf_original_file_name');
+    if (originalNameEl) originalNameEl.textContent = noFileText;
+    const originalTextEl = document.getElementById('id_uploaded_pdf_original_file_text');
+    if (originalTextEl) originalTextEl.innerHTML = defaultDropMarkup;
+    const originalClearBtn = document.getElementById('id_uploaded_pdf_original_file_clear');
+    if (originalClearBtn) originalClearBtn.classList.add('d-none');
+  }
+  if (incorrectPdfInput) {
+    incorrectPdfInput.value = '';
+    const incorrectNameEl = document.getElementById('id_uploaded_pdf_incorrect_file_name');
+    if (incorrectNameEl) incorrectNameEl.textContent = noFileText;
+    const incorrectTextEl = document.getElementById('id_uploaded_pdf_incorrect_file_text');
+    if (incorrectTextEl) incorrectTextEl.innerHTML = defaultDropMarkup;
+    const incorrectClearBtn = document.getElementById('id_uploaded_pdf_incorrect_file_clear');
+    if (incorrectClearBtn) incorrectClearBtn.classList.add('d-none');
+  }
 }
 
 window.prefillReportModal = prefillReportModal;
 </script>
-
