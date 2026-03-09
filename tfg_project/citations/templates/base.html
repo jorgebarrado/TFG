@@ -98,7 +98,7 @@
           </li>
           <li>
             <a class="dropdown-item" href="{% url 'create_report_wizard' %}">
-              {% trans "Con asistente" %}
+              {% trans "Pagina completa" %}
             </a>
           </li>
           <li>
@@ -290,6 +290,15 @@
 
 <!-- Mostrar modal de login automáticamente si hay errores -->
 {% if login_form.errors %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+    });
+</script>
+{% endif %}
+
+{% if show_login_modal %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));

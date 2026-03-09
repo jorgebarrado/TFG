@@ -166,14 +166,6 @@ def citation_review_create_report(request):
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
 
-    if original_doi and citing_doi:
-        existing = IncorrectCitation.objects.filter(
-            doi_original=original_doi, doi_incorrect=citing_doi
-        ).first()
-        if existing:
-            messages.info(request, "Ese reporte ya existe.")
-            return redirect("citation_detail", pk=existing.pk)
-
     def _parse_json(name: str) -> dict:
         raw = request.POST.get(name) or ""
         if not raw:

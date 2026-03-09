@@ -15,6 +15,12 @@ from django.views.decorators.http import require_POST
 
 from ..forms import IncorrectCitationForm, RegisterForm
 from ..models import Comment, IncorrectCitation, SavedCitation, Vote
+from ..services.report_tags import (
+    CITATION_TYPE_CHOICES,
+    PUBLICATION_AREA_LABELS,
+    apply_report_tags,
+    normalize_tag_values,
+)
 from ..services.semantic_fetch import get_citations_with_fallback
 
 
@@ -112,7 +118,17 @@ def ajax_submit_citation(request):
         messages.error(request, _("Método no permitido."))
         return redirect("home")
 
-    form = IncorrectCitationForm(request.POST)
+    selected_types = normalize_tag_values(
+        request.POST.getlist("citation_type"), dict(CITATION_TYPE_CHOICES)
+    )
+    selected_areas = normalize_tag_values(
+        request.POST.getlist("publication_area"), PUBLICATION_AREA_LABELS
+    )
+    form_data = request.POST.copy()
+    form_data["citation_type"] = selected_types[0] if selected_types else ""
+    form_data["publication_area"] = selected_areas[0] if selected_areas else ""
+
+    form = IncorrectCitationForm(form_data)
     if form.is_valid():
         report_title = (request.POST.get("report_title") or "").strip()
         if not report_title:
@@ -121,22 +137,6 @@ def ajax_submit_citation(request):
                 return JsonResponse({"errors": {"report_title": [error_msg]}}, status=400)
             messages.error(request, error_msg)
             return redirect("home")
-
-        doi_original = form.cleaned_data.get("doi_original")
-        doi_incorrect = form.cleaned_data.get("doi_incorrect")
-
-        if doi_original and doi_incorrect:
-            existing = IncorrectCitation.objects.filter(
-                doi_original=doi_original, doi_incorrect=doi_incorrect
-            ).first()
-            if existing:
-                if _is_ajax(request):
-                    return JsonResponse(
-                        {"success": True, "citation_id": existing.id, "existing": True},
-                        status=200,
-                    )
-                messages.info(request, _("Ese reporte ya existe."))
-                return redirect("citation_detail", pk=existing.pk)
 
         citation = form.save(commit=False)
         if request.user.is_authenticated:
@@ -166,6 +166,7 @@ def ajax_submit_citation(request):
             except json.JSONDecodeError:
                 pass
 
+        apply_report_tags(citation, selected_types, selected_areas)
         citation.save()
 
         metadata_fields_to_update = []

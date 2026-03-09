@@ -13,7 +13,7 @@ from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.db.models.functions import ExtractYear
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
@@ -38,6 +38,14 @@ from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.citation_extractor import process_manuscript
 from ..services.engines import ALLOWED_ENGINES
 from ..services.reader_data import extract_pdf_url_from_metadata
+from ..services.report_tags import (
+    CITATION_TYPE_CHOICES,
+    PUBLICATION_AREA_LABELS,
+    apply_report_tags,
+    extract_report_tag_labels,
+    extract_report_tag_values,
+    normalize_tag_values,
+)
 from ..services.semanticscholar import download_pdf_to_temp
 
 
@@ -98,6 +106,30 @@ def _set_report_title(citation, title_value: str) -> None:
     else:
         metadata.pop("title_override", None)
     citation.metadata_original = metadata
+
+
+def _has_required_report_data(citation) -> bool:
+    report_title = _extract_report_title(citation)
+    return all(
+        [
+            str(report_title or "").strip(),
+            str(citation.doi_original or "").strip(),
+            str(citation.doi_incorrect or "").strip(),
+            str(citation.incorrect_reason or "").strip(),
+            str(citation.citation_type or "").strip(),
+            str(citation.publication_area or "").strip(),
+        ]
+    )
+
+
+def _selected_tag_values_from_post(post_data):
+    selected_types = normalize_tag_values(
+        post_data.getlist("citation_type"), dict(CITATION_TYPE_CHOICES)
+    )
+    selected_areas = normalize_tag_values(
+        post_data.getlist("publication_area"), PUBLICATION_AREA_LABELS
+    )
+    return selected_types, selected_areas
 
 
 def _get_uploaded_pdf_path(
@@ -247,6 +279,11 @@ def citation_detail(request, pk):
         .order_by("-upvotes_count", "-created_at")[:5]
     )
 
+    for report in other_area_reports:
+        type_tags, area_tags = extract_report_tag_labels(report)
+        report.publication_area_display_tags = area_tags
+        report.citation_type_display_tags = type_tags
+
     is_hx_request = request.headers.get("HX-Request", "").lower() == "true"
 
     if request.method == "POST":
@@ -319,6 +356,19 @@ def citation_detail(request, pk):
     header_edit_mode = report_edit_mode
     report_title = _extract_report_title(citation)
     report_title_display = report_title or f"Reporte #{citation.id}"
+    selected_citation_type_values, selected_publication_area_values = (
+        extract_report_tag_values(citation)
+    )
+    display_citation_type_tags, display_publication_area_tags = (
+        extract_report_tag_labels(citation)
+    )
+    required_report_complete = _has_required_report_data(citation)
+    creation_guard_enabled = report_edit_mode and not required_report_complete
+    discard_draft_url = (
+        reverse("citation_discard_draft", kwargs={"pk": citation.pk})
+        if creation_guard_enabled
+        else ""
+    )
 
     context = {
         "citation": citation,
@@ -334,7 +384,13 @@ def citation_detail(request, pk):
         "header_edit_mode": header_edit_mode,
         "report_title": report_title,
         "report_title_display": report_title_display,
-        "citation_type_choices": IncorrectCitation._meta.get_field("citation_type").choices,
+        "selected_citation_type_values": selected_citation_type_values,
+        "selected_publication_area_values": selected_publication_area_values,
+        "display_citation_type_tags": display_citation_type_tags,
+        "display_publication_area_tags": display_publication_area_tags,
+        "creation_guard_enabled": creation_guard_enabled,
+        "discard_draft_url": discard_draft_url,
+        "citation_type_choices": CITATION_TYPE_CHOICES,
         "publication_area_choices": AREA_CHOICES,
     }
     return render(request, "citations/citation_detail.html", context)
@@ -404,12 +460,47 @@ def citation_edit(request, pk):
         messages.error(request, "Seccion de edicion no valida.")
         return redirect("citation_detail", pk=pk)
 
+    required_by_section = {
+        "all": (
+            ("report_title", "Titulo del reporte"),
+            ("doi_original", "DOI original"),
+            ("doi_incorrect", "DOI incorrecto"),
+            ("incorrect_reason", "Motivo / Explicacion"),
+            ("citation_type", "Tipo de error"),
+            ("publication_area", "Area de publicacion"),
+        ),
+        "header": (
+            ("report_title", "Titulo del reporte"),
+            ("doi_original", "DOI original"),
+            ("citation_type", "Tipo de error"),
+            ("publication_area", "Area de publicacion"),
+        ),
+        "original": (("doi_original", "DOI original"),),
+        "incorrect": (("doi_incorrect", "DOI incorrecto"),),
+        "reason": (("incorrect_reason", "Motivo / Explicacion"),),
+    }
+    missing_labels = [
+        label
+        for field, label in required_by_section.get(section, ())
+        if not str(request.POST.get(field) or "").strip()
+    ]
+    if missing_labels:
+        messages.error(
+            request,
+            "Faltan campos obligatorios: " + ", ".join(missing_labels) + ".",
+        )
+        return redirect(f"{reverse('citation_detail', args=[pk])}?edit=1")
+
+    selected_types, selected_areas = _selected_tag_values_from_post(request.POST)
+
     data = _base_edit_data(citation)
     for field in allowed_fields:
         if field in request.POST:
-            posted_value = request.POST.get(field)
-            if posted_value != "":
-                data[field] = posted_value
+            data[field] = request.POST.get(field)
+    if "citation_type" in allowed_fields:
+        data["citation_type"] = selected_types[0] if selected_types else ""
+    if "publication_area" in allowed_fields:
+        data["publication_area"] = selected_areas[0] if selected_areas else ""
 
     uploaded_pdf_saved = False
 
@@ -456,8 +547,14 @@ def citation_edit(request, pk):
     form = IncorrectCitationForm(data=data, instance=citation)
     if form.is_valid():
         form.save()
+        metadata_needs_save = False
+        if section in {"header", "all", "classification"}:
+            apply_report_tags(citation, selected_types, selected_areas)
+            metadata_needs_save = True
         if section in {"header", "all"}:
             _set_report_title(citation, request.POST.get("report_title", ""))
+            metadata_needs_save = True
+        if metadata_needs_save:
             citation.save(update_fields=["metadata_original"])
         messages.success(request, "Reporte actualizado correctamente.")
     else:
@@ -470,6 +567,23 @@ def citation_edit(request, pk):
             messages.error(request, "Revisa los datos del formulario de edicion.")
 
     return redirect("citation_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def citation_discard_draft(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    if not _can_edit_report(request.user, citation):
+        return JsonResponse({"success": False, "error": "forbidden"}, status=403)
+
+    if _has_required_report_data(citation):
+        return JsonResponse(
+            {"success": False, "error": "report_already_complete"},
+            status=409,
+        )
+
+    citation.delete()
+    return JsonResponse({"success": True})
 
 
 @xframe_options_sameorigin

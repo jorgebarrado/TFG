@@ -39,7 +39,7 @@
           <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 mb-4">
             <span class="badge rounded-pill bg-primary-subtle text-primary d-inline-flex align-items-center gap-1">
               <i class="fa-solid fa-wand-magic-sparkles"></i>
-              {% trans "Asistente tipo wizard" %}
+              {% trans "Edicion en pagina" %}
             </span>
             <span class="badge rounded-pill bg-secondary-subtle text-success d-inline-flex align-items-center gap-1">
               <i class="fa-solid fa-file-pdf"></i>
@@ -82,7 +82,7 @@
                     <a href="{% url 'create_report_wizard' %}"
                        class="w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
                       <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                      <span>{% trans "Con asistente" %}</span>
+                      <span>{% trans "Pagina completa" %}</span>
                     </a>
                     <a href="{% url 'citation_list' %}"
                        class="w-100 btn btn-outline-secondary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
@@ -463,4 +463,3 @@
   });
 </script>
 {% endblock %}
-
