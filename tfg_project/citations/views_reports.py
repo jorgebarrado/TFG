@@ -7,16 +7,26 @@ from django.views.decorators.http import require_POST
 # TODO: futuro flujo avanzado de reportes (CitationReport).
 # Ahora mismo no se usa en produccion; el flujo activo usa IncorrectCitation.
 
-from .models import AREA_CHOICES, CitationReport
+from .models import CitationReport, IncorrectCitation
 
 
 def create_report_wizard(request):
-    """Renderiza el flujo guiado para crear un reporte enriquecido."""
-    return render(
-        request,
-        "citations/report_wizard.html",
-        {"publication_area_choices": AREA_CHOICES},
+    """Crea un borrador y abre el detalle del reporte en modo edicion."""
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('home')}?show_login_modal=1")
+
+    draft = IncorrectCitation.objects.create(
+        author=request.user,
+        doi_original="",
+        doi_incorrect="",
+        incorrect_reason="",
+        citation_type="",
+        publication_area="",
+        metadata_original={},
+        metadata_incorrect={},
+        citation_contexts=[],
     )
+    return redirect(f"{reverse('citation_detail', args=[draft.pk])}?edit=1")
 
 
 @require_POST

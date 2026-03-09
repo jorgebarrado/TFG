@@ -731,6 +731,115 @@ body.sidebar-open .sidebar-overlay {
         0 0 0 0.22rem rgba(37, 99, 235, 0.12);
 }
 
+.tag-picker-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+}
+
+.chip-select {
+    position: relative;
+    overflow: visible;
+}
+
+.chip-select-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    min-height: 2rem;
+    align-items: center;
+}
+
+.chip-select-empty {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.chip-token {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+}
+
+.chip-token--area {
+    background: #06b6d4;
+    color: #05242b;
+}
+
+.chip-token--type {
+    background: #64748b;
+    color: #f8fafc;
+}
+
+.chip-token-remove {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.95rem;
+}
+
+.chip-token-remove:hover {
+    opacity: 0.85;
+}
+
+.chip-select-add {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.chip-select-options {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    z-index: 1080;
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    padding: 0.55rem;
+    background: #ffffff;
+    box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    max-height: 15rem;
+    overflow-y: auto;
+}
+
+.chip-option {
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+}
+
+.chip-option:hover {
+    border-color: #94a3b8;
+}
+
+.chip-option.active {
+    background: #dbeafe;
+    border-color: #60a5fa;
+    color: #1e3a8a;
+}
+
 .hover-lift {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

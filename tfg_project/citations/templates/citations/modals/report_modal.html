@@ -118,37 +118,49 @@
           </div>
 
           <div class="row g-3 mt-1">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
               <label for="citation_type" class="form-label">{% trans "Tipo de error" %}</label>
-              <select class="form-select" name="citation_type" required>
-                <option value="">{% trans "Seleccione el tipo..." %}</option>
-                <option value="not said">{% trans "Not Said" %}</option>
-                <option value="misinterpretation">{% trans "Misinterpretation" %}</option>
-                <option value="contextual misattribution">{% trans "Contextual Misattribution" %}</option>
-              </select>
+              <div class="chip-select js-chip-multiselect" data-tone="type">
+                <select id="citation_type" class="tag-picker-native" name="citation_type" multiple required>
+                  <option value="not said">{% trans "Not Said" %}</option>
+                  <option value="misinterpretation">{% trans "Misinterpretation" %}</option>
+                  <option value="contextual misattribution">{% trans "Contextual Misattribution" %}</option>
+                </select>
+                <div class="chip-select-row" data-chip-row></div>
+                <button type="button" class="btn btn-link p-0 chip-select-add" data-chip-toggle>
+                  <i class="bi bi-plus-circle me-1"></i>{% trans "Añadir etiqueta" %}
+                </button>
+                <div class="chip-select-options d-none" data-chip-options></div>
+              </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
               <label for="publication_area" class="form-label">{% trans "Area de publicacion" %}</label>
-              <select class="form-select" name="publication_area" required>
-                <option value="">{% trans "Seleccione el area..." %}</option>
-                <option value="ENG">{% trans "Engineering" %}</option>
-                <option value="PHY">{% trans "Physical Sciences" %}</option>
-                <option value="ENV">{% trans "Environmental Sciences" %}</option>
-                <option value="MAT">{% trans "Mathematics" %}</option>
-                <option value="CIS">{% trans "Computer and Information Sciences" %}</option>
-                <option value="LIF">{% trans "Life Sciences" %}</option>
-                <option value="PSY">{% trans "Psychology" %}</option>
-                <option value="SOC">{% trans "Social Sciences" %}</option>
-                <option value="OTH">{% trans "Other Sciences" %}</option>
-                <option value="EDU">{% trans "Education" %}</option>
-                <option value="LAW">{% trans "Law" %}</option>
-                <option value="HUM">{% trans "Humanities" %}</option>
-                <option value="ART">{% trans "Visual and Performing Arts" %}</option>
-                <option value="BUS">{% trans "Business and Management" %}</option>
-                <option value="COM">{% trans "Communication and Journalism" %}</option>
-                <option value="SWK">{% trans "Social Work" %}</option>
-                <option value="NON">{% trans "Other Non-Science & Engineering Fields" %}</option>
-              </select>
+              <div class="chip-select js-chip-multiselect" data-tone="area">
+                <select id="publication_area" class="tag-picker-native" name="publication_area" multiple required>
+                  <option value="ENG">{% trans "Engineering" %}</option>
+                  <option value="PHY">{% trans "Physical Sciences" %}</option>
+                  <option value="ENV">{% trans "Environmental Sciences" %}</option>
+                  <option value="MAT">{% trans "Mathematics" %}</option>
+                  <option value="CIS">{% trans "Computer and Information Sciences" %}</option>
+                  <option value="LIF">{% trans "Life Sciences" %}</option>
+                  <option value="PSY">{% trans "Psychology" %}</option>
+                  <option value="SOC">{% trans "Social Sciences" %}</option>
+                  <option value="OTH">{% trans "Other Sciences" %}</option>
+                  <option value="EDU">{% trans "Education" %}</option>
+                  <option value="LAW">{% trans "Law" %}</option>
+                  <option value="HUM">{% trans "Humanities" %}</option>
+                  <option value="ART">{% trans "Visual and Performing Arts" %}</option>
+                  <option value="BUS">{% trans "Business and Management" %}</option>
+                  <option value="COM">{% trans "Communication and Journalism" %}</option>
+                  <option value="SWK">{% trans "Social Work" %}</option>
+                  <option value="NON">{% trans "Other Non-Science & Engineering Fields" %}</option>
+                </select>
+                <div class="chip-select-row" data-chip-row></div>
+                <button type="button" class="btn btn-link p-0 chip-select-add" data-chip-toggle>
+                  <i class="bi bi-plus-circle me-1"></i>{% trans "Añadir etiqueta" %}
+                </button>
+                <div class="chip-select-options d-none" data-chip-options></div>
+              </div>
             </div>
           </div>
         </div>
@@ -214,6 +226,8 @@ const originalMetaInput = document.getElementById('id_original_metadata_json');
 const incorrectMetaInput = document.getElementById('id_citing_metadata_json');
 const originalPdfInput = document.getElementById('id_uploaded_pdf_original_file');
 const incorrectPdfInput = document.getElementById('id_uploaded_pdf_incorrect_file');
+const citationTypeSelect = document.getElementById('citation_type');
+const publicationAreaSelect = document.getElementById('publication_area');
 const defaultReportTitle = 'Reporte #{{ next_report_number|default:1 }}';
 const noFileText = "{% trans 'Ningun archivo seleccionado' %}";
 const defaultDropMarkup = `<span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span>`;
@@ -309,6 +323,97 @@ initReportFileInput(
   'id_uploaded_pdf_incorrect_file_text'
 );
 
+function initChipMultiselect(rootEl) {
+  if (!rootEl) return;
+  if (rootEl.dataset.chipReady === '1') return;
+  const select = rootEl.querySelector('select[multiple]');
+  const rowEl = rootEl.querySelector('[data-chip-row]');
+  const optionsEl = rootEl.querySelector('[data-chip-options]');
+  const toggleBtn = rootEl.querySelector('[data-chip-toggle]');
+  const tone = rootEl.getAttribute('data-tone') === 'type' ? 'type' : 'area';
+  const emptyText = "{% trans 'Sin etiquetas seleccionadas.' %}";
+  if (!select || !rowEl || !optionsEl || !toggleBtn) return;
+
+  const escapeHtml = (value) =>
+    String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+
+  const selectedOptions = () => Array.from(select.options).filter((option) => option.selected);
+
+  const renderSelected = () => {
+    const selected = selectedOptions();
+    if (!selected.length) {
+      rowEl.innerHTML = `<span class="chip-select-empty">${emptyText}</span>`;
+      return;
+    }
+    rowEl.innerHTML = selected
+      .map(
+        (option) => `
+          <span class="chip-token chip-token--${tone}" data-chip-value="${escapeHtml(option.value)}">
+            ${escapeHtml(option.textContent)}
+            <button type="button" class="chip-token-remove" data-chip-remove="${escapeHtml(option.value)}" aria-label="{% trans 'Quitar etiqueta' %}">&times;</button>
+          </span>
+        `
+      )
+      .join('');
+  };
+
+  const renderOptions = () => {
+    optionsEl.innerHTML = Array.from(select.options)
+      .map((option) => {
+        const activeClass = option.selected ? ' active' : '';
+        return `<button type="button" class="chip-option${activeClass}" data-chip-option="${escapeHtml(option.value)}">${escapeHtml(option.textContent)}</button>`;
+      })
+      .join('');
+  };
+
+  const syncAll = () => {
+    renderSelected();
+    renderOptions();
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    optionsEl.classList.toggle('d-none');
+  });
+
+  optionsEl.addEventListener('click', (event) => {
+    const optionBtn = event.target.closest('[data-chip-option]');
+    if (!optionBtn) return;
+    event.preventDefault();
+    const value = optionBtn.getAttribute('data-chip-option');
+    const option = Array.from(select.options).find((item) => item.value === value);
+    if (!option) return;
+    option.selected = !option.selected;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  rowEl.addEventListener('click', (event) => {
+    const removeBtn = event.target.closest('[data-chip-remove]');
+    if (!removeBtn) return;
+    event.preventDefault();
+    const value = removeBtn.getAttribute('data-chip-remove');
+    const option = Array.from(select.options).find((item) => item.value === value);
+    if (!option) return;
+    option.selected = false;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  document.addEventListener('click', (event) => {
+    if (rootEl.contains(event.target)) return;
+    optionsEl.classList.add('d-none');
+  });
+
+  select.addEventListener('change', syncAll);
+  syncAll();
+  rootEl.dataset.chipReady = '1';
+}
+
+document.querySelectorAll('#reportModal .js-chip-multiselect').forEach(initChipMultiselect);
+
 function prefillReportModal(payload) {
   if (reportTitleInput) {
     reportTitleInput.value = payload.reportTitle || defaultReportTitle;
@@ -326,6 +431,24 @@ function prefillReportModal(payload) {
   }
   if (incorrectMetaInput) {
     incorrectMetaInput.value = payload.incorrectMetadata || '';
+  }
+  if (citationTypeSelect) {
+    const selectedValues = Array.isArray(payload.citationTypes)
+      ? payload.citationTypes
+      : (payload.citationType ? [payload.citationType] : []);
+    Array.from(citationTypeSelect.options).forEach((option) => {
+      option.selected = selectedValues.includes(option.value);
+    });
+    citationTypeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  if (publicationAreaSelect) {
+    const selectedValues = Array.isArray(payload.publicationAreas)
+      ? payload.publicationAreas
+      : (payload.publicationArea ? [payload.publicationArea] : []);
+    Array.from(publicationAreaSelect.options).forEach((option) => {
+      option.selected = selectedValues.includes(option.value);
+    });
+    publicationAreaSelect.dispatchEvent(new Event('change', { bubbles: true }));
   }
   if (originalPdfInput) {
     originalPdfInput.value = '';

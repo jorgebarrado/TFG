@@ -31,8 +31,12 @@
                             {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
                         </p>
                         <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                            <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
-                            <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+                            {% for area_label in display_publication_area_tags %}
+                            <span class="badge text-bg-info">{{ area_label }}</span>
+                            {% endfor %}
+                            {% for type_label in display_citation_type_tags %}
+                            <span class="badge text-bg-secondary">{{ type_label }}</span>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-lg-4">
@@ -51,18 +55,38 @@
                 <div class="row g-4 align-items-start">
                     <div class="col-lg-8">
                         <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
-                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input mb-3" value="{{ report_title_display }}">
-                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                            <select name="publication_area" class="form-select form-select-sm w-auto">
-                                {% for value, label in publication_area_choices %}
-                                <option value="{{ value }}"{% if value == citation.publication_area %} selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="citation_type" class="form-select form-select-sm w-auto">
-                                {% for value, label in citation_type_choices %}
-                                <option value="{{ value }}"{% if value == citation.citation_type %} selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
+                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input mb-3" value="{{ report_title }}" required>
+                        <div class="row g-2 mb-3 align-items-start">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small mb-1">{% trans "Area de publicacion" %}</label>
+                                <div class="chip-select js-chip-multiselect" data-tone="area">
+                                    <select id="detail_publication_area" name="publication_area" class="tag-picker-native" multiple required>
+                                        {% for value, label in publication_area_choices %}
+                                        <option value="{{ value }}"{% if value in selected_publication_area_values %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="chip-select-row" data-chip-row></div>
+                                    <button type="button" class="btn btn-link p-0 chip-select-add" data-chip-toggle>
+                                        <i class="bi bi-plus-circle me-1"></i>{% trans "Añadir etiqueta" %}
+                                    </button>
+                                    <div class="chip-select-options d-none" data-chip-options></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small mb-1">{% trans "Tipo de error" %}</label>
+                                <div class="chip-select js-chip-multiselect" data-tone="type">
+                                    <select id="detail_citation_type" name="citation_type" class="tag-picker-native" multiple required>
+                                        {% for value, label in citation_type_choices %}
+                                        <option value="{{ value }}"{% if value in selected_citation_type_values %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="chip-select-row" data-chip-row></div>
+                                    <button type="button" class="btn btn-link p-0 chip-select-add" data-chip-toggle>
+                                        <i class="bi bi-plus-circle me-1"></i>{% trans "Añadir etiqueta" %}
+                                    </button>
+                                    <div class="chip-select-options d-none" data-chip-options></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-4">
@@ -71,6 +95,9 @@
                             <button type="submit" class="btn btn-primary btn-sm">{% trans "Guardar cambios" %}</button>
                         </div>
                     </div>
+                </div>
+                <div id="creationGuardFeedback" class="alert alert-warning py-2 mt-3 mb-0 d-none">
+                    {% trans "Faltan campos obligatorios. Completa el formulario o confirma que quieres salir y descartar la creacion." %}
                 </div>
             </form>
             {% endif %}
@@ -98,11 +125,18 @@
                         <div class="card h-100 surface-card">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Artículo original" %}</h6>
-                                <div class="border rounded-3 p-3" id="metadataOriginal">
-                                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+                                {% if can_edit_report %}
+                                <div class="mt-3 report-edit-block" data-edit-block="original">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="original">
+                                        <label class="form-label small mb-1">{% trans "DOI original" %}</label>
+                                        <input id="report_doi_original_input" type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" class="form-control form-control-sm" required>
+                                    </div>
                                 </div>
-                                <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
+                                {% endif %}
+                                <div class="border rounded-3 p-3 mt-3" id="metadataOriginal">
+                                </div>
                                 {% if original_pdf_url %}
+                                    <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
                                     <div class="ratio ratio-4x3 mb-3 pdf-preview-shell">
                                         <iframe
                                             src="{{ original_pdf_url }}#toolbar=0&navpanes=0&view=FitH&zoom=page-width"
@@ -111,26 +145,28 @@
                                             loading="lazy">
                                         </iframe>
                                     </div>
-                                {% else %}
-                                    <p class="text-muted small mb-3">{% trans "No hay PDF disponible para previsualizar" %}</p>
-                                {% endif %}
-                                <div class="d-flex flex-wrap gap-2">
-                                    {% if original_pdf_url %}
+                                    <div class="d-flex flex-wrap gap-2">
                                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#pdfPreviewOriginalModal">
                                         {% trans "Ampliar" %}
                                     </button>
-                                    {% endif %}
                                     <a href="{% url 'citation_reader' citation.id %}" class="btn btn-sm btn-outline-primary">
                                         {% trans "Abrir visor completo" %}
                                     </a>
-                                </div>
+                                    </div>
+                                {% endif %}
                                 {% if can_edit_report %}
-                                <div class="mt-3 report-edit-block" data-edit-block="original">
-                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="original">
-                                        <label class="form-label small mb-1">{% trans "DOI original" %}</label>
-                                        <input type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" class="form-control form-control-sm">
-                                        <label class="form-label small mb-1 mt-2">{% trans "PDF artículo original" %}</label>
-                                        <input type="file" name="uploaded_pdf_original_file" form="report-global-edit-form" accept="application/pdf" class="form-control form-control-sm">
+                                <div class="mt-3">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2">
+                                        <label for="report_uploaded_pdf_original_file" class="form-label small mb-1 mt-2">
+                                            {% trans "PDF artículo original" %} <span class="text-muted">({% trans "opcional" %})</span>
+                                        </label>
+                                        <input id="report_uploaded_pdf_original_file" type="file" class="d-none js-report-file-input" name="uploaded_pdf_original_file" form="report-global-edit-form" accept="application/pdf">
+                                        <label for="report_uploaded_pdf_original_file" class="report-upload-box position-relative mt-1" data-input-id="report_uploaded_pdf_original_file">
+                                            <button type="button" id="report_uploaded_pdf_original_file_clear" class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3" aria-label="{% trans 'Quitar PDF original' %}">&times;</button>
+                                            <i class="bi bi-upload"></i>
+                                            <span id="report_uploaded_pdf_original_file_text"><span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span></span>
+                                            <span id="report_uploaded_pdf_original_file_name" class="small text-muted d-none">{% trans "Ningun archivo seleccionado" %}</span>
+                                        </label>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -141,11 +177,18 @@
                         <div class="card h-100 surface-card">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
-                                <div class="border rounded-3 p-3" id="metadataIncorrect">
-                                    <div class="text-muted">{% trans "Cargando metadatos..." %}</div>
+                                {% if can_edit_report %}
+                                <div class="mt-3 report-edit-block" data-edit-block="incorrect">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="incorrect">
+                                        <label class="form-label small mb-1">{% trans "DOI incorrecto" %}</label>
+                                        <input id="report_doi_incorrect_input" type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" class="form-control form-control-sm" required>
+                                    </div>
                                 </div>
-                                <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
+                                {% endif %}
+                                <div class="border rounded-3 p-3 mt-3" id="metadataIncorrect">
+                                </div>
                                 {% if incorrect_pdf_url %}
+                                    <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
                                     <div class="ratio ratio-4x3 mb-3 pdf-preview-shell">
                                         <iframe
                                             src="{{ incorrect_pdf_url }}#toolbar=0&navpanes=0&view=FitH&zoom=page-width"
@@ -154,26 +197,28 @@
                                             loading="lazy">
                                         </iframe>
                                     </div>
-                                {% else %}
-                                    <p class="text-muted small mb-3">{% trans "No hay PDF disponible para previsualizar" %}</p>
-                                {% endif %}
-                                <div class="d-flex flex-wrap gap-2">
-                                    {% if incorrect_pdf_url %}
+                                    <div class="d-flex flex-wrap gap-2">
                                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#pdfPreviewModal">
                                         {% trans "Ampliar" %}
                                     </button>
-                                    {% endif %}
                                     <a href="{% url 'citation_reader' citation.id %}" class="btn btn-sm btn-outline-primary">
                                         {% trans "Abrir visor completo" %}
                                     </a>
-                                </div>
+                                    </div>
+                                {% endif %}
                                 {% if can_edit_report %}
-                                <div class="mt-3 report-edit-block" data-edit-block="incorrect">
-                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="incorrect">
-                                        <label class="form-label small mb-1">{% trans "DOI incorrecto" %}</label>
-                                        <input type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" class="form-control form-control-sm">
-                                        <label class="form-label small mb-1 mt-2">{% trans "PDF artículo incorrecto" %}</label>
-                                        <input type="file" name="uploaded_pdf_incorrect_file" form="report-global-edit-form" accept="application/pdf" class="form-control form-control-sm">
+                                <div class="mt-3">
+                                    <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2">
+                                        <label for="report_uploaded_pdf_incorrect_file" class="form-label small mb-1 mt-2">
+                                            {% trans "PDF artículo incorrecto" %} <span class="text-muted">({% trans "opcional" %})</span>
+                                        </label>
+                                        <input id="report_uploaded_pdf_incorrect_file" type="file" class="d-none js-report-file-input" name="uploaded_pdf_incorrect_file" form="report-global-edit-form" accept="application/pdf">
+                                        <label for="report_uploaded_pdf_incorrect_file" class="report-upload-box position-relative mt-1" data-input-id="report_uploaded_pdf_incorrect_file">
+                                            <button type="button" id="report_uploaded_pdf_incorrect_file_clear" class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3" aria-label="{% trans 'Quitar PDF incorrecto' %}">&times;</button>
+                                            <i class="bi bi-upload"></i>
+                                            <span id="report_uploaded_pdf_incorrect_file_text"><span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span></span>
+                                            <span id="report_uploaded_pdf_incorrect_file_name" class="small text-muted d-none">{% trans "Ningun archivo seleccionado" %}</span>
+                                        </label>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -254,7 +299,7 @@
                         <div class="mt-3 report-edit-block" data-edit-block="reason">
                             <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="reason">
                                 <label class="form-label small mb-1">{% trans "Explicación" %}</label>
-                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3">{{ citation.incorrect_reason }}</textarea>
+                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3" required>{{ citation.incorrect_reason }}</textarea>
                             </div>
                         </div>
                         {% endif %}
@@ -264,6 +309,7 @@
         </div>
     </div>
 
+    {% if not report_edit_mode %}
     <div class="row g-4">
         <div class="col-lg-8">
             <section class="mb-4">
@@ -333,8 +379,12 @@
                             {% for report in other_area_reports %}
                             <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
                                 <div class="mb-2 d-flex flex-wrap gap-2">
-                                    <span class="badge text-bg-info">{{ report.get_publication_area_display }}</span>
-                                    <span class="badge text-bg-secondary">{{ report.get_citation_type_display }}</span>
+                                    {% for area_label in report.publication_area_display_tags %}
+                                    <span class="badge text-bg-info">{{ area_label }}</span>
+                                    {% endfor %}
+                                    {% for type_label in report.citation_type_display_tags %}
+                                    <span class="badge text-bg-secondary">{{ type_label }}</span>
+                                    {% endfor %}
                                 </div>
                                 <p class="mb-1 fw-semibold">
                                     {{ report.metadata_original_title|default:report.doi_original|default:fallback_title|truncatechars:80 }}
@@ -348,8 +398,9 @@
                     {% endif %}
         </div>
     </div>
+        </div>
     </div>
-    </div>
+    {% endif %}
 
 <!-- Modal confirmación eliminar -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -419,6 +470,29 @@
   </div>
 </div>
 {% endif %}
+{% if creation_guard_enabled %}
+<div class="modal fade" id="creationGuardModal" tabindex="-1" aria-labelledby="creationGuardModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-sm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="creationGuardModalLabel">{% trans "Descartar creacion de reporte" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
+      </div>
+      <div class="modal-body">
+        {% trans "Faltan campos obligatorios. Si sales ahora, se perdera la creacion de este reporte." %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          {% trans "Seguir editando" %}
+        </button>
+        <button type="button" class="btn btn-danger" id="creationGuardConfirmLeaveBtn">
+          {% trans "Salir y descartar" %}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -435,7 +509,7 @@
   }
   .metadata-title {
     margin: 0 0 0.55rem 0;
-    font-size: 2rem;
+    font-size: 1.75rem;
     line-height: 1.15;
     font-weight: 700;
     color: #101828;
@@ -735,9 +809,6 @@ function renderMetadata(doi, elementId) {
             const detailsId = `${elementId}-metadata-details`;
 
             element.innerHTML = `
-                <div class="metadata-journal-chip">${escapeHtml(journal)} - ${escapeHtml(year)}</div>
-                <h6 class="metadata-title">${escapeHtml(title)}</h6>
-                <p class="metadata-authors">${escapeHtml(authors || "N/A")}</p>
                 <div class="metadata-doi-box">
                     <a href="${doiUrl}" target="_blank" rel="noopener" class="metadata-doi-link">${escapeHtml(doiValue)}</a>
                     <div class="d-flex align-items-center gap-2">
@@ -747,6 +818,9 @@ function renderMetadata(doi, elementId) {
                         <span class="copy-confirm text-success small d-none">{% trans "Copiado." %}</span>
                     </div>
                 </div>
+                <div class="metadata-journal-chip">${escapeHtml(journal)} - ${escapeHtml(year)}</div>
+                <h6 class="metadata-title">${escapeHtml(title)}</h6>
+                <p class="metadata-authors">${escapeHtml(authors || "N/A")}</p>
                 ${factsHtml ? `
                     <div class="metadata-toggle-wrap">
                         <button type="button" class="btn btn-link btn-sm p-0 metadata-toggle-btn metadata-toggle-details" data-target="${detailsId}" aria-expanded="false" aria-label="{% trans 'Ver mas info' %}" title="{% trans 'Ver mas info' %}">
@@ -796,8 +870,214 @@ function renderMetadata(doi, elementId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderMetadata("{{ citation.doi_original|escapejs }}", "metadataOriginal");
-    renderMetadata("{{ citation.doi_incorrect|escapejs }}", "metadataIncorrect");
+    const originalDoi = "{{ citation.doi_original|escapejs }}".trim();
+    const incorrectDoi = "{{ citation.doi_incorrect|escapejs }}".trim();
+    const originalMetaEl = document.getElementById("metadataOriginal");
+    const incorrectMetaEl = document.getElementById("metadataIncorrect");
+
+    if (originalDoi) {
+        renderMetadata(originalDoi, "metadataOriginal");
+    } else if (originalMetaEl) {
+        originalMetaEl.innerHTML = `<p class="text-muted small mb-0">{% trans "Añade un DOI para cargar metadatos." %}</p>`;
+    }
+
+    if (incorrectDoi) {
+        renderMetadata(incorrectDoi, "metadataIncorrect");
+    } else if (incorrectMetaEl) {
+        incorrectMetaEl.innerHTML = `<p class="text-muted small mb-0">{% trans "Añade un DOI para cargar metadatos." %}</p>`;
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  function initChipMultiselect(rootEl) {
+    if (!rootEl) return;
+    if (rootEl.dataset.chipReady === '1') return;
+    const select = rootEl.querySelector('select[multiple]');
+    const rowEl = rootEl.querySelector('[data-chip-row]');
+    const optionsEl = rootEl.querySelector('[data-chip-options]');
+    const toggleBtn = rootEl.querySelector('[data-chip-toggle]');
+    const tone = rootEl.getAttribute('data-tone') === 'type' ? 'type' : 'area';
+    const emptyText = "{% trans 'Sin etiquetas seleccionadas.' %}";
+    if (!select || !rowEl || !optionsEl || !toggleBtn) return;
+
+    const escapeHtml = (value) =>
+      String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+
+    const selectedOptions = () => Array.from(select.options).filter((option) => option.selected);
+
+    const renderSelected = () => {
+      const selected = selectedOptions();
+      if (!selected.length) {
+        rowEl.innerHTML = `<span class="chip-select-empty">${emptyText}</span>`;
+        return;
+      }
+      rowEl.innerHTML = selected
+        .map(
+          (option) => `
+            <span class="chip-token chip-token--${tone}" data-chip-value="${escapeHtml(option.value)}">
+              ${escapeHtml(option.textContent)}
+              <button type="button" class="chip-token-remove" data-chip-remove="${escapeHtml(option.value)}" aria-label="{% trans 'Quitar etiqueta' %}">&times;</button>
+            </span>
+          `
+        )
+        .join('');
+    };
+
+    const renderOptions = () => {
+      optionsEl.innerHTML = Array.from(select.options)
+        .map((option) => {
+          const activeClass = option.selected ? ' active' : '';
+          return `<button type="button" class="chip-option${activeClass}" data-chip-option="${escapeHtml(option.value)}">${escapeHtml(option.textContent)}</button>`;
+        })
+        .join('');
+    };
+
+    const syncAll = () => {
+      renderSelected();
+      renderOptions();
+    };
+
+    toggleBtn.addEventListener('click', () => {
+      optionsEl.classList.toggle('d-none');
+    });
+
+    optionsEl.addEventListener('click', (event) => {
+      const optionBtn = event.target.closest('[data-chip-option]');
+      if (!optionBtn) return;
+      event.preventDefault();
+      const value = optionBtn.getAttribute('data-chip-option');
+      const option = Array.from(select.options).find((item) => item.value === value);
+      if (!option) return;
+      option.selected = !option.selected;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    rowEl.addEventListener('click', (event) => {
+      const removeBtn = event.target.closest('[data-chip-remove]');
+      if (!removeBtn) return;
+      event.preventDefault();
+      const value = removeBtn.getAttribute('data-chip-remove');
+      const option = Array.from(select.options).find((item) => item.value === value);
+      if (!option) return;
+      option.selected = false;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    document.addEventListener('click', (event) => {
+      if (rootEl.contains(event.target)) return;
+      optionsEl.classList.add('d-none');
+    });
+
+    select.addEventListener('change', syncAll);
+    syncAll();
+    rootEl.dataset.chipReady = '1';
+  }
+
+  document.querySelectorAll('#report-global-edit-form .js-chip-multiselect').forEach(initChipMultiselect);
+
+  const noFileText = "{% trans 'Ningun archivo seleccionado' %}";
+  const defaultDropMarkup = `<span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span>`;
+  const noDoiHint = `<p class="text-muted small mb-0">{% trans "Añade un DOI para cargar metadatos." %}</p>`;
+
+  function initCardFileInput(fileInputId, fileNameId, clearButtonId, dropTextId) {
+    const fileInput = document.getElementById(fileInputId);
+    if (!fileInput) return;
+    const fileNameEl = document.getElementById(fileNameId);
+    const clearButton = document.getElementById(clearButtonId);
+    const dropTextEl = document.getElementById(dropTextId);
+    const dropZone = document.querySelector(`.report-upload-box[data-input-id="${fileInput.id}"]`);
+
+    const renderName = () => {
+      const pickedFile = fileInput.files && fileInput.files[0];
+      if (pickedFile) {
+        const sizeKb = Math.round(pickedFile.size / 1024);
+        const fileLabel = `${pickedFile.name} - ${sizeKb} KB`;
+        if (fileNameEl) fileNameEl.textContent = fileLabel;
+        if (dropTextEl) dropTextEl.textContent = fileLabel;
+      } else {
+        if (fileNameEl) fileNameEl.textContent = noFileText;
+        if (dropTextEl) dropTextEl.innerHTML = defaultDropMarkup;
+      }
+      if (clearButton) clearButton.classList.toggle('d-none', !pickedFile);
+    };
+
+    fileInput.addEventListener('change', renderName);
+    renderName();
+
+    if (!dropZone) return;
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.add('is-dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.remove('is-dragover');
+      });
+    });
+    dropZone.addEventListener('drop', (event) => {
+      if (!event.dataTransfer || !event.dataTransfer.files || !event.dataTransfer.files.length) return;
+      try {
+        fileInput.files = event.dataTransfer.files;
+        renderName();
+      } catch (err) {
+        fileInput.click();
+      }
+    });
+
+    if (clearButton) {
+      clearButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.value = '';
+        renderName();
+      });
+    }
+  }
+
+  initCardFileInput(
+    'report_uploaded_pdf_original_file',
+    'report_uploaded_pdf_original_file_name',
+    'report_uploaded_pdf_original_file_clear',
+    'report_uploaded_pdf_original_file_text'
+  );
+  initCardFileInput(
+    'report_uploaded_pdf_incorrect_file',
+    'report_uploaded_pdf_incorrect_file_name',
+    'report_uploaded_pdf_incorrect_file_clear',
+    'report_uploaded_pdf_incorrect_file_text'
+  );
+
+  function attachDoiLiveReload(inputId, targetElementId) {
+    const input = document.getElementById(inputId);
+    const target = document.getElementById(targetElementId);
+    if (!input || !target) return;
+    let timerId = null;
+
+    input.addEventListener('input', () => {
+      clearTimeout(timerId);
+      const doi = (input.value || '').trim();
+      if (!doi) {
+        target.innerHTML = noDoiHint;
+        return;
+      }
+      timerId = setTimeout(() => renderMetadata(doi, targetElementId), 450);
+    });
+  }
+
+  attachDoiLiveReload('report_doi_original_input', 'metadataOriginal');
+  attachDoiLiveReload('report_doi_incorrect_input', 'metadataIncorrect');
 });
 </script>
 
@@ -933,7 +1213,250 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 </script>
 
+{% if creation_guard_enabled %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const reportEditMode = {{ report_edit_mode|yesno:"true,false" }};
+  const creationGuardEnabled = {{ creation_guard_enabled|yesno:"true,false" }};
+  const reportForm = document.getElementById('report-global-edit-form');
+  const feedback = document.getElementById('creationGuardFeedback');
+  const discardUrl = "{{ discard_draft_url|escapejs }}";
+  const guardModalEl = document.getElementById('creationGuardModal');
+  const guardConfirmBtn = document.getElementById('creationGuardConfirmLeaveBtn');
+  let allowUnload = false;
+
+  if (!reportEditMode || !creationGuardEnabled || !reportForm) return;
+
+  const requiredFields = () => {
+    const nodes = document.querySelectorAll(
+      `[form="${reportForm.id}"][required], #${reportForm.id} [required]`
+    );
+    return Array.from(new Set(Array.from(nodes)));
+  };
+
+  const isEmpty = (field) => {
+    if (!field) return true;
+    if (field.type === 'checkbox' || field.type === 'radio') return !field.checked;
+    return !String(field.value || '').trim();
+  };
+
+  const getMissingFields = () => requiredFields().filter(isEmpty);
+
+  const showMissingState = () => {
+    const missing = getMissingFields();
+    requiredFields().forEach((field) => {
+      field.classList.toggle('is-invalid', missing.includes(field));
+    });
+    if (feedback) feedback.classList.remove('d-none');
+    const firstMissing =
+      missing.find((field) => !field.classList.contains('tag-picker-native')) ||
+      missing[0];
+    if (firstMissing) {
+      firstMissing.focus();
+      if (
+        !firstMissing.classList.contains('tag-picker-native') &&
+        typeof firstMissing.reportValidity === 'function'
+      ) {
+        firstMissing.reportValidity();
+      }
+    }
+  };
+
+  const clearMissingState = () => {
+    requiredFields().forEach((field) => field.classList.remove('is-invalid'));
+    if (feedback) feedback.classList.add('d-none');
+  };
+
+  requiredFields().forEach((field) => {
+    field.addEventListener('input', () => {
+      if (getMissingFields().length === 0) clearMissingState();
+    });
+    field.addEventListener('change', () => {
+      if (getMissingFields().length === 0) clearMissingState();
+    });
+  });
+
+  const detailNoFileText = "{% trans 'Ningun archivo seleccionado' %}";
+  const detailDefaultDropMarkup = `<span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span>`;
+
+  function initDetailFileInput(fileInputId, fileNameId, clearButtonId, dropTextId) {
+    const fileInput = document.getElementById(fileInputId);
+    if (!fileInput) return;
+    const fileNameEl = document.getElementById(fileNameId);
+    const clearButton = document.getElementById(clearButtonId);
+    const dropTextEl = document.getElementById(dropTextId);
+    const dropZone = document.querySelector(`.report-upload-box[data-input-id="${fileInput.id}"]`);
+
+    const renderName = () => {
+      const pickedFile = fileInput.files && fileInput.files[0];
+      if (pickedFile) {
+        const sizeKb = Math.round(pickedFile.size / 1024);
+        const fileLabel = `${pickedFile.name} - ${sizeKb} KB`;
+        if (fileNameEl) fileNameEl.textContent = fileLabel;
+        if (dropTextEl) dropTextEl.textContent = fileLabel;
+      } else {
+        if (fileNameEl) fileNameEl.textContent = detailNoFileText;
+        if (dropTextEl) dropTextEl.innerHTML = detailDefaultDropMarkup;
+      }
+      if (clearButton) clearButton.classList.toggle('d-none', !pickedFile);
+    };
+
+    fileInput.addEventListener('change', renderName);
+    renderName();
+
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        dropZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          dropZone.classList.add('is-dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach((eventName) => {
+        dropZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          dropZone.classList.remove('is-dragover');
+        });
+      });
+      dropZone.addEventListener('drop', (event) => {
+        if (!event.dataTransfer || !event.dataTransfer.files || !event.dataTransfer.files.length) return;
+        try {
+          fileInput.files = event.dataTransfer.files;
+          renderName();
+        } catch (err) {
+          fileInput.click();
+        }
+      });
+    }
+
+    if (clearButton) {
+      clearButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.value = '';
+        renderName();
+      });
+    }
+  }
+
+  initDetailFileInput(
+    'detail_uploaded_pdf_original_file',
+    'detail_uploaded_pdf_original_file_name',
+    'detail_uploaded_pdf_original_file_clear',
+    'detail_uploaded_pdf_original_file_text'
+  );
+  initDetailFileInput(
+    'detail_uploaded_pdf_incorrect_file',
+    'detail_uploaded_pdf_incorrect_file_name',
+    'detail_uploaded_pdf_incorrect_file_clear',
+    'detail_uploaded_pdf_incorrect_file_text'
+  );
+
+  const discardDraft = async () => {
+    if (!discardUrl) return;
+    const csrfToken = typeof getCookie === 'function' ? getCookie('csrftoken') : '';
+    try {
+      await fetch(discardUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        keepalive: true,
+        headers: {
+          'X-CSRFToken': csrfToken || '',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+    } catch (err) {
+      // Si falla el descarte, continuamos igualmente con la accion seleccionada.
+    }
+  };
+
+  const askLeaveConfirmation = async () => {
+    if (getMissingFields().length === 0) return true;
+    const shouldLeave = await new Promise((resolve) => {
+      if (!guardModalEl || typeof bootstrap === 'undefined') {
+        resolve(
+          window.confirm(
+            'Faltan campos obligatorios. Si sales ahora, se perdera la creacion del reporte. ¿Quieres salir igualmente?'
+          )
+        );
+        return;
+      }
+
+      const guardModal = bootstrap.Modal.getOrCreateInstance(guardModalEl);
+      let resolved = false;
+
+      const onHidden = () => {
+        if (resolved) return;
+        resolved = true;
+        resolve(false);
+      };
+
+      const onConfirm = () => {
+        if (resolved) return;
+        resolved = true;
+        guardModal.hide();
+        resolve(true);
+      };
+
+      guardModalEl.addEventListener('hidden.bs.modal', onHidden, { once: true });
+      guardConfirmBtn?.addEventListener('click', onConfirm, { once: true });
+      guardModal.show();
+    });
+
+    if (!shouldLeave) {
+      showMissingState();
+      return false;
+    }
+    allowUnload = true;
+    await discardDraft();
+    return true;
+  };
+
+  document.addEventListener('click', async (event) => {
+    if (event.defaultPrevented) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const saveButton = event.target.closest(`#${reportForm.id} button[type="submit"]`);
+    if (saveButton) return;
+
+    const link = event.target.closest('a[href]');
+    if (link) {
+      const target = (link.getAttribute('target') || '').toLowerCase();
+      if (target && target !== '_self') return;
+      if (link.hasAttribute('download')) return;
+      const href = link.getAttribute('href') || '';
+      if (!href || href.startsWith('#') || href.toLowerCase().startsWith('javascript:') || href.toLowerCase().startsWith('mailto:')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const allowLeave = await askLeaveConfirmation();
+      if (allowLeave) window.location.href = link.href;
+      return;
+    }
+  }, true);
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.id === reportForm.id) return;
+    if (form.hasAttribute('hx-post') || form.hasAttribute('hx-get') || form.hasAttribute('data-hx-post') || form.hasAttribute('data-hx-get')) return;
+    event.preventDefault();
+    const allowLeave = await askLeaveConfirmation();
+    if (allowLeave) form.submit();
+  }, true);
+
+  window.addEventListener('beforeunload', (event) => {
+    if (allowUnload) return;
+    if (getMissingFields().length === 0) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+});
+</script>
+{% endif %}
+
 {% endblock %}
+
 
 
 
