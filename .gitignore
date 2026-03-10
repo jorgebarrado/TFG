@@ -17,3 +17,12 @@ __pycache__/
 /staticfiles/
 /media/
 node_modules/
+
+# Hypothesis
+.hypothesis/
+
+# DB
+db.sqlite3
+
+# Temp files
+reqs.txt
