@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence, Tuple, TypedDict
+from typing import Any, Iterable, List, Sequence, Tuple, TypedDict
 
 try:
     from papermage.magelib import Document, Entity
@@ -11,7 +11,15 @@ try:
 
     PM_AVAILABLE = True
 except Exception:
+    Document = Any  # type: ignore[assignment]
+    Entity = Any  # type: ignore[assignment]
+    PDFPlumberParser = None  # type: ignore[assignment]
     PM_AVAILABLE = False
+
+try:
+    from papermage.recipes import CoreRecipe
+except Exception:
+    CoreRecipe = None  # type: ignore[assignment]
 
 SNIPPET_PADDING = 80
 
@@ -30,6 +38,25 @@ class ContextHit(TypedDict):
     end: int
     pattern: str
     section: str  # "body" o "references"
+
+
+class ReaderPage(TypedDict):
+    page: int
+    width: float
+    height: float
+
+
+class ReaderItem(TypedDict):
+    id: str
+    text: str
+    page: int
+    box: List[float]
+    type: str
+
+
+class ReaderData(TypedDict):
+    pages: List[ReaderPage]
+    items: List[ReaderItem]
 
 
 def _ensure_papermage_available() -> None:
@@ -53,11 +80,235 @@ def _load_document(pdf_path: str) -> Document:
         raise FileNotFoundError(
             f"No se encontró el PDF en la ruta proporcionada: {pdf_path}"
         )
+    if PDFPlumberParser is None:
+        raise RuntimeError(
+            "PaperMage está instalado parcialmente y no se pudo inicializar PDFPlumberParser."
+        )
     try:
         parser = PDFPlumberParser()
         return parser.parse(input_pdf_path=str(path))
-    except Exception as exc:  # pragma: no cover - defensivo frente a fallos de librería
+    except Exception as exc:
         raise RuntimeError(f"No se pudo leer el PDF con PaperMage: {exc}") from exc
+
+
+def _load_reader_document(pdf_path: str) -> Document:
+    """
+    Carga un documento para el reader usando el parser más estable para
+    esta primera versión: PDFPlumberParser.
+
+    Para el JSON v1 del reader necesitamos sobre todo:
+    - páginas
+    - palabras/tokens
+    - boxes
+
+    `CoreRecipe` puede ser útil para pipelines más ricos, pero en esta fase
+    priorizamos un parser más estable y predecible.
+    """
+    return _load_document(pdf_path)
+
+
+def _num(value: Any, default: float = 0.0) -> float:
+    """Convierte valores numéricos a `float` de forma defensiva."""
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _extract_page_dimensions(page: Entity) -> tuple[float, float]:
+    """
+    Recupera el tamaño de una página de la forma más compatible posible.
+    """
+    # 1. Atributos directos
+    width = _num(getattr(page, "width", None))
+    height = _num(getattr(page, "height", None))
+    if width > 0 and height > 0:
+        return width, height
+
+    # 2. Metadata
+    metadata = getattr(page, "metadata", None) or {}
+    if isinstance(metadata, dict):
+        width = _num(metadata.get("width"))
+        height = _num(metadata.get("height"))
+        if width > 0 and height > 0:
+            return width, height
+
+    # 3. Primer box asociado a la página
+    boxes = getattr(page, "boxes", None) or []
+    if boxes:
+        box = boxes[0]
+
+        # Variante 1: width / height
+        width = _num(getattr(box, "width", None))
+        height = _num(getattr(box, "height", None))
+        if width > 0 and height > 0:
+            return width, height
+
+        # Variante 2: w / h
+        width = _num(getattr(box, "w", None))
+        height = _num(getattr(box, "h", None))
+        if width > 0 and height > 0:
+            return width, height
+
+        # Variante 3: x0/x1 y top/bottom o y0/y1
+        x0 = _num(getattr(box, "x0", None))
+        x1 = _num(getattr(box, "x1", None))
+        top = _num(getattr(box, "top", None))
+        bottom = _num(getattr(box, "bottom", None))
+        y0 = _num(getattr(box, "y0", None))
+        y1 = _num(getattr(box, "y1", None))
+
+        computed_width = x1 - x0 if x1 > x0 else 0.0
+        computed_height = (
+            bottom - top if bottom > top else (y1 - y0 if y1 > y0 else 0.0)
+        )
+
+        if computed_width > 0 and computed_height > 0:
+            return computed_width, computed_height
+
+    return 0.0, 0.0
+
+
+def _extract_first_box(entity: Entity) -> list[float] | None:
+    """
+    Devuelve la primera caja de una entidad en formato [x, y, width, height].
+    Compatible con varias representaciones de box.
+    """
+    boxes = getattr(entity, "boxes", None) or []
+    if not boxes:
+        return None
+
+    box = boxes[0]
+
+    # Variante 1: left/top/width/height
+    left = _num(getattr(box, "left", None), default=-1)
+    top = _num(getattr(box, "top", None), default=-1)
+    width = _num(getattr(box, "width", None), default=-1)
+    height = _num(getattr(box, "height", None), default=-1)
+    if left >= 0 and top >= 0 and width > 0 and height > 0:
+        return [left, top, width, height]
+
+    # Variante 2: l/t/w/h
+    left = _num(getattr(box, "l", None), default=-1)
+    top = _num(getattr(box, "t", None), default=-1)
+    width = _num(getattr(box, "w", None), default=-1)
+    height = _num(getattr(box, "h", None), default=-1)
+    if left >= 0 and top >= 0 and width > 0 and height > 0:
+        return [left, top, width, height]
+
+    # Variante 3: x0/x1/top/bottom
+    x0 = _num(getattr(box, "x0", None), default=-1)
+    x1 = _num(getattr(box, "x1", None), default=-1)
+    top = _num(getattr(box, "top", None), default=-1)
+    bottom = _num(getattr(box, "bottom", None), default=-1)
+    if x0 >= 0 and x1 > x0 and top >= 0 and bottom > top:
+        return [x0, top, x1 - x0, bottom - top]
+
+    # Variante 4: x0/x1/y0/y1
+    y0 = _num(getattr(box, "y0", None), default=-1)
+    y1 = _num(getattr(box, "y1", None), default=-1)
+    if x0 >= 0 and x1 > x0 and y0 >= 0 and y1 > y0:
+        return [x0, y0, x1 - x0, y1 - y0]
+
+    return None
+
+
+def _normalize_box_page(raw_page: Any, pages_total: int) -> int:
+    """
+    Normaliza el índice de página a base 0.
+
+    En algunos parsers el número ya viene 0-based; en otros puede venir 1-based.
+    Aquí lo mantenemos estable y acotado al número total de páginas detectadas.
+    """
+    if raw_page is None:
+        return 0
+
+    try:
+        page_index = int(raw_page)
+    except (TypeError, ValueError):
+        return 0
+
+    if page_index < 0:
+        return 0
+
+    if pages_total and page_index >= pages_total:
+        if 1 <= page_index <= pages_total:
+            return page_index - 1
+        return max(pages_total - 1, 0)
+
+    return page_index
+
+
+def extract_pdf_data(pdf_path: str) -> ReaderData:
+    """
+    Extrae una estructura mínima y estable para alimentar el reader frontend.
+
+    Salida:
+    {
+      "pages": [{"page": 0, "width": 595.0, "height": 842.0}, ...],
+      "items": [
+        {
+          "id": "word_0",
+          "text": "Quantum",
+          "page": 0,
+          "box": [x, y, width, height],
+          "type": "word",
+        },
+        ...
+      ]
+    }
+
+    Notas de esta primera versión:
+    - Solo exporta páginas y palabras/tokens.
+    - Usa la primera caja de cada entidad.
+    - Mantiene las coordenadas originales del PDF, sin viewport ni escalado.
+    - Página en base 0 para encajar mejor con el reader React.
+    """
+    document = _load_reader_document(pdf_path)
+
+    pages: List[ReaderPage] = []
+    raw_pages = getattr(document, "pages", []) or []
+    for page_index, page in enumerate(raw_pages):
+        width, height = _extract_page_dimensions(page)
+        pages.append(
+            {
+                "page": page_index,
+                "width": width,
+                "height": height,
+            }
+        )
+
+    items: List[ReaderItem] = []
+
+    # Algunas versiones/parsers exponen words, otras tokens.
+    raw_items = getattr(document, "words", None) or getattr(document, "tokens", None) or []
+
+    for item_index, item in enumerate(raw_items):
+        box = _extract_first_box(item)
+        if not box:
+            continue
+
+        item_boxes = getattr(item, "boxes", None) or []
+        raw_page = getattr(item_boxes[0], "page", None) if item_boxes else None
+        page_index = _normalize_box_page(raw_page, len(pages))
+
+        text = str(getattr(item, "text", "") or "").strip()
+        if not text:
+            continue
+
+        items.append(
+            {
+                "id": f"word_{item_index}",
+                "text": text,
+                "page": page_index,
+                "box": box,
+                "type": "word",
+            }
+        )
+
+    return {"pages": pages, "items": items}
 
 
 def _clean_paragraph(raw: str) -> str:
@@ -65,11 +316,8 @@ def _clean_paragraph(raw: str) -> str:
     Normaliza un bloque de texto eliminando saltos raros y espacios duplicados.
     """
     normalized = raw.replace("\r\n", "\n")
-    # Unir líneas en un mismo párrafo
     normalized = re.sub(r"[ \t]*\n[ \t]*", " ", normalized)
-    # Colapsar espacios en blanco múltiples
     normalized = re.sub(r"\s+", " ", normalized)
-    # Pequeña corrección para ' - ' que a veces aparece separado en PDFs
     normalized = normalized.replace(" - ", "-")
     return normalized.strip()
 
@@ -112,14 +360,12 @@ def _iter_paragraphs(doc: Document) -> Iterable[_Paragraph]:
     """
     symbols = getattr(doc, "symbols", None)
     if not symbols:
-        # Sin texto extraído: probablemente PDF vacío o basado en imagen escaneada.
         raise RuntimeError(
             "No se pudo extraer texto del PDF (documento vacío o escaneado sin OCR)."
         )
 
     pages_layer = getattr(doc, "pages", None)
     if pages_layer is None:
-        # Sin capa de páginas, tratamos todo el documento como una única página.
         for paragraph in _split_paragraphs(symbols):
             yield _Paragraph(text=paragraph, page=1)
         return

@@ -29,7 +29,7 @@ from .services.pdf_citation_analyzer import (
 )
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.semantic_scholar_client import SemanticScholarError
-from .services.papermage_extractor import ContextHit
+from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .models import IncorrectCitation
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
@@ -398,6 +398,56 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
     except Exception as exc:
         return JsonResponse(
             {"error": f"Error al procesar el PDF: {exc}"},
+            status=500,
+        )
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+
+@csrf_exempt
+@require_POST
+def api_pdf_reader_v2_upload(request: HttpRequest) -> JsonResponse:
+    """
+    API que recibe un PDF subido por el usuario y devuelve los datos
+    (pages + items) para el overlay visual del reader V2.
+    """
+    uploaded_file = request.FILES.get("pdf_file") or request.FILES.get("manuscript")
+    if not uploaded_file:
+        return JsonResponse(
+            {"ok": False, "error": "No se ha recibido ningun archivo PDF ('pdf_file')."},
+            status=400,
+        )
+
+    tmp_path = None
+    started_at = time.time()
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            for chunk in uploaded_file.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name
+
+        reader_data = extract_pdf_data(tmp_path)
+        elapsed_ms = int((time.time() - started_at) * 1000)
+        return JsonResponse(
+            {
+                "ok": True,
+                "pages": reader_data.get("pages", []),
+                "items": reader_data.get("items", []),
+                "time_ms": elapsed_ms,
+            },
+            status=200,
+        )
+    except FileNotFoundError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+    except RuntimeError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=500)
+    except Exception as exc:
+        return JsonResponse(
+            {"ok": False, "error": f"Error al procesar el PDF: {exc}"},
             status=500,
         )
     finally:
