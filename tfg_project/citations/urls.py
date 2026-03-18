@@ -138,6 +138,11 @@ urlpatterns = [
         name="api_pdf_citation_contexts_upload",
     ),
     path(
+        "api/pdf-reader-v2-upload/",
+        views_api.api_pdf_reader_v2_upload,
+        name="api_pdf_reader_v2_upload",
+    ),
+    path(
         "api/get-semantic-citations/",
         ajax_views.get_semantic_citations,
         name="get_semantic_citations",
