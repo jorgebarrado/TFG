@@ -413,7 +413,7 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
 def api_pdf_reader_v2_upload(request: HttpRequest) -> JsonResponse:
     """
     API que recibe un PDF subido por el usuario y devuelve los datos
-    (pages + items) para el overlay visual del reader V2.
+    (pages + layers) para el overlay visual del reader V2.
     """
     uploaded_file = request.FILES.get("pdf_file") or request.FILES.get("manuscript")
     if not uploaded_file:
@@ -436,7 +436,7 @@ def api_pdf_reader_v2_upload(request: HttpRequest) -> JsonResponse:
             {
                 "ok": True,
                 "pages": reader_data.get("pages", []),
-                "items": reader_data.get("items", []),
+                "layers": reader_data.get("layers", {}),
                 "time_ms": elapsed_ms,
             },
             status=200,

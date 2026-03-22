@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import pdfComponents from "@allenai/pdf-components";
 import "@allenai/pdf-components/dist/pdf-components.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -42,6 +42,158 @@ const MAX_CITATION_RANGE = 50;
 const HIGHLIGHT_TOKEN_LIMIT = 60;
 const BUILD_ID =
   typeof __READER_BUILD_ID__ !== "undefined" ? __READER_BUILD_ID__ : "";
+const READER_V2_LAYER_LABELS = Object.freeze({
+  tokens: "Tokens",
+  rows: "Rows",
+  paragraphs: "Paragraphs",
+  bibliographies: "Bibliographies",
+  sections: "Sections",
+});
+
+function getReaderV2LayerKeys(data) {
+  const rawLayers = data?.layers;
+  if (!rawLayers || typeof rawLayers !== "object") {
+    if (Array.isArray(data?.items)) {
+      return ["tokens"];
+    }
+    return [];
+  }
+  return Object.keys(rawLayers).filter((layerKey) => Array.isArray(rawLayers[layerKey]));
+}
+
+function pickDefaultReaderV2Layer(data) {
+  const layerKeys = getReaderV2LayerKeys(data);
+  if (!layerKeys.length) return "";
+  if (layerKeys.includes("tokens")) return "tokens";
+  return layerKeys[0];
+}
+
+function getReaderV2ItemId(item, index, layerKey = "layer") {
+  const rawId = item?.id;
+  if (rawId !== undefined && rawId !== null && String(rawId).trim()) {
+    return String(rawId);
+  }
+  const pageValue = Number(item?.page);
+  const safePage = Number.isFinite(pageValue) ? pageValue : "x";
+  return `${layerKey}-${safePage}-${index}`;
+}
+
+const READER_V2_SHRINK_BY_LAYER = Object.freeze({
+  tokens: { padX: 0.0012, padY: 0.0010 },
+  rows: { padX: 0.0005, padY: 0.00035 },
+  paragraphs: { padX: 0.0016, padY: 0.0013 },
+  bibliographies: { padX: 0.0014, padY: 0.0011 },
+  sections: { padX: 0.0002, padY: 0.00015 },
+  default: { padX: 0.0008, padY: 0.0006 },
+});
+
+const READER_V2_SORT_TOLERANCE_BY_LAYER = Object.freeze({
+  tokens: 0.0022,
+  rows: 0.0048,
+  paragraphs: 0.0062,
+  bibliographies: 0.0062,
+  sections: 0.0054,
+  default: 0.0045,
+});
+
+function getReaderV2SortTolerance(layerName) {
+  const key = String(layerName || "").toLowerCase();
+  return READER_V2_SORT_TOLERANCE_BY_LAYER[key] || READER_V2_SORT_TOLERANCE_BY_LAYER.default;
+}
+
+function getAdjustedBox(rawBox, layerName) {
+  const source = Array.isArray(rawBox)
+    ? {
+        x: Number(rawBox[0]),
+        y: Number(rawBox[1]),
+        width: Number(rawBox[2]),
+        height: Number(rawBox[3]),
+      }
+    : {
+        x: Number(rawBox?.x),
+        y: Number(rawBox?.y),
+        width: Number(rawBox?.width),
+        height: Number(rawBox?.height),
+      };
+
+  if (![source.x, source.y, source.width, source.height].every((value) => Number.isFinite(value))) {
+    return null;
+  }
+  if (source.width <= 0 || source.height <= 0) {
+    return null;
+  }
+
+  const key = String(layerName || "").toLowerCase();
+  const shrink = READER_V2_SHRINK_BY_LAYER[key] || READER_V2_SHRINK_BY_LAYER.default;
+  const safePadX = Math.min(Math.max(0, shrink.padX), source.width * 0.24);
+  const safePadY = Math.min(Math.max(0, shrink.padY), source.height * 0.24);
+  const minWidth = Math.min(source.width, Math.max(0.00018, source.width * 0.22));
+  const minHeight = Math.min(source.height, Math.max(0.00018, source.height * 0.22));
+
+  const nextWidth = Math.min(
+    source.width,
+    Math.max(source.width - 2 * safePadX, minWidth)
+  );
+  const nextHeight = Math.min(
+    source.height,
+    Math.max(source.height - 2 * safePadY, minHeight)
+  );
+
+  let nextX = source.x + (source.width - nextWidth) / 2;
+  let nextY = source.y + (source.height - nextHeight) / 2;
+  nextX = Math.max(0, Math.min(1 - nextWidth, nextX));
+  nextY = Math.max(0, Math.min(1 - nextHeight, nextY));
+
+  return {
+    x: nextX,
+    y: nextY,
+    width: nextWidth,
+    height: nextHeight,
+  };
+}
+
+function sortItemsByReadingOrder(items, layerName) {
+  if (!Array.isArray(items) || items.length <= 1) {
+    return Array.isArray(items) ? [...items] : [];
+  }
+
+  const tolerance = Math.max(0.0002, getReaderV2SortTolerance(layerName));
+  const toNum = (value, fallback = 0) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  };
+
+  return [...items].sort((itemA, itemB) => {
+    const pageA = Math.max(0, toNum(itemA?.page, 0));
+    const pageB = Math.max(0, toNum(itemB?.page, 0));
+    if (pageA !== pageB) return pageA - pageB;
+
+    const boxA = Array.isArray(itemA?.box) ? itemA.box : [];
+    const boxB = Array.isArray(itemB?.box) ? itemB.box : [];
+    const xA = toNum(boxA[0], 0);
+    const yA = toNum(boxA[1], 0);
+    const xB = toNum(boxB[0], 0);
+    const yB = toNum(boxB[1], 0);
+
+    const rowBucketA = Math.round(yA / tolerance);
+    const rowBucketB = Math.round(yB / tolerance);
+    if (rowBucketA !== rowBucketB) {
+      return rowBucketA - rowBucketB;
+    }
+
+    const nearLineThreshold = tolerance * 0.35;
+    if (Math.abs(yA - yB) > nearLineThreshold) {
+      return yA - yB;
+    }
+    if (xA !== xB) {
+      return xA - xB;
+    }
+
+    const idxA = toNum(itemA?.__sourceIndex, 0);
+    const idxB = toNum(itemB?.__sourceIndex, 0);
+    return idxA - idxB;
+  });
+}
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -598,7 +750,26 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
   }, [mention, onHighlight, viewerRef]);
 }
 
-function useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opacity) {
+function useReaderV2Overlay(
+  viewerRef,
+  readerV2Data,
+  readerV2Layer,
+  readerV2LayerItems,
+  showReaderV2,
+  readerV2Opacity,
+  hoveredItemId,
+  selectedItemId,
+  onHoverItemChange,
+  onSelectItem
+) {
+  const hoveredItemIdRef = useRef(hoveredItemId);
+  const selectedItemIdRef = useRef(selectedItemId);
+
+  useEffect(() => {
+    hoveredItemIdRef.current = hoveredItemId;
+    selectedItemIdRef.current = selectedItemId;
+  }, [hoveredItemId, selectedItemId]);
+
   useEffect(() => {
     const viewerEl = viewerRef?.current;
     if (!viewerEl) return;
@@ -610,8 +781,11 @@ function useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opaci
     };
 
     const pagesSource = Array.isArray(readerV2Data?.pages) ? readerV2Data.pages : [];
-    const itemsSource = Array.isArray(readerV2Data?.items) ? readerV2Data.items : [];
-    if (!showReaderV2 || itemsSource.length === 0) {
+    const selectedLayerItems = Array.isArray(readerV2LayerItems)
+      ? readerV2LayerItems
+      : [];
+
+    if (!showReaderV2 || selectedLayerItems.length === 0) {
       removeOverlays();
       return;
     }
@@ -677,18 +851,26 @@ function useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opaci
     };
 
     const itemsByPage = new Map();
-    itemsSource.forEach((item, index) => {
+    selectedLayerItems.forEach((item, index) => {
       const pageIndex = Number(item?.page);
       if (!Number.isFinite(pageIndex) || pageIndex < 0) return;
       const normalized = normalizeBox(item?.box, pageMetaByIndex.get(pageIndex));
       if (!normalized) return;
+      const adjusted = getAdjustedBox(normalized, readerV2Layer);
+      if (!adjusted) return;
       const sanitizedType = String(item?.type || "item")
         .toLowerCase()
         .replace(/[^a-z0-9_-]+/g, "-");
+      const sourceIndex = Number(item?.__sourceIndex);
+      const fallbackIndex = Number.isFinite(sourceIndex) ? sourceIndex : index;
+      const normalizedId = String(
+        item?.__v2id || getReaderV2ItemId(item, fallbackIndex, readerV2Layer || "layer")
+      );
       const list = itemsByPage.get(pageIndex) || [];
       list.push({
-        ...normalized,
-        id: String(item?.id || `v2-${pageIndex}-${index}`),
+        ...adjusted,
+        id: normalizedId,
+        text: String(item?.text || ""),
         typeClass: sanitizedType || "item",
       });
       itemsByPage.set(pageIndex, list);
@@ -735,12 +917,40 @@ function useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opaci
 
         pageItems.forEach((entry) => {
           const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          rect.setAttribute("class", `reader-v2-box reader-v2-box--${entry.typeClass}`);
+          const classNames = [
+            "reader-v2-box",
+            `reader-v2-box--${entry.typeClass}`,
+          ];
+          if (entry.id === hoveredItemIdRef.current) {
+            classNames.push("is-hovered");
+          }
+          if (entry.id === selectedItemIdRef.current) {
+            classNames.push("is-selected");
+          }
+          rect.setAttribute("class", classNames.join(" "));
           rect.setAttribute("data-v2-id", entry.id);
           rect.setAttribute("x", `${entry.x}`);
           rect.setAttribute("y", `${entry.y}`);
           rect.setAttribute("width", `${entry.width}`);
           rect.setAttribute("height", `${entry.height}`);
+          rect.setAttribute("title", entry.text || entry.id);
+          rect.addEventListener("mouseenter", () => {
+            if (typeof onHoverItemChange === "function") {
+              onHoverItemChange(entry.id);
+            }
+          });
+          rect.addEventListener("mouseleave", () => {
+            if (typeof onHoverItemChange === "function") {
+              onHoverItemChange(null);
+            }
+          });
+          rect.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof onSelectItem === "function") {
+              onSelectItem(entry.id);
+            }
+          });
           overlay.appendChild(rect);
         });
       });
@@ -767,7 +977,38 @@ function useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opaci
       window.removeEventListener("resize", schedule);
       removeOverlays();
     };
-  }, [viewerRef, readerV2Data, showReaderV2, readerV2Opacity]);
+  }, [
+    viewerRef,
+    readerV2Data,
+    readerV2Layer,
+    readerV2LayerItems,
+    showReaderV2,
+    readerV2Opacity,
+    onHoverItemChange,
+    onSelectItem,
+  ]);
+
+  useEffect(() => {
+    const viewerEl = viewerRef?.current;
+    if (!viewerEl) return;
+
+    const boxes = viewerEl.querySelectorAll(".reader-v2-box");
+    boxes.forEach((boxEl) => {
+      const itemId = boxEl.getAttribute("data-v2-id");
+      const isHovered = Boolean(hoveredItemId) && itemId === hoveredItemId;
+      const isSelected = Boolean(selectedItemId) && itemId === selectedItemId;
+      boxEl.classList.toggle("is-hovered", isHovered);
+      boxEl.classList.toggle("is-selected", isSelected);
+    });
+  }, [
+    viewerRef,
+    hoveredItemId,
+    selectedItemId,
+    readerV2Layer,
+    readerV2Data,
+    readerV2LayerItems,
+    showReaderV2,
+  ]);
 }
 
 function ScrollRootBinder({ viewerRef }) {
@@ -922,11 +1163,28 @@ function PdfViewer({
   onHighlight,
   viewerRef,
   readerV2Data,
+  readerV2Layer,
+  readerV2LayerItems,
   showReaderV2,
   readerV2Opacity,
+  hoveredItemId,
+  selectedItemId,
+  onHoverItemChange,
+  onSelectItem,
 }) {
   useHighlightedSnippet(selectedMention, onHighlight, viewerRef);
-  useReaderV2Overlay(viewerRef, readerV2Data, showReaderV2, readerV2Opacity);
+  useReaderV2Overlay(
+    viewerRef,
+    readerV2Data,
+    readerV2Layer,
+    readerV2LayerItems,
+    showReaderV2,
+    readerV2Opacity,
+    hoveredItemId,
+    selectedItemId,
+    onHoverItemChange,
+    onSelectItem
+  );
 
   if (!pdfUrl) {
     return <div className="reader-empty">No hay PDF disponible.</div>;
@@ -1005,6 +1263,9 @@ export default function ReaderApp({
   });
   const [showReaderV2, setShowReaderV2] = useState(false);
   const [readerV2Opacity, setReaderV2Opacity] = useState(0.35);
+  const [readerV2Layer, setReaderV2Layer] = useState("");
+  const [hoveredItemId, setHoveredItemId] = useState(null);
+  const [selectedItemId, setSelectedItemId] = useState(null);
   const [activeFile, setActiveFile] = useState(previewFile || null);
   const [dropActive, setDropActive] = useState(false);
 
@@ -1016,6 +1277,7 @@ export default function ReaderApp({
   const activeCitationRef = useRef(null);
   const inlineCitationsKeyRef = useRef("");
   const fileInputRef = useRef(null);
+  const readerV2ItemRefs = useRef(new Map());
 
   useEffect(() => {
     if (!previewFile) {
@@ -1025,6 +1287,9 @@ export default function ReaderApp({
     setPreviewUrl(objectUrl);
     setActiveFile(previewFile);
     setReaderV2Data(null);
+    setReaderV2Layer("");
+    setHoveredItemId(null);
+    setSelectedItemId(null);
     setShowReaderV2(false);
     setReaderV2Status({ loading: false, error: "", message: "" });
     return () => URL.revokeObjectURL(objectUrl);
@@ -1053,6 +1318,9 @@ export default function ReaderApp({
       const objectUrl = URL.createObjectURL(file);
       setActiveFile(file);
       setReaderV2Data(null);
+      setReaderV2Layer("");
+      setHoveredItemId(null);
+      setSelectedItemId(null);
       setShowReaderV2(false);
       setReaderV2Status({ loading: false, error: "", message: "" });
       setPreviewUrl((current) => {
@@ -1352,12 +1620,110 @@ export default function ReaderApp({
   const canExtract = Boolean(engineValue) && !extractStatus.loading;
   const canGenerateReaderV2 =
     !readerV2Status.loading && Boolean(activeFile || resolvedPdfUrl);
+  const readerV2LayerOptions = useMemo(
+    () => getReaderV2LayerKeys(readerV2Data),
+    [readerV2Data]
+  );
+  const activeReaderV2Layer = useMemo(() => {
+    if (!readerV2LayerOptions.length) return "";
+    if (readerV2LayerOptions.includes(readerV2Layer)) return readerV2Layer;
+    if (readerV2LayerOptions.includes("tokens")) return "tokens";
+    return readerV2LayerOptions[0];
+  }, [readerV2LayerOptions, readerV2Layer]);
+  const readerV2LayerItems = useMemo(() => {
+    if (!activeReaderV2Layer) return [];
+    if (
+      readerV2Data?.layers &&
+      typeof readerV2Data.layers === "object" &&
+      Array.isArray(readerV2Data.layers[activeReaderV2Layer])
+    ) {
+      return readerV2Data.layers[activeReaderV2Layer];
+    }
+    if (activeReaderV2Layer === "tokens" && Array.isArray(readerV2Data?.items)) {
+      return readerV2Data.items;
+    }
+    return [];
+  }, [readerV2Data, activeReaderV2Layer]);
+  const currentLayerItems = useMemo(() => {
+    const withSourceIndex = readerV2LayerItems.map((item, index) => ({
+      ...item,
+      __sourceIndex: index,
+    }));
+    const orderedItems = sortItemsByReadingOrder(withSourceIndex, activeReaderV2Layer);
+    return orderedItems.map((item, visualIndex) => ({
+      ...item,
+      __v2id: getReaderV2ItemId(
+        item,
+        Number.isFinite(Number(item?.__sourceIndex))
+          ? Number(item.__sourceIndex)
+          : visualIndex,
+        activeReaderV2Layer || "layer"
+      ),
+    }));
+  }, [readerV2LayerItems, activeReaderV2Layer]);
   const readerV2PagesTotal = Array.isArray(readerV2Data?.pages)
     ? readerV2Data.pages.length
     : 0;
-  const readerV2ItemsTotal = Array.isArray(readerV2Data?.items)
-    ? readerV2Data.items.length
-    : 0;
+  const readerV2ItemsTotal = currentLayerItems.length;
+
+  const handleReaderV2ItemHover = useCallback((itemId) => {
+    setHoveredItemId(itemId || null);
+  }, []);
+  const handleReaderV2ItemSelect = useCallback((itemId) => {
+    setSelectedItemId(itemId || null);
+  }, []);
+  const registerReaderV2ItemRow = useCallback((itemId) => {
+    return (element) => {
+      if (!itemId) return;
+      if (element) {
+        readerV2ItemRefs.current.set(itemId, element);
+      } else {
+        readerV2ItemRefs.current.delete(itemId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!readerV2LayerOptions.length) {
+      if (readerV2Layer !== "") {
+        setReaderV2Layer("");
+      }
+      return;
+    }
+    if (!readerV2LayerOptions.includes(readerV2Layer)) {
+      setReaderV2Layer(
+        readerV2LayerOptions.includes("tokens")
+          ? "tokens"
+          : readerV2LayerOptions[0]
+      );
+    }
+  }, [readerV2LayerOptions, readerV2Layer]);
+
+  useEffect(() => {
+    setHoveredItemId(null);
+    setSelectedItemId(null);
+  }, [activeReaderV2Layer]);
+
+  useEffect(() => {
+    if (!hoveredItemId) return;
+    const exists = currentLayerItems.some((item) => item.__v2id === hoveredItemId);
+    if (!exists) {
+      setHoveredItemId(null);
+    }
+  }, [hoveredItemId, currentLayerItems]);
+
+  useEffect(() => {
+    if (!selectedItemId) return;
+    const exists = currentLayerItems.some((item) => item.__v2id === selectedItemId);
+    if (!exists) {
+      setSelectedItemId(null);
+      return;
+    }
+    const rowEl = readerV2ItemRefs.current.get(selectedItemId);
+    if (rowEl && typeof rowEl.scrollIntoView === "function") {
+      rowEl.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedItemId, currentLayerItems]);
 
   const citationStatsByReference = useMemo(() => {
     const map = new Map();
@@ -1993,16 +2359,48 @@ export default function ReaderApp({
         return;
       }
 
+      const rawLayers =
+        payload?.layers && typeof payload.layers === "object"
+          ? payload.layers
+          : null;
+      const normalizedLayers = {};
+      if (rawLayers) {
+        Object.keys(rawLayers).forEach((layerKey) => {
+          if (Array.isArray(rawLayers[layerKey])) {
+            normalizedLayers[layerKey] = rawLayers[layerKey];
+          }
+        });
+      }
+      if (
+        !Object.keys(normalizedLayers).length &&
+        Array.isArray(payload?.items)
+      ) {
+        normalizedLayers.tokens = payload.items;
+      }
+
       const nextData = {
         pages: Array.isArray(payload?.pages) ? payload.pages : [],
-        items: Array.isArray(payload?.items) ? payload.items : [],
+        layers: normalizedLayers,
       };
+      const nextLayer = pickDefaultReaderV2Layer(nextData);
+      const nextItems =
+        nextLayer && Array.isArray(nextData.layers?.[nextLayer])
+          ? nextData.layers[nextLayer]
+          : [];
+
       setReaderV2Data(nextData);
+      setReaderV2Layer(nextLayer);
+      setHoveredItemId(null);
+      setSelectedItemId(null);
       setShowReaderV2(true);
       setReaderV2Status({
         loading: false,
         error: "",
-        message: `V2 generada (${nextData.items.length} cajas, ${nextData.pages.length} paginas).`,
+        message: nextLayer
+          ? `V2 generada. Capa activa: ${
+              READER_V2_LAYER_LABELS[nextLayer] || nextLayer
+            } (${nextItems.length} cajas, ${nextData.pages.length} paginas).`
+          : `V2 generada sin capas disponibles (${nextData.pages.length} paginas).`,
       });
     } catch (err) {
       setReaderV2Status({
@@ -2128,6 +2526,9 @@ export default function ReaderApp({
     setSelectedSnippetPopoverStyle(null);
     setActiveCitation(null);
     setReaderV2Data(null);
+    setReaderV2Layer("");
+    setHoveredItemId(null);
+    setSelectedItemId(null);
     setShowReaderV2(false);
     setReaderV2Status({ loading: false, error: "", message: "" });
     setExtractStatus({ loading: false, error: "", message: "PDF actualizado." });
@@ -2159,6 +2560,9 @@ export default function ReaderApp({
       fileInputRef.current.value = "";
     }
     setReaderV2Data(null);
+    setReaderV2Layer("");
+    setHoveredItemId(null);
+    setSelectedItemId(null);
     setShowReaderV2(false);
     setReaderV2Status({ loading: false, error: "", message: "" });
     setExtractStatus({ loading: false, error: "", message: "PDF eliminado." });
@@ -2182,15 +2586,83 @@ export default function ReaderApp({
       >
         {readerV2Status.loading ? "Generando..." : "Generar V2"}
       </button>
+      <label className="reader-v2-layer">
+        <span className="reader-v2-layer-label">Capa</span>
+        <select
+          className="reader-engine-select"
+          value={activeReaderV2Layer}
+          disabled={!readerV2LayerOptions.length}
+          onChange={(event) => setReaderV2Layer(event.target.value)}
+        >
+          {!readerV2LayerOptions.length && (
+            <option value="">Sin capas disponibles</option>
+          )}
+          {readerV2LayerOptions.map((layerName) => (
+            <option key={layerName} value={layerName}>
+              {READER_V2_LAYER_LABELS[layerName] || layerName}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="reader-v2-items-panel">
+        <div className="reader-v2-items-header">
+          <span>Elementos de la capa</span>
+          <span className="reader-v2-items-count">{currentLayerItems.length}</span>
+        </div>
+        {!currentLayerItems.length ? (
+          <div className="reader-muted">No hay elementos para la capa seleccionada.</div>
+        ) : (
+          <div className="reader-v2-items-list">
+            {currentLayerItems.map((item, index) => {
+              const itemId = item.__v2id;
+              const itemText = String(item?.text || "");
+              const pageValue = Number(item?.page);
+              const pageLabel = Number.isFinite(pageValue) ? pageValue + 1 : "-";
+              const isHovered = hoveredItemId === itemId;
+              const isSelected = selectedItemId === itemId;
+              return (
+                <button
+                  key={itemId}
+                  ref={registerReaderV2ItemRow(itemId)}
+                  type="button"
+                  className={[
+                    "reader-v2-item",
+                    isHovered ? "is-hovered" : "",
+                    isSelected ? "is-selected" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  title={itemText}
+                  onMouseEnter={() => handleReaderV2ItemHover(itemId)}
+                  onMouseLeave={() => handleReaderV2ItemHover(null)}
+                  onClick={() => handleReaderV2ItemSelect(itemId)}
+                >
+                  <span className="reader-v2-item-index">{index + 1}</span>
+                  <span className="reader-v2-item-main">
+                    <span className="reader-v2-item-text">{itemText || "(sin texto)"}</span>
+                    <span className="reader-v2-item-meta">p. {pageLabel}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
       <label className="reader-v2-toggle">
         <input
           type="checkbox"
           checked={showReaderV2}
-          disabled={!readerV2Data}
+          disabled={!activeReaderV2Layer}
           onChange={(event) => setShowReaderV2(event.target.checked)}
         />
         Mostrar overlay
       </label>
+      <div className="reader-muted">
+        Capa activa:{" "}
+        {activeReaderV2Layer
+          ? (READER_V2_LAYER_LABELS[activeReaderV2Layer] || activeReaderV2Layer)
+          : "-"}
+      </div>
       <div className="reader-v2-opacity">
         Opacidad: {Math.round(readerV2Opacity * 100)}%
       </div>
@@ -2201,14 +2673,16 @@ export default function ReaderApp({
         step="0.05"
         className="reader-v2-slider"
         value={readerV2Opacity}
-        disabled={!showReaderV2 || !readerV2Data}
+        disabled={!showReaderV2 || !activeReaderV2Layer}
         onChange={(event) => setReaderV2Opacity(Number(event.target.value))}
       />
       {readerV2Data && (
         <div className="reader-muted">
-          Paginas: {readerV2PagesTotal} | Cajas: {readerV2ItemsTotal}
+          Paginas: {readerV2PagesTotal} | Cajas ({activeReaderV2Layer || "-"}):{" "}
+          {readerV2ItemsTotal}
         </div>
       )}
+
       {(readerV2Status.error || readerV2Status.message) && (
         <div
           className={
@@ -2636,8 +3110,14 @@ export default function ReaderApp({
             onHighlight={handleHighlight}
             viewerRef={viewerRef}
             readerV2Data={readerV2Data}
+            readerV2Layer={activeReaderV2Layer}
+            readerV2LayerItems={currentLayerItems}
             showReaderV2={showReaderV2}
             readerV2Opacity={readerV2Opacity}
+            hoveredItemId={hoveredItemId}
+            selectedItemId={selectedItemId}
+            onHoverItemChange={handleReaderV2ItemHover}
+            onSelectItem={handleReaderV2ItemSelect}
           />
 
           {selectedSnippet && (

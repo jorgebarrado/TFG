@@ -19,5 +19,8 @@ if __name__ == "__main__":
     pdf_path = sys.argv[1]
     data = extract_pdf_data(pdf_path)
     print(json.dumps(data, indent=2, ensure_ascii=False)[:5000])
-    print(f"\nPáginas: {len(data['pages'])}")
-    print(f"Items: {len(data['items'])}")
+    print(f"\nPaginas: {len(data['pages'])}")
+    layers = data.get("layers") or {}
+    print(f"Capas: {', '.join(layers.keys()) if layers else '(ninguna)'}")
+    for layer_name, items in layers.items():
+        print(f"- {layer_name}: {len(items)}")
