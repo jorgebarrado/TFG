@@ -34,9 +34,8 @@ const DOI_REGEX = /10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+/i;
 const DOI_URL_REGEX = /https?:\/\/(?:dx\.)?doi\.org\/([^\s]+)/i;
 const BRACKET_REGEX = /\[\s*(\d+)\s*\]/;
 const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]/g;
-const ENGINES_ENDPOINT = "/citations/api/extractor-engines/";
 const EXTRACT_ENDPOINT = "/citations/api/extract-citations/";
-const READER_V2_ENDPOINT = "/citations/api/pdf-reader-v2-upload/";
+const PREVIEW_EXTRACT_ENGINE = "papermage";
 
 const MAX_CITATION_RANGE = 50;
 const HIGHLIGHT_TOKEN_LIMIT = 60;
@@ -76,6 +75,28 @@ function getReaderV2ItemId(item, index, layerKey = "layer") {
   const pageValue = Number(item?.page);
   const safePage = Number.isFinite(pageValue) ? pageValue : "x";
   return `${layerKey}-${safePage}-${index}`;
+}
+
+function normalizeOverlayPage(value) {
+  const page = Number(value);
+  if (!Number.isFinite(page) || page < 0) return null;
+  return page;
+}
+
+function normalizeOverlayBox(box) {
+  if (!Array.isArray(box) || box.length < 4) return null;
+  const x = Number(box[0]);
+  const y = Number(box[1]);
+  const width = Number(box[2]);
+  const height = Number(box[3]);
+  if (![x, y, width, height].every((value) => Number.isFinite(value))) return null;
+  if (width <= 0 || height <= 0) return null;
+  const clampedX = Math.max(0, Math.min(1, x));
+  const clampedY = Math.max(0, Math.min(1, y));
+  const clampedWidth = Math.max(0, Math.min(1 - clampedX, width));
+  const clampedHeight = Math.max(0, Math.min(1 - clampedY, height));
+  if (clampedWidth <= 0 || clampedHeight <= 0) return null;
+  return [clampedX, clampedY, clampedWidth, clampedHeight];
 }
 
 const READER_V2_SHRINK_BY_LAYER = Object.freeze({
@@ -1011,6 +1032,186 @@ function useReaderV2Overlay(
   ]);
 }
 
+function useReferencesOverlay(
+  viewerRef,
+  {
+    visible,
+    items,
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+    onHoverItem,
+    onSelectItem,
+  }
+) {
+  const selectedReferenceIdRef = useRef(selectedReferenceId);
+  const hoveredReferenceIdRef = useRef(hoveredReferenceId);
+  const selectedCitationIdRef = useRef(selectedCitationId);
+  const hoveredCitationIdRef = useRef(hoveredCitationId);
+
+  useEffect(() => {
+    selectedReferenceIdRef.current = selectedReferenceId;
+    hoveredReferenceIdRef.current = hoveredReferenceId;
+    selectedCitationIdRef.current = selectedCitationId;
+    hoveredCitationIdRef.current = hoveredCitationId;
+  }, [
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+  ]);
+
+  useEffect(() => {
+    const viewerEl = viewerRef?.current;
+    if (!viewerEl) return;
+
+    const removeOverlays = () => {
+      viewerEl
+        .querySelectorAll(".reader-ref-overlay")
+        .forEach((overlay) => overlay.remove());
+    };
+
+    if (!visible) {
+      removeOverlays();
+      return;
+    }
+
+    const overlayItems = Array.isArray(items) ? items : [];
+    const itemsByPage = new Map();
+    overlayItems.forEach((item, index) => {
+      const page = normalizeOverlayPage(item?.page);
+      const box = normalizeOverlayBox(item?.box);
+      if (page === null || !box) return;
+      const itemId = String(item?.id || `ref-overlay-${index}`);
+      const refId = String(item?.ref_id || "");
+      const itemType = String(item?.item_type || "entry")
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-");
+      const list = itemsByPage.get(page) || [];
+      list.push({
+        id: itemId,
+        refId,
+        itemType,
+        box,
+        text: String(item?.text || ""),
+      });
+      itemsByPage.set(page, list);
+    });
+
+    let rafId = null;
+    const render = () => {
+      rafId = null;
+      const pageEls = viewerEl.querySelectorAll(".pdf-reader__page");
+      pageEls.forEach((pageEl) => {
+        const pageNumber = Number(
+          pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
+        );
+        const pageIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+        const pageItems = pageIndex >= 0 ? itemsByPage.get(pageIndex) || [] : [];
+        let overlay = pageEl.querySelector(".reader-ref-overlay");
+
+        if (!pageItems.length) {
+          if (overlay) overlay.remove();
+          return;
+        }
+
+        if (!overlay) {
+          overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          overlay.classList.add("reader-ref-overlay");
+          overlay.setAttribute("viewBox", "0 0 1 1");
+          overlay.setAttribute("preserveAspectRatio", "none");
+          if (window.getComputedStyle(pageEl).position === "static") {
+            pageEl.style.position = "relative";
+          }
+          pageEl.appendChild(overlay);
+        }
+
+        while (overlay.firstChild) {
+          overlay.removeChild(overlay.firstChild);
+        }
+
+        pageItems.forEach((entry) => {
+          const selectedRefId = String(selectedReferenceIdRef.current || "");
+          if (!selectedRefId || entry.refId !== selectedRefId) {
+            return;
+          }
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          const isSelectedRef = true;
+          const isSelectedCitation =
+            Boolean(selectedCitationIdRef.current) &&
+            entry.id === selectedCitationIdRef.current;
+          const isHoveredCitation =
+            Boolean(hoveredCitationIdRef.current) &&
+            entry.id === hoveredCitationIdRef.current;
+
+          const classNames = [
+            "reader-ref-box",
+            `reader-ref-box--${entry.itemType}`,
+          ];
+          if (isHoveredCitation) classNames.push("is-hovered");
+          if (isSelectedRef) classNames.push("is-selected");
+          if (isSelectedCitation) classNames.push("is-selected-citation");
+
+          rect.setAttribute("class", classNames.join(" "));
+          rect.setAttribute("data-ref-item-id", entry.id);
+          rect.setAttribute("x", `${entry.box[0]}`);
+          rect.setAttribute("y", `${entry.box[1]}`);
+          rect.setAttribute("width", `${entry.box[2]}`);
+          rect.setAttribute("height", `${entry.box[3]}`);
+          rect.setAttribute("title", entry.text || entry.id);
+          rect.addEventListener("mouseenter", () => {
+            if (typeof onHoverItem === "function") {
+              onHoverItem(entry);
+            }
+          });
+          rect.addEventListener("mouseleave", () => {
+            if (typeof onHoverItem === "function") {
+              onHoverItem(null);
+            }
+          });
+          rect.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof onSelectItem === "function") {
+              onSelectItem(entry);
+            }
+          });
+          overlay.appendChild(rect);
+        });
+      });
+    };
+
+    const schedule = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(render);
+    };
+
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(viewerEl, { childList: true, subtree: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(viewerEl);
+    window.addEventListener("resize", schedule);
+    schedule();
+
+    return () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", schedule);
+      removeOverlays();
+    };
+  }, [
+    viewerRef,
+    visible,
+    items,
+    onHoverItem,
+    onSelectItem,
+  ]);
+}
+
 function ScrollRootBinder({ viewerRef }) {
   const { setScrollRoot } = React.useContext(ScrollContext);
 
@@ -1171,6 +1372,14 @@ function PdfViewer({
   selectedItemId,
   onHoverItemChange,
   onSelectItem,
+  referenceOverlayVisible,
+  referenceOverlayItems,
+  selectedReferenceId,
+  hoveredReferenceId,
+  selectedCitationId,
+  hoveredCitationId,
+  onReferenceOverlayHover,
+  onReferenceOverlaySelect,
 }) {
   useHighlightedSnippet(selectedMention, onHighlight, viewerRef);
   useReaderV2Overlay(
@@ -1185,6 +1394,16 @@ function PdfViewer({
     onHoverItemChange,
     onSelectItem
   );
+  useReferencesOverlay(viewerRef, {
+    visible: referenceOverlayVisible,
+    items: referenceOverlayItems,
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+    onHoverItem: onReferenceOverlayHover,
+    onSelectItem: onReferenceOverlaySelect,
+  });
 
   if (!pdfUrl) {
     return <div className="reader-empty">No hay PDF disponible.</div>;
@@ -1229,8 +1448,13 @@ export default function ReaderApp({
   const [referencesData, setReferencesData] = useState(
     Array.isArray(previewReferences) ? previewReferences : []
   );
+  const [referencesVisualData, setReferencesVisualData] = useState({
+    references: [],
+    citations: [],
+    contexts: [],
+  });
   const [stats, setStats] = useState(previewStats || null);
-  const [activeTab, setActiveTab] = useState("snippets");
+  const [activeTab, setActiveTab] = useState("extract");
   const [snippetQuery, setSnippetQuery] = useState("");
   const [referenceQuery, setReferenceQuery] = useState("");
   const [snippetFilter, setSnippetFilter] = useState("all");
@@ -1248,19 +1472,16 @@ export default function ReaderApp({
   const [highlightReferenceId, setHighlightReferenceId] = useState(null);
   const [inlineCitations, setInlineCitations] = useState([]);
   const [popoverExpanded, setPopoverExpanded] = useState(false);
-  const [engineOptions, setEngineOptions] = useState([]);
-  const [engineValue, setEngineValue] = useState("");
+  const [selectedReferenceId, setSelectedReferenceId] = useState("");
+  const [hoveredReferenceId, setHoveredReferenceId] = useState("");
+  const [selectedCitationId, setSelectedCitationId] = useState("");
+  const [hoveredCitationId, setHoveredCitationId] = useState("");
   const [extractStatus, setExtractStatus] = useState({
     loading: false,
     error: "",
     message: "",
   });
   const [readerV2Data, setReaderV2Data] = useState(null);
-  const [readerV2Status, setReaderV2Status] = useState({
-    loading: false,
-    error: "",
-    message: "",
-  });
   const [showReaderV2, setShowReaderV2] = useState(false);
   const [readerV2Opacity, setReaderV2Opacity] = useState(0.35);
   const [readerV2Layer, setReaderV2Layer] = useState("");
@@ -1286,12 +1507,16 @@ export default function ReaderApp({
     const objectUrl = URL.createObjectURL(previewFile);
     setPreviewUrl(objectUrl);
     setActiveFile(previewFile);
+    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setReaderV2Data(null);
     setReaderV2Layer("");
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
     return () => URL.revokeObjectURL(objectUrl);
   }, [previewFile]);
 
@@ -1317,12 +1542,16 @@ export default function ReaderApp({
       if (!file) return;
       const objectUrl = URL.createObjectURL(file);
       setActiveFile(file);
+      setReferencesVisualData({ references: [], citations: [], contexts: [] });
+      setSelectedReferenceId("");
+      setHoveredReferenceId("");
+      setSelectedCitationId("");
+      setHoveredCitationId("");
       setReaderV2Data(null);
       setReaderV2Layer("");
       setHoveredItemId(null);
       setSelectedItemId(null);
       setShowReaderV2(false);
-      setReaderV2Status({ loading: false, error: "", message: "" });
       setPreviewUrl((current) => {
         if (current) {
           URL.revokeObjectURL(current);
@@ -1342,9 +1571,25 @@ export default function ReaderApp({
       const nextReferences = Array.isArray(event.detail?.references)
         ? event.detail.references
         : [];
+      const nextReferencesVisual =
+        event.detail?.references_data &&
+        typeof event.detail.references_data === "object"
+          ? {
+              references: Array.isArray(event.detail.references_data.references)
+                ? event.detail.references_data.references
+                : [],
+              citations: Array.isArray(event.detail.references_data.citations)
+                ? event.detail.references_data.citations
+                : [],
+              contexts: Array.isArray(event.detail.references_data.contexts)
+                ? event.detail.references_data.contexts
+                : [],
+            }
+          : { references: [], citations: [], contexts: [] };
       const nextStats = event.detail?.stats || null;
       setSnippetsData(nextSnippets);
       setReferencesData(nextReferences);
+      setReferencesVisualData(nextReferencesVisual);
       setStats(nextStats);
     };
     window.addEventListener("reader:data", handler);
@@ -1381,6 +1626,26 @@ export default function ReaderApp({
   }, [apiUrl]);
 
   useEffect(() => {
+    if (!data || typeof data !== "object") return;
+    const rawReferencesData =
+      data.references_data && typeof data.references_data === "object"
+        ? data.references_data
+        : null;
+    if (!rawReferencesData) return;
+    setReferencesVisualData({
+      references: Array.isArray(rawReferencesData.references)
+        ? rawReferencesData.references
+        : [],
+      citations: Array.isArray(rawReferencesData.citations)
+        ? rawReferencesData.citations
+        : [],
+      contexts: Array.isArray(rawReferencesData.contexts)
+        ? rawReferencesData.contexts
+        : [],
+    });
+  }, [data]);
+
+  useEffect(() => {
     setSelectedSnippet(null);
     setSelectedSnippetAnchor(null);
     setSelectedSnippetPopoverStyle(null);
@@ -1403,26 +1668,6 @@ export default function ReaderApp({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    fetch(ENGINES_ENDPOINT, { method: "GET" })
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((payload) => {
-        if (!active) return;
-        const engines = Array.isArray(payload?.engines) ? payload.engines : [];
-        setEngineOptions(engines);
-      })
-      .catch(() => {
-        if (!active) return;
-        setEngineOptions([]);
-      });
-
-    return () => {
-      active = false;
-    };
   }, []);
 
   const apiSnippetsSource =
@@ -1617,9 +1862,7 @@ export default function ReaderApp({
   }, [derivedSnippets, referenceByDoi, referenceByIndex]);
 
   const resolvedPdfUrl = previewUrl || data?.pdf_url || pdfUrl || "";
-  const canExtract = Boolean(engineValue) && !extractStatus.loading;
-  const canGenerateReaderV2 =
-    !readerV2Status.loading && Boolean(activeFile || resolvedPdfUrl);
+  const canExtract = !extractStatus.loading && Boolean(activeFile || resolvedPdfUrl);
   const readerV2LayerOptions = useMemo(
     () => getReaderV2LayerKeys(readerV2Data),
     [readerV2Data]
@@ -1816,6 +2059,154 @@ export default function ReaderApp({
     citationStatsByReference,
     referenceSnippetByIndex,
     inlineSnippetByIndex,
+  ]);
+
+  const visualReferenceEntries = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.references)
+        ? referencesVisualData.references
+        : [],
+    [referencesVisualData]
+  );
+  const visualCitationMentions = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.citations)
+        ? referencesVisualData.citations
+        : [],
+    [referencesVisualData]
+  );
+  const visualCitationContexts = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.contexts)
+        ? referencesVisualData.contexts
+        : [],
+    [referencesVisualData]
+  );
+
+  const parseRefIndex = (refId) => {
+    const match = String(refId || "").match(/^ref-(\d+)$/);
+    if (!match) return null;
+    const value = Number(match[1]);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+
+  const mentionCountByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationMentions.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      map.set(refId, (map.get(refId) || 0) + 1);
+    });
+    return map;
+  }, [visualCitationMentions]);
+
+  const referencesByRefId = useMemo(() => {
+    const map = new Map();
+    visualReferenceEntries.forEach((entry, index) => {
+      const refId = String(entry?.ref_id || "");
+      if (!refId) return;
+      const indexFromRefId = parseRefIndex(refId);
+      const baseRef =
+        indexFromRefId && referenceByIndex.has(indexFromRefId)
+          ? referenceByIndex.get(indexFromRefId)
+          : null;
+      const summary = extractReferenceSummary(baseRef?.raw || entry?.text || "");
+      const pageValue = Number(entry?.page);
+      map.set(refId, {
+        ref_id: refId,
+        index: indexFromRefId || Number(entry?.index) || index + 1,
+        text: String(baseRef?.raw || entry?.text || ""),
+        title: summary.title,
+        author: summary.author,
+        doi: baseRef?.doi || null,
+        page: Number.isFinite(pageValue) ? pageValue : null,
+        box: normalizeOverlayBox(entry?.box),
+      });
+    });
+    if (!map.size) {
+      referencesWithStats.forEach((ref, index) => {
+        const refId = `ref-${Number(ref?.index) || index + 1}`;
+        map.set(refId, {
+          ref_id: refId,
+          index: Number(ref?.index) || index + 1,
+          text: String(ref?.raw || ""),
+          title: ref?.display_title || "",
+          author: ref?.display_author || "",
+          doi: ref?.doi || null,
+          page:
+            Number.isFinite(Number(ref?.display_page)) && Number(ref.display_page) > 0
+              ? Number(ref.display_page) - 1
+              : null,
+          box: null,
+        });
+      });
+    }
+    return map;
+  }, [visualReferenceEntries, referenceByIndex, referencesWithStats]);
+
+  const referenceRows = useMemo(() => {
+    const rows = Array.from(referencesByRefId.values()).map((row) => ({
+      ...row,
+      mentions_total: mentionCountByRefId.get(row.ref_id) || 0,
+    }));
+    rows.sort((a, b) => (a.index || 0) - (b.index || 0));
+    return rows;
+  }, [referencesByRefId, mentionCountByRefId]);
+
+  const filteredReferenceRows = useMemo(() => {
+    const query = referenceQuery.trim().toLowerCase();
+    if (!query) return referenceRows;
+    return referenceRows.filter((row) => {
+      return (
+        row.text.toLowerCase().includes(query) ||
+        (row.doi && row.doi.toLowerCase().includes(query)) ||
+        (row.title && row.title.toLowerCase().includes(query))
+      );
+    });
+  }, [referenceRows, referenceQuery]);
+
+  const citationMentionsByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationMentions.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      const list = map.get(refId) || [];
+      list.push(item);
+      map.set(refId, list);
+    });
+    return map;
+  }, [visualCitationMentions]);
+
+  const citationContextsByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationContexts.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      const list = map.get(refId) || [];
+      list.push(item);
+      map.set(refId, list);
+    });
+    return map;
+  }, [visualCitationContexts]);
+
+  const referencesOverlayItems = useMemo(() => {
+    if (activeTab !== "references") return [];
+    const items = [];
+    visualReferenceEntries.forEach((entry) =>
+      items.push({ ...entry, item_type: "reference-entry" })
+    );
+    visualCitationMentions.forEach((mention) =>
+      items.push({ ...mention, item_type: "citation-mention" })
+    );
+    visualCitationContexts.forEach((context) =>
+      items.push({ ...context, item_type: "citation-context" })
+    );
+    return items;
+  }, [
+    activeTab,
+    visualReferenceEntries,
+    visualCitationMentions,
+    visualCitationContexts,
   ]);
 
   const activeCitationRefIndex = useMemo(() => {
@@ -2027,6 +2418,14 @@ export default function ReaderApp({
   useEffect(() => {
     const viewerEl = viewerRef.current;
     if (!viewerEl) return;
+    if (visualCitationMentions.length > 0) {
+      viewerEl
+        .querySelectorAll(".reader-citation-layer")
+        .forEach((layer) => layer.remove());
+      setInlineCitations([]);
+      setActiveCitation(null);
+      return;
+    }
     let rafId = null;
 
     const schedule = () => {
@@ -2101,7 +2500,7 @@ export default function ReaderApp({
       resizeObserver.disconnect();
       window.removeEventListener("resize", schedule);
     };
-  }, [resolvedPdfUrl]);
+  }, [resolvedPdfUrl, visualCitationMentions.length]);
 
   useEffect(() => {
     const viewerEl = viewerRef.current;
@@ -2190,17 +2589,139 @@ export default function ReaderApp({
     }
   };
 
+  const scrollReferenceRowToTop = useCallback((refId) => {
+    if (!refId) return false;
+    const el = referenceElements.current.get(refId);
+    if (!el) return false;
+    const scrollContainer = el.closest(".reader-panel");
+    const topPadding = 14;
+    if (scrollContainer && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = el.getBoundingClientRect();
+      const nextTop =
+        scrollContainer.scrollTop +
+        (elementRect.top - containerRect.top) -
+        topPadding;
+      scrollContainer.scrollTo({
+        top: Math.max(0, Math.round(nextTop)),
+        behavior: "smooth",
+      });
+      return true;
+    }
+    if (el.scrollIntoView) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return true;
+    }
+    return false;
+  }, []);
+
   const jumpToReference = (refKey) => {
     if (!refKey) return;
-    setActiveTab("references");
-    setActiveReferenceKey(refKey);
-    setTimeout(() => {
-      const el = referenceElements.current.get(refKey);
-      if (el && el.scrollIntoView) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+    let resolvedRefId = String(refKey || "");
+    if (resolvedRefId.startsWith("idx:")) {
+      const indexValue = Number(resolvedRefId.slice(4));
+      if (Number.isFinite(indexValue) && indexValue > 0) {
+        resolvedRefId = `ref-${indexValue}`;
       }
+    } else if (resolvedRefId.startsWith("doi:")) {
+      const doiValue = normalizeDoi(resolvedRefId.slice(4));
+      const matchedRow = referenceRows.find(
+        (row) => normalizeDoi(row.doi || "") === doiValue
+      );
+      if (matchedRow?.ref_id) {
+        resolvedRefId = matchedRow.ref_id;
+      }
+    }
+    setActiveTab("references");
+    setSelectedReferenceId(resolvedRefId);
+    setActiveReferenceKey(resolvedRefId);
+    setTimeout(() => {
+      scrollReferenceRowToTop(resolvedRefId);
     }, 150);
   };
+
+  const scrollReferenceTargetToTop = useCallback((target, fallbackPage = null) => {
+    const viewerEl = viewerRef.current;
+    const fallbackIndex = Number(fallbackPage);
+    const rawPage = Number(target?.page);
+    const pageIndex = Number.isFinite(rawPage)
+      ? rawPage
+      : (Number.isFinite(fallbackIndex) ? fallbackIndex : null);
+    if (!Number.isFinite(pageIndex) || pageIndex < 0) {
+      return false;
+    }
+    if (!viewerEl) {
+      scrollToPdfPageIndex(pageIndex);
+      return true;
+    }
+    const pageEl = viewerEl.querySelector(
+      `.pdf-reader__page[data-page-number="${pageIndex + 1}"]`
+    );
+    if (!pageEl) {
+      scrollToPdfPageIndex(pageIndex);
+      return true;
+    }
+
+    const pageRect = pageEl.getBoundingClientRect();
+    const viewerRect = viewerEl.getBoundingClientRect();
+    const normalizedBox = normalizeOverlayBox(target?.box);
+    const boxTopOffset = normalizedBox ? normalizedBox[1] * pageEl.clientHeight : 0;
+    const topPadding = 28;
+    const nextTop =
+      viewerEl.scrollTop +
+      (pageRect.top - viewerRect.top) +
+      boxTopOffset -
+      topPadding;
+    viewerEl.scrollTo({
+      top: Math.max(0, Math.round(nextTop)),
+      behavior: "smooth",
+    });
+    return true;
+  }, [viewerRef]);
+
+  const resolveReferenceBlockAnchor = useCallback((target, refId) => {
+    if (!target) return target;
+    const contexts = citationContextsByRefId.get(refId) || [];
+    if (!contexts.length) return target;
+
+    const targetPage = Number(target?.page);
+    const targetBox = normalizeOverlayBox(target?.box);
+    const samePageContexts = Number.isFinite(targetPage)
+      ? contexts.filter((ctx) => Number(ctx?.page) === targetPage)
+      : contexts;
+
+    const candidateContexts = samePageContexts.length ? samePageContexts : contexts;
+    if (!candidateContexts.length) return target;
+
+    if (targetBox) {
+      const targetTop = Number(targetBox[1]);
+      const targetBottom = targetTop + Number(targetBox[3]);
+      const overlapCandidate = candidateContexts.find((ctx) => {
+        const ctxBox = normalizeOverlayBox(ctx?.box);
+        if (!ctxBox) return false;
+        const ctxTop = Number(ctxBox[1]);
+        const ctxBottom = ctxTop + Number(ctxBox[3]);
+        return !(ctxBottom < targetTop || ctxTop > targetBottom);
+      });
+      if (overlapCandidate) {
+        return overlapCandidate;
+      }
+    }
+
+    const ordered = [...candidateContexts].sort((a, b) => {
+      const pageA = Number(a?.page);
+      const pageB = Number(b?.page);
+      if (Number.isFinite(pageA) && Number.isFinite(pageB) && pageA !== pageB) {
+        return pageA - pageB;
+      }
+      const boxA = normalizeOverlayBox(a?.box);
+      const boxB = normalizeOverlayBox(b?.box);
+      const topA = boxA ? Number(boxA[1]) : Number.MAX_SAFE_INTEGER;
+      const topB = boxB ? Number(boxB[1]) : Number.MAX_SAFE_INTEGER;
+      return topA - topB;
+    });
+    return ordered[0] || target;
+  }, [citationContextsByRefId]);
 
   const copyToClipboard = (value) => {
     if (!value) return;
@@ -2273,19 +2794,105 @@ export default function ReaderApp({
         : (Number.isFinite(Number(payload?.time_ms)) ? Number(payload.time_ms) : null),
       references_numbered: Boolean(baseStats.references_numbered),
     };
-    return { snippets, references, stats };
+    const rawLayers =
+      payload?.layers && typeof payload.layers === "object"
+        ? payload.layers
+        : (payload?.reader_data?.layers && typeof payload.reader_data.layers === "object"
+          ? payload.reader_data.layers
+          : null);
+    const normalizedLayers = {};
+    if (rawLayers) {
+      Object.keys(rawLayers).forEach((layerKey) => {
+        if (Array.isArray(rawLayers[layerKey])) {
+          normalizedLayers[layerKey] = rawLayers[layerKey];
+        }
+      });
+    }
+    if (
+      !Object.keys(normalizedLayers).length &&
+      Array.isArray(payload?.items)
+    ) {
+      normalizedLayers.tokens = payload.items;
+    }
+    const pagesSource = Array.isArray(payload?.pages)
+      ? payload.pages
+      : (Array.isArray(payload?.reader_data?.pages) ? payload.reader_data.pages : []);
+    const readerData = {
+      pages: pagesSource,
+      layers: normalizedLayers,
+    };
+
+    const toRefId = (rawItem, fallbackIndex) => {
+      const explicit = String(
+        rawItem?.ref_id || rawItem?.reference_id || rawItem?.refId || ""
+      ).trim();
+      if (explicit) return explicit;
+      const indexValue = Number(rawItem?.index);
+      if (Number.isFinite(indexValue) && indexValue > 0) {
+        return `ref-${indexValue}`;
+      }
+      return `ref-${fallbackIndex + 1}`;
+    };
+    const normalizeReferenceItems = (source, itemType) => {
+      if (!Array.isArray(source)) return [];
+      return source.map((item, index) => {
+        const page = normalizeOverlayPage(item?.page);
+        const box = normalizeOverlayBox(item?.box);
+        const refId = toRefId(item, index);
+        return {
+          id: String(item?.id || `${itemType}-${index + 1}-${refId}`),
+          ref_id: refId,
+          index:
+            Number.isFinite(Number(item?.index)) && Number(item.index) > 0
+              ? Number(item.index)
+              : null,
+          text: String(item?.text || item?.raw || ""),
+          page,
+          box,
+          item_type: itemType,
+        };
+      });
+    };
+    const rawReferencesData =
+      payload?.references_data && typeof payload.references_data === "object"
+        ? payload.references_data
+        : {};
+    const referencesVisual = {
+      references: normalizeReferenceItems(
+        rawReferencesData.references,
+        "reference-entry"
+      ),
+      citations: normalizeReferenceItems(
+        rawReferencesData.citations,
+        "citation-mention"
+      ),
+      contexts: normalizeReferenceItems(
+        rawReferencesData.contexts,
+        "citation-context"
+      ),
+    };
+    if (!referencesVisual.references.length && Array.isArray(references)) {
+      referencesVisual.references = references.map((ref, index) => {
+        const refIndex =
+          Number.isFinite(Number(ref?.index)) && Number(ref.index) > 0
+            ? Number(ref.index)
+            : index + 1;
+        return {
+          id: `reference-entry-ref-${refIndex}`,
+          ref_id: `ref-${refIndex}`,
+          index: refIndex,
+          text: String(ref?.raw || ""),
+          page: null,
+          box: null,
+          item_type: "reference-entry",
+        };
+      });
+    }
+
+    return { snippets, references, stats, readerData, referencesVisual };
   };
 
   const handleExtract = async () => {
-    if (!engineValue) {
-      setExtractStatus({
-        loading: false,
-        error: "Selecciona un motor antes de extraer.",
-        message: "",
-      });
-      return;
-    }
-
     setExtractStatus({ loading: true, error: "", message: "" });
     const file = await ensurePdfFile();
     if (!file) {
@@ -2300,7 +2907,7 @@ export default function ReaderApp({
     try {
       const fd = new FormData();
       fd.append("manuscript", file);
-      fd.append("engine", engineValue);
+      fd.append("engine", PREVIEW_EXTRACT_ENGINE);
 
       const res = await fetch(EXTRACT_ENDPOINT, { method: "POST", body: fd });
       const payload = await res.json();
@@ -2316,12 +2923,32 @@ export default function ReaderApp({
       const result = buildExtractionResult(payload);
       setSnippetsData(result.snippets);
       setReferencesData(result.references);
+      setReferencesVisualData(result.referencesVisual);
+      setSelectedReferenceId("");
+      setHoveredReferenceId("");
+      setSelectedCitationId("");
+      setHoveredCitationId("");
       setStats(result.stats);
-      setActiveTab("snippets");
+      const nextData = result.readerData;
+      const nextLayer = pickDefaultReaderV2Layer(nextData);
+      const nextItems =
+        nextLayer && Array.isArray(nextData.layers?.[nextLayer])
+          ? nextData.layers[nextLayer]
+          : [];
+      setReaderV2Data(nextData);
+      setReaderV2Layer(nextLayer);
+      setHoveredItemId(null);
+      setSelectedItemId(null);
+      setShowReaderV2(Boolean(nextLayer));
+      setActiveTab("references");
       setExtractStatus({
         loading: false,
         error: "",
-        message: "Extraccion completada.",
+        message: nextLayer
+          ? `Extraccion completada. Capas: ${nextItems.length} en ${
+              READER_V2_LAYER_LABELS[nextLayer] || nextLayer
+            }. Referencias: ${result.references.length}.`
+          : `Extraccion completada. Referencias: ${result.references.length}.`,
       });
     } catch (err) {
       setExtractStatus({
@@ -2332,92 +2959,19 @@ export default function ReaderApp({
     }
   };
 
-  const handleGenerateReaderV2 = async () => {
-    setReaderV2Status({ loading: true, error: "", message: "" });
-    const file = await ensurePdfFile();
-    if (!file) {
-      setReaderV2Status({
-        loading: false,
-        error: "No hay PDF disponible para generar V2.",
-        message: "",
-      });
-      return;
-    }
-
-    try {
-      const fd = new FormData();
-      fd.append("pdf_file", file);
-
-      const res = await fetch(READER_V2_ENDPOINT, { method: "POST", body: fd });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok || !payload?.ok) {
-        setReaderV2Status({
-          loading: false,
-          error: payload?.error || "No se pudo generar el reader V2.",
-          message: "",
-        });
-        return;
-      }
-
-      const rawLayers =
-        payload?.layers && typeof payload.layers === "object"
-          ? payload.layers
-          : null;
-      const normalizedLayers = {};
-      if (rawLayers) {
-        Object.keys(rawLayers).forEach((layerKey) => {
-          if (Array.isArray(rawLayers[layerKey])) {
-            normalizedLayers[layerKey] = rawLayers[layerKey];
-          }
-        });
-      }
-      if (
-        !Object.keys(normalizedLayers).length &&
-        Array.isArray(payload?.items)
-      ) {
-        normalizedLayers.tokens = payload.items;
-      }
-
-      const nextData = {
-        pages: Array.isArray(payload?.pages) ? payload.pages : [],
-        layers: normalizedLayers,
-      };
-      const nextLayer = pickDefaultReaderV2Layer(nextData);
-      const nextItems =
-        nextLayer && Array.isArray(nextData.layers?.[nextLayer])
-          ? nextData.layers[nextLayer]
-          : [];
-
-      setReaderV2Data(nextData);
-      setReaderV2Layer(nextLayer);
-      setHoveredItemId(null);
-      setSelectedItemId(null);
-      setShowReaderV2(true);
-      setReaderV2Status({
-        loading: false,
-        error: "",
-        message: nextLayer
-          ? `V2 generada. Capa activa: ${
-              READER_V2_LAYER_LABELS[nextLayer] || nextLayer
-            } (${nextItems.length} cajas, ${nextData.pages.length} paginas).`
-          : `V2 generada sin capas disponibles (${nextData.pages.length} paginas).`,
-      });
-    } catch (err) {
-      setReaderV2Status({
-        loading: false,
-        error: "Error de red al generar V2.",
-        message: "",
-      });
-    }
-  };
-
   const handleViewReference = (ref) => {
-    const key = referenceKey(ref);
-    if (key) {
-      jumpToReference(key);
+    const numericIndex = Number(ref?.index);
+    const refId =
+      String(ref?.ref_id || "").trim() ||
+      (Number.isFinite(numericIndex) && numericIndex > 0
+        ? `ref-${numericIndex}`
+        : "");
+    if (refId) {
+      jumpToReference(refId);
+      setActiveReferenceId(numericIndex || null);
+      setHighlightReferenceId(numericIndex || null);
+      setSelectedReferenceId(refId);
     }
-    setActiveReferenceId(ref.index);
-    setHighlightReferenceId(ref.index);
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
     const linkedSnippet = extractorSnippet || inlineSnippet;
@@ -2440,9 +2994,27 @@ export default function ReaderApp({
   };
 
   const handleReferenceSelect = (ref) => {
-    setActiveReferenceKey(referenceKey(ref));
-    setActiveReferenceId(ref.index);
-    setHighlightReferenceId(ref.index);
+    const numericIndex = Number(ref?.index);
+    const refId =
+      String(ref?.ref_id || "").trim() ||
+      (Number.isFinite(numericIndex) && numericIndex > 0
+        ? `ref-${numericIndex}`
+        : "");
+    setActiveReferenceKey(refId || referenceKey(ref));
+    setActiveReferenceId(numericIndex || null);
+    setHighlightReferenceId(numericIndex || null);
+    if (refId) {
+      setSelectedReferenceId(refId);
+    }
+    setSelectedCitationId("");
+    const visualMentions = refId ? (citationMentionsByRefId.get(refId) || []) : [];
+    const visualContexts = refId ? (citationContextsByRefId.get(refId) || []) : [];
+    const visualReference = refId ? referencesByRefId.get(refId) : null;
+    const visualTarget = visualContexts[0] || visualMentions[0] || visualReference;
+    if (visualTarget) {
+      const blockAnchor = resolveReferenceBlockAnchor(visualTarget, refId);
+      scrollReferenceTargetToTop(blockAnchor || visualTarget);
+    }
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
     const linkedSnippet = extractorSnippet || inlineSnippet;
@@ -2461,19 +3033,47 @@ export default function ReaderApp({
         highlightMode: "paragraph",
       });
       setSelectedSnippetAnchor(null);
-      const targetPage = inlineSnippet?.page || linkedSnippet.page;
-      if (Number.isFinite(Number(targetPage))) {
-        scrollToPdfPageIndex(Number(targetPage) - 1);
-        return;
-      }
     }
     const statsEntry = citationStatsByReference.get(ref.index);
     if (statsEntry && statsEntry.pages.size) {
       const pages = Array.from(statsEntry.pages).sort((a, b) => a - b);
       if (pages[0]) {
-        scrollToPdfPageIndex(pages[0] - 1);
+        scrollReferenceTargetToTop(null, pages[0] - 1);
       }
     }
+  };
+
+  const handleReferenceOverlayHover = (item) => {
+    if (!item) {
+      setHoveredReferenceId("");
+      setHoveredCitationId("");
+      return;
+    }
+    setHoveredReferenceId(String(item.refId || item.ref_id || ""));
+    setHoveredCitationId(
+      String(item.itemType || item.item_type) === "citation-mention"
+        ? String(item.id || "")
+        : ""
+    );
+  };
+
+  const handleReferenceOverlaySelect = (item) => {
+    if (!item) return;
+    const refId = String(item.refId || item.ref_id || "");
+    if (!refId) return;
+    setSelectedReferenceId(refId);
+    setActiveReferenceKey(refId);
+    if (String(item.itemType || item.item_type) === "citation-mention") {
+      setSelectedCitationId(String(item.id || ""));
+    } else {
+      setSelectedCitationId("");
+    }
+    const indexFromRefId = parseRefIndex(refId);
+    if (Number.isFinite(indexFromRefId)) {
+      setActiveReferenceId(indexFromRefId);
+      setHighlightReferenceId(indexFromRefId);
+    }
+    jumpToReference(refId);
   };
 
   const handleToggleHighlightAll = () => {
@@ -2501,6 +3101,36 @@ export default function ReaderApp({
     }
   };
 
+  useEffect(() => {
+    if (!selectedReferenceId) return;
+    const sideTimer = window.setTimeout(() => {
+      scrollReferenceRowToTop(selectedReferenceId);
+    }, 120);
+    const mentions = citationMentionsByRefId.get(selectedReferenceId) || [];
+    const contexts = citationContextsByRefId.get(selectedReferenceId) || [];
+    const refRow = referencesByRefId.get(selectedReferenceId) || null;
+    const selectedMention = mentions.find(
+      (mention) => String(mention?.id || "") === String(selectedCitationId || "")
+    );
+    const target = selectedMention || contexts[0] || mentions[0] || refRow;
+    if (target) {
+      const blockAnchor = resolveReferenceBlockAnchor(target, selectedReferenceId);
+      scrollReferenceTargetToTop(blockAnchor || target);
+    }
+    return () => {
+      window.clearTimeout(sideTimer);
+    };
+  }, [
+    selectedReferenceId,
+    selectedCitationId,
+    citationMentionsByRefId,
+    citationContextsByRefId,
+    referencesByRefId,
+    scrollReferenceRowToTop,
+    resolveReferenceBlockAnchor,
+    scrollReferenceTargetToTop,
+  ]);
+
   const applyPdfFile = (file) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
@@ -2520,6 +3150,11 @@ export default function ReaderApp({
     });
     setSnippetsData([]);
     setReferencesData([]);
+    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setStats(null);
     setSelectedSnippet(null);
     setSelectedSnippetAnchor(null);
@@ -2530,7 +3165,6 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
     setExtractStatus({ loading: false, error: "", message: "PDF actualizado." });
   };
 
@@ -2560,11 +3194,15 @@ export default function ReaderApp({
       fileInputRef.current.value = "";
     }
     setReaderV2Data(null);
+    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setReaderV2Layer("");
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
     setExtractStatus({ loading: false, error: "", message: "PDF eliminado." });
   };
 
@@ -2578,14 +3216,11 @@ export default function ReaderApp({
 
   const readerV2Controls = (
     <div className="reader-v2-controls">
-      <button
-        type="button"
-        className="reader-tool-btn"
-        onClick={handleGenerateReaderV2}
-        disabled={!canGenerateReaderV2}
-      >
-        {readerV2Status.loading ? "Generando..." : "Generar V2"}
-      </button>
+      {!readerV2Data && (
+        <div className="reader-muted">
+          Ejecuta "Extraer" para preparar las capas del documento.
+        </div>
+      )}
       <label className="reader-v2-layer">
         <span className="reader-v2-layer-label">Capa</span>
         <select
@@ -2682,18 +3317,6 @@ export default function ReaderApp({
           {readerV2ItemsTotal}
         </div>
       )}
-
-      {(readerV2Status.error || readerV2Status.message) && (
-        <div
-          className={
-            readerV2Status.error
-              ? "reader-extract-status is-error"
-              : "reader-extract-status"
-          }
-        >
-          {readerV2Status.error || readerV2Status.message}
-        </div>
-      )}
     </div>
   );
 
@@ -2737,25 +3360,7 @@ export default function ReaderApp({
         className="reader-file-input"
         onChange={handlePdfChange}
       />
-      <select
-        className="reader-engine-select"
-        value={engineValue}
-        onChange={(event) => setEngineValue(event.target.value)}
-      >
-        <option value="" disabled>
-          Selecciona herramienta...
-        </option>
-        {engineOptions.map((engine) => (
-          <option
-            key={engine.key}
-            value={engine.key}
-            disabled={engine.available === false}
-          >
-            {engine.label || engine.key}
-            {engine.available === false ? " (Proximamente)" : ""}
-          </option>
-        ))}
-      </select>
+      <div className="reader-muted">Motor: PaperMage (unificado)</div>
       <button
         type="button"
         className="reader-tool-btn"
@@ -2783,35 +3388,13 @@ export default function ReaderApp({
       <button
         type="button"
         className={
-          activeTab === "snippets"
+          activeTab === "extract"
             ? "reader-tab is-active"
             : "reader-tab"
         }
-        onClick={() => setActiveTab("snippets")}
+        onClick={() => setActiveTab("extract")}
       >
-        Snippets
-      </button>
-      <button
-        type="button"
-        className={
-          activeTab === "references"
-            ? "reader-tab is-active"
-            : "reader-tab"
-        }
-        onClick={() => setActiveTab("references")}
-      >
-        References
-      </button>
-      <button
-        type="button"
-        className={
-          activeTab === "stats"
-            ? "reader-tab is-active"
-            : "reader-tab"
-        }
-        onClick={() => setActiveTab("stats")}
-      >
-        Stats
+        Extraer
       </button>
       <button
         type="button"
@@ -2822,18 +3405,18 @@ export default function ReaderApp({
         }
         onClick={() => setActiveTab("v2")}
       >
-        V2
+        Capas
       </button>
       <button
         type="button"
         className={
-          activeTab === "extract"
+          activeTab === "references"
             ? "reader-tab is-active"
             : "reader-tab"
         }
-        onClick={() => setActiveTab("extract")}
+        onClick={() => setActiveTab("references")}
       >
-        Extraer
+        Referencias
       </button>
     </div>
   );
@@ -2957,82 +3540,85 @@ export default function ReaderApp({
         {activeTab === "references" && (
           <div className="reader-card reader-panel">
             {tabsBar}
-            <div className="reader-card-title">References</div>
+            <div className="reader-ref-header">
+              <div className="reader-card-title">Referencias</div>
+              <div className="reader-muted">{referenceRows.length} total</div>
+            </div>
             <div className="reader-search">
               <input
                 type="search"
                 value={referenceQuery}
                 onChange={(event) => setReferenceQuery(event.target.value)}
-                placeholder="Search references"
+                placeholder="Buscar referencias"
                 className="reader-search-input"
               />
             </div>
-            <div className="reader-chips">
-              {REFERENCE_FILTERS.map((filter) => (
-                <button
-                  type="button"
-                  key={filter.key}
-                  className={
-                    filter.key === referenceFilter
-                      ? "reader-chip is-active"
-                      : "reader-chip"
-                  }
-                  onClick={() => setReferenceFilter(filter.key)}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            {normalizedReferences.length === 0 ? (
-              <div className="reader-muted">No references available.</div>
-            ) : referencesWithStats.length === 0 ? (
-              <div className="reader-muted">No references match your filters.</div>
+            {referenceRows.length === 0 ? (
+              <div className="reader-muted">
+                No hay referencias disponibles. Ejecuta "Extraer" primero.
+              </div>
+            ) : filteredReferenceRows.length === 0 ? (
+              <div className="reader-muted">
+                No hay referencias que coincidan con la busqueda.
+              </div>
             ) : (
-              referencesWithStats.map((ref) => {
-                const key = referenceKey(ref);
-                const isActive = key === activeReferenceKey;
-                const pageLabel = Number.isFinite(ref.display_page)
-                  ? `p. ${ref.display_page}`
+              filteredReferenceRows.map((row) => {
+                const isActive = row.ref_id === selectedReferenceId;
+                const pageLabel = Number.isFinite(Number(row.page))
+                  ? `p. ${Number(row.page) + 1}`
                   : "p. -";
-                const snippetText = ref.display_snippet || "";
-                const footerAuthor = ref.display_author || (ref.index ? `Ref #${ref.index}` : "Reference");
-                const footerTitle = ref.display_title || "";
                 return (
                   <button
                     type="button"
-                    key={key}
-                    ref={registerReference(key)}
+                    key={row.ref_id}
+                    ref={registerReference(row.ref_id)}
                     className={
                       isActive
                         ? "reader-ref-row is-active"
                         : "reader-ref-row"
                     }
-                    onClick={() => handleReferenceSelect(ref)}
+                    onMouseEnter={() => setHoveredReferenceId(row.ref_id)}
+                    onMouseLeave={() => setHoveredReferenceId("")}
+                    onClick={() =>
+                      handleReferenceSelect({
+                        ...(referenceByIndex.get(row.index) || {}),
+                        ref_id: row.ref_id,
+                        index: row.index,
+                        raw: row.text,
+                        display_page:
+                          Number.isFinite(Number(row.page)) ? Number(row.page) + 1 : null,
+                      })
+                    }
                   >
                     <div className="reader-ref-top">
                       <span className="reader-ref-index">
-                        {ref.index ? `#${ref.index}` : "-"}
+                        {row.index ? `#${row.index}` : "-"}
                       </span>
-                      <span className="reader-ref-page">{pageLabel}</span>
+                      <span className="reader-ref-page">
+                        {pageLabel} | menciones: {row.mentions_total}
+                      </span>
                     </div>
                     <div
                       className={
-                        snippetText ? "reader-ref-snippet" : "reader-ref-snippet is-muted"
+                        row.text
+                          ? "reader-ref-snippet"
+                          : "reader-ref-snippet is-muted"
                       }
                     >
                       <span className="reader-ref-snippet-text">
-                        {snippetText ? `"${snippetText}"` : "\"No snippet linked yet.\""}
+                        {row.text ? `"${row.text}"` : "\"Sin texto de referencia.\""}
                       </span>
                     </div>
                     <div className="reader-ref-footer">
                       <div className="reader-ref-footer-main">
-                        <span className="reader-ref-title">{footerTitle || "Sin titulo"}</span>
-                        {footerAuthor && (
-                          <span className="reader-ref-author"> - {footerAuthor}</span>
+                        <span className="reader-ref-title">
+                          {row.title || "Sin titulo"}
+                        </span>
+                        {row.author && (
+                          <span className="reader-ref-author"> - {row.author}</span>
                         )}
                       </div>
-                      {ref.doi && <div className="reader-ref-doi">DOI: {ref.doi}</div>}
+                      {row.doi && <div className="reader-ref-doi">DOI: {row.doi}</div>}
                     </div>
                   </button>
                 );
@@ -3082,7 +3668,7 @@ export default function ReaderApp({
         {activeTab === "v2" && (
           <div className="reader-card reader-panel">
             {tabsBar}
-            <div className="reader-card-title">Reader V2</div>
+            <div className="reader-card-title">Capas</div>
             {readerV2Controls}
           </div>
         )}
@@ -3118,39 +3704,15 @@ export default function ReaderApp({
             selectedItemId={selectedItemId}
             onHoverItemChange={handleReaderV2ItemHover}
             onSelectItem={handleReaderV2ItemSelect}
+            referenceOverlayVisible={activeTab === "references"}
+            referenceOverlayItems={referencesOverlayItems}
+            selectedReferenceId={selectedReferenceId}
+            hoveredReferenceId={hoveredReferenceId}
+            selectedCitationId={selectedCitationId}
+            hoveredCitationId={hoveredCitationId}
+            onReferenceOverlayHover={handleReferenceOverlayHover}
+            onReferenceOverlaySelect={handleReferenceOverlaySelect}
           />
-
-          {selectedSnippet && (
-            <div
-              ref={snippetPopoverRef}
-              className="reader-popover"
-              style={selectedSnippetPopoverStyle || undefined}
-            >
-              <div className="reader-popover-title">Snippet</div>
-              <div className="reader-popover-item">
-                <strong>Type:</strong> {selectedSnippet.type}
-              </div>
-              <div className="reader-popover-item">
-                <strong>Page:</strong> {selectedSnippet.page || "?"}
-              </div>
-              {Number.isFinite(Number(selectedSnippet.confidence)) && (
-                <div className="reader-popover-item">
-                  <strong>Confidence:</strong>{" "}
-                  {Number(selectedSnippet.confidence).toFixed(2)}
-                </div>
-              )}
-              <div className="reader-popover-snippet">{selectedSnippet.snippet}</div>
-              <div className="reader-popover-actions">
-                <button
-                  type="button"
-                  className="reader-action"
-                  onClick={handleCreateReport}
-                >
-                  Crear reporte
-                </button>
-              </div>
-            </div>
-          )}
 
           {activeCitation && citationPopoverStyle && (
             <div

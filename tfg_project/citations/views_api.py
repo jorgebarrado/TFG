@@ -30,6 +30,7 @@ from .services.pdf_citation_analyzer import (
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.semantic_scholar_client import SemanticScholarError
 from .services.papermage_extractor import ContextHit, extract_pdf_data
+from .services.references_data import build_references_data
 from .models import IncorrectCitation
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
@@ -222,12 +223,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
     if not f:
         return JsonResponse({"ok": False, "error": "No file uploaded"}, status=400)
 
-    engine = (request.POST.get("engine") or "").lower().strip()
-    if not engine:
-        return JsonResponse(
-            {"ok": False, "error": "Debes seleccionar una herramienta de extraccion."},
-            status=400,
-        )
+    # Flujo unificado del reader preview: por defecto usamos PaperMage.
+    engine = (request.POST.get("engine") or "papermage").lower().strip()
     if engine not in ALLOWED_ENGINES:
         return JsonResponse(
             {"ok": False, "error": "Herramienta no valida."},
@@ -250,9 +247,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         if suffix == ".pdf" and data.get("ok", False):
             references, ref_stats = extract_pdf_references(temp_path)
             snippets = build_snippets_from_results(data.get("results"))
-            data["references"] = references
-            data["snippets"] = snippets
-            data["stats"] = {
+            stats_payload = {
                 "pages_total": ref_stats.get("pages_total", 0),
                 "snippets_total": len(snippets),
                 "references_total": ref_stats.get("references_total", len(references)),
@@ -261,6 +256,41 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 "time_ms": elapsed_ms,
                 "references_numbered": ref_stats.get("references_numbered", False),
             }
+            data["references"] = references
+            data["snippets"] = snippets
+            data["stats"] = stats_payload
+            # Datos de capas (pages/layers) para la pestaña "Capas".
+            # Para el flujo unificado del preview, si falla PaperMage aquí
+            # devolvemos error para que no quede una extracción a medias.
+            try:
+                reader_data = extract_pdf_data(temp_path)
+            except Exception as exc:
+                if engine == "papermage" or data.get("engine_used") == "papermage":
+                    return JsonResponse(
+                        {
+                            "ok": False,
+                            "error": f"No se pudieron preparar las capas del reader: {exc}",
+                        },
+                        status=500,
+                    )
+                reader_data = {"pages": [], "layers": {}}
+
+            data["pages"] = (
+                reader_data.get("pages", [])
+                if isinstance(reader_data, dict)
+                else []
+            )
+            data["layers"] = (
+                reader_data.get("layers", {})
+                if isinstance(reader_data, dict)
+                else {}
+            )
+            data["references_data"] = build_references_data(
+                references=references,
+                snippets=snippets,
+                layers=data.get("layers", {}),
+                references_numbered=bool(stats_payload.get("references_numbered")),
+            )
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
