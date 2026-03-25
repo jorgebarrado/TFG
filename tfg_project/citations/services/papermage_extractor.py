@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, List, Sequence, Tuple, TypedDict
+from typing import Any, Iterable, List, NotRequired, Sequence, Tuple, TypedDict
 
 try:
     from papermage.magelib import Document, Entity
@@ -21,6 +21,23 @@ try:
     from papermage.recipes import CoreRecipe
 except Exception:
     CoreRecipe = None  # type: ignore[assignment]
+
+try:
+    import fitz  # type: ignore[import-not-found]
+except Exception:
+    fitz = None  # type: ignore[assignment]
+
+try:
+    from pypdf import PdfReader  # type: ignore[import-not-found]
+except Exception:
+    PdfReader = None  # type: ignore[assignment]
+
+try:
+    from PyPDF2 import (
+        PdfReader as LegacyPdfReader,  # type: ignore[import-not-found]
+    )
+except Exception:
+    LegacyPdfReader = None  # type: ignore[assignment]
 
 SNIPPET_PADDING = 80
 
@@ -53,6 +70,8 @@ class ReaderItem(TypedDict):
     page: int
     box: List[float]
     type: str
+    token_id: NotRequired[str]
+    fragment_index: NotRequired[int]
 
 
 class ReaderData(TypedDict):
@@ -122,19 +141,42 @@ def _extract_page_dimensions(page: Entity) -> tuple[float, float]:
     """
     Recupera el tamaño de una página de la forma más compatible posible.
     """
+
+    def _metadata_value(raw_metadata: Any, key: str) -> Any:
+        if raw_metadata is None:
+            return None
+
+        if isinstance(raw_metadata, dict):
+            return raw_metadata.get(key)
+
+        getter = getattr(raw_metadata, "get", None)
+        if callable(getter):
+            try:
+                return getter(key)
+            except Exception:
+                pass
+
+        value = getattr(raw_metadata, key, None)
+        if value is not None:
+            return value
+
+        try:
+            return raw_metadata[key]  # type: ignore[index]
+        except Exception:
+            return None
+
     # 1. Atributos directos
     width = _num(getattr(page, "width", None))
     height = _num(getattr(page, "height", None))
     if width > 0 and height > 0:
         return width, height
 
-    # 2. Metadata
-    metadata = getattr(page, "metadata", None) or {}
-    if isinstance(metadata, dict):
-        width = _num(metadata.get("width"))
-        height = _num(metadata.get("height"))
-        if width > 0 and height > 0:
-            return width, height
+    # 2. Metadata (dict o papermage.magelib.metadata.Metadata)
+    metadata = getattr(page, "metadata", None)
+    width = _num(_metadata_value(metadata, "width"))
+    height = _num(_metadata_value(metadata, "height"))
+    if width > 0 and height > 0:
+        return width, height
 
     # 3. Primer box asociado a la página
     boxes = getattr(page, "boxes", None) or []
@@ -172,6 +214,87 @@ def _extract_page_dimensions(page: Entity) -> tuple[float, float]:
     return 0.0, 0.0
 
 
+def _extract_real_pdf_page_dimensions(pdf_path: str) -> list[tuple[float, float]]:
+    """
+    Lee dimensiones reales de página desde el propio PDF.
+    Prioriza PyMuPDF y usa pypdf/PyPDF2 como fallback.
+    """
+
+    def _is_plausible_dimension(width: float, height: float) -> bool:
+        return width > 10 and height > 10
+
+    def _valid_dims(dims: list[tuple[float, float]]) -> bool:
+        return bool(dims) and all(
+            _is_plausible_dimension(width, height) for width, height in dims
+        )
+
+    def _box_dims(box: Any) -> tuple[float, float]:
+        width = _num(getattr(box, "width", None), default=0.0)
+        height = _num(getattr(box, "height", None), default=0.0)
+        if width > 0 and height > 0:
+            return width, height
+
+        right = _num(getattr(box, "right", None), default=0.0)
+        left = _num(getattr(box, "left", None), default=0.0)
+        top = _num(getattr(box, "top", None), default=0.0)
+        bottom = _num(getattr(box, "bottom", None), default=0.0)
+        return (max(0.0, right - left), max(0.0, top - bottom))
+
+    path = Path(pdf_path)
+    if not path.is_file():
+        return []
+
+    if fitz is not None:
+        try:
+            with fitz.open(str(path)) as pdf_doc:  # type: ignore[attr-defined]
+                dims = [
+                    (float(page.rect.width), float(page.rect.height))
+                    for page in pdf_doc
+                ]
+            if _valid_dims(dims):
+                return dims
+        except Exception:
+            pass
+
+    if PdfReader is not None:
+        try:
+            pdf_doc = PdfReader(str(path))
+            dims = []
+            for page in pdf_doc.pages:
+                box = (
+                    getattr(page, "cropbox", None)
+                    or getattr(page, "mediabox", None)
+                )
+                if box is None:
+                    continue
+                width, height = _box_dims(box)
+                dims.append((width, height))
+            if _valid_dims(dims):
+                return dims
+        except Exception:
+            pass
+
+    if LegacyPdfReader is not None:
+        try:
+            pdf_doc = LegacyPdfReader(str(path))
+            dims = []
+            for page in pdf_doc.pages:
+                box = (
+                    getattr(page, "cropbox", None)
+                    or getattr(page, "mediabox", None)
+                )
+                if box is None:
+                    continue
+                width, height = _box_dims(box)
+                dims.append((width, height))
+            if _valid_dims(dims):
+                return dims
+        except Exception:
+            pass
+
+    return []
+
+
 def _extract_first_box(entity: Entity) -> list[float] | None:
     """
     Devuelve la primera caja de una entidad en formato [x, y, width, height].
@@ -182,38 +305,94 @@ def _extract_first_box(entity: Entity) -> list[float] | None:
         return None
 
     box = boxes[0]
+    return _extract_box_xywh(box)
 
+def _extract_box_xywh(box: Any) -> list[float] | None:
+    """Convierte un objeto box a [x, y, width, height] con fallback defensivo."""
     # Variante 1: left/top/width/height
-    left = _num(getattr(box, "left", None), default=-1)
-    top = _num(getattr(box, "top", None), default=-1)
-    width = _num(getattr(box, "width", None), default=-1)
-    height = _num(getattr(box, "height", None), default=-1)
+    left = _num(getattr(box, "left", None), default=-1.0)
+    top = _num(getattr(box, "top", None), default=-1.0)
+    width = _num(getattr(box, "width", None), default=-1.0)
+    height = _num(getattr(box, "height", None), default=-1.0)
     if left >= 0 and top >= 0 and width > 0 and height > 0:
         return [left, top, width, height]
 
     # Variante 2: l/t/w/h
-    left = _num(getattr(box, "l", None), default=-1)
-    top = _num(getattr(box, "t", None), default=-1)
-    width = _num(getattr(box, "w", None), default=-1)
-    height = _num(getattr(box, "h", None), default=-1)
+    left = _num(getattr(box, "l", None), default=-1.0)
+    top = _num(getattr(box, "t", None), default=-1.0)
+    width = _num(getattr(box, "w", None), default=-1.0)
+    height = _num(getattr(box, "h", None), default=-1.0)
     if left >= 0 and top >= 0 and width > 0 and height > 0:
         return [left, top, width, height]
 
     # Variante 3: x0/x1/top/bottom
-    x0 = _num(getattr(box, "x0", None), default=-1)
-    x1 = _num(getattr(box, "x1", None), default=-1)
-    top = _num(getattr(box, "top", None), default=-1)
-    bottom = _num(getattr(box, "bottom", None), default=-1)
+    x0 = _num(getattr(box, "x0", None), default=-1.0)
+    x1 = _num(getattr(box, "x1", None), default=-1.0)
+    top = _num(getattr(box, "top", None), default=-1.0)
+    bottom = _num(getattr(box, "bottom", None), default=-1.0)
     if x0 >= 0 and x1 > x0 and top >= 0 and bottom > top:
         return [x0, top, x1 - x0, bottom - top]
 
     # Variante 4: x0/x1/y0/y1
-    y0 = _num(getattr(box, "y0", None), default=-1)
-    y1 = _num(getattr(box, "y1", None), default=-1)
+    y0 = _num(getattr(box, "y0", None), default=-1.0)
+    y1 = _num(getattr(box, "y1", None), default=-1.0)
     if x0 >= 0 and x1 > x0 and y0 >= 0 and y1 > y0:
         return [x0, y0, x1 - x0, y1 - y0]
 
     return None
+
+
+def _looks_normalized_box(x: float, y: float, width: float, height: float) -> bool:
+    return (
+        x >= 0
+        and y >= 0
+        and width > 0
+        and height > 0
+        and x <= 1.05
+        and y <= 1.05
+        and width <= 1.05
+        and height <= 1.05
+    )
+
+
+def _extract_first_box_absolute(
+    entity: Entity,
+    page_width: float,
+    page_height: float,
+) -> list[float] | None:
+    """
+    Obtiene la primera caja y la lleva a coordenadas absolutas de página real.
+    Si la caja ya es absoluta, se devuelve tal cual.
+    """
+    box = _extract_first_box(entity)
+    if not box:
+        return None
+    if len(box) < 4:
+        return None
+
+    return _to_absolute_box(box, page_width=page_width, page_height=page_height)
+
+
+def _to_absolute_box(
+    box: Sequence[float],
+    *,
+    page_width: float,
+    page_height: float,
+) -> list[float] | None:
+    x = _num(box[0], default=-1.0)
+    y = _num(box[1], default=-1.0)
+    width = _num(box[2], default=-1.0)
+    height = _num(box[3], default=-1.0)
+    if x < 0 or y < 0 or width <= 0 or height <= 0:
+        return None
+
+    if (
+        _looks_normalized_box(x, y, width, height)
+        and page_width > 0
+        and page_height > 0
+    ):
+        return [x * page_width, y * page_height, width * page_width, height * page_height]
+    return [x, y, width, height]
 
 
 def _normalize_box_page(raw_page: Any, pages_total: int) -> int:
@@ -260,7 +439,7 @@ def _normalize_box_to_page(
     if x < 0 or y < 0 or width <= 0 or height <= 0:
         return None
 
-    looks_normalized = x <= 1.05 and y <= 1.05 and width <= 1.05 and height <= 1.05
+    looks_normalized = _looks_normalized_box(x, y, width, height)
     if not looks_normalized:
         if page_width <= 0 or page_height <= 0:
             return None
@@ -293,35 +472,267 @@ def _build_reader_layer_items(
     layer_items: List[ReaderItem] = []
 
     for entity_index, entity in enumerate(entities):
-        box = _extract_first_box(entity)
-        if not box:
-            continue
+        entity_boxes = list(getattr(entity, "boxes", None) or [])
+        text_value = str(getattr(entity, "text", "") or "")
+        token_id = f"{item_prefix}_{entity_index}"
 
-        entity_boxes = getattr(entity, "boxes", None) or []
+        # Para tokens, no colapsamos a una sola box: exportamos un fragmento por box.
+        if item_type == "token" and entity_boxes:
+            emitted = 0
+            for box_index, raw_box_obj in enumerate(entity_boxes):
+                raw_page = getattr(raw_box_obj, "page", None)
+                if raw_page is None:
+                    raw_page = getattr(entity, "page", None)
+                page_index = _normalize_box_page(raw_page, pages_total)
+                page_width = pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
+                page_height = pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
+
+                raw_box = _extract_box_xywh(raw_box_obj)
+                if not raw_box:
+                    continue
+                absolute_box = _to_absolute_box(
+                    raw_box,
+                    page_width=page_width,
+                    page_height=page_height,
+                )
+                if not absolute_box:
+                    continue
+                normalized_box = _normalize_box_to_page(absolute_box, page_width, page_height)
+                if not normalized_box:
+                    continue
+
+                layer_items.append(
+                    {
+                        "id": f"{token_id}_b{box_index}",
+                        "text": text_value,
+                        "page": page_index,
+                        "box": normalized_box,
+                        "type": item_type,
+                        "token_id": token_id,  # compat: permite agrupar en frontend
+                        "fragment_index": box_index,
+                    }
+                )
+                emitted += 1
+
+            if emitted:
+                continue
+
         raw_page = (
             getattr(entity_boxes[0], "page", None)
             if entity_boxes
             else getattr(entity, "page", None)
         )
         page_index = _normalize_box_page(raw_page, pages_total)
-
         page_width = pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
         page_height = pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
+
+        box = _extract_first_box_absolute(
+            entity,
+            page_width=page_width,
+            page_height=page_height,
+        )
+        if not box:
+            continue
         normalized_box = _normalize_box_to_page(box, page_width, page_height)
         if not normalized_box:
             continue
 
         layer_items.append(
             {
-                "id": f"{item_prefix}_{entity_index}",
-                "text": str(getattr(entity, "text", "") or ""),
+                "id": token_id,
+                "text": text_value,
                 "page": page_index,
                 "box": normalized_box,
                 "type": item_type,
             }
         )
+        if item_type == "token":
+            layer_items[-1]["token_id"] = token_id
+            layer_items[-1]["fragment_index"] = 0
 
     return layer_items
+
+
+def _drop_top_clamped_duplicate_items(items: List[ReaderItem]) -> List[ReaderItem]:
+    """
+    Elimina duplicados "fantasma" en el borde superior (y=0) que aparecen
+    cuando el parser clampa cajas inválidas.
+    Mantiene el item correcto cuando existe otro con el mismo texto más abajo.
+    """
+    if not items:
+        return items
+
+    top_y_threshold = 0.004
+    min_valid_y = 0.02
+    max_top_box_height = 0.03
+
+    grouped_indexes: dict[tuple[int, str], list[int]] = defaultdict(list)
+    for item_index, item in enumerate(items):
+        page = int(item.get("page", 0))
+        text = _normalize_whitespace(str(item.get("text", "")).lower())
+        if not text:
+            continue
+        grouped_indexes[(page, text)].append(item_index)
+
+    drop_indexes: set[int] = set()
+    for indexes in grouped_indexes.values():
+        if len(indexes) <= 1:
+            continue
+
+        has_non_top_copy = False
+        for item_index in indexes:
+            box = items[item_index].get("box") or []
+            if len(box) < 4:
+                continue
+            y = _num(box[1], default=0.0)
+            if y > min_valid_y:
+                has_non_top_copy = True
+                break
+
+        if not has_non_top_copy:
+            continue
+
+        for item_index in indexes:
+            box = items[item_index].get("box") or []
+            if len(box) < 4:
+                continue
+            y = _num(box[1], default=0.0)
+            height = _num(box[3], default=0.0)
+            if y <= top_y_threshold and 0 < height <= max_top_box_height:
+                drop_indexes.add(item_index)
+
+    if not drop_indexes:
+        pass
+
+    # Fase 2: descarta cajas sospechosas pegadas al borde superior aunque no
+    # exista duplicado textual exacto. Suele ocurrir cuando el parser corrige
+    # coordenadas invÃ¡lidas a y=0 en pÃ¡ginas con figuras.
+    body_count_by_page: dict[int, int] = defaultdict(int)
+    for item in items:
+        box = item.get("box") or []
+        if len(box) < 4:
+            continue
+        page = int(item.get("page", 0))
+        y = _num(box[1], default=0.0)
+        if y > min_valid_y:
+            body_count_by_page[page] += 1
+
+    for item_index, item in enumerate(items):
+        if item_index in drop_indexes:
+            continue
+        box = item.get("box") or []
+        if len(box) < 4:
+            continue
+        page = int(item.get("page", 0))
+        y = _num(box[1], default=0.0)
+        height = _num(box[3], default=0.0)
+        text = _normalize_whitespace(str(item.get("text", "")))
+        if (
+            y <= top_y_threshold
+            and 0 < height <= max_top_box_height
+            and body_count_by_page.get(page, 0) >= 40
+            and text
+        ):
+            drop_indexes.add(item_index)
+
+    if not drop_indexes:
+        return items
+
+    return [item for item_index, item in enumerate(items) if item_index not in drop_indexes]
+
+
+def _box_iou(box_a: Sequence[float], box_b: Sequence[float]) -> float:
+    left = max(_num(box_a[0]), _num(box_b[0]))
+    top = max(_num(box_a[1]), _num(box_b[1]))
+    right = min(_num(box_a[0]) + _num(box_a[2]), _num(box_b[0]) + _num(box_b[2]))
+    bottom = min(_num(box_a[1]) + _num(box_a[3]), _num(box_b[1]) + _num(box_b[3]))
+    inter_w = right - left
+    inter_h = bottom - top
+    if inter_w <= 0 or inter_h <= 0:
+        return 0.0
+
+    inter_area = inter_w * inter_h
+    area_a = _num(box_a[2]) * _num(box_a[3])
+    area_b = _num(box_b[2]) * _num(box_b[3])
+    if area_a <= 0 or area_b <= 0:
+        return 0.0
+
+    union = area_a + area_b - inter_area
+    if union <= 0:
+        return 0.0
+    return inter_area / union
+
+
+def _drop_overlapping_duplicate_items(items: List[ReaderItem]) -> List[ReaderItem]:
+    """
+    Elimina duplicados casi idénticos (mismo texto en la misma página y cajas muy solapadas).
+    Esto corrige dobles detecciones de tokens en algunos PDFs con contenido gráfico.
+    """
+    if not items:
+        return items
+
+    grouped_indexes: dict[tuple[int, str], list[int]] = defaultdict(list)
+    for item_index, item in enumerate(items):
+        page = int(item.get("page", 0))
+        text = _normalize_whitespace(str(item.get("text", "")).lower())
+        if not text:
+            continue
+        grouped_indexes[(page, text)].append(item_index)
+
+    drop_indexes: set[int] = set()
+    overlap_threshold = 0.70
+    min_size_ratio = 0.55
+
+    for indexes in grouped_indexes.values():
+        if len(indexes) <= 1:
+            continue
+
+        sorted_indexes = sorted(
+            indexes,
+            key=lambda idx: _num(items[idx]["box"][2]) * _num(items[idx]["box"][3]),
+            reverse=True,
+        )
+        kept_indexes: list[int] = []
+
+        for item_index in sorted_indexes:
+            item_box = items[item_index].get("box") or []
+            if len(item_box) < 4:
+                continue
+
+            item_width = max(_num(item_box[2]), 0.0)
+            item_height = max(_num(item_box[3]), 0.0)
+            if item_width <= 0 or item_height <= 0:
+                continue
+
+            duplicated = False
+            for kept_index in kept_indexes:
+                kept_box = items[kept_index].get("box") or []
+                if len(kept_box) < 4:
+                    continue
+
+                kept_width = max(_num(kept_box[2]), 0.0)
+                kept_height = max(_num(kept_box[3]), 0.0)
+                if kept_width <= 0 or kept_height <= 0:
+                    continue
+
+                width_ratio = min(item_width, kept_width) / max(item_width, kept_width)
+                height_ratio = min(item_height, kept_height) / max(item_height, kept_height)
+                if width_ratio < min_size_ratio or height_ratio < min_size_ratio:
+                    continue
+
+                if _box_iou(item_box, kept_box) >= overlap_threshold:
+                    duplicated = True
+                    break
+
+            if duplicated:
+                drop_indexes.add(item_index)
+            else:
+                kept_indexes.append(item_index)
+
+    if not drop_indexes:
+        return items
+
+    return [item for item_index, item in enumerate(items) if item_index not in drop_indexes]
 
 
 _SECTION_NUMBERED_RE = re.compile(r"^(?:\d+(?:\.\d+)*|[IVXLCM]+)\.?\s+\S+")
@@ -702,9 +1113,21 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
     document = _load_reader_document(pdf_path)
 
     pages: List[ReaderPage] = []
-    raw_pages = getattr(document, "pages", []) or []
-    for page_index, page in enumerate(raw_pages):
-        width, height = _extract_page_dimensions(page)
+    raw_pages = list(getattr(document, "pages", []) or [])
+    real_pdf_dims = _extract_real_pdf_page_dimensions(pdf_path)
+    pages_total = len(raw_pages) if raw_pages else len(real_pdf_dims)
+
+    for page_index in range(pages_total):
+        width = 0.0
+        height = 0.0
+        if page_index < len(real_pdf_dims):
+            width, height = real_pdf_dims[page_index]
+        elif page_index < len(raw_pages):
+            candidate_width, candidate_height = _extract_page_dimensions(
+                raw_pages[page_index]
+            )
+            if candidate_width > 10 and candidate_height > 10:
+                width, height = candidate_width, candidate_height
         pages.append(
             {
                 "page": page_index,
@@ -736,6 +1159,10 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
             item_type=item_type,
             pages=pages,
         )
+        if layer_name in {"tokens", "rows"}:
+            layer_items = _drop_top_clamped_duplicate_items(layer_items)
+        if layer_name == "tokens":
+            layer_items = _drop_overlapping_duplicate_items(layer_items)
         if layer_items:
             layers[layer_name] = layer_items
 

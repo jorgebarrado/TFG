@@ -14,8 +14,8 @@ except Exception:
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
-NUMERIC_REF_REGEX = re.compile(r"^\s*(\[(\d+)\]|(\d+)[\.\)])\s*")
 NUMERIC_REF_INLINE_REGEX = re.compile(r"(?:^|\s{2,}|\t)(\[(\d+)\]|(\d+)[\.\)])\s*")
+LEADING_REFERENCE_LABEL_REGEX = re.compile(r"^\s*(\[(\d{1,4})\]|(\d{1,4})[\.\)])\s*")
 REFERENCE_HEADERS = (
     "references",
     "bibliography",
@@ -119,7 +119,54 @@ def _extract_doi(text: str) -> Optional[str]:
     return None
 
 
-def _split_references(section_text: str) -> Tuple[List[Tuple[int, str]], bool]:
+def parse_reference_leading_label(text: str) -> Tuple[Optional[int], Optional[str]]:
+    if not text:
+        return None, None
+
+    match = LEADING_REFERENCE_LABEL_REGEX.match(text)
+    if not match:
+        return None, None
+
+    label = (match.group(1) or "").strip()
+    numeric = match.group(2) or match.group(3) or ""
+    try:
+        value = int(numeric)
+    except (TypeError, ValueError):
+        return None, None
+
+    # Evita usar anios o etiquetas absurdamente grandes como id de referencia.
+    if value <= 0 or value > 999:
+        return None, None
+    if 1900 <= value <= 2099:
+        return None, None
+    return value, label
+
+
+def _strip_reference_leading_label(text: str) -> str:
+    if not text:
+        return ""
+    return LEADING_REFERENCE_LABEL_REGEX.sub("", text, count=1).strip()
+
+
+def _has_coherent_numbered_sequence(labels: List[int]) -> bool:
+    if len(labels) < 3:
+        return False
+    if labels[0] > 75:
+        return False
+
+    longest = 1
+    run = 1
+    for idx in range(1, len(labels)):
+        if labels[idx] == labels[idx - 1] + 1:
+            run += 1
+            if run > longest:
+                longest = run
+        else:
+            run = 1
+    return longest >= 3
+
+
+def _split_references(section_text: str) -> Tuple[List[Tuple[Optional[int], str]], bool]:
     if not section_text:
         return [], False
     lines = [line.strip() for line in section_text.splitlines()]
@@ -137,40 +184,40 @@ def _split_references(section_text: str) -> Tuple[List[Tuple[int, str]], bool]:
             if chunk:
                 expanded_lines.append(chunk)
     lines = expanded_lines
-    has_numeric = any(NUMERIC_REF_REGEX.match(line) for line in lines)
-    if not has_numeric:
+    parsed_labels = [parse_reference_leading_label(line)[0] for line in lines]
+    numeric_labels = [label for label in parsed_labels if isinstance(label, int)]
+    numbered = _has_coherent_numbered_sequence(numeric_labels)
+    if not numbered:
         blocks = [
             re.sub(r"\s+", " ", block.strip())
             for block in re.split(r"\n\s*\n", section_text)
             if block.strip()
         ]
-        return [(idx + 1, block) for idx, block in enumerate(blocks)], False
+        return [(None, block) for block in blocks], False
 
-    references: List[Tuple[int, str]] = []
+    references: List[Tuple[Optional[int], str]] = []
     current: List[str] = []
     current_index: Optional[int] = None
     started = False
     for line in lines:
-        match = NUMERIC_REF_REGEX.match(line)
-        if match:
+        line_index, _ = parse_reference_leading_label(line)
+        if line_index is not None:
             if current:
-                references.append((current_index or 0, " ".join(current).strip()))
+                references.append((current_index, " ".join(current).strip()))
             started = True
-            current_index = int(match.group(2) or match.group(3) or 0) or None
-            line = NUMERIC_REF_REGEX.sub("", line).strip()
+            current_index = line_index
+            line = _strip_reference_leading_label(line)
             current = [line] if line else []
         elif started:
             current.append(line)
     if current:
-        references.append((current_index or 0, " ".join(current).strip()))
+        references.append((current_index, " ".join(current).strip()))
 
-    normalized: List[Tuple[int, str]] = []
-    fallback_index = 1
+    normalized: List[Tuple[Optional[int], str]] = []
     for idx, raw in references:
-        if not idx:
-            idx = fallback_index
+        if not raw:
+            continue
         normalized.append((idx, raw))
-        fallback_index = idx + 1
     return normalized, True
 
 
@@ -217,12 +264,12 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
             seen_raw.add(normalized)
         references.append(
             {
-                "index": int(index),
+                "index": int(index) if isinstance(index, int) and index > 0 else None,
                 "raw": raw,
                 "doi": doi,
                 "doi_source": "regex" if doi else None,
                 "confidence": 1.0 if doi else 0.5,
-                "numbered": bool(numbered),
+                "numbered": bool(numbered and isinstance(index, int) and index > 0),
             }
         )
 
