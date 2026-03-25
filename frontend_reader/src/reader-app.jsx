@@ -77,6 +77,16 @@ function getReaderV2ItemId(item, index, layerKey = "layer") {
   return `${layerKey}-${safePage}-${index}`;
 }
 
+function getReaderV2SourceId(item, index, layerKey = "layer") {
+  if (String(layerKey || "").toLowerCase() === "tokens") {
+    const tokenId = item?.token_id;
+    if (tokenId !== undefined && tokenId !== null && String(tokenId).trim()) {
+      return String(tokenId);
+    }
+  }
+  return getReaderV2ItemId(item, index, layerKey);
+}
+
 function normalizeOverlayPage(value) {
   const page = Number(value);
   if (!Number.isFinite(page) || page < 0) return null;
@@ -365,6 +375,34 @@ function parseCitationNumbers(raw) {
     }
   });
   return Array.from(new Set(numbers));
+}
+
+function normalizeLayerItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item, index) => {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        return item;
+      }
+      if (item === null || item === undefined) {
+        return null;
+      }
+      return {
+        id: `layer-item-${index + 1}`,
+        text: String(item),
+        page: null,
+        box: null,
+      };
+    })
+    .filter(Boolean);
+}
+
+function countLayerItems(layers) {
+  if (!layers || typeof layers !== "object") return 0;
+  return Object.values(layers).reduce((total, list) => {
+    if (!Array.isArray(list)) return total;
+    return total + normalizeLayerItems(list).length;
+  }, 0);
 }
 
 function buildTextLayerIndex(textLayer) {
@@ -771,6 +809,91 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
   }, [mention, onHighlight, viewerRef]);
 }
 
+function getPageOverlayAnchorRect(pageEl) {
+  if (!pageEl || typeof pageEl.querySelector !== "function") {
+    return {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    };
+  }
+
+  const selectors = [
+    ".react-pdf__Page__canvas",
+    ".react-pdf__Page canvas",
+    ".react-pdf__Page__textContent",
+  ];
+
+  let anchorEl = null;
+  for (let index = 0; index < selectors.length; index += 1) {
+    const candidate = pageEl.querySelector(selectors[index]);
+    if (candidate) {
+      anchorEl = candidate;
+      break;
+    }
+  }
+
+  const pageRect = pageEl.getBoundingClientRect();
+  const fallbackWidth = pageEl.clientWidth || pageRect.width || 0;
+  const fallbackHeight = pageEl.clientHeight || pageRect.height || 0;
+
+  if (!anchorEl || typeof anchorEl.getBoundingClientRect !== "function") {
+    return {
+      left: 0,
+      top: 0,
+      width: fallbackWidth,
+      height: fallbackHeight,
+    };
+  }
+
+  const anchorRect = anchorEl.getBoundingClientRect();
+  const left = anchorRect.left - pageRect.left;
+  const top = anchorRect.top - pageRect.top;
+  const width = anchorRect.width || fallbackWidth;
+  const height = anchorRect.height || fallbackHeight;
+
+  return {
+    left: Number.isFinite(left) ? left : 0,
+    top: Number.isFinite(top) ? top : 0,
+    width: Number.isFinite(width) ? width : fallbackWidth,
+    height: Number.isFinite(height) ? height : fallbackHeight,
+  };
+}
+
+function getPrimaryPdfPageElements(viewerEl) {
+  if (!viewerEl || typeof viewerEl.querySelectorAll !== "function") {
+    return [];
+  }
+
+  const pageNodes = Array.from(
+    viewerEl.querySelectorAll(".pdf-reader__page[data-page-number]")
+  );
+  const byPageNumber = new Map();
+
+  pageNodes.forEach((pageEl) => {
+    const rawPageNumber = Number(
+      pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
+    );
+    if (!Number.isFinite(rawPageNumber) || rawPageNumber <= 0) {
+      return;
+    }
+    const area = Math.max(0, pageEl.clientWidth) * Math.max(0, pageEl.clientHeight);
+    const prev = byPageNumber.get(rawPageNumber);
+    if (!prev || area >= prev.area) {
+      byPageNumber.set(rawPageNumber, { pageEl, area });
+    }
+  });
+
+  return Array.from(byPageNumber.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([pageNumber, entry]) => ({
+      pageNumber,
+      pageIndex: pageNumber - 1,
+      pageEl: entry.pageEl,
+    }));
+}
+
 function useReaderV2Overlay(
   viewerRef,
   readerV2Data,
@@ -887,10 +1010,18 @@ function useReaderV2Overlay(
       const normalizedId = String(
         item?.__v2id || getReaderV2ItemId(item, fallbackIndex, readerV2Layer || "layer")
       );
+      const sourceId = String(
+        item?.__v2sourceId ||
+          getReaderV2SourceId(item, fallbackIndex, readerV2Layer || "layer")
+      );
       const list = itemsByPage.get(pageIndex) || [];
+      if (list.some((entry) => entry.id === normalizedId)) {
+        return;
+      }
       list.push({
         ...adjusted,
         id: normalizedId,
+        sourceId,
         text: String(item?.text || ""),
         typeClass: sanitizedType || "item",
       });
@@ -904,14 +1035,24 @@ function useReaderV2Overlay(
       : 0.35;
     const render = () => {
       rafId = null;
-      const pages = viewerEl.querySelectorAll(".pdf-reader__page");
-      pages.forEach((pageEl) => {
-        const pageNumber = Number(
-          pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
-        );
-        const pageIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+      const primaryPages = getPrimaryPdfPageElements(viewerEl);
+      const primaryPageSet = new Set(primaryPages.map((entry) => entry.pageEl));
+      viewerEl.querySelectorAll(".reader-v2-overlay").forEach((overlayEl) => {
+        const hostPage = overlayEl.closest(".pdf-reader__page");
+        if (!hostPage || !primaryPageSet.has(hostPage)) {
+          overlayEl.remove();
+        }
+      });
+
+      primaryPages.forEach(({ pageIndex, pageEl }) => {
         const pageItems = pageIndex >= 0 ? itemsByPage.get(pageIndex) || [] : [];
-        let overlay = pageEl.querySelector(".reader-v2-overlay");
+        const existingOverlays = Array.from(
+          pageEl.querySelectorAll(".reader-v2-overlay")
+        );
+        let overlay = existingOverlays.length ? existingOverlays[0] : null;
+        if (existingOverlays.length > 1) {
+          existingOverlays.slice(1).forEach((extraOverlay) => extraOverlay.remove());
+        }
 
         if (!pageItems.length) {
           if (overlay) {
@@ -931,6 +1072,13 @@ function useReaderV2Overlay(
           pageEl.appendChild(overlay);
         }
 
+        const anchorRect = getPageOverlayAnchorRect(pageEl);
+        overlay.style.left = `${Math.max(0, anchorRect.left)}px`;
+        overlay.style.top = `${Math.max(0, anchorRect.top)}px`;
+        overlay.style.right = "auto";
+        overlay.style.bottom = "auto";
+        overlay.style.width = `${Math.max(0, anchorRect.width)}px`;
+        overlay.style.height = `${Math.max(0, anchorRect.height)}px`;
         overlay.style.opacity = `${opacity}`;
         while (overlay.firstChild) {
           overlay.removeChild(overlay.firstChild);
@@ -942,14 +1090,15 @@ function useReaderV2Overlay(
             "reader-v2-box",
             `reader-v2-box--${entry.typeClass}`,
           ];
-          if (entry.id === hoveredItemIdRef.current) {
+          if (entry.sourceId === hoveredItemIdRef.current) {
             classNames.push("is-hovered");
           }
-          if (entry.id === selectedItemIdRef.current) {
+          if (entry.sourceId === selectedItemIdRef.current) {
             classNames.push("is-selected");
           }
           rect.setAttribute("class", classNames.join(" "));
           rect.setAttribute("data-v2-id", entry.id);
+          rect.setAttribute("data-v2-source-id", entry.sourceId);
           rect.setAttribute("x", `${entry.x}`);
           rect.setAttribute("y", `${entry.y}`);
           rect.setAttribute("width", `${entry.width}`);
@@ -957,7 +1106,7 @@ function useReaderV2Overlay(
           rect.setAttribute("title", entry.text || entry.id);
           rect.addEventListener("mouseenter", () => {
             if (typeof onHoverItemChange === "function") {
-              onHoverItemChange(entry.id);
+              onHoverItemChange(entry.sourceId);
             }
           });
           rect.addEventListener("mouseleave", () => {
@@ -969,7 +1118,7 @@ function useReaderV2Overlay(
             event.preventDefault();
             event.stopPropagation();
             if (typeof onSelectItem === "function") {
-              onSelectItem(entry.id);
+              onSelectItem(entry.sourceId);
             }
           });
           overlay.appendChild(rect);
@@ -1015,9 +1164,11 @@ function useReaderV2Overlay(
 
     const boxes = viewerEl.querySelectorAll(".reader-v2-box");
     boxes.forEach((boxEl) => {
-      const itemId = boxEl.getAttribute("data-v2-id");
-      const isHovered = Boolean(hoveredItemId) && itemId === hoveredItemId;
-      const isSelected = Boolean(selectedItemId) && itemId === selectedItemId;
+      const sourceId =
+        boxEl.getAttribute("data-v2-source-id") ||
+        boxEl.getAttribute("data-v2-id");
+      const isHovered = Boolean(hoveredItemId) && sourceId === hoveredItemId;
+      const isSelected = Boolean(selectedItemId) && sourceId === selectedItemId;
       boxEl.classList.toggle("is-hovered", isHovered);
       boxEl.classList.toggle("is-selected", isSelected);
     });
@@ -1343,7 +1494,7 @@ function PageNavigator({ viewerRef }) {
 function PdfPages() {
   const { numPages } = React.useContext(DocumentContext);
   if (!numPages) {
-    return <div className="reader-loading">Loading PDF...</div>;
+    return <div className="reader-loading">Cargando PDF...</div>;
   }
   return (
     <div className="reader-pages">
@@ -1406,7 +1557,11 @@ function PdfViewer({
   });
 
   if (!pdfUrl) {
-    return <div className="reader-empty">No hay PDF disponible.</div>;
+    return (
+      <div className="reader-empty">
+        No hay PDF cargado. Selecciona un PDF en la pestaña "Extraer".
+      </div>
+    );
   }
 
   return (
@@ -1480,6 +1635,8 @@ export default function ReaderApp({
     loading: false,
     error: "",
     message: "",
+    hint: "",
+    tone: "idle",
   });
   const [readerV2Data, setReaderV2Data] = useState(null);
   const [showReaderV2, setShowReaderV2] = useState(false);
@@ -1605,7 +1762,16 @@ export default function ReaderApp({
 
     setLoading(true);
     fetch(apiUrl, { method: "GET" })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP_${res.status}`);
+        }
+        const contentType = String(res.headers.get("content-type") || "");
+        if (!contentType.includes("application/json")) {
+          throw new Error("INVALID_RESPONSE_FORMAT");
+        }
+        return res.json();
+      })
       .then((payload) => {
         if (!active) return;
         setData(payload);
@@ -1613,7 +1779,7 @@ export default function ReaderApp({
       })
       .catch(() => {
         if (!active) return;
-        setError("Failed to load reader data.");
+        setError("No se pudieron cargar los datos iniciales del reader.");
       })
       .finally(() => {
         if (!active) return;
@@ -1873,41 +2039,88 @@ export default function ReaderApp({
     if (readerV2LayerOptions.includes("tokens")) return "tokens";
     return readerV2LayerOptions[0];
   }, [readerV2LayerOptions, readerV2Layer]);
-  const readerV2LayerItems = useMemo(() => {
+  const readerV2RawLayerItems = useMemo(() => {
     if (!activeReaderV2Layer) return [];
     if (
       readerV2Data?.layers &&
       typeof readerV2Data.layers === "object" &&
       Array.isArray(readerV2Data.layers[activeReaderV2Layer])
     ) {
-      return readerV2Data.layers[activeReaderV2Layer];
+      return normalizeLayerItems(readerV2Data.layers[activeReaderV2Layer]);
     }
     if (activeReaderV2Layer === "tokens" && Array.isArray(readerV2Data?.items)) {
-      return readerV2Data.items;
+      return normalizeLayerItems(readerV2Data.items);
     }
     return [];
   }, [readerV2Data, activeReaderV2Layer]);
-  const currentLayerItems = useMemo(() => {
-    const withSourceIndex = readerV2LayerItems.map((item, index) => ({
+  const currentLayerOverlayItems = useMemo(() => {
+    const withSourceIndex = readerV2RawLayerItems.map((item, index) => ({
       ...item,
       __sourceIndex: index,
     }));
     const orderedItems = sortItemsByReadingOrder(withSourceIndex, activeReaderV2Layer);
     return orderedItems.map((item, visualIndex) => ({
       ...item,
-      __v2id: getReaderV2ItemId(
-        item,
-        Number.isFinite(Number(item?.__sourceIndex))
+      __v2id: (() => {
+        const sourceIndex = Number.isFinite(Number(item?.__sourceIndex))
           ? Number(item.__sourceIndex)
-          : visualIndex,
-        activeReaderV2Layer || "layer"
-      ),
+          : visualIndex;
+        return getReaderV2ItemId(item, sourceIndex, activeReaderV2Layer || "layer");
+      })(),
+      __v2sourceId: (() => {
+        const sourceIndex = Number.isFinite(Number(item?.__sourceIndex))
+          ? Number(item.__sourceIndex)
+          : visualIndex;
+        return getReaderV2SourceId(item, sourceIndex, activeReaderV2Layer || "layer");
+      })(),
     }));
-  }, [readerV2LayerItems, activeReaderV2Layer]);
+  }, [readerV2RawLayerItems, activeReaderV2Layer]);
+  const currentLayerItems = useMemo(() => {
+    if (activeReaderV2Layer !== "tokens") {
+      return currentLayerOverlayItems;
+    }
+
+    const groupedItems = [];
+    const groupedIndexById = new Map();
+
+    currentLayerOverlayItems.forEach((item, index) => {
+      const sourceId = String(item?.__v2sourceId || item?.__v2id || `token-${index}`);
+      const existingIndex = groupedIndexById.get(sourceId);
+      if (existingIndex === undefined) {
+        groupedIndexById.set(sourceId, groupedItems.length);
+        groupedItems.push({
+          ...item,
+          __v2id: sourceId,
+          __v2sourceId: sourceId,
+          __fragmentCount: 1,
+          __firstVisualIndex: index,
+        });
+        return;
+      }
+
+      const existing = groupedItems[existingIndex];
+      existing.__fragmentCount = Number(existing.__fragmentCount || 1) + 1;
+
+      const existingPage = Number(existing?.page);
+      const nextPage = Number(item?.page);
+      if (
+        Number.isFinite(nextPage) &&
+        (!Number.isFinite(existingPage) || nextPage < existingPage)
+      ) {
+        existing.page = nextPage;
+      }
+    });
+
+    return groupedItems;
+  }, [currentLayerOverlayItems, activeReaderV2Layer]);
   const readerV2PagesTotal = Array.isArray(readerV2Data?.pages)
     ? readerV2Data.pages.length
     : 0;
   const readerV2ItemsTotal = currentLayerItems.length;
+  const readerV2AllItemsTotal = useMemo(
+    () => countLayerItems(readerV2Data?.layers),
+    [readerV2Data]
+  );
 
   const handleReaderV2ItemHover = useCallback((itemId) => {
     setHoveredItemId(itemId || null);
@@ -1949,7 +2162,9 @@ export default function ReaderApp({
 
   useEffect(() => {
     if (!hoveredItemId) return;
-    const exists = currentLayerItems.some((item) => item.__v2id === hoveredItemId);
+    const exists = currentLayerItems.some(
+      (item) => (item.__v2sourceId || item.__v2id) === hoveredItemId
+    );
     if (!exists) {
       setHoveredItemId(null);
     }
@@ -1957,7 +2172,9 @@ export default function ReaderApp({
 
   useEffect(() => {
     if (!selectedItemId) return;
-    const exists = currentLayerItems.some((item) => item.__v2id === selectedItemId);
+    const exists = currentLayerItems.some(
+      (item) => (item.__v2sourceId || item.__v2id) === selectedItemId
+    );
     if (!exists) {
       setSelectedItemId(null);
       return;
@@ -2082,6 +2299,9 @@ export default function ReaderApp({
         : [],
     [referencesVisualData]
   );
+  const visualReferenceTotal = visualReferenceEntries.length;
+  const visualCitationTotal = visualCitationMentions.length;
+  const visualContextTotal = visualCitationContexts.length;
 
   const parseRefIndex = (refId) => {
     const match = String(refId || "").match(/^ref-(\d+)$/);
@@ -2207,6 +2427,75 @@ export default function ReaderApp({
     visualReferenceEntries,
     visualCitationMentions,
     visualCitationContexts,
+  ]);
+  const referencesPanelNotice = useMemo(() => {
+    if (!referenceRows.length) {
+      if (extractStatus.loading) {
+        return {
+          tone: "info",
+          text: "Extraccion en curso. Las referencias apareceran al finalizar.",
+        };
+      }
+      if (extractStatus.error) {
+        return {
+          tone: "error",
+          text: "No se han podido cargar referencias para este PDF.",
+        };
+      }
+      return {
+        tone: "warning",
+        text: "No se detectaron referencias. Prueba con otro PDF o revisa la calidad del texto extraible.",
+      };
+    }
+    if (!visualCitationTotal) {
+      return {
+        tone: "warning",
+        text: "Se detectaron referencias, pero no citas enlazables en el cuerpo del documento.",
+      };
+    }
+    return {
+      tone: "success",
+      text: `${visualCitationTotal} citas enlazables y ${visualContextTotal} contextos listos para navegacion.`,
+    };
+  }, [
+    referenceRows.length,
+    extractStatus.loading,
+    extractStatus.error,
+    visualCitationTotal,
+    visualContextTotal,
+  ]);
+  const layersPanelNotice = useMemo(() => {
+    if (!readerV2Data) {
+      return {
+        tone: "info",
+        text: 'Ejecuta "Extraer" para preparar capas visuales.',
+      };
+    }
+    if (!readerV2LayerOptions.length || !readerV2AllItemsTotal) {
+      return {
+        tone: "warning",
+        text: "Extraccion completada sin capas visuales utilizables para este PDF.",
+      };
+    }
+    if (!currentLayerItems.length) {
+      const layerLabel = activeReaderV2Layer
+        ? (READER_V2_LAYER_LABELS[activeReaderV2Layer] || activeReaderV2Layer)
+        : "seleccionada";
+      return {
+        tone: "warning",
+        text: `La capa ${layerLabel} esta vacia. Cambia a otra capa si esta disponible.`,
+      };
+    }
+    return {
+      tone: "success",
+      text: `${currentLayerItems.length} elementos en la capa activa. ${readerV2AllItemsTotal} elementos totales en capas.`,
+    };
+  }, [
+    readerV2Data,
+    readerV2LayerOptions,
+    readerV2AllItemsTotal,
+    currentLayerItems.length,
+    activeReaderV2Layer,
   ]);
 
   const activeCitationRefIndex = useMemo(() => {
@@ -2892,14 +3181,74 @@ export default function ReaderApp({
     return { snippets, references, stats, readerData, referencesVisual };
   };
 
+  const describeExtractionOutcome = (result, nextLayer, nextItems) => {
+    const referencesCount = Math.max(
+      Number(result?.references?.length || 0),
+      Number(result?.referencesVisual?.references?.length || 0)
+    );
+    const mentionCount = Number(result?.referencesVisual?.citations?.length || 0);
+    const contextCount = Number(result?.referencesVisual?.contexts?.length || 0);
+    const layerItemsCount = countLayerItems(result?.readerData?.layers);
+    const hasPages = Array.isArray(result?.readerData?.pages) && result.readerData.pages.length > 0;
+    const layerLabel = nextLayer
+      ? (READER_V2_LAYER_LABELS[nextLayer] || nextLayer)
+      : "sin capa activa";
+    const layerCountLabel =
+      nextLayer && Array.isArray(nextItems) ? nextItems.length : layerItemsCount;
+
+    const baseMessage = `Extraccion completada. Referencias: ${referencesCount}. Citas enlazadas: ${mentionCount}. Contextos: ${contextCount}. Capas (${layerLabel}): ${layerCountLabel}.`;
+
+    if (!referencesCount && !layerItemsCount && !hasPages) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada con datos insuficientes.",
+        hint: "No se detecto texto seleccionable o la extraccion del PDF fue insuficiente para preparar Capas y Referencias.",
+      };
+    }
+    if (!referencesCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada sin referencias detectadas.",
+        hint: "Se han generado capas basicas, pero no se detectaron referencias bibliograficas en este PDF.",
+      };
+    }
+    if (!mentionCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada.",
+        hint: "Se detectaron referencias, pero no citas enlazables en el cuerpo del texto.",
+      };
+    }
+    if (!layerItemsCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada.",
+        hint: "No se detectaron capas visuales utilizables. Revisa si el PDF tiene texto seleccionable.",
+      };
+    }
+    return {
+      tone: "success",
+      message: baseMessage,
+      hint: "",
+    };
+  };
+
   const handleExtract = async () => {
-    setExtractStatus({ loading: true, error: "", message: "" });
+    setExtractStatus({
+      loading: true,
+      error: "",
+      message: "Extraccion en curso. Esto puede tardar unos segundos...",
+      hint: "",
+      tone: "loading",
+    });
     const file = await ensurePdfFile();
     if (!file) {
       setExtractStatus({
         loading: false,
         error: "No hay PDF disponible para extraer.",
         message: "",
+        hint: "",
+        tone: "error",
       });
       return;
     }
@@ -2910,12 +3259,19 @@ export default function ReaderApp({
       fd.append("engine", PREVIEW_EXTRACT_ENGINE);
 
       const res = await fetch(EXTRACT_ENDPOINT, { method: "POST", body: fd });
-      const payload = await res.json();
-      if (!payload?.ok) {
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload?.ok) {
+        const rawError =
+          payload?.error ||
+          (res.status >= 500
+            ? "Error interno durante la extraccion."
+            : "No se pudo completar la extraccion.");
         setExtractStatus({
           loading: false,
-          error: payload?.error || "No se pudo extraer citas.",
+          error: rawError,
           message: "",
+          hint: "",
+          tone: "error",
         });
         return;
       }
@@ -2941,20 +3297,21 @@ export default function ReaderApp({
       setSelectedItemId(null);
       setShowReaderV2(Boolean(nextLayer));
       setActiveTab("references");
+      const outcome = describeExtractionOutcome(result, nextLayer, nextItems);
       setExtractStatus({
         loading: false,
         error: "",
-        message: nextLayer
-          ? `Extraccion completada. Capas: ${nextItems.length} en ${
-              READER_V2_LAYER_LABELS[nextLayer] || nextLayer
-            }. Referencias: ${result.references.length}.`
-          : `Extraccion completada. Referencias: ${result.references.length}.`,
+        message: outcome.message,
+        hint: outcome.hint,
+        tone: outcome.tone,
       });
     } catch (err) {
       setExtractStatus({
         loading: false,
         error: "Error de red al extraer.",
         message: "",
+        hint: "Comprueba la conexion e intentalo de nuevo.",
+        tone: "error",
       });
     }
   };
@@ -3138,6 +3495,8 @@ export default function ReaderApp({
         loading: false,
         error: "Selecciona un PDF valido.",
         message: "",
+        hint: "",
+        tone: "error",
       });
       return;
     }
@@ -3165,7 +3524,13 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setExtractStatus({ loading: false, error: "", message: "PDF actualizado." });
+    setExtractStatus({
+      loading: false,
+      error: "",
+      message: "PDF cargado correctamente.",
+      hint: 'Pulsa "Extraer" para preparar Capas y Referencias.',
+      tone: "idle",
+    });
   };
 
   const handlePdfChange = (event) => {
@@ -3203,7 +3568,13 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setExtractStatus({ loading: false, error: "", message: "PDF eliminado." });
+    setExtractStatus({
+      loading: false,
+      error: "",
+      message: "PDF eliminado.",
+      hint: "",
+      tone: "idle",
+    });
   };
 
   const dropzoneLabel = useMemo(() => {
@@ -3216,11 +3587,9 @@ export default function ReaderApp({
 
   const readerV2Controls = (
     <div className="reader-v2-controls">
-      {!readerV2Data && (
-        <div className="reader-muted">
-          Ejecuta "Extraer" para preparar las capas del documento.
-        </div>
-      )}
+      <div className={`reader-panel-status is-${layersPanelNotice.tone}`}>
+        {layersPanelNotice.text}
+      </div>
       <label className="reader-v2-layer">
         <span className="reader-v2-layer-label">Capa</span>
         <select
@@ -3245,7 +3614,7 @@ export default function ReaderApp({
           <span className="reader-v2-items-count">{currentLayerItems.length}</span>
         </div>
         {!currentLayerItems.length ? (
-          <div className="reader-muted">No hay elementos para la capa seleccionada.</div>
+          <div className="reader-empty-inline">No hay elementos para la capa seleccionada.</div>
         ) : (
           <div className="reader-v2-items-list">
             {currentLayerItems.map((item, index) => {
@@ -3313,8 +3682,8 @@ export default function ReaderApp({
       />
       {readerV2Data && (
         <div className="reader-muted">
-          Paginas: {readerV2PagesTotal} | Cajas ({activeReaderV2Layer || "-"}):{" "}
-          {readerV2ItemsTotal}
+          Paginas: {readerV2PagesTotal} | Capa activa: {readerV2ItemsTotal} | Total capas:{" "}
+          {readerV2AllItemsTotal}
         </div>
       )}
     </div>
@@ -3369,15 +3738,22 @@ export default function ReaderApp({
       >
         {extractStatus.loading ? "Extrayendo..." : "Extraer"}
       </button>
-      {(extractStatus.error || extractStatus.message) && (
+      {(extractStatus.error || extractStatus.message || extractStatus.hint) && (
         <div
           className={
             extractStatus.error
               ? "reader-extract-status is-error"
-              : "reader-extract-status"
+              : extractStatus.tone === "warning"
+                ? "reader-extract-status is-warning"
+                : extractStatus.tone === "success"
+                  ? "reader-extract-status is-success"
+                  : "reader-extract-status"
           }
         >
-          {extractStatus.error || extractStatus.message}
+          <div>{extractStatus.error || extractStatus.message}</div>
+          {extractStatus.hint && (
+            <div className="reader-extract-status-hint">{extractStatus.hint}</div>
+          )}
         </div>
       )}
     </div>
@@ -3544,6 +3920,14 @@ export default function ReaderApp({
               <div className="reader-card-title">Referencias</div>
               <div className="reader-muted">{referenceRows.length} total</div>
             </div>
+            <div className="reader-ref-metrics">
+              <span className="reader-pill">Refs: {visualReferenceTotal || referenceRows.length}</span>
+              <span className="reader-pill">Citas: {visualCitationTotal}</span>
+              <span className="reader-pill">Contextos: {visualContextTotal}</span>
+            </div>
+            <div className={`reader-panel-status is-${referencesPanelNotice.tone}`}>
+              {referencesPanelNotice.text}
+            </div>
             <div className="reader-search">
               <input
                 type="search"
@@ -3554,11 +3938,11 @@ export default function ReaderApp({
               />
             </div>
             {referenceRows.length === 0 ? (
-              <div className="reader-muted">
-                No hay referencias disponibles. Ejecuta "Extraer" primero.
+              <div className="reader-empty-inline">
+                No hay referencias disponibles para mostrar.
               </div>
             ) : filteredReferenceRows.length === 0 ? (
-              <div className="reader-muted">
+              <div className="reader-empty-inline">
                 No hay referencias que coincidan con la busqueda.
               </div>
             ) : (
@@ -3697,7 +4081,7 @@ export default function ReaderApp({
             viewerRef={viewerRef}
             readerV2Data={readerV2Data}
             readerV2Layer={activeReaderV2Layer}
-            readerV2LayerItems={currentLayerItems}
+            readerV2LayerItems={currentLayerOverlayItems}
             showReaderV2={showReaderV2}
             readerV2Opacity={readerV2Opacity}
             hoveredItemId={hoveredItemId}

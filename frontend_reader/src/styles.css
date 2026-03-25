@@ -80,7 +80,7 @@ body.reader-fullscreen .reader-sidebar {
   background: var(--reader-card);
   border: 1px solid var(--reader-border);
   border-radius: 16px;
-  padding: 12px;
+  padding: 14px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(12px);
 }
@@ -138,12 +138,12 @@ body.reader-fullscreen .reader-sidebar {
 
 .reader-ref-row {
   width: 100%;
-  border: none;
+  border: 1px solid rgba(148, 163, 184, 0.26);
   border-radius: 12px;
   padding: 12px 14px;
   text-align: left;
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -159,7 +159,8 @@ body.reader-fullscreen .reader-sidebar {
 
 .reader-ref-row.is-active {
   border-left-color: var(--reader-accent);
-  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.32);
+  background: rgba(14, 165, 233, 0.1);
 }
 
 .reader-ref-top {
@@ -359,7 +360,7 @@ body.reader-fullscreen .reader-sidebar {
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .reader-ref-header {
@@ -367,7 +368,24 @@ body.reader-fullscreen .reader-sidebar {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
+}
+
+.reader-ref-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reader-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.68rem;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .reader-ref-actions {
@@ -662,8 +680,8 @@ body.reader-fullscreen .reader-main {
 
 .reader-extract-controls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
 }
 
 .reader-v2-controls {
@@ -815,19 +833,19 @@ body.reader-fullscreen .reader-main {
   grid-column: 1 / -1;
   width: 100%;
   border-radius: 16px;
-  border: 2px dashed #d8b4fe;
-  background: rgba(167, 139, 250, 0.08);
+  border: 2px dashed rgba(14, 165, 233, 0.45);
+  background: rgba(14, 165, 233, 0.08);
   padding: 10px 12px;
   font-size: 0.75rem;
-  color: #8b5cf6;
+  color: #0369a1;
   text-align: center;
   position: relative;
   cursor: pointer;
 }
 
 .reader-dropzone.is-active {
-  border-color: #a855f7;
-  background: rgba(139, 92, 246, 0.16);
+  border-color: rgba(2, 132, 199, 0.9);
+  background: rgba(14, 165, 233, 0.16);
 }
 
 .reader-dropzone-text {
@@ -842,7 +860,7 @@ body.reader-fullscreen .reader-main {
   transform: translateY(-50%);
   border: none;
   background: transparent;
-  color: #7c3aed;
+  color: #0369a1;
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
@@ -851,12 +869,78 @@ body.reader-fullscreen .reader-main {
 
 .reader-extract-status {
   font-size: 0.75rem;
-  color: var(--reader-muted);
+  color: #334155;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(248, 250, 252, 0.9);
+  padding: 8px 10px;
   grid-column: 1 / -1;
 }
 
 .reader-extract-status.is-error {
-  color: #b91c1c;
+  color: #991b1b;
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(254, 242, 242, 0.9);
+}
+
+.reader-extract-status.is-warning {
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(255, 251, 235, 0.92);
+}
+
+.reader-extract-status.is-success {
+  color: #065f46;
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(236, 253, 245, 0.92);
+}
+
+.reader-extract-status-hint {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  opacity: 0.92;
+}
+
+.reader-panel-status {
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(248, 250, 252, 0.88);
+  padding: 8px 10px;
+  font-size: 0.74rem;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.reader-panel-status.is-warning {
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(255, 251, 235, 0.92);
+  color: #92400e;
+}
+
+.reader-panel-status.is-error {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: rgba(254, 242, 242, 0.92);
+  color: #991b1b;
+}
+
+.reader-panel-status.is-success {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(236, 253, 245, 0.92);
+  color: #065f46;
+}
+
+.reader-empty-inline {
+  border: 1px dashed rgba(148, 163, 184, 0.42);
+  background: rgba(248, 250, 252, 0.9);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.reader-extract-controls .reader-tool-btn {
+  justify-self: start;
+  min-width: 120px;
 }
 
 .reader__zoom-btn,

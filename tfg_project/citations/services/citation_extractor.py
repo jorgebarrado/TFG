@@ -29,12 +29,13 @@ except Exception:
     PyPDF2 = None
 
 # ====== Regex básicos: [n] y Autor (Año) ======
-NUMERIC_CITE = re.compile(r"\[(\d+)\]")
+NUMERIC_CITATION_BLOCK = re.compile(
+    r"\[\s*\d+(?:\s*(?:[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+))*\s*\]"
+)
 AUTHOR_YEAR = re.compile(
     r"\b([A-Z][A-Za-z-]+(?:\s(?:and|&)\s[A-Z][A-Za-z-]+|(?:\s+et al\.)?)?)\s*\(((?:19|20)\d{2})\)"
 )
 
-CIT_NUMERIC = re.compile(r"\[(\d{1,3})\]")
 CIT_AUTHORYEAR = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
 CIT_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 
@@ -47,17 +48,74 @@ def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
     return f"{prefix}{text[left:right]}{suffix}"
 
 
+def find_numeric_citation_blocks(text: str) -> List[re.Match[str]]:
+    if not text:
+        return []
+    return list(NUMERIC_CITATION_BLOCK.finditer(text))
+
+
+def expand_numeric_citation_block(block_text: str) -> List[int]:
+    if not block_text:
+        return []
+    inner = str(block_text).strip()
+    if inner.startswith("[") and inner.endswith("]"):
+        inner = inner[1:-1]
+
+    values: List[int] = []
+    for part in re.split(r"[,;]", inner):
+        token = part.replace("\u2013", "-").replace("\u2014", "-").strip()
+        if not token:
+            continue
+        if "-" in token:
+            bounds = [segment.strip() for segment in token.split("-", 1)]
+            if len(bounds) != 2:
+                continue
+            try:
+                start = int(bounds[0])
+                end = int(bounds[1])
+            except (TypeError, ValueError):
+                continue
+            step = 1 if start <= end else -1
+            span = min(abs(end - start) + 1, 50)
+            for idx in range(span):
+                number = start + idx * step
+                if number > 0:
+                    values.append(number)
+            continue
+        try:
+            number = int(token)
+        except (TypeError, ValueError):
+            continue
+        if number > 0:
+            values.append(number)
+
+    seen: set[int] = set()
+    ordered: List[int] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        ordered.append(value)
+    return ordered
+
+
 def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
     hits: List[Dict[str, Any]] = []
-    for m in CIT_NUMERIC.finditer(paragraph):
+    for m in find_numeric_citation_blocks(paragraph):
+        block = m.group(0)
+        expanded = expand_numeric_citation_block(block)
+        if not expanded:
+            continue
         hits.append(
             {
                 "type": "numeric",
-                "match": m.group(0),
+                "match": block,
                 "start": m.start(),
                 "end": m.end(),
                 "snippet": _make_snippet(paragraph, m.start(), m.end()),
                 "confidence": 0.0,
+                "citation_block": block,
+                "citation_numbers": expanded,
             }
         )
     for m in CIT_AUTHORYEAR.finditer(paragraph):
@@ -161,20 +219,23 @@ def _split_paragraphs(text: str) -> list[str]:
 
 def _find_citations_in_paragraph(p: str) -> list[dict]:
     out: list[dict] = []
-    # [n]
-    for m in NUMERIC_CITE.finditer(p):
+    # [n], [1,2], [23-25], [23–25], etc.
+    for m in find_numeric_citation_blocks(p):
         s, e = m.span()
         snippet = p[max(0, s - 80) : min(len(p), e + 80)]
-        out.append(
-            {
-                "ref": int(m.group(1)),
-                "snippet": snippet,
-                "paragraph": p,
-                "start": s,
-                "end": e,
-                "pattern": "numeric",
-            }
-        )
+        block = m.group(0)
+        for ref_idx in expand_numeric_citation_block(block):
+            out.append(
+                {
+                    "ref": ref_idx,
+                    "snippet": snippet,
+                    "paragraph": p,
+                    "start": s,
+                    "end": e,
+                    "pattern": "numeric",
+                    "match": block,
+                }
+            )
     # Autor (Año)
     for m in AUTHOR_YEAR.finditer(p):
         s, e = m.span()

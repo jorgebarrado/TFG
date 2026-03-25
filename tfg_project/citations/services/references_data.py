@@ -123,7 +123,7 @@ def _parse_citation_numbers(text: str) -> List[int]:
     return sorted(number for number in numbers if number > 0)
 
 
-def _entry_index(entry: Dict[str, Any], fallback: int) -> int:
+def _entry_index(entry: Dict[str, Any]) -> Optional[int]:
     raw_index = entry.get("index")
     if isinstance(raw_index, int) and raw_index > 0:
         return raw_index
@@ -133,7 +133,7 @@ def _entry_index(entry: Dict[str, Any], fallback: int) -> int:
             return parsed
     except (TypeError, ValueError):
         pass
-    return fallback
+    return None
 
 
 def _layer_items(layers: Dict[str, Any], key: str) -> List[Dict[str, Any]]:
@@ -279,9 +279,12 @@ def build_references_data(
     for fallback_idx, ref in enumerate(references, start=1):
         if not isinstance(ref, dict):
             continue
-        idx = _entry_index(ref, fallback_idx)
-        ref_id = f"ref-{idx}"
-        references_by_index[idx] = ref_id
+        idx = _entry_index(ref)
+        if idx is not None:
+            ref_id = f"ref-{idx}"
+            references_by_index[idx] = ref_id
+        else:
+            ref_id = f"ref-unlabeled-{fallback_idx}"
         doi_value = _normalize_doi(str(ref.get("doi") or ""))
         if doi_value:
             references_by_doi[doi_value] = ref_id
@@ -294,7 +297,7 @@ def build_references_data(
                 continue
             score = _reference_match_score(
                 raw_text,
-                idx,
+                idx or 0,
                 doi_value,
                 str(candidate.get("text") or ""),
             )
@@ -444,4 +447,3 @@ def build_references_data(
         "citations": citations,
         "contexts": contexts,
     }
-
