@@ -163,6 +163,11 @@ body.reader-fullscreen .reader-sidebar {
   background: rgba(14, 165, 233, 0.1);
 }
 
+.reader-ref-row:focus-visible {
+  outline: 2px solid rgba(14, 165, 233, 0.6);
+  outline-offset: 2px;
+}
+
 .reader-ref-top {
   display: flex;
   align-items: center;
@@ -236,6 +241,64 @@ body.reader-fullscreen .reader-sidebar {
   font-size: 0.68rem;
   color: #0369a1;
   word-break: break-word;
+}
+
+.reader-ref-mentions {
+  display: grid;
+  gap: 6px;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.4);
+}
+
+.reader-ref-mentions-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--reader-muted);
+}
+
+.reader-ref-mention {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--reader-text);
+  text-align: left;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.reader-ref-mention:hover {
+  border-color: rgba(14, 165, 233, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.reader-ref-mention.is-active {
+  border-color: rgba(2, 132, 199, 0.75);
+  background: rgba(14, 165, 233, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(2, 132, 199, 0.35);
+}
+
+.reader-ref-mention:focus-visible {
+  outline: 2px solid rgba(14, 165, 233, 0.55);
+  outline-offset: 1px;
+}
+
+.reader-ref-mention-meta {
+  font-size: 0.66rem;
+  color: var(--reader-muted);
+}
+
+.reader-ref-mention-text {
+  font-size: 0.73rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .reader-ref-title {
@@ -563,6 +626,27 @@ body.reader-fullscreen .reader-main {
 .reader-ref-box.is-hovered {
   opacity: 1;
   stroke-width: 0.0055;
+}
+
+.reader-ref-box.is-selected-reference {
+  opacity: 1;
+  fill: rgba(14, 165, 233, 0.26);
+  stroke: rgba(3, 105, 161, 0.98);
+  stroke-width: 0.006;
+}
+
+.reader-ref-box.is-selected-mention {
+  opacity: 1;
+  fill: rgba(245, 158, 11, 0.34);
+  stroke: rgba(217, 119, 6, 0.98);
+  stroke-width: 0.0066;
+}
+
+.reader-ref-box.is-selected-context {
+  opacity: 0.9;
+  fill: rgba(34, 197, 94, 0.1);
+  stroke: rgba(22, 163, 74, 0.62);
+  stroke-width: 0.0032;
 }
 
 .reader-ref-box.is-selected {

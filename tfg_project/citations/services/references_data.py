@@ -221,15 +221,154 @@ def _overlap_ratio(box_a: Sequence[float], box_b: Sequence[float]) -> float:
     return inter / area
 
 
-def _pick_best_text_box(snippet_text: str, page_hint: Optional[int], rows: List[Dict[str, Any]], paragraphs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def _box_area(box: Sequence[float]) -> float:
+    return max(float(box[2]), 0.0) * max(float(box[3]), 0.0)
+
+
+def _box_iou(box_a: Sequence[float], box_b: Sequence[float]) -> float:
+    ax0 = float(box_a[0])
+    ay0 = float(box_a[1])
+    ax1 = ax0 + float(box_a[2])
+    ay1 = ay0 + float(box_a[3])
+    bx0 = float(box_b[0])
+    by0 = float(box_b[1])
+    bx1 = bx0 + float(box_b[2])
+    by1 = by0 + float(box_b[3])
+
+    ix0 = max(ax0, bx0)
+    iy0 = max(ay0, by0)
+    ix1 = min(ax1, bx1)
+    iy1 = min(ay1, by1)
+    iw = max(0.0, ix1 - ix0)
+    ih = max(0.0, iy1 - iy0)
+    inter = iw * ih
+    if inter <= 0:
+        return 0.0
+    union = _box_area(box_a) + _box_area(box_b) - inter
+    if union <= 0:
+        return 0.0
+    return inter / union
+
+
+def _union_boxes(boxes: Sequence[Sequence[float]]) -> Optional[List[float]]:
+    if not boxes:
+        return None
+    x0 = min(float(box[0]) for box in boxes)
+    y0 = min(float(box[1]) for box in boxes)
+    x1 = max(float(box[0]) + float(box[2]) for box in boxes)
+    y1 = max(float(box[1]) + float(box[3]) for box in boxes)
+    width = max(0.0, x1 - x0)
+    height = max(0.0, y1 - y0)
+    if width <= 0 or height <= 0:
+        return None
+    return [x0, y0, width, height]
+
+
+def _normalize_citation_marker(value: str) -> str:
+    if not value:
+        return ""
+    compact = re.sub(r"\s+", "", str(value or "")).strip().lower()
+    return compact.replace("\u2013", "-").replace("\u2014", "-")
+
+
+def _find_citation_marker_box(
+    snippet_text: str,
+    page_hint: Optional[int],
+    tokens: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    marker_variants = {
+        _normalize_citation_marker(match.group(0))
+        for match in INLINE_CITATION_REGEX.finditer(snippet_text or "")
+    }
+    marker_variants = {value for value in marker_variants if value}
+    if not marker_variants:
+        return None
+
+    tokens_by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for token in tokens:
+        page = token.get("page")
+        if not isinstance(page, int):
+            continue
+        if page_hint is not None and page != page_hint:
+            continue
+        token_text = _normalize_citation_marker(str(token.get("text") or ""))
+        if not token_text:
+            continue
+        tokens_by_page[page].append(token)
+
+    best: Optional[Dict[str, Any]] = None
+    best_area = float("inf")
+    max_window = 8
+
+    for page, page_tokens in tokens_by_page.items():
+        ordered_tokens = sorted(
+            page_tokens, key=lambda item: (float(item["box"][1]), float(item["box"][0]))
+        )
+        for marker in marker_variants:
+            marker_length = len(marker)
+            for start in range(len(ordered_tokens)):
+                combined = ""
+                candidate_boxes: List[Sequence[float]] = []
+                previous_box: Optional[Sequence[float]] = None
+                for offset in range(max_window):
+                    token_index = start + offset
+                    if token_index >= len(ordered_tokens):
+                        break
+                    token = ordered_tokens[token_index]
+                    token_piece = _normalize_citation_marker(str(token.get("text") or ""))
+                    if not token_piece:
+                        continue
+                    current_box = token["box"]
+                    if previous_box is not None:
+                        # Avoid mixing tokens from different lines.
+                        if abs(float(current_box[1]) - float(previous_box[1])) > 0.02:
+                            break
+                    previous_box = current_box
+                    combined += token_piece
+                    candidate_boxes.append(current_box)
+                    if len(combined) > marker_length + 2:
+                        break
+                    if combined == marker:
+                        merged_box = _union_boxes(candidate_boxes)
+                        if not merged_box:
+                            break
+                        area = _box_area(merged_box)
+                        if area < best_area:
+                            best_area = area
+                            best = {
+                                "id": f"token-marker-{page}-{start}",
+                                "text": marker,
+                                "page": page,
+                                "box": merged_box,
+                            }
+                        break
+
+    return best
+
+
+def _pick_best_text_box(
+    snippet_text: str,
+    page_hint: Optional[int],
+    tokens: List[Dict[str, Any]],
+    rows: List[Dict[str, Any]],
+    paragraphs: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    marker_anchor = _find_citation_marker_box(snippet_text, page_hint, tokens)
+    if marker_anchor is not None:
+        return marker_anchor
+
     normalized_snippet = _normalize_text(snippet_text)
     if not normalized_snippet:
         return None
 
-    tokens = _tokenize(normalized_snippet)
-    candidate_pool = [item for item in rows if page_hint is None or item["page"] == page_hint]
+    snippet_tokens = _tokenize(normalized_snippet)
+    candidate_pool = [
+        item for item in rows if page_hint is None or item["page"] == page_hint
+    ]
     if not candidate_pool:
-        candidate_pool = [item for item in paragraphs if page_hint is None or item["page"] == page_hint]
+        candidate_pool = [
+            item for item in paragraphs if page_hint is None or item["page"] == page_hint
+        ]
     if not candidate_pool:
         return None
 
@@ -246,15 +385,55 @@ def _pick_best_text_box(snippet_text: str, page_hint: Optional[int], rows: List[
             score += 1.5
 
         item_tokens = _tokenize(item_text)
-        if tokens and item_tokens:
-            overlap = len(tokens.intersection(item_tokens))
-            score += overlap / max(len(tokens), 1)
+        if snippet_tokens and item_tokens:
+            overlap = len(snippet_tokens.intersection(item_tokens))
+            score += overlap / max(len(snippet_tokens), 1)
 
         if score > best_score:
             best_score = score
             best_item = item
 
     return best_item if best_score >= 0.15 else None
+
+
+def _pick_context_paragraph(
+    mention_box: Sequence[float],
+    page_paragraphs: Sequence[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    if not page_paragraphs:
+        return None
+
+    containing = [
+        paragraph
+        for paragraph in page_paragraphs
+        if _contains_box(paragraph["box"], mention_box)
+    ]
+    if containing:
+        return min(containing, key=lambda paragraph: _box_area(paragraph["box"]))
+
+    iou_candidates: List[Tuple[float, Dict[str, Any]]] = []
+    for paragraph in page_paragraphs:
+        iou = _box_iou(paragraph["box"], mention_box)
+        if iou >= 0.08:
+            iou_candidates.append((iou, paragraph))
+    if iou_candidates:
+        iou_candidates.sort(
+            key=lambda item: (-item[0], _box_area(item[1]["box"]))
+        )
+        return iou_candidates[0][1]
+
+    overlap_candidates: List[Tuple[float, Dict[str, Any]]] = []
+    for paragraph in page_paragraphs:
+        overlap = _overlap_ratio(paragraph["box"], mention_box)
+        if overlap >= 0.2:
+            overlap_candidates.append((overlap, paragraph))
+    if overlap_candidates:
+        overlap_candidates.sort(
+            key=lambda item: (-item[0], _box_area(item[1]["box"]))
+        )
+        return overlap_candidates[0][1]
+
+    return None
 
 
 def build_references_data(
@@ -265,6 +444,7 @@ def build_references_data(
     references_numbered: bool = False,
 ) -> Dict[str, List[Dict[str, Any]]]:
     bibliography_items = _layer_items(layers, "bibliographies")
+    token_items = _layer_items(layers, "tokens")
     row_items = _layer_items(layers, "rows")
     paragraph_items = _layer_items(layers, "paragraphs")
 
@@ -362,6 +542,7 @@ def build_references_data(
         mention_anchor = _pick_best_text_box(
             snippet_text,
             page_hint,
+            token_items,
             row_items,
             paragraph_items,
         )
@@ -389,25 +570,8 @@ def build_references_data(
             if not page_paragraphs:
                 continue
 
-            best_context = None
-            best_context_score = 0.0
-            snippet_tokens = _tokenize(snippet_text)
-            for paragraph in page_paragraphs:
-                score = 0.0
-                paragraph_box = paragraph["box"]
-                if _contains_box(paragraph_box, mention_box):
-                    score += 3.0
-                score += _overlap_ratio(paragraph_box, mention_box) * 2.0
-
-                paragraph_tokens = _tokenize(str(paragraph.get("text") or ""))
-                if snippet_tokens and paragraph_tokens:
-                    overlap = len(snippet_tokens.intersection(paragraph_tokens))
-                    score += overlap / max(len(snippet_tokens), 1)
-                if score > best_context_score:
-                    best_context_score = score
-                    best_context = paragraph
-
-            if best_context is None or best_context_score < 0.2:
+            best_context = _pick_context_paragraph(mention_box, page_paragraphs)
+            if best_context is None:
                 continue
 
             rounded_box = ",".join(f"{value:.4f}" for value in best_context["box"])
