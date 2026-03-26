@@ -295,7 +295,92 @@ def _extract_real_pdf_page_dimensions(pdf_path: str) -> list[tuple[float, float]
     return []
 
 
-def _extract_first_box(entity: Entity) -> list[float] | None:
+def _extract_visual_words_with_fitz(
+    pdf_path: str,
+    pages: List[ReaderPage],
+) -> List[ReaderItem]:
+    """
+    Extrae palabras visuales reales del PDF con PyMuPDF para la capa principal
+    de palabras del reader (compat: `layers["tokens"]`).
+    """
+    if fitz is None:
+        return []
+
+    path = Path(pdf_path)
+    if not path.is_file():
+        return []
+
+    items: List[ReaderItem] = []
+    try:
+        with fitz.open(str(path)) as pdf_doc:  # type: ignore[attr-defined]
+            for page_index, page in enumerate(pdf_doc):
+                if page_index < 0:
+                    continue
+                page_width = (
+                    pages[page_index]["width"]
+                    if page_index < len(pages)
+                    else float(page.rect.width)
+                )
+                page_height = (
+                    pages[page_index]["height"]
+                    if page_index < len(pages)
+                    else float(page.rect.height)
+                )
+                if page_width <= 0 or page_height <= 0:
+                    continue
+
+                words = page.get_text("words") or []
+                for word_index, raw_word in enumerate(words):
+                    if not isinstance(raw_word, (tuple, list)) or len(raw_word) < 5:
+                        continue
+
+                    x0 = _num(raw_word[0], default=-1.0)
+                    y0 = _num(raw_word[1], default=-1.0)
+                    x1 = _num(raw_word[2], default=-1.0)
+                    y1 = _num(raw_word[3], default=-1.0)
+                    text_value = str(raw_word[4] or "").strip()
+                    if not text_value:
+                        continue
+
+                    width = x1 - x0
+                    height = y1 - y0
+                    if x0 < 0 or y0 < 0 or width <= 0 or height <= 0:
+                        continue
+
+                    normalized_box = _normalize_box_to_page(
+                        [x0, y0, width, height],
+                        page_width=page_width,
+                        page_height=page_height,
+                    )
+                    if not normalized_box:
+                        continue
+
+                    block_no = int(_num(raw_word[5], default=0.0)) if len(raw_word) > 5 else 0
+                    line_no = int(_num(raw_word[6], default=0.0)) if len(raw_word) > 6 else 0
+                    word_no = int(_num(raw_word[7], default=word_index)) if len(raw_word) > 7 else word_index
+                    token_id = f"token_{page_index}_{block_no}_{line_no}_{word_no}"
+                    items.append(
+                        {
+                            "id": f"{token_id}_w{word_index}",
+                            "text": text_value,
+                            "page": page_index,
+                            "box": normalized_box,
+                            "type": "token",
+                            "token_id": token_id,
+                            "fragment_index": 0,
+                        }
+                    )
+    except Exception:
+        return []
+
+    return items
+
+
+def _extract_first_box(
+    entity: Entity,
+    *,
+    page_height: float = 0.0,
+) -> list[float] | None:
     """
     Devuelve la primera caja de una entidad en formato [x, y, width, height].
     Compatible con varias representaciones de box.
@@ -305,9 +390,13 @@ def _extract_first_box(entity: Entity) -> list[float] | None:
         return None
 
     box = boxes[0]
-    return _extract_box_xywh(box)
+    return _extract_box_xywh(box, page_height=page_height)
 
-def _extract_box_xywh(box: Any) -> list[float] | None:
+def _extract_box_xywh(
+    box: Any,
+    *,
+    page_height: float = 0.0,
+) -> list[float] | None:
     """Convierte un objeto box a [x, y, width, height] con fallback defensivo."""
     # Variante 1: left/top/width/height
     left = _num(getattr(box, "left", None), default=-1.0)
@@ -337,7 +426,14 @@ def _extract_box_xywh(box: Any) -> list[float] | None:
     y0 = _num(getattr(box, "y0", None), default=-1.0)
     y1 = _num(getattr(box, "y1", None), default=-1.0)
     if x0 >= 0 and x1 > x0 and y0 >= 0 and y1 > y0:
-        return [x0, y0, x1 - x0, y1 - y0]
+        height = y1 - y0
+        if page_height > 0:
+            y_top = page_height - y1
+        else:
+            y_top = y0
+        if y_top < 0:
+            return None
+        return [x0, y_top, x1 - x0, height]
 
     return None
 
@@ -364,7 +460,7 @@ def _extract_first_box_absolute(
     Obtiene la primera caja y la lleva a coordenadas absolutas de página real.
     Si la caja ya es absoluta, se devuelve tal cual.
     """
-    box = _extract_first_box(entity)
+    box = _extract_first_box(entity, page_height=page_height)
     if not box:
         return None
     if len(box) < 4:
@@ -464,6 +560,7 @@ def _build_reader_layer_items(
     item_prefix: str,
     item_type: str,
     pages: List[ReaderPage],
+    allow_token_fragments: bool = True,
 ) -> List[ReaderItem]:
     """
     Convierte una capa de entidades de PaperMage a items del reader.
@@ -476,8 +573,8 @@ def _build_reader_layer_items(
         text_value = str(getattr(entity, "text", "") or "")
         token_id = f"{item_prefix}_{entity_index}"
 
-        # Para tokens, no colapsamos a una sola box: exportamos un fragmento por box.
-        if item_type == "token" and entity_boxes:
+        # Para tokens, puede activarse modo fragmentos por box (legacy de document.tokens).
+        if item_type == "token" and allow_token_fragments and entity_boxes:
             emitted = 0
             for box_index, raw_box_obj in enumerate(entity_boxes):
                 raw_page = getattr(raw_box_obj, "page", None)
@@ -487,7 +584,10 @@ def _build_reader_layer_items(
                 page_width = pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
                 page_height = pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
 
-                raw_box = _extract_box_xywh(raw_box_obj)
+                raw_box = _extract_box_xywh(
+                    raw_box_obj,
+                    page_height=page_height,
+                )
                 if not raw_box:
                     continue
                 absolute_box = _to_absolute_box(
@@ -1137,15 +1237,67 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
         )
 
     layers: dict[str, List[ReaderItem]] = {}
+
+    # Prioridad capa visual principal:
+    # 1) fitz words
+    # 2) document.words
+    # 3) document.tokens (fallback final)
+    token_items = _extract_visual_words_with_fitz(pdf_path, pages)
+    token_source = "fitz" if token_items else ""
+
+    if not token_items:
+        words_layer = getattr(document, "words", None)
+        try:
+            word_entities = list(words_layer) if words_layer is not None else []
+        except TypeError:
+            word_entities = []
+        if word_entities:
+            token_items = _build_reader_layer_items(
+                word_entities,
+                item_prefix="token",
+                item_type="token",
+                pages=pages,
+                allow_token_fragments=False,
+            )
+            token_source = "document.words"
+
+    if not token_items:
+        tokens_layer = getattr(document, "tokens", None)
+        try:
+            token_entities = list(tokens_layer) if tokens_layer is not None else []
+        except TypeError:
+            token_entities = []
+        if token_entities:
+            token_items = _build_reader_layer_items(
+                token_entities,
+                item_prefix="token",
+                item_type="token",
+                pages=pages,
+                allow_token_fragments=True,
+            )
+            token_source = "document.tokens"
+
+    if token_items:
+        # Mantener limpieza defensiva solo para fallback legacy.
+        if token_source != "fitz":
+            token_items = _drop_top_clamped_duplicate_items(token_items)
+            token_items = _drop_overlapping_duplicate_items(token_items)
+        layers["tokens"] = token_items
+
     layer_specs = (
-        ("tokens", "token", "token"),
-        ("rows", "row", "row"),
-        ("paragraphs", "paragraph", "paragraph"),
-        ("bibliographies", "bibliography", "bibliography"),
-        ("sections", "section", "section"),
+        ("rows", "row", "row", "rows", False),
+        ("paragraphs", "paragraph", "paragraph", "paragraphs", False),
+        ("bibliographies", "bibliography", "bibliography", "bibliographies", False),
+        ("sections", "section", "section", "sections", False),
     )
-    for layer_name, item_prefix, item_type in layer_specs:
-        raw_layer = getattr(document, layer_name, None)
+    for (
+        layer_name,
+        item_prefix,
+        item_type,
+        source_layer_name,
+        allow_token_fragments,
+    ) in layer_specs:
+        raw_layer = getattr(document, source_layer_name, None)
         if raw_layer is None:
             continue
         try:
@@ -1158,11 +1310,10 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
             item_prefix=item_prefix,
             item_type=item_type,
             pages=pages,
+            allow_token_fragments=allow_token_fragments,
         )
-        if layer_name in {"tokens", "rows"}:
+        if layer_name == "rows":
             layer_items = _drop_top_clamped_duplicate_items(layer_items)
-        if layer_name == "tokens":
-            layer_items = _drop_overlapping_duplicate_items(layer_items)
         if layer_items:
             layers[layer_name] = layer_items
 

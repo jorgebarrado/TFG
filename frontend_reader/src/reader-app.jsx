@@ -894,6 +894,95 @@ function getPrimaryPdfPageElements(viewerEl) {
     }));
 }
 
+function collectVisibleTextRectsNormalized(pageEl, anchorRect) {
+  if (!pageEl || !anchorRect) return [];
+  const textLayer =
+    pageEl.querySelector(".textLayer") ||
+    pageEl.querySelector(".react-pdf__Page__textContent");
+  if (!textLayer) return [];
+
+  const anchorWidth = Number(anchorRect.width);
+  const anchorHeight = Number(anchorRect.height);
+  if (!Number.isFinite(anchorWidth) || !Number.isFinite(anchorHeight)) return [];
+  if (anchorWidth <= 0 || anchorHeight <= 0) return [];
+
+  const pageRect = pageEl.getBoundingClientRect();
+  const anchorLeft = pageRect.left + Number(anchorRect.left || 0);
+  const anchorTop = pageRect.top + Number(anchorRect.top || 0);
+  const spans = Array.from(textLayer.querySelectorAll("span"));
+  const rects = [];
+
+  spans.forEach((span) => {
+    if (!span) return;
+    const text = String(span.textContent || "").trim();
+    if (!text) return;
+    const rect = span.getBoundingClientRect();
+    if (rect.width < 0.8 || rect.height < 0.8) return;
+
+    const x = (rect.left - anchorLeft) / anchorWidth;
+    const y = (rect.top - anchorTop) / anchorHeight;
+    const width = rect.width / anchorWidth;
+    const height = rect.height / anchorHeight;
+    if (![x, y, width, height].every((value) => Number.isFinite(value))) return;
+    if (width <= 0 || height <= 0) return;
+
+    const clampedX = Math.max(0, Math.min(1, x));
+    const clampedY = Math.max(0, Math.min(1, y));
+    const clampedWidth = Math.max(0, Math.min(1 - clampedX, width));
+    const clampedHeight = Math.max(0, Math.min(1 - clampedY, height));
+    if (clampedWidth <= 0 || clampedHeight <= 0) return;
+    rects.push({
+      x: clampedX,
+      y: clampedY,
+      width: clampedWidth,
+      height: clampedHeight,
+    });
+  });
+
+  return rects;
+}
+
+function buildVisibleTextRectBuckets(rects, bucketSize = 0.02) {
+  const safeBucket = Math.max(0.005, Number(bucketSize) || 0.02);
+  const buckets = new Map();
+  rects.forEach((rect) => {
+    const start = Math.max(0, Math.floor(rect.y / safeBucket));
+    const end = Math.max(start, Math.floor((rect.y + rect.height) / safeBucket));
+    for (let index = start; index <= end; index += 1) {
+      const list = buckets.get(index) || [];
+      list.push(rect);
+      buckets.set(index, list);
+    }
+  });
+  return { buckets, bucketSize: safeBucket };
+}
+
+function isOverlayCenterOnVisibleText(item, rectBuckets, tolerance = 0.0035) {
+  const cx = Number(item?.x) + Number(item?.width) / 2;
+  const cy = Number(item?.y) + Number(item?.height) / 2;
+  if (!Number.isFinite(cx) || !Number.isFinite(cy)) return false;
+  const safeTolerance = Math.max(0, Number(tolerance) || 0);
+  const bucketSize = rectBuckets?.bucketSize || 0.02;
+  const buckets = rectBuckets?.buckets;
+  if (!(buckets instanceof Map) || buckets.size === 0) return true;
+  const bucketIndex = Math.max(0, Math.floor(cy / bucketSize));
+
+  const candidates = [
+    ...(buckets.get(bucketIndex - 1) || []),
+    ...(buckets.get(bucketIndex) || []),
+    ...(buckets.get(bucketIndex + 1) || []),
+  ];
+  if (!candidates.length) return false;
+
+  return candidates.some((rect) => {
+    const left = rect.x - safeTolerance;
+    const right = rect.x + rect.width + safeTolerance;
+    const top = rect.y - safeTolerance;
+    const bottom = rect.y + rect.height + safeTolerance;
+    return cx >= left && cx <= right && cy >= top && cy <= bottom;
+  });
+}
+
 function useReaderV2Overlay(
   viewerRef,
   readerV2Data,
@@ -1033,6 +1122,8 @@ function useReaderV2Overlay(
     const opacity = Number.isFinite(rawOpacity)
       ? Math.max(0, Math.min(1, rawOpacity))
       : 0.35;
+    const shouldFilterByVisibleText =
+      String(readerV2Layer || "").toLowerCase() === "tokens";
     const render = () => {
       rafId = null;
       const primaryPages = getPrimaryPdfPageElements(viewerEl);
@@ -1080,11 +1171,28 @@ function useReaderV2Overlay(
         overlay.style.width = `${Math.max(0, anchorRect.width)}px`;
         overlay.style.height = `${Math.max(0, anchorRect.height)}px`;
         overlay.style.opacity = `${opacity}`;
+
+        let filteredPageItems = pageItems;
+        if (shouldFilterByVisibleText) {
+          const visibleTextRects = collectVisibleTextRectsNormalized(pageEl, anchorRect);
+          if (visibleTextRects.length) {
+            const rectBuckets = buildVisibleTextRectBuckets(visibleTextRects);
+            filteredPageItems = pageItems.filter((item) =>
+              isOverlayCenterOnVisibleText(item, rectBuckets)
+            );
+          }
+        }
+
+        if (!filteredPageItems.length) {
+          overlay.remove();
+          return;
+        }
+
         while (overlay.firstChild) {
           overlay.removeChild(overlay.firstChild);
         }
 
-        pageItems.forEach((entry) => {
+        filteredPageItems.forEach((entry) => {
           const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
           const classNames = [
             "reader-v2-box",
@@ -1289,6 +1397,9 @@ function useReferencesOverlay(
           }
           const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
           const isSelectedRef = true;
+          const isReferenceEntry = entry.itemType === "reference-entry";
+          const isCitationMention = entry.itemType === "citation-mention";
+          const isCitationContext = entry.itemType === "citation-context";
           const isSelectedCitation =
             Boolean(selectedCitationIdRef.current) &&
             entry.id === selectedCitationIdRef.current;
@@ -1301,7 +1412,17 @@ function useReferencesOverlay(
             `reader-ref-box--${entry.itemType}`,
           ];
           if (isHoveredCitation) classNames.push("is-hovered");
-          if (isSelectedRef) classNames.push("is-selected");
+          if (isSelectedRef) {
+            if (isCitationContext) {
+              classNames.push("is-selected-context");
+            } else if (isCitationMention) {
+              classNames.push("is-selected-mention");
+            } else if (isReferenceEntry) {
+              classNames.push("is-selected-reference");
+            } else {
+              classNames.push("is-selected");
+            }
+          }
           if (isSelectedCitation) classNames.push("is-selected-citation");
 
           rect.setAttribute("class", classNames.join(" "));
@@ -2396,6 +2517,27 @@ export default function ReaderApp({
     });
     return map;
   }, [visualCitationMentions]);
+  const selectedReferenceMentions = useMemo(() => {
+    if (!selectedReferenceId) return [];
+    const mentions = citationMentionsByRefId.get(selectedReferenceId) || [];
+    return [...mentions].sort((mentionA, mentionB) => {
+      const pageA = Number(mentionA?.page);
+      const pageB = Number(mentionB?.page);
+      if (Number.isFinite(pageA) && Number.isFinite(pageB) && pageA !== pageB) {
+        return pageA - pageB;
+      }
+      const boxA = normalizeOverlayBox(mentionA?.box);
+      const boxB = normalizeOverlayBox(mentionB?.box);
+      const yA = boxA ? Number(boxA[1]) : Number.MAX_SAFE_INTEGER;
+      const yB = boxB ? Number(boxB[1]) : Number.MAX_SAFE_INTEGER;
+      if (yA !== yB) {
+        return yA - yB;
+      }
+      const xA = boxA ? Number(boxA[0]) : Number.MAX_SAFE_INTEGER;
+      const xB = boxB ? Number(boxB[0]) : Number.MAX_SAFE_INTEGER;
+      return xA - xB;
+    });
+  }, [selectedReferenceId, citationMentionsByRefId]);
 
   const citationContextsByRefId = useMemo(() => {
     const map = new Map();
@@ -3433,6 +3575,24 @@ export default function ReaderApp({
     jumpToReference(refId);
   };
 
+  const handleReferenceMentionSelect = (mention, refId) => {
+    const resolvedRefId = String(refId || mention?.ref_id || "").trim();
+    if (!resolvedRefId) return;
+    setSelectedReferenceId(resolvedRefId);
+    setActiveReferenceKey(resolvedRefId);
+    setHoveredReferenceId(resolvedRefId);
+    setSelectedCitationId(String(mention?.id || ""));
+    const indexFromRefId = parseRefIndex(resolvedRefId);
+    if (Number.isFinite(indexFromRefId)) {
+      setActiveReferenceId(indexFromRefId);
+      setHighlightReferenceId(indexFromRefId);
+    }
+    if (mention) {
+      const blockAnchor = resolveReferenceBlockAnchor(mention, resolvedRefId);
+      scrollReferenceTargetToTop(blockAnchor || mention);
+    }
+  };
+
   const handleToggleHighlightAll = () => {
     if (!activeCitationRefIndex) return;
     setHighlightReferenceId((current) =>
@@ -3948,21 +4108,26 @@ export default function ReaderApp({
             ) : (
               filteredReferenceRows.map((row) => {
                 const isActive = row.ref_id === selectedReferenceId;
+                const rowMentions = isActive ? selectedReferenceMentions : [];
                 const pageLabel = Number.isFinite(Number(row.page))
                   ? `p. ${Number(row.page) + 1}`
                   : "p. -";
                 return (
-                  <button
-                    type="button"
+                  <div
                     key={row.ref_id}
                     ref={registerReference(row.ref_id)}
+                    role="button"
+                    tabIndex={0}
                     className={
                       isActive
                         ? "reader-ref-row is-active"
                         : "reader-ref-row"
                     }
                     onMouseEnter={() => setHoveredReferenceId(row.ref_id)}
-                    onMouseLeave={() => setHoveredReferenceId("")}
+                    onMouseLeave={() => {
+                      setHoveredReferenceId("");
+                      setHoveredCitationId("");
+                    }}
                     onClick={() =>
                       handleReferenceSelect({
                         ...(referenceByIndex.get(row.index) || {}),
@@ -3973,6 +4138,19 @@ export default function ReaderApp({
                           Number.isFinite(Number(row.page)) ? Number(row.page) + 1 : null,
                       })
                     }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleReferenceSelect({
+                          ...(referenceByIndex.get(row.index) || {}),
+                          ref_id: row.ref_id,
+                          index: row.index,
+                          raw: row.text,
+                          display_page:
+                            Number.isFinite(Number(row.page)) ? Number(row.page) + 1 : null,
+                        });
+                      }
+                    }}
                   >
                     <div className="reader-ref-top">
                       <span className="reader-ref-index">
@@ -4004,7 +4182,53 @@ export default function ReaderApp({
                       </div>
                       {row.doi && <div className="reader-ref-doi">DOI: {row.doi}</div>}
                     </div>
-                  </button>
+                    {isActive && rowMentions.length > 0 && (
+                      <div className="reader-ref-mentions">
+                        <div className="reader-ref-mentions-title">
+                          Menciones ({rowMentions.length})
+                        </div>
+                        {rowMentions.map((mention, mentionIndex) => {
+                          const mentionId = String(mention?.id || "");
+                          const mentionPageValue = Number(mention?.page);
+                          const mentionPageLabel = Number.isFinite(mentionPageValue)
+                            ? `p. ${mentionPageValue + 1}`
+                            : "p. -";
+                          const mentionText = String(mention?.text || "").trim();
+                          const isSelectedMention =
+                            mentionId &&
+                            mentionId === String(selectedCitationId || "");
+                          return (
+                            <button
+                              type="button"
+                              key={mentionId || `${row.ref_id}-mention-${mentionIndex}`}
+                              className={
+                                isSelectedMention
+                                  ? "reader-ref-mention is-active"
+                                  : "reader-ref-mention"
+                              }
+                              onMouseEnter={() => {
+                                setHoveredReferenceId(row.ref_id);
+                                setHoveredCitationId(mentionId);
+                              }}
+                              onMouseLeave={() => setHoveredCitationId("")}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleReferenceMentionSelect(mention, row.ref_id);
+                              }}
+                            >
+                              <span className="reader-ref-mention-meta">
+                                {mentionPageLabel}
+                              </span>
+                              <span className="reader-ref-mention-text">
+                                {mentionText || "Cita sin texto disponible."}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })
             )}
