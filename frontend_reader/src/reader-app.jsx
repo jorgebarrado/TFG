@@ -3267,8 +3267,16 @@ export default function ReaderApp({
     const normalizeReferenceItems = (source, itemType) => {
       if (!Array.isArray(source)) return [];
       return source.map((item, index) => {
-        const page = normalizeOverlayPage(item?.page);
-        const box = normalizeOverlayBox(item?.box);
+        const resolvedPageCandidate =
+          item?.resolved_page !== undefined && item?.resolved_page !== null
+            ? item.resolved_page
+            : item?.page;
+        const resolvedBoxCandidate =
+          Array.isArray(item?.resolved_box) && item.resolved_box.length >= 4
+            ? item.resolved_box
+            : item?.box;
+        const page = normalizeOverlayPage(resolvedPageCandidate);
+        const box = normalizeOverlayBox(resolvedBoxCandidate);
         const refId = toRefId(item, index);
         return {
           id: String(item?.id || `${itemType}-${index + 1}-${refId}`),

@@ -271,6 +271,31 @@ def _normalize_citation_marker(value: str) -> str:
     return compact.replace("\u2013", "-").replace("\u2014", "-")
 
 
+def _candidate_pages(
+    page_hint: Optional[int],
+    available_pages: Sequence[int],
+) -> List[int]:
+    known_pages = sorted(
+        {
+            int(page)
+            for page in available_pages
+            if isinstance(page, int) and page >= 0
+        }
+    )
+    if page_hint is None:
+        return known_pages
+
+    ordered: List[int] = []
+    for page in (page_hint, page_hint - 1, page_hint + 1):
+        if page < 0:
+            continue
+        if page in known_pages and page not in ordered:
+            ordered.append(page)
+    if ordered:
+        return ordered
+    return known_pages
+
+
 def _find_citation_marker_box(
     snippet_text: str,
     page_hint: Optional[int],
@@ -289,18 +314,23 @@ def _find_citation_marker_box(
         page = token.get("page")
         if not isinstance(page, int):
             continue
-        if page_hint is not None and page != page_hint:
-            continue
         token_text = _normalize_citation_marker(str(token.get("text") or ""))
         if not token_text:
             continue
         tokens_by_page[page].append(token)
 
+    page_candidates = _candidate_pages(page_hint, list(tokens_by_page.keys()))
+    if not page_candidates:
+        return None
+
     best: Optional[Dict[str, Any]] = None
-    best_area = float("inf")
+    best_rank: Optional[Tuple[int, float]] = None
     max_window = 8
 
-    for page, page_tokens in tokens_by_page.items():
+    for page_priority, page in enumerate(page_candidates):
+        page_tokens = tokens_by_page.get(page) or []
+        if not page_tokens:
+            continue
         ordered_tokens = sorted(
             page_tokens, key=lambda item: (float(item["box"][1]), float(item["box"][0]))
         )
@@ -333,8 +363,9 @@ def _find_citation_marker_box(
                         if not merged_box:
                             break
                         area = _box_area(merged_box)
-                        if area < best_area:
-                            best_area = area
+                        rank = (page_priority, area)
+                        if best_rank is None or rank < best_rank:
+                            best_rank = rank
                             best = {
                                 "id": f"token-marker-{page}-{start}",
                                 "text": marker,
@@ -362,38 +393,61 @@ def _pick_best_text_box(
         return None
 
     snippet_tokens = _tokenize(normalized_snippet)
-    candidate_pool = [
-        item for item in rows if page_hint is None or item["page"] == page_hint
+    available_pages = [
+        item.get("page")
+        for item in rows + paragraphs
+        if isinstance(item.get("page"), int)
     ]
-    if not candidate_pool:
-        candidate_pool = [
-            item for item in paragraphs if page_hint is None or item["page"] == page_hint
-        ]
-    if not candidate_pool:
-        return None
+    page_candidates = _candidate_pages(page_hint, available_pages)
+    if page_hint is None and not page_candidates:
+        page_candidates = [None]
 
-    best_item: Optional[Dict[str, Any]] = None
-    best_score = 0.0
-    for item in candidate_pool:
-        item_text = _normalize_text(item.get("text", ""))
-        if not item_text:
-            continue
-        score = 0.0
-        if normalized_snippet in item_text:
-            score += 2.5
-        elif item_text in normalized_snippet:
-            score += 1.5
+    def _best_item_in_pool(pool: Sequence[Dict[str, Any]]) -> Tuple[Optional[Dict[str, Any]], float]:
+        best_item: Optional[Dict[str, Any]] = None
+        best_score = 0.0
+        for item in pool:
+            item_text = _normalize_text(item.get("text", ""))
+            if not item_text:
+                continue
+            score = 0.0
+            if normalized_snippet in item_text:
+                score += 2.5
+            elif item_text in normalized_snippet:
+                score += 1.5
 
-        item_tokens = _tokenize(item_text)
-        if snippet_tokens and item_tokens:
-            overlap = len(snippet_tokens.intersection(item_tokens))
-            score += overlap / max(len(snippet_tokens), 1)
+            item_tokens = _tokenize(item_text)
+            if snippet_tokens and item_tokens:
+                overlap = len(snippet_tokens.intersection(item_tokens))
+                score += overlap / max(len(snippet_tokens), 1)
 
-        if score > best_score:
-            best_score = score
-            best_item = item
+            if score > best_score:
+                best_score = score
+                best_item = item
+        return best_item, best_score
 
-    return best_item if best_score >= 0.15 else None
+    best_rank: Optional[Tuple[int, int, float]] = None
+    best_match: Optional[Dict[str, Any]] = None
+    pool_specs = [("rows", rows), ("paragraphs", paragraphs)]
+
+    for page_priority, candidate_page in enumerate(page_candidates):
+        for pool_priority, (_, source_pool) in enumerate(pool_specs):
+            if candidate_page is None:
+                candidate_pool = list(source_pool)
+            else:
+                candidate_pool = [
+                    item for item in source_pool if item.get("page") == candidate_page
+                ]
+            if not candidate_pool:
+                continue
+            match_item, match_score = _best_item_in_pool(candidate_pool)
+            if match_item is None or match_score < 0.15:
+                continue
+            rank = (page_priority, pool_priority, -match_score)
+            if best_rank is None or rank < best_rank:
+                best_rank = rank
+                best_match = match_item
+
+    return best_match
 
 
 def _pick_context_paragraph(
