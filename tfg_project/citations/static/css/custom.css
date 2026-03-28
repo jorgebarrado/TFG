@@ -166,6 +166,101 @@ a:hover { text-decoration: underline; }
   gap: clamp(0.75rem, 1.25vw, 1.5rem) !important;
 }
 
+.home-page .home-card-shell {
+  align-items: stretch;
+}
+
+.home-page .home-card-icon {
+  width: 3.65rem;
+  height: 3.65rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin: 0 auto 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.home-page .group:hover .home-card-icon {
+  transform: scale(1.08);
+}
+
+.home-page .home-card-title {
+  min-height: 2.9rem;
+  margin-bottom: 0.5rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.home-page .home-card-copy {
+  min-height: 3.4rem;
+  margin-bottom: 0.95rem !important;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.home-page .home-card-actions {
+  width: 100%;
+}
+
+.home-page .home-card-panel {
+  min-height: 5.3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-page .home-card-btn {
+  min-height: 2.85rem;
+  border-radius: 0.85rem !important;
+  padding: 0.62rem 1rem !important;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.home-page .home-card-btn:hover {
+  text-decoration: none;
+}
+
+.home-page .home-card-btn--pdf-primary {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.home-page .home-card-btn--pdf-primary:hover {
+  background: #9333ea;
+  color: #ffffff;
+}
+
+.home-page .home-card-btn--pdf-outline {
+  background: transparent;
+  border: 1px solid #a855f7;
+  color: #9333ea;
+}
+
+.home-page .home-card-btn--pdf-outline:hover {
+  background: #9333ea;
+  border-color: #9333ea;
+  color: #ffffff;
+}
+
+.home-page #home-dblp-card .home-card-panel .home-card-btn {
+  width: 100%;
+}
+
+.home-page #pdf-card-dropzone {
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .home-powered-section {
   margin-top: clamp(1rem, 2.2vh, 3rem) !important;
 }
@@ -240,11 +335,32 @@ a:hover { text-decoration: underline; }
     margin-bottom: clamp(0.55rem, 1.2vh, 1rem) !important;
   }
 
+  .home-page .home-card-title {
+    min-height: clamp(2.55rem, 4.6vh, 3.1rem);
+    font-size: clamp(1.1rem, 1.22vw, 1.26rem) !important;
+  }
+
+  .home-page .home-card-copy {
+    min-height: clamp(3.1rem, 7.2vh, 4.2rem);
+    font-size: clamp(0.78rem, 0.82vw, 0.92rem) !important;
+    line-height: 1.36;
+  }
+
   .home-page .btn,
   .home-page button[class*="w-100"] {
     padding-top: clamp(0.45rem, 0.9vh, 0.72rem) !important;
     padding-bottom: clamp(0.45rem, 0.9vh, 0.72rem) !important;
     min-height: 0;
+  }
+
+  .home-page .home-card-panel {
+    min-height: clamp(5.1rem, 10.5vh, 7rem);
+  }
+
+  .home-page .home-card-btn {
+    min-height: clamp(2.55rem, 4.4vh, 2.95rem);
+    padding-top: clamp(0.5rem, 0.95vh, 0.72rem) !important;
+    padding-bottom: clamp(0.5rem, 0.95vh, 0.72rem) !important;
   }
 
   .home-page #pdf-card-dropzone {

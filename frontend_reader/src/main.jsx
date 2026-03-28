@@ -8,6 +8,112 @@ let previewFile = null;
 let previewSnippets = [];
 let previewStats = null;
 let previewReferences = [];
+const READER_PAYLOAD_DB = "citecheck-reader-payloads";
+const READER_PAYLOAD_STORE = "payloads";
+const READER_PAYLOAD_SESSION_KEY = "citecheck.reader.payload";
+
+function getPayloadKeyFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    return String(url.searchParams.get("payload") || "").trim();
+  } catch (e) {
+    return "";
+  }
+}
+
+function clearPayloadKeyFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("payload")) return;
+    url.searchParams.delete("payload");
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState(window.history.state, "", next);
+  } catch (e) {
+    // noop
+  }
+}
+
+function openPayloadDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+      reject(new Error("indexeddb_unavailable"));
+      return;
+    }
+    const req = window.indexedDB.open(READER_PAYLOAD_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(READER_PAYLOAD_STORE)) {
+        db.createObjectStore(READER_PAYLOAD_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("indexeddb_open_failed"));
+  });
+}
+
+function readPayloadFileFromDb(db, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(READER_PAYLOAD_STORE, "readonly");
+    const req = tx.objectStore(READER_PAYLOAD_STORE).get(key);
+    req.onsuccess = () => resolve(req.result?.file || null);
+    req.onerror = () => reject(req.error || new Error("indexeddb_read_failed"));
+  });
+}
+
+function deletePayloadFromDb(db, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(READER_PAYLOAD_STORE, "readwrite");
+    tx.objectStore(READER_PAYLOAD_STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error || new Error("indexeddb_delete_failed"));
+  });
+}
+
+function readPayloadDataFromSession(key) {
+  try {
+    const raw = window.sessionStorage.getItem(`${READER_PAYLOAD_SESSION_KEY}:${key}`);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearPayloadDataFromSession(key) {
+  try {
+    window.sessionStorage.removeItem(`${READER_PAYLOAD_SESSION_KEY}:${key}`);
+  } catch (e) {
+    // noop
+  }
+}
+
+async function bootstrapStoredPayload() {
+  const payloadKey = getPayloadKeyFromUrl();
+  if (!payloadKey) return;
+
+  const sessionPayload = readPayloadDataFromSession(payloadKey);
+  if (sessionPayload && typeof sessionPayload === "object") {
+    previewSnippets = Array.isArray(sessionPayload.snippets)
+      ? sessionPayload.snippets
+      : [];
+    previewStats = sessionPayload.stats || null;
+    previewReferences = Array.isArray(sessionPayload.references)
+      ? sessionPayload.references
+      : [];
+  }
+
+  try {
+    const db = await openPayloadDb();
+    previewFile = await readPayloadFileFromDb(db, payloadKey);
+    await deletePayloadFromDb(db, payloadKey);
+    db.close();
+  } catch (e) {
+    previewFile = null;
+  } finally {
+    clearPayloadDataFromSession(payloadKey);
+    clearPayloadKeyFromUrl();
+  }
+}
 
 window.addEventListener("message", (event) => {
   if (event.origin !== window.location.origin) return;
@@ -65,7 +171,8 @@ if (document.readyState === "complete") {
 } else {
   window.addEventListener("load", notifyReady);
 }
-if (mount) {
+function renderReaderApp() {
+  if (!mount) return;
   const apiUrl = mount.dataset.apiUrl || "";
   const pdfUrl = mount.dataset.pdfUrl || "";
   const reportId = mount.dataset.reportId || "";
@@ -86,3 +193,5 @@ if (mount) {
     mount
   );
 }
+
+bootstrapStoredPayload().finally(renderReaderApp);

@@ -17,6 +17,9 @@
   const ENDPOINT = '/citations/api/extract-citations/';
   const ENGINES_ENDPOINT = '/citations/api/extractor-engines/';
   const READER_PREVIEW = '/citations/reader/preview/';
+  const READER_PAYLOAD_DB = 'citecheck-reader-payloads';
+  const READER_PAYLOAD_STORE = 'payloads';
+  const READER_PAYLOAD_SESSION_KEY = 'citecheck.reader.payload';
 
   if (!form) return; // por si la modal no está en esta vista
 
@@ -232,68 +235,68 @@
     }, { once: true }); // nos suscribimos una vez por apertura de modal
   }
 
-  function openReaderPreview() {
+  function openPayloadDb() {
+    return new Promise((resolve, reject) => {
+      const req = window.indexedDB.open(READER_PAYLOAD_DB, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(READER_PAYLOAD_STORE)) {
+          db.createObjectStore(READER_PAYLOAD_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('indexeddb_open_failed'));
+    });
+  }
+
+  function writePayloadToDb(db, key, payload) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(READER_PAYLOAD_STORE, 'readwrite');
+      tx.objectStore(READER_PAYLOAD_STORE).put(payload, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('indexeddb_write_failed'));
+    });
+  }
+
+  async function persistReaderPayload(file, dataPayload) {
+    const payloadKey = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const db = await openPayloadDb();
+    await writePayloadToDb(db, payloadKey, {
+      file,
+      createdAt: Date.now(),
+    });
+    db.close();
+    try {
+      sessionStorage.setItem(
+        `${READER_PAYLOAD_SESSION_KEY}:${payloadKey}`,
+        JSON.stringify(dataPayload)
+      );
+    } catch (e) {
+      // noop
+    }
+    return payloadKey;
+  }
+
+  async function openReaderPreview() {
     const file = fileInput?.files?.[0];
     if (!file) {
       alertBox.textContent = 'Selecciona un PDF.';
       alertBox.classList.remove('d-none');
       return;
     }
-    const previewWin = window.open(READER_PREVIEW, '_blank');
-    if (!previewWin) {
-      alertBox.textContent = 'No se pudo abrir el visor.';
-      alertBox.classList.remove('d-none');
-      return;
-    }
 
     const payload = {
-      type: 'reader:payload',
-      file,
       snippets: extractionResult?.snippets || [],
       references: extractionResult?.references || [],
       stats: extractionResult?.stats || null,
     };
-    const targetOrigin = window.location.origin;
-    let attempts = 0;
-    let timerId = null;
-
-    const sendPayload = () => {
-      try {
-        previewWin.postMessage(payload, targetOrigin);
-      } catch (e) {
-        // noop
-      }
-    };
-
-    const cleanup = () => {
-      if (timerId) {
-        clearInterval(timerId);
-        timerId = null;
-      }
-      window.removeEventListener('message', onReady);
-    };
-
-    const onReady = (event) => {
-      if (event.origin !== targetOrigin) return;
-      if (!event.data || event.data.type !== 'reader:ready') return;
-      sendPayload();
-      cleanup();
-    };
-
-    window.addEventListener('message', onReady);
-    sendPayload();
-    timerId = setInterval(() => {
-      if (!previewWin || previewWin.closed) {
-        cleanup();
-        return;
-      }
-      attempts += 1;
-      if (attempts > 10) {
-        cleanup();
-        return;
-      }
-      sendPayload();
-    }, 800);
+    try {
+      const payloadKey = await persistReaderPayload(file, payload);
+      const readerUrl = `${READER_PREVIEW}?payload=${encodeURIComponent(payloadKey)}`;
+      window.location.assign(readerUrl);
+    } catch (e) {
+      window.location.assign(READER_PREVIEW);
+    }
   }
 
   if (engineSel) {
