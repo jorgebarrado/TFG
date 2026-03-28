@@ -8,7 +8,7 @@
 <div class="container py-5">
 
     <div class="mb-4 text-start">
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">
+        <a id="backToCitationListBtn" href="{% url 'citation_list' %}" class="btn btn-outline-primary">
             &larr; {% trans "Volver al listado" %}
         </a>
     </div>
@@ -1221,9 +1221,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const reportForm = document.getElementById('report-global-edit-form');
   const feedback = document.getElementById('creationGuardFeedback');
   const discardUrl = "{{ discard_draft_url|escapejs }}";
+  const backToListLink = document.getElementById('backToCitationListBtn');
   const guardModalEl = document.getElementById('creationGuardModal');
   const guardConfirmBtn = document.getElementById('creationGuardConfirmLeaveBtn');
   let allowUnload = false;
+  let skipNextPopstate = false;
+  let isHandlingPopstate = false;
+  let isSubmittingReport = false;
 
   if (!reportEditMode || !creationGuardEnabled || !reportForm) return;
 
@@ -1372,7 +1376,8 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const askLeaveConfirmation = async () => {
-    if (getMissingFields().length === 0) return true;
+    if (isSubmittingReport) return true;
+    const missing = getMissingFields();
     const shouldLeave = await new Promise((resolve) => {
       if (!guardModalEl || typeof bootstrap === 'undefined') {
         resolve(
@@ -1405,13 +1410,106 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (!shouldLeave) {
-      showMissingState();
+      if (missing.length) {
+        showMissingState();
+      } else {
+        clearMissingState();
+      }
       return false;
     }
     allowUnload = true;
     await discardDraft();
     return true;
   };
+
+  const discardDraftBackground = () => {
+    if (!discardUrl || allowUnload || isSubmittingReport) return;
+    const csrfToken = typeof getCookie === 'function' ? getCookie('csrftoken') : '';
+    if (!csrfToken) return;
+    try {
+      if (navigator.sendBeacon) {
+        const payload = new URLSearchParams();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        navigator.sendBeacon(discardUrl, payload);
+        return;
+      }
+    } catch (err) {
+      // noop
+    }
+    try {
+      fetch(discardUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: `csrfmiddlewaretoken=${encodeURIComponent(csrfToken)}`,
+      });
+    } catch (err) {
+      // noop
+    }
+  };
+
+  const pushPopstateGuard = () => {
+    if (!window.history || typeof window.history.pushState !== 'function') return false;
+    const state =
+      window.history.state && typeof window.history.state === 'object'
+        ? window.history.state
+        : {};
+    window.history.pushState(
+      { ...state, __creationGuardTrap: Date.now() },
+      document.title,
+      window.location.href
+    );
+    return true;
+  };
+
+  if (pushPopstateGuard()) {
+    window.addEventListener('popstate', async () => {
+      if (skipNextPopstate) {
+        skipNextPopstate = false;
+        return;
+      }
+      if (isHandlingPopstate) {
+        pushPopstateGuard();
+        return;
+      }
+      isHandlingPopstate = true;
+
+      try {
+        const fallbackUrl = backToListLink?.href || '';
+
+        if (allowUnload || isSubmittingReport) {
+          allowUnload = true;
+          if (fallbackUrl) {
+            window.location.href = fallbackUrl;
+            return;
+          }
+          skipNextPopstate = true;
+          window.history.back();
+          return;
+        }
+
+        pushPopstateGuard();
+        const allowLeave = await askLeaveConfirmation();
+        if (!allowLeave) {
+          return;
+        }
+
+        if (fallbackUrl) {
+          window.location.href = fallbackUrl;
+          return;
+        }
+        skipNextPopstate = true;
+        window.history.back();
+      } finally {
+        isHandlingPopstate = false;
+      }
+    });
+  }
 
   document.addEventListener('click', async (event) => {
     if (event.defaultPrevented) return;
@@ -1438,7 +1536,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
-    if (form.id === reportForm.id) return;
+    if (form.id === reportForm.id) {
+      isSubmittingReport = true;
+      allowUnload = true;
+      return;
+    }
     if (form.hasAttribute('hx-post') || form.hasAttribute('hx-get') || form.hasAttribute('data-hx-post') || form.hasAttribute('data-hx-get')) return;
     event.preventDefault();
     const allowLeave = await askLeaveConfirmation();
@@ -1446,18 +1548,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }, true);
 
   window.addEventListener('beforeunload', (event) => {
-    if (allowUnload) return;
-    if (getMissingFields().length === 0) return;
+    if (allowUnload || isSubmittingReport) return;
     event.preventDefault();
     event.returnValue = '';
+  });
+
+  window.addEventListener('pagehide', () => {
+    discardDraftBackground();
   });
 });
 </script>
 {% endif %}
 
 {% endblock %}
-
-
-
 
 
