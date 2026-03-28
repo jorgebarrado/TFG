@@ -1121,7 +1121,7 @@ function useReaderV2Overlay(
     const rawOpacity = Number(readerV2Opacity);
     const opacity = Number.isFinite(rawOpacity)
       ? Math.max(0, Math.min(1, rawOpacity))
-      : 0.35;
+      : 1;
     const shouldFilterByVisibleText =
       String(readerV2Layer || "").toLowerCase() === "tokens";
     const render = () => {
@@ -1761,7 +1761,7 @@ export default function ReaderApp({
   });
   const [readerV2Data, setReaderV2Data] = useState(null);
   const [showReaderV2, setShowReaderV2] = useState(false);
-  const [readerV2Opacity, setReaderV2Opacity] = useState(0.35);
+  const [readerV2Opacity, setReaderV2Opacity] = useState(1);
   const [readerV2Layer, setReaderV2Layer] = useState("");
   const [hoveredItemId, setHoveredItemId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -1795,6 +1795,7 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
+    setReaderV2Opacity(1);
     return () => URL.revokeObjectURL(objectUrl);
   }, [previewFile]);
 
@@ -1830,6 +1831,7 @@ export default function ReaderApp({
       setHoveredItemId(null);
       setSelectedItemId(null);
       setShowReaderV2(false);
+      setReaderV2Opacity(1);
       setPreviewUrl((current) => {
         if (current) {
           URL.revokeObjectURL(current);
@@ -3446,6 +3448,7 @@ export default function ReaderApp({
       setHoveredItemId(null);
       setSelectedItemId(null);
       setShowReaderV2(Boolean(nextLayer));
+      setReaderV2Opacity(1);
       setActiveTab("references");
       const outcome = describeExtractionOutcome(result, nextLayer, nextItems);
       setExtractStatus({
@@ -3692,6 +3695,7 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
+    setReaderV2Opacity(1);
     setExtractStatus({
       loading: false,
       error: "",
@@ -3736,6 +3740,7 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
+    setReaderV2Opacity(1);
     setExtractStatus({
       loading: false,
       error: "",

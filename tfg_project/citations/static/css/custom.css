@@ -107,7 +107,7 @@ a:hover { text-decoration: underline; }
 .page-surface {
   position: relative;
   min-height: 100vh;
-  padding-bottom: 4rem;
+  padding-bottom: 0;
 }
 
 .page-surface .glow {
@@ -145,6 +145,116 @@ a:hover { text-decoration: underline; }
 .content-shell {
   position: relative;
   z-index: 1;
+}
+
+.home-page {
+  min-height: calc(100vh - var(--navbar-height));
+  overflow: visible;
+}
+
+.home-page > .container {
+  width: 100%;
+}
+
+.home-screen-layout {
+  gap: clamp(0.5rem, 1.2vh, 1rem);
+  min-height: 100%;
+}
+
+.home-actions-grid {
+  margin-top: clamp(0.8rem, 1.8vh, 1.5rem) !important;
+  gap: clamp(0.75rem, 1.25vw, 1.5rem) !important;
+}
+
+.home-powered-section {
+  margin-top: clamp(1rem, 2.2vh, 3rem) !important;
+}
+
+@media (min-width: 992px) {
+  body.home-screen-lock {
+    overflow: hidden;
+  }
+
+  body.home-screen-lock .home-page {
+    overflow: hidden;
+  }
+
+  .home-page > .container {
+    min-height: calc(100vh - var(--navbar-height));
+    padding-top: clamp(0.5rem, 1.2vh, 1rem) !important;
+    padding-bottom: 0 !important;
+  }
+
+  .home-page > .container > .row,
+  .home-page > .container > .row > [class*="col-"] {
+    height: 100%;
+  }
+
+  .home-screen-layout {
+    min-height: calc(100vh - var(--navbar-height) - clamp(0.5rem, 1.2vh, 1rem) - clamp(0.2rem, 0.6vh, 0.5rem));
+    justify-content: flex-start !important;
+  }
+
+  .home-powered-section {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .home-page h1 {
+    font-size: clamp(2.1rem, 3.4vw, 3rem);
+    margin-bottom: clamp(0.45rem, 1vh, 0.9rem) !important;
+  }
+
+  .home-page .lead {
+    font-size: clamp(1rem, 1.2vw, 1.2rem);
+    margin-bottom: clamp(0.55rem, 1.2vh, 1rem) !important;
+  }
+
+  .home-page .badge {
+    font-size: clamp(0.68rem, 0.72vw, 0.8rem);
+    padding: 0.28rem 0.55rem;
+  }
+
+  .home-page .glass-card {
+    padding: clamp(0.95rem, 1.6vh, 1.35rem) !important;
+  }
+
+  .home-page .w-16.h-16 {
+    width: clamp(3.1rem, 4vh, 3.8rem);
+    height: clamp(3.1rem, 4vh, 3.8rem);
+    margin-bottom: clamp(0.65rem, 1.2vh, 1.2rem) !important;
+    font-size: clamp(1.2rem, 1.6vw, 1.5rem);
+  }
+
+  .home-page .text-xl,
+  .home-page .text-lg {
+    font-size: clamp(1.1rem, 1.25vw, 1.3rem) !important;
+  }
+
+  .home-page .text-slate-500.text-sm,
+  .home-page .text-sm.text-slate-600 {
+    font-size: clamp(0.78rem, 0.82vw, 0.92rem) !important;
+    line-height: 1.35;
+    margin-bottom: clamp(0.55rem, 1.2vh, 1rem) !important;
+  }
+
+  .home-page .btn,
+  .home-page button[class*="w-100"] {
+    padding-top: clamp(0.45rem, 0.9vh, 0.72rem) !important;
+    padding-bottom: clamp(0.45rem, 0.9vh, 0.72rem) !important;
+    min-height: 0;
+  }
+
+  .home-page #pdf-card-dropzone {
+    padding-top: clamp(0.4rem, 0.7vh, 0.65rem);
+    padding-bottom: clamp(0.4rem, 0.7vh, 0.65rem);
+  }
+
+  .home-page .home-powered-section .gap-10 {
+    gap: clamp(0.85rem, 1.2vw, 1.7rem) !important;
+  }
 }
 
 .layout-shell {
