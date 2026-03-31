@@ -1,6 +1,7 @@
 """Views for pages that render complete HTML pages."""
 
 import os
+import re
 import tempfile
 import uuid
 from urllib.parse import unquote, urlparse
@@ -37,7 +38,7 @@ from ..models import (
 from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.citation_extractor import process_manuscript
 from ..services.engines import ALLOWED_ENGINES
-from ..services.reader_data import extract_pdf_url_from_metadata
+from ..services.reader_data import extract_pdf_references, extract_pdf_url_from_metadata
 from ..services.report_tags import (
     CITATION_TYPE_CHOICES,
     PUBLICATION_AREA_LABELS,
@@ -167,6 +168,162 @@ def _get_uploaded_pdf_path(
         if normalized and default_storage.exists(normalized):
             return normalized
     return ""
+
+
+def _normalize_context_text(value) -> str:
+    return " ".join(str(value or "").split()).strip()
+
+
+def _context_dedupe_key(page, paragraph: str, snippet: str) -> tuple[str, str]:
+    primary_text = _normalize_context_text(paragraph) or _normalize_context_text(snippet)
+    page_key = str(page).strip() if page is not None else ""
+    return page_key, primary_text
+
+
+DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
+DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
+AUTHOR_YEAR_REGEX = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*((?:19|20)\d{2})\s*\)")
+
+
+def _normalize_doi(value: str) -> str:
+    candidate = str(value or "").strip()
+    candidate = re.sub(r"^doi:\s*", "", candidate, flags=re.IGNORECASE)
+    candidate = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE)
+    return candidate.rstrip(").,;:]").strip().lower()
+
+
+def _extract_doi(text: str) -> str:
+    if not text:
+        return ""
+    url_match = DOI_URL_REGEX.search(text)
+    if url_match:
+        return _normalize_doi(url_match.group(1))
+    match = DOI_REGEX.search(text)
+    if match:
+        return _normalize_doi(match.group(0))
+    return ""
+
+
+def _extract_original_year(metadata: dict) -> str:
+    for key in ("published-print", "published-online", "issued"):
+        date_parts = (metadata.get(key, {}) or {}).get("date-parts", [])
+        if not isinstance(date_parts, list) or not date_parts:
+            continue
+        first = date_parts[0]
+        if isinstance(first, list) and first:
+            year = first[0]
+            if isinstance(year, int):
+                return str(year)
+            year_str = str(year or "").strip()
+            if year_str.isdigit() and len(year_str) == 4:
+                return year_str
+    return ""
+
+
+def _extract_original_authors(metadata: dict) -> set[str]:
+    authors = metadata.get("author") or []
+    normalized: set[str] = set()
+    if not isinstance(authors, list):
+        return normalized
+    for author in authors:
+        if not isinstance(author, dict):
+            continue
+        family = str(author.get("family") or "").strip().lower()
+        if family:
+            normalized.add(family)
+    return normalized
+
+
+def _build_target_hints(citation) -> dict:
+    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    return {
+        "doi": _normalize_doi(citation.doi_original or ""),
+        "year": _extract_original_year(metadata),
+        "authors": _extract_original_authors(metadata),
+    }
+
+
+def _reference_entry_matches_target(reference_entry: dict, target_hints: dict) -> bool:
+    target_doi = str(target_hints.get("doi") or "")
+    target_year = str(target_hints.get("year") or "")
+    target_authors: set[str] = set(target_hints.get("authors") or set())
+
+    reference_raw = str(reference_entry.get("raw") or "")
+    reference_doi = _normalize_doi(str(reference_entry.get("doi") or "")) or _extract_doi(
+        reference_raw
+    )
+    reference_lower = reference_raw.lower()
+
+    if target_doi and reference_doi:
+        return reference_doi == target_doi
+    if target_doi and not reference_doi:
+        return False
+
+    if target_year and target_authors:
+        has_year = target_year in reference_lower
+        has_author = any(author in reference_lower for author in target_authors)
+        return has_year and has_author
+
+    return False
+
+
+def _item_mentions_target(item: dict, target_hints: dict, references_by_index: dict[int, dict]) -> bool:
+    target_doi = str(target_hints.get("doi") or "")
+    target_year = str(target_hints.get("year") or "")
+    target_authors: set[str] = set(target_hints.get("authors") or set())
+    if not target_doi and not (target_year and target_authors):
+        return True
+
+    item_type = str(item.get("type") or item.get("pattern") or "").strip().lower()
+    raw_payload = item.get("raw")
+    raw_data = raw_payload if isinstance(raw_payload, dict) else {}
+    match_text = str(
+        raw_data.get("match")
+        or item.get("match")
+        or item.get("snippet")
+        or item.get("paragraph")
+        or ""
+    )
+
+    if item_type == "doi":
+        if not target_doi:
+            return False
+        return _extract_doi(match_text) == target_doi
+
+    if item_type == "numeric":
+        raw_numbers = raw_data.get("citation_numbers")
+        numbers: list[int] = []
+        if isinstance(raw_numbers, list):
+            for value in raw_numbers:
+                try:
+                    parsed = int(value)
+                except (TypeError, ValueError):
+                    continue
+                if parsed > 0:
+                    numbers.append(parsed)
+
+        if not numbers or not references_by_index:
+            return False
+
+        for number in numbers:
+            reference_entry = references_by_index.get(number)
+            if reference_entry and _reference_entry_matches_target(reference_entry, target_hints):
+                return True
+        return False
+
+    if item_type in {"authoryear", "author-year"}:
+        match = AUTHOR_YEAR_REGEX.search(match_text)
+        if not match:
+            return False
+        author = str(match.group(1) or "").strip().lower()
+        year = str(match.group(2) or "").strip()
+        if target_year and year != target_year:
+            return False
+        if target_authors and author not in target_authors:
+            return False
+        return bool(author and year)
+
+    return False
 
 
 def citation_list(request):
@@ -571,6 +728,19 @@ def citation_edit(request, pk):
 
 @login_required
 @require_POST
+def citation_delete(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    if not _can_edit_report(request.user, citation):
+        messages.error(request, "No tienes permiso para eliminar este reporte.")
+        return redirect("citation_detail", pk=pk)
+
+    citation.delete()
+    messages.success(request, "Reporte eliminado correctamente.")
+    return redirect("citation_list")
+
+
+@login_required
+@require_POST
 def citation_discard_draft(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     if not _can_edit_report(request.user, citation):
@@ -740,14 +910,41 @@ def citation_extract_contexts(request, pk):
             )
             return redirect("citation_detail", pk=pk)
 
+        references, _ = extract_pdf_references(tmp_path)
+        references_by_index: dict[int, dict] = {}
+        for reference in references:
+            if not isinstance(reference, dict):
+                continue
+            raw_index = reference.get("index")
+            try:
+                idx = int(raw_index)
+            except (TypeError, ValueError):
+                continue
+            if idx > 0 and idx not in references_by_index:
+                references_by_index[idx] = reference
+        target_hints = _build_target_hints(citation)
+
         contexts = []
+        seen_context_keys: set[tuple[str, str]] = set()
         for item in data.get("results") or []:
             if not isinstance(item, dict):
                 continue
+            if not _item_mentions_target(item, target_hints, references_by_index):
+                continue
+            raw_payload = item.get("raw")
+            raw_data = raw_payload if isinstance(raw_payload, dict) else {}
             paragraph = str(item.get("paragraph") or "").strip()
             snippet = str(item.get("snippet") or "").strip()
             if not paragraph and not snippet:
                 continue
+            dedupe_key = _context_dedupe_key(
+                item.get("page"),
+                paragraph=paragraph,
+                snippet=snippet,
+            )
+            if not dedupe_key[1] or dedupe_key in seen_context_keys:
+                continue
+            seen_context_keys.add(dedupe_key)
             contexts.append(
                 {
                     "page": item.get("page"),
@@ -757,6 +954,14 @@ def citation_extract_contexts(request, pk):
                     "start": item.get("start"),
                     "end": item.get("end"),
                     "confidence": item.get("confidence") or 0,
+                    "citation_numbers": (
+                        raw_data.get("citation_numbers")
+                        if isinstance(raw_data.get("citation_numbers"), list)
+                        else []
+                    ),
+                    "citation_block": str(
+                        raw_data.get("citation_block") or raw_data.get("match") or ""
+                    ),
                 }
             )
 
