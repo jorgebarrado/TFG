@@ -596,6 +596,26 @@ body.sidebar-open .sidebar-overlay {
   max-width: 34rem;
 }
 
+.report-edit-form[data-edit-form="header"] .report-hero-edit__title-input--plain {
+  max-width: none;
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+  border-radius: 0.85rem;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 1rem !important;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.report-edit-form[data-edit-form="header"] .report-hero-edit__title-input--plain:focus {
+  background: transparent !important;
+  border-color: rgba(37, 99, 235, 0.55) !important;
+  box-shadow: 0 0 0 .18rem rgba(37, 99, 235, 0.14) !important;
+}
+
 .report-hero-edit__doi-input {
   max-width: 26rem;
 }

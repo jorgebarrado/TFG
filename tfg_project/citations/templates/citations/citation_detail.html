@@ -49,13 +49,26 @@
             </div>
 
             {% if can_edit_report %}
+            <form id="report-delete-form" method="post" action="{% url 'citation_delete' citation.id %}" class="d-none">
+                {% csrf_token %}
+            </form>
             <form id="report-global-edit-form" method="post" action="{% url 'citation_edit' citation.id %}" enctype="multipart/form-data" class="report-edit-form{% if not report_edit_mode %} d-none{% endif %}" data-edit-form="header">
                 {% csrf_token %}
                 <input type="hidden" name="section" value="{% if report_edit_mode %}all{% else %}header{% endif %}">
                 <div class="row g-4 align-items-start">
                     <div class="col-lg-8">
-                        <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
-                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input mb-3" value="{{ report_title }}" required>
+                        <div class="mb-2">
+                            <button
+                                type="submit"
+                                form="report-delete-form"
+                                class="btn btn-outline-danger btn-sm report-hero-inline__edit-btn"
+                                onclick="return confirm('{% trans '¿Seguro que quieres eliminar este reporte?' %}')"
+                                title="{% trans 'Eliminar reporte' %}"
+                                aria-label="{% trans 'Eliminar reporte' %}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input report-hero-edit__title-input--plain mb-3" value="{{ report_title }}" required>
                         <div class="row g-2 mb-3 align-items-start">
                             <div class="col-12 col-md-6">
                                 <label class="form-label small mb-1">{% trans "Area de publicacion" %}</label>
@@ -1219,6 +1232,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const reportEditMode = {{ report_edit_mode|yesno:"true,false" }};
   const creationGuardEnabled = {{ creation_guard_enabled|yesno:"true,false" }};
   const reportForm = document.getElementById('report-global-edit-form');
+  const reportDeleteForm = document.getElementById('report-delete-form');
   const feedback = document.getElementById('creationGuardFeedback');
   const discardUrl = "{{ discard_draft_url|escapejs }}";
   const backToListLink = document.getElementById('backToCitationListBtn');
@@ -1536,6 +1550,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
+    if (reportDeleteForm && form.id === reportDeleteForm.id) {
+      allowUnload = true;
+      isSubmittingReport = true;
+      return;
+    }
     if (form.id === reportForm.id) {
       isSubmittingReport = true;
       allowUnload = true;

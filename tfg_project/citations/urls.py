@@ -30,6 +30,7 @@ urlpatterns = [
         name="citation_uploaded_pdf_article",
     ),
     path("report/<int:pk>/edit/", page_views.citation_edit, name="citation_edit"),
+    path("report/<int:pk>/delete/", page_views.citation_delete, name="citation_delete"),
     path(
         "report/<int:pk>/discard-draft/",
         page_views.citation_discard_draft,

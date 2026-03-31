@@ -57,7 +57,7 @@
               <!-- Card -->
               <div class="glass-card home-card-shell hover-lift relative z-10 p-6 flex flex-col h-full text-center">
                 <div class="home-card-icon bg-blue-50 text-blue-600">
-                  <i class="fa-solid fa-keyboard"></i>
+                  <i class="fa-solid fa-pen-to-square"></i>
                 </div>
                 <h3 class="home-card-title text-xl font-bold text-slate-900 mb-2">
                   {% trans "Reportes" %}
@@ -72,12 +72,12 @@
                             type="button"
                             data-bs-toggle="modal"
                             data-bs-target="#reportModal">
-                      <i class="fa-solid fa-pen-to-square text-xs"></i>
-                      <span>{% trans "Manual" %}</span>
+                      <i class="fa-solid fa-bolt text-xs"></i>
+                      <span>{% trans "Rapido" %}</span>
                     </button>
                     <a href="{% url 'create_report_wizard' %}"
                        class="home-card-btn w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
-                      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                      <i class="fa-solid fa-file-lines text-xs"></i>
                       <span>{% trans "Pagina completa" %}</span>
                     </a>
                     <a href="{% url 'citation_list' %}"
@@ -146,14 +146,14 @@
                       class="home-card-btn home-card-btn--pdf-primary mt-3 w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
                              d-flex align-items-center justify-content-center gap-2
                              transition-colors">
-                      <span>{% trans "Procesar PDF" %}</span>
+                      <span>{% trans "Extraer citas" %}</span>
                       <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
                     </button>
                     <button
                       type="button"
                       id="pdf-open-reader-btn"
                       class="home-card-btn home-card-btn--pdf-outline mt-2 w-100 fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2">
-                      <span>{% trans "Abrir visor" %}</span>
+                      <span>{% trans "Visualizar PDF" %}</span>
                       <i class="fa-solid fa-book-open-reader text-xs"></i>
                     </button>
 
