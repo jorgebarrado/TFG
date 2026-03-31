@@ -68,7 +68,7 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
-                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input report-hero-edit__title-input--plain mb-3" value="{{ report_title }}" required>
+                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input report-hero-edit__title-input--plain mb-3" value="{{ report_title }}" placeholder="{% trans 'Titulo...' %}" required>
                         <div class="row g-2 mb-3 align-items-start">
                             <div class="col-12 col-md-6">
                                 <label class="form-label small mb-1">{% trans "Area de publicacion" %}</label>
@@ -142,7 +142,7 @@
                                 <div class="mt-3 report-edit-block" data-edit-block="original">
                                     <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="original">
                                         <label class="form-label small mb-1">{% trans "DOI original" %}</label>
-                                        <input id="report_doi_original_input" type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" class="form-control form-control-sm" required>
+                                        <input id="report_doi_original_input" type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" placeholder="10.1000/xyz123" class="form-control form-control-sm" required>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -194,7 +194,7 @@
                                 <div class="mt-3 report-edit-block" data-edit-block="incorrect">
                                     <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="incorrect">
                                         <label class="form-label small mb-1">{% trans "DOI incorrecto" %}</label>
-                                        <input id="report_doi_incorrect_input" type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" class="form-control form-control-sm" required>
+                                        <input id="report_doi_incorrect_input" type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" placeholder="10.1000/err456" class="form-control form-control-sm" required>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -312,7 +312,7 @@
                         <div class="mt-3 report-edit-block" data-edit-block="reason">
                             <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="reason">
                                 <label class="form-label small mb-1">{% trans "Explicación" %}</label>
-                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3" required>{{ citation.incorrect_reason }}</textarea>
+                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3" placeholder="{% trans 'Describa el motivo del reporte...' %}" required>{{ citation.incorrect_reason }}</textarea>
                             </div>
                         </div>
                         {% endif %}
