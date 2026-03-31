@@ -18,7 +18,7 @@
               type="text"
               class="form-control form-control-lg"
               name="report_title"
-              value="Reporte #{{ next_report_number }}"
+              placeholder="{% trans 'Titulo...' %}"
               required
             >
           </div>
@@ -228,7 +228,7 @@ const originalPdfInput = document.getElementById('id_uploaded_pdf_original_file'
 const incorrectPdfInput = document.getElementById('id_uploaded_pdf_incorrect_file');
 const citationTypeSelect = document.getElementById('citation_type');
 const publicationAreaSelect = document.getElementById('publication_area');
-const defaultReportTitle = 'Reporte #{{ next_report_number|default:1 }}';
+const defaultReportTitle = '';
 const noFileText = "{% trans 'Ningun archivo seleccionado' %}";
 const defaultDropMarkup = `<span class="fw-semibold text-success">{% trans "Subir archivo" %}</span> <span class="text-muted">{% trans "o arrastrar aqui" %}</span>`;
 

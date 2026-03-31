@@ -616,6 +616,10 @@ body.sidebar-open .sidebar-overlay {
   box-shadow: 0 0 0 .18rem rgba(37, 99, 235, 0.14) !important;
 }
 
+.report-edit-form[data-edit-form="header"] .report-hero-edit__title-input--plain::placeholder {
+  color: rgba(71, 85, 105, 0.85);
+}
+
 .report-hero-edit__doi-input {
   max-width: 26rem;
 }
