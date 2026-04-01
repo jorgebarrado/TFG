@@ -230,6 +230,66 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function normalizeForMatch(text) {
+  return (text || "")
+    .normalize("NFKD")
+    .replace(/[\u00AD\u200B]/g, "")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildNormalizedMatchIndex(text) {
+  const source = String(text || "");
+  let normalizedText = "";
+  const indexMap = [];
+  let pendingSpace = false;
+
+  for (let sourceIndex = 0; sourceIndex < source.length; sourceIndex += 1) {
+    const normalizedChunk = String(source[sourceIndex] || "")
+      .normalize("NFKD")
+      .replace(/[\u00AD\u200B]/g, "")
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"');
+    if (!normalizedChunk) continue;
+
+    for (let chunkIndex = 0; chunkIndex < normalizedChunk.length; chunkIndex += 1) {
+      const char = normalizedChunk[chunkIndex];
+      if (/\s/.test(char)) {
+        pendingSpace = true;
+        continue;
+      }
+      if (pendingSpace && normalizedText.length > 0) {
+        normalizedText += " ";
+        indexMap.push(sourceIndex);
+      }
+      pendingSpace = false;
+      normalizedText += char;
+      indexMap.push(sourceIndex);
+    }
+  }
+
+  return { text: normalizedText, indexMap };
+}
+
+function normalizedOffsetToRawOffset(indexMap, normalizedOffset, rawLength) {
+  if (!Array.isArray(indexMap) || !indexMap.length) {
+    return 0;
+  }
+  if (!Number.isFinite(normalizedOffset) || normalizedOffset <= 0) {
+    return Math.max(0, Math.min(rawLength, indexMap[0]));
+  }
+  if (normalizedOffset >= indexMap.length) {
+    return rawLength;
+  }
+  const mapped = indexMap[normalizedOffset];
+  if (Number.isFinite(mapped)) {
+    return Math.max(0, Math.min(rawLength, mapped));
+  }
+  return rawLength;
+}
+
 function normalizeDoi(value) {
   if (!value) return "";
   let doi = String(value).trim();
@@ -431,22 +491,59 @@ function findNodeAtOffset(nodes, offset) {
   return null;
 }
 
-function collectCitationHitsForPage(pageEl) {
+function collectCitationHitsForPage(pageEl, options = {}) {
   if (!pageEl) return [];
   const textLayer = pageEl.querySelector(".textLayer");
   if (!textLayer) return [];
   const { text, nodes } = buildTextLayerIndex(textLayer);
   if (!text) return [];
 
+  const citationStyle = String(options.citationStyle || "").trim().toLowerCase();
+  const maxReferenceIndex = Number(options.maxReferenceIndex);
+  const hasMaxReferenceIndex =
+    Number.isFinite(maxReferenceIndex) && maxReferenceIndex > 0;
+  const bibliographyStartPage = Number(options.bibliographyStartPage);
+  const hasBibliographyStartPage =
+    Number.isFinite(bibliographyStartPage) && bibliographyStartPage > 0;
   const pageNumber = Number(pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number"));
+  if (
+    citationStyle === "numeric" &&
+    hasBibliographyStartPage &&
+    Number.isFinite(pageNumber) &&
+    pageNumber >= bibliographyStartPage
+  ) {
+    return [];
+  }
+
   const pageRect = pageEl.getBoundingClientRect();
   const hits = [];
+  const { text: normalizedText, indexMap } = buildNormalizedMatchIndex(text);
+  if (!normalizedText || !indexMap.length) return [];
   const regex = new RegExp(INLINE_CITATION_REGEX.source, "g");
 
-  let match = regex.exec(text);
+  let match = regex.exec(normalizedText);
   while (match) {
-    const startOffset = match.index;
-    const endOffset = startOffset + match[0].length;
+    const parsedNumbers = parseCitationNumbers(match[0]).filter(
+      (value) => Number.isFinite(value) && value > 0
+    );
+    let acceptedNumbers = parsedNumbers;
+    if (citationStyle === "numeric" && hasMaxReferenceIndex) {
+      acceptedNumbers = acceptedNumbers.filter((value) => value <= maxReferenceIndex);
+    }
+    if (citationStyle === "numeric" && !acceptedNumbers.length) {
+      match = regex.exec(normalizedText);
+      continue;
+    }
+
+    const startOffset = normalizedOffsetToRawOffset(indexMap, match.index, text.length);
+    let endOffset = normalizedOffsetToRawOffset(
+      indexMap,
+      match.index + match[0].length,
+      text.length
+    );
+    if (endOffset <= startOffset) {
+      endOffset = Math.min(text.length, startOffset + Math.max(1, match[0].length));
+    }
     const startNode = findNodeAtOffset(nodes, startOffset);
     const endNode = findNodeAtOffset(nodes, endOffset);
     const snippetStart = Math.max(0, startOffset - 180);
@@ -474,14 +571,14 @@ function collectCitationHitsForPage(pageEl) {
           id: `cite-${pageNumber}-${startOffset}`,
           page: Number.isFinite(pageNumber) ? pageNumber : null,
           label: match[0],
-          numbers: parseCitationNumbers(match[0]),
+          numbers: acceptedNumbers,
           snippet,
           rects,
           anchorRect: rects[0],
         });
       }
     }
-    match = regex.exec(text);
+    match = regex.exec(normalizedText);
   }
   return hits;
 }
@@ -533,6 +630,17 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
 
       const { text, nodes } = buildTextLayerIndex(textLayer);
       if (!text) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimer = window.setTimeout(run, retryDelayMs);
+        } else if (typeof onHighlight === "function") {
+          onHighlight({ matched: false, page: pageNumber, anchorRect: null });
+        }
+        return;
+      }
+      const { text: normalizedText, indexMap: normalizedIndexMap } =
+        buildNormalizedMatchIndex(text);
+      if (!normalizedText || !normalizedIndexMap.length) {
         if (attempts < maxAttempts) {
           attempts += 1;
           retryTimer = window.setTimeout(run, retryDelayMs);
@@ -713,12 +821,26 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
 
       if (highlightMode === "paragraph" && Number.isFinite(referenceIndex)) {
         const regex = new RegExp(INLINE_CITATION_REGEX.source, "g");
-        let match = regex.exec(text);
+        let match = regex.exec(normalizedText);
         while (match) {
           const numbers = parseCitationNumbers(match[0]);
           if (numbers.includes(referenceIndex)) {
-            const startOffset = match.index;
-            const endOffset = startOffset + match[0].length;
+            const startOffset = normalizedOffsetToRawOffset(
+              normalizedIndexMap,
+              match.index,
+              text.length
+            );
+            let endOffset = normalizedOffsetToRawOffset(
+              normalizedIndexMap,
+              match.index + match[0].length,
+              text.length
+            );
+            if (endOffset <= startOffset) {
+              endOffset = Math.min(
+                text.length,
+                startOffset + Math.max(1, match[0].length)
+              );
+            }
             const matchedIndices = [];
             nodes.forEach((node, index) => {
               if (node.start < endOffset && node.end > startOffset) {
@@ -729,52 +851,71 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
             applyParagraphHighlight(matchedIndices);
             break;
           }
-          match = regex.exec(text);
+          match = regex.exec(normalizedText);
         }
       }
 
       if (snippetText) {
-        const normalizedSnippetText = snippetText
-          .replace(/^\s*\.{2,}\s*/, "")
-          .replace(/\s*\.{2,}\s*$/, "")
-          .trim();
+        const normalizedSnippetText = normalizeForMatch(
+          snippetText
+            .replace(/^\s*\.{2,}\s*/, "")
+            .replace(/\s*\.{2,}\s*$/, "")
+        );
         const tokenLimit = highlightMode === "paragraph" ? 16 : HIGHLIGHT_TOKEN_LIMIT;
-        const tokens = normalizedSnippetText.split(/\s+/).slice(0, tokenLimit);
+        const tokens = normalizedSnippetText
+          ? normalizedSnippetText.split(/\s+/).slice(0, tokenLimit)
+          : [];
         const pattern = tokens.map(escapeRegExp).join("\\s+");
-        try {
-          const regex = new RegExp(pattern, "i");
-          const match = regex.exec(text);
-          if ((highlightMode === "paragraph" || !matched) && match) {
-            const startOffset = match.index;
-            const endOffset = match.index + match[0].length;
-            const matchedIndices = [];
-            nodes.forEach((node, index) => {
-              if (node.start < endOffset && node.end > startOffset) {
-                matched = true;
-                matchedIndices.push(index);
+        if (pattern) {
+          try {
+            const regex = new RegExp(pattern, "i");
+            const match = regex.exec(normalizedText);
+            if ((highlightMode === "paragraph" || !matched) && match) {
+              const startOffset = normalizedOffsetToRawOffset(
+                normalizedIndexMap,
+                match.index,
+                text.length
+              );
+              let endOffset = normalizedOffsetToRawOffset(
+                normalizedIndexMap,
+                match.index + match[0].length,
+                text.length
+              );
+              if (endOffset <= startOffset) {
+                endOffset = Math.min(
+                  text.length,
+                  startOffset + Math.max(1, match[0].length)
+                );
               }
-            });
-            if (highlightMode === "paragraph") {
-              applyParagraphHighlight(matchedIndices);
-            } else {
-              captureAnchorFromIndices(matchedIndices);
-              matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
+              const matchedIndices = [];
+              nodes.forEach((node, index) => {
+                if (node.start < endOffset && node.end > startOffset) {
+                  matched = true;
+                  matchedIndices.push(index);
+                }
+              });
+              if (highlightMode === "paragraph") {
+                applyParagraphHighlight(matchedIndices);
+              } else {
+                captureAnchorFromIndices(matchedIndices);
+                matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
+              }
             }
+          } catch (err) {
+            matched = false;
           }
-        } catch (err) {
-          matched = false;
         }
       }
 
       if (snippetText && (!matched || highlightMode === "paragraph")) {
-        const normalized = snippetText.toLowerCase().replace(/\s+/g, " ").trim();
+        const normalized = normalizeForMatch(snippetText).toLowerCase();
         const keywords = normalized
           .split(" ")
           .filter((word) => word.length > 3)
           .slice(0, 8);
         const matchedIndices = [];
         nodes.forEach((node, index) => {
-          const spanText = (node.span.textContent || "").toLowerCase();
+          const spanText = normalizeForMatch(node.span.textContent || "").toLowerCase();
           if (keywords.some((word) => spanText.includes(word))) {
             matched = true;
             matchedIndices.push(index);
@@ -1728,6 +1869,9 @@ export default function ReaderApp({
     references: [],
     citations: [],
     contexts: [],
+    citation_style: "",
+    max_reference_index: null,
+    bibliography_start_page: null,
   });
   const [stats, setStats] = useState(previewStats || null);
   const [activeTab, setActiveTab] = useState("extract");
@@ -1785,7 +1929,14 @@ export default function ReaderApp({
     const objectUrl = URL.createObjectURL(previewFile);
     setPreviewUrl(objectUrl);
     setActiveFile(previewFile);
-    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -1821,7 +1972,14 @@ export default function ReaderApp({
       if (!file) return;
       const objectUrl = URL.createObjectURL(file);
       setActiveFile(file);
-      setReferencesVisualData({ references: [], citations: [], contexts: [] });
+      setReferencesVisualData({
+        references: [],
+        citations: [],
+        contexts: [],
+        citation_style: "",
+        max_reference_index: null,
+        bibliography_start_page: null,
+      });
       setSelectedReferenceId("");
       setHoveredReferenceId("");
       setSelectedCitationId("");
@@ -1864,8 +2022,30 @@ export default function ReaderApp({
               contexts: Array.isArray(event.detail.references_data.contexts)
                 ? event.detail.references_data.contexts
                 : [],
+              citation_style: String(
+                event.detail.references_data.citation_style || ""
+              )
+                .trim()
+                .toLowerCase(),
+              max_reference_index: Number.isFinite(
+                Number(event.detail.references_data.max_reference_index)
+              )
+                ? Number(event.detail.references_data.max_reference_index)
+                : null,
+              bibliography_start_page: Number.isFinite(
+                Number(event.detail.references_data.bibliography_start_page)
+              )
+                ? Number(event.detail.references_data.bibliography_start_page)
+                : null,
             }
-          : { references: [], citations: [], contexts: [] };
+          : {
+              references: [],
+              citations: [],
+              contexts: [],
+              citation_style: "",
+              max_reference_index: null,
+              bibliography_start_page: null,
+            };
       const nextStats = event.detail?.stats || null;
       setSnippetsData(nextSnippets);
       setReferencesData(nextReferences);
@@ -1931,6 +2111,17 @@ export default function ReaderApp({
       contexts: Array.isArray(rawReferencesData.contexts)
         ? rawReferencesData.contexts
         : [],
+      citation_style: String(rawReferencesData.citation_style || "")
+        .trim()
+        .toLowerCase(),
+      max_reference_index: Number.isFinite(Number(rawReferencesData.max_reference_index))
+        ? Number(rawReferencesData.max_reference_index)
+        : null,
+      bibliography_start_page: Number.isFinite(
+        Number(rawReferencesData.bibliography_start_page)
+      )
+        ? Number(rawReferencesData.bibliography_start_page)
+        : null,
     });
   }, [data]);
 
@@ -1989,7 +2180,18 @@ export default function ReaderApp({
 
   const effectiveStats = useMemo(() => {
     const base = stats || data?.stats || {};
+    const visualMeta = referencesVisualData || {};
     const doisTotal = normalizedReferences.filter((ref) => ref.doi).length;
+    const rawCitationStyle =
+      base.citation_style || data?.citation_style || visualMeta.citation_style || "";
+    const rawMaxReferenceIndex =
+      base.max_reference_index ??
+      data?.max_reference_index ??
+      visualMeta.max_reference_index;
+    const rawBibliographyStartPage =
+      base.bibliography_start_page ??
+      data?.bibliography_start_page ??
+      visualMeta.bibliography_start_page;
     return {
       pages_total: base.pages_total || 0,
       snippets_total:
@@ -2005,12 +2207,50 @@ export default function ReaderApp({
       engine_used: base.engine_used || "",
       time_ms: base.time_ms ?? null,
       references_numbered: Boolean(base.references_numbered),
+      citation_style: String(rawCitationStyle || "").trim().toLowerCase(),
+      max_reference_index: Number.isFinite(Number(rawMaxReferenceIndex))
+        ? Number(rawMaxReferenceIndex)
+        : 0,
+      bibliography_start_page: Number.isFinite(Number(rawBibliographyStartPage))
+        ? Number(rawBibliographyStartPage)
+        : null,
     };
-  }, [stats, data, normalizedSnippets, normalizedReferences]);
+  }, [stats, data, normalizedSnippets, normalizedReferences, referencesVisualData]);
 
   const referencesNumbered =
     effectiveStats.references_numbered ||
     normalizedReferences.some((ref) => ref.numbered);
+  const citationStyle = String(
+    effectiveStats.citation_style || (referencesNumbered ? "numeric" : "non_numeric")
+  )
+    .trim()
+    .toLowerCase();
+  const maxReferenceIndex = useMemo(() => {
+    const explicit = Number(effectiveStats.max_reference_index);
+    if (Number.isFinite(explicit) && explicit > 0) {
+      return explicit;
+    }
+    const indexedMax = normalizedReferences.reduce((max, ref) => {
+      const next = Number(ref?.index);
+      if (Number.isFinite(next) && next > max) {
+        return next;
+      }
+      return max;
+    }, 0);
+    if (indexedMax > 0) {
+      return indexedMax;
+    }
+    const fallbackCount = Number(effectiveStats.references_total);
+    return Number.isFinite(fallbackCount) && fallbackCount > 0 ? fallbackCount : 0;
+  }, [
+    effectiveStats.max_reference_index,
+    effectiveStats.references_total,
+    normalizedReferences,
+  ]);
+  const bibliographyStartPage = useMemo(() => {
+    const value = Number(effectiveStats.bibliography_start_page);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }, [effectiveStats.bibliography_start_page]);
 
   const referenceByDoi = useMemo(() => {
     const map = new Map();
@@ -2353,7 +2593,10 @@ export default function ReaderApp({
       return;
     }
     if (Number(selectedSnippet.page) === Number(inlineSnippet.page)) {
-      if (selectedSnippet.highlight_snippet === inlineSnippet.snippet) {
+      if (
+        normalizeForMatch(selectedSnippet.highlight_snippet || "") ===
+        normalizeForMatch(inlineSnippet.snippet || "")
+      ) {
         return;
       }
     }
@@ -2870,7 +3113,11 @@ export default function ReaderApp({
         const hitsList = [];
         pages.forEach((pageEl) => {
           if (!pageEl) return;
-          const hits = collectCitationHitsForPage(pageEl);
+          const hits = collectCitationHitsForPage(pageEl, {
+            citationStyle,
+            maxReferenceIndex,
+            bibliographyStartPage,
+          });
           hits.forEach((hit) => hitsList.push(hit));
           let layer = pageEl.querySelector(".reader-citation-layer");
           if (!layer) {
@@ -2909,7 +3156,9 @@ export default function ReaderApp({
         if (currentActive && !newMap.has(currentActive.id)) {
           setActiveCitation(null);
         }
-        const nextKey = hitsList.map((hit) => hit.id).join("|");
+        const nextKey = hitsList
+          .map((hit) => `${hit.id}:${(hit.numbers || []).join(",")}`)
+          .join("|");
         if (inlineCitationsKeyRef.current !== nextKey) {
           inlineCitationsKeyRef.current = nextKey;
           setInlineCitations(hitsList);
@@ -2933,7 +3182,13 @@ export default function ReaderApp({
       resizeObserver.disconnect();
       window.removeEventListener("resize", schedule);
     };
-  }, [resolvedPdfUrl, visualCitationMentions.length]);
+  }, [
+    resolvedPdfUrl,
+    visualCitationMentions.length,
+    citationStyle,
+    maxReferenceIndex,
+    bibliographyStartPage,
+  ]);
 
   useEffect(() => {
     const viewerEl = viewerRef.current;
@@ -3213,6 +3468,17 @@ export default function ReaderApp({
       : [];
     const baseStats =
       payload?.stats && typeof payload.stats === "object" ? payload.stats : {};
+    const payloadCitationStyle = String(
+      baseStats.citation_style || payload?.citation_style || ""
+    )
+      .trim()
+      .toLowerCase();
+    const payloadMaxReferenceIndex = Number(
+      baseStats.max_reference_index ?? payload?.max_reference_index
+    );
+    const payloadBibliographyStartPage = Number(
+      baseStats.bibliography_start_page ?? payload?.bibliography_start_page
+    );
     const stats = {
       pages_total: Number(baseStats.pages_total || 0),
       snippets_total:
@@ -3226,6 +3492,15 @@ export default function ReaderApp({
         ? Number(baseStats.time_ms)
         : (Number.isFinite(Number(payload?.time_ms)) ? Number(payload.time_ms) : null),
       references_numbered: Boolean(baseStats.references_numbered),
+      citation_style: payloadCitationStyle,
+      max_reference_index:
+        Number.isFinite(payloadMaxReferenceIndex) && payloadMaxReferenceIndex > 0
+          ? payloadMaxReferenceIndex
+          : 0,
+      bibliography_start_page:
+        Number.isFinite(payloadBibliographyStartPage) && payloadBibliographyStartPage > 0
+          ? payloadBibliographyStartPage
+          : null,
     };
     const rawLayers =
       payload?.layers && typeof payload.layers === "object"
@@ -3311,6 +3586,17 @@ export default function ReaderApp({
         rawReferencesData.contexts,
         "citation-context"
       ),
+      citation_style: String(rawReferencesData.citation_style || "")
+        .trim()
+        .toLowerCase(),
+      max_reference_index: Number.isFinite(Number(rawReferencesData.max_reference_index))
+        ? Number(rawReferencesData.max_reference_index)
+        : null,
+      bibliography_start_page: Number.isFinite(
+        Number(rawReferencesData.bibliography_start_page)
+      )
+        ? Number(rawReferencesData.bibliography_start_page)
+        : null,
     };
     if (!referencesVisual.references.length && Array.isArray(references)) {
       referencesVisual.references = references.map((ref, index) => {
@@ -3328,6 +3614,22 @@ export default function ReaderApp({
           item_type: "reference-entry",
         };
       });
+    }
+    if (!stats.citation_style && referencesVisual.citation_style) {
+      stats.citation_style = referencesVisual.citation_style;
+    }
+    if (
+      (!Number.isFinite(Number(stats.max_reference_index)) ||
+        Number(stats.max_reference_index) <= 0) &&
+      Number.isFinite(Number(referencesVisual.max_reference_index))
+    ) {
+      stats.max_reference_index = Number(referencesVisual.max_reference_index);
+    }
+    if (
+      !Number.isFinite(Number(stats.bibliography_start_page)) &&
+      Number.isFinite(Number(referencesVisual.bibliography_start_page))
+    ) {
+      stats.bibliography_start_page = Number(referencesVisual.bibliography_start_page);
     }
 
     return { snippets, references, stats, readerData, referencesVisual };
@@ -3680,7 +3982,14 @@ export default function ReaderApp({
     });
     setSnippetsData([]);
     setReferencesData([]);
-    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -3731,7 +4040,14 @@ export default function ReaderApp({
       fileInputRef.current.value = "";
     }
     setReaderV2Data(null);
-    setReferencesVisualData({ references: [], citations: [], contexts: [] });
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");

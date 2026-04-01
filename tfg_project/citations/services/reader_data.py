@@ -76,7 +76,7 @@ def _is_reference_header(line: str) -> bool:
     return any(normalized.startswith(header) for header in REFERENCE_HEADERS)
 
 
-def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool]:
+def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool, Optional[int]]:
     for page_idx, text in enumerate(page_texts):
         lines = text.splitlines()
         for line_idx, line in enumerate(lines):
@@ -86,8 +86,8 @@ def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool]:
                 section = "\n".join(remaining_lines)
                 if tail_pages:
                     section = "\n".join([section] + tail_pages)
-                return section, True
-    return "", False
+                return section, True, page_idx
+    return "", False, None
 
 
 def _fallback_reference_section(page_texts: List[str]) -> str:
@@ -233,6 +233,9 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
             "references_total": 0,
             "dois_total": 0,
             "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
         }
 
     page_texts: List[str] = []
@@ -241,7 +244,7 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
             page_texts.append(page.get_text() or "")
         page_count = doc.page_count
 
-    section, found_header = _extract_reference_section(page_texts)
+    section, found_header, bibliography_start_page = _extract_reference_section(page_texts)
     if not section:
         section = _fallback_reference_section(page_texts)
     refs_raw, numbered = _split_references(section)
@@ -273,6 +276,12 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
             }
         )
 
+    max_reference_index = 0
+    for reference in references:
+        raw_index = reference.get("index")
+        if isinstance(raw_index, int) and raw_index > max_reference_index:
+            max_reference_index = raw_index
+
     dois_total = sum(1 for ref in references if ref.get("doi"))
     stats = {
         "pages_total": page_count,
@@ -280,6 +289,13 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
         "dois_total": dois_total,
         "references_numbered": bool(numbered),
         "references_header_found": bool(found_header),
+        "citation_style": "numeric" if numbered else "non_numeric",
+        "max_reference_index": max_reference_index or len(references),
+        "bibliography_start_page": (
+            bibliography_start_page + 1
+            if isinstance(bibliography_start_page, int)
+            else None
+        ),
     }
     return references, stats
 
@@ -291,6 +307,9 @@ def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str,
             "references_total": 0,
             "dois_total": 0,
             "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
         }
     tmp_path = download_pdf_to_temp(pdf_url)
     if not tmp_path:
@@ -299,6 +318,9 @@ def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str,
             "references_total": 0,
             "dois_total": 0,
             "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
         }
     try:
         return extract_pdf_references(tmp_path)

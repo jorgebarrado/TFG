@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 import re
 from .engines import run_engine
 
@@ -99,11 +99,68 @@ def expand_numeric_citation_block(block_text: str) -> List[int]:
     return ordered
 
 
-def _find_hits(paragraph: str) -> List[Dict[str, Any]]:
+def infer_numeric_style(references: Sequence[Dict[str, Any]] | None) -> bool:
+    if not references:
+        return False
+    numeric_labels: List[int] = []
+    for reference in references:
+        if not isinstance(reference, dict):
+            continue
+        raw_index = reference.get("index")
+        try:
+            index = int(raw_index)
+        except (TypeError, ValueError):
+            continue
+        if index > 0:
+            numeric_labels.append(index)
+    if len(numeric_labels) < 3:
+        return False
+    numeric_labels = sorted(set(numeric_labels))
+    return numeric_labels[0] == 1 and len(numeric_labels) >= 3
+
+
+def is_valid_numeric_citation(number, total_references):
+    try:
+        parsed_number = int(number)
+        parsed_total = int(total_references)
+    except (TypeError, ValueError):
+        return False
+    return 1 <= parsed_number <= parsed_total
+
+
+def _max_reference_index(references: Sequence[Dict[str, Any]] | None) -> int:
+    if not references:
+        return 0
+    max_index = 0
+    for reference in references:
+        if not isinstance(reference, dict):
+            continue
+        raw_index = reference.get("index")
+        try:
+            index = int(raw_index)
+        except (TypeError, ValueError):
+            continue
+        if index > max_index:
+            max_index = index
+    return max_index
+
+
+def _find_hits(
+    paragraph: str,
+    citation_style: str = "",
+    total_references: int = 0,
+) -> List[Dict[str, Any]]:
     hits: List[Dict[str, Any]] = []
+    normalized_style = str(citation_style or "").strip().lower()
     for m in find_numeric_citation_blocks(paragraph):
         block = m.group(0)
         expanded = expand_numeric_citation_block(block)
+        if normalized_style == "numeric":
+            expanded = [
+                number
+                for number in expanded
+                if is_valid_numeric_citation(number, total_references)
+            ]
         if not expanded:
             continue
         hits.append(
@@ -163,6 +220,8 @@ def _extract_text_from_pdf_generic(path: str) -> str:
 def _build_results(
     paragraphs: List[str],
     paragraphs_with_positions: List[dict] | None = None,
+    citation_style: str = "",
+    total_references: int = 0,
 ) -> Tuple[List[Dict[str, Any]], int]:
     flat: List[Dict[str, Any]] = []
     total = 0
@@ -180,7 +239,11 @@ def _build_results(
     for ref, item in enumerate(items, start=1):
         text = item["text"]
         page = item.get("page")
-        hs = _find_hits(text)
+        hs = _find_hits(
+            text,
+            citation_style=citation_style,
+            total_references=total_references,
+        )
         if not hs:
             continue
         total += len(hs)
@@ -217,14 +280,23 @@ def _split_paragraphs(text: str) -> list[str]:
     return paras
 
 
-def _find_citations_in_paragraph(p: str) -> list[dict]:
+def _find_citations_in_paragraph(
+    p: str,
+    citation_style: str = "",
+    total_references: int = 0,
+) -> list[dict]:
     out: list[dict] = []
+    normalized_style = str(citation_style or "").strip().lower()
     # [n], [1,2], [23-25], [23–25], etc.
     for m in find_numeric_citation_blocks(p):
         s, e = m.span()
         snippet = p[max(0, s - 80) : min(len(p), e + 80)]
         block = m.group(0)
         for ref_idx in expand_numeric_citation_block(block):
+            if normalized_style == "numeric" and not is_valid_numeric_citation(
+                ref_idx, total_references
+            ):
+                continue
             out.append(
                 {
                     "ref": ref_idx,
@@ -281,8 +353,36 @@ def _pm_loose_extract(path: str) -> list[dict]:
 
 
 def process_manuscript(
-    pdf_path: str, *, engine: str = "auto", debug: bool = False
+    pdf_path: str,
+    *,
+    engine: str = "auto",
+    debug: bool = False,
+    references: Sequence[Dict[str, Any]] | None = None,
+    citation_style: str | None = None,
+    total_references: int | None = None,
 ) -> Dict[str, Any]:
+    references_list = [item for item in (references or []) if isinstance(item, dict)]
+    inferred_numeric_style = infer_numeric_style(references_list)
+    resolved_citation_style = str(citation_style or "").strip().lower()
+    if resolved_citation_style not in {"numeric", "non_numeric", "non-numeric"}:
+        resolved_citation_style = "numeric" if inferred_numeric_style else "non_numeric"
+    if resolved_citation_style == "non-numeric":
+        resolved_citation_style = "non_numeric"
+
+    max_reference_index = _max_reference_index(references_list)
+    if max_reference_index <= 0:
+        max_reference_index = len(references_list)
+    try:
+        resolved_total_references = (
+            int(total_references) if total_references is not None else 0
+        )
+    except (TypeError, ValueError):
+        resolved_total_references = 0
+    if resolved_total_references <= 0:
+        resolved_total_references = max_reference_index
+    if resolved_total_references <= 0:
+        resolved_total_references = len(references_list)
+
     engine_used, paragraphs, attempts, err, paragraphs_with_positions = run_engine(
         engine, pdf_path
     )
@@ -300,13 +400,21 @@ def process_manuscript(
         return payload
 
     # AUTO (o motor explícito sin error): construimos resultados (aunque paragraphs pueda estar vacío)
-    results, total = _build_results(paragraphs, paragraphs_with_positions)
+    results, total = _build_results(
+        paragraphs,
+        paragraphs_with_positions,
+        citation_style=resolved_citation_style,
+        total_references=resolved_total_references,
+    )
     payload = {
         "ok": True,
         "engine_requested": engine,
         "engine_used": engine_used,
         "summary": {"paragraphs": len(paragraphs), "count": total},
         "results": results,
+        "citation_style": resolved_citation_style,
+        "total_references": resolved_total_references,
+        "max_reference_index": max_reference_index,
     }
     if debug:
         payload["trace"] = {"engines": attempts}

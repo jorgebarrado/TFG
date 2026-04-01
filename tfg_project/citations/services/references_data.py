@@ -200,6 +200,62 @@ def _contains_box(container: Sequence[float], inner: Sequence[float]) -> bool:
     )
 
 
+def is_after_bibliography(
+    page: Optional[int],
+    y: Optional[float],
+    bibliography_anchor: Optional[Tuple[int, float]],
+) -> bool:
+    if bibliography_anchor is None:
+        return False
+    if not isinstance(page, int) or page < 0:
+        return False
+
+    anchor_page, anchor_y = bibliography_anchor
+    if page > anchor_page:
+        return True
+    if page < anchor_page:
+        return False
+    if y is None:
+        return True
+    return float(y) >= float(anchor_y)
+
+
+def is_inside_bibliography(
+    box: Any,
+    bibliography_items: Sequence[Dict[str, Any]],
+) -> bool:
+    if not bibliography_items:
+        return False
+
+    candidate_page: Optional[int] = None
+    candidate_box: Optional[List[float]] = None
+    if isinstance(box, dict):
+        raw_page = box.get("page")
+        if isinstance(raw_page, int) and raw_page >= 0:
+            candidate_page = raw_page
+        candidate_box = _normalize_box(box.get("box"))
+    else:
+        candidate_box = _normalize_box(box)
+
+    if candidate_box is None:
+        return False
+
+    for bibliography_item in bibliography_items:
+        bibliography_page = bibliography_item.get("page")
+        bibliography_box = bibliography_item.get("box")
+        if not isinstance(bibliography_page, int) or bibliography_page < 0:
+            continue
+        if candidate_page is not None and bibliography_page != candidate_page:
+            continue
+        if not isinstance(bibliography_box, (list, tuple)) or len(bibliography_box) < 4:
+            continue
+        if _contains_box(bibliography_box, candidate_box):
+            return True
+        if _overlap_ratio(bibliography_box, candidate_box) >= 0.6:
+            return True
+    return False
+
+
 def _overlap_ratio(box_a: Sequence[float], box_b: Sequence[float]) -> float:
     ax0 = float(box_a[0])
     ay0 = float(box_a[1])
@@ -496,11 +552,21 @@ def build_references_data(
     snippets: Sequence[Dict[str, Any]],
     layers: Dict[str, Any],
     references_numbered: bool = False,
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> Dict[str, Any]:
     bibliography_items = _layer_items(layers, "bibliographies")
     token_items = _layer_items(layers, "tokens")
     row_items = _layer_items(layers, "rows")
     paragraph_items = _layer_items(layers, "paragraphs")
+    bibliography_anchor: Optional[Tuple[int, float]] = None
+    if bibliography_items:
+        first_bibliography_item = min(
+            bibliography_items,
+            key=lambda item: (int(item.get("page", 10**6)), float(item["box"][1])),
+        )
+        bibliography_anchor = (
+            int(first_bibliography_item.get("page", 0)),
+            float(first_bibliography_item["box"][1]),
+        )
 
     reference_entries: List[Dict[str, Any]] = []
     citations: List[Dict[str, Any]] = []
@@ -606,6 +672,19 @@ def build_references_data(
             else page_hint
         )
         mention_box = mention_anchor["box"] if mention_anchor is not None else None
+        mention_y = _to_float(mention_box[1]) if mention_box is not None else None
+
+        if mention_y is not None and mention_y < 0.05:
+            continue
+        if mention_y is not None and mention_y > 0.95:
+            continue
+        if is_inside_bibliography(
+            {"page": mention_page, "box": mention_box},
+            bibliography_items,
+        ):
+            continue
+        if is_after_bibliography(mention_page, mention_y, bibliography_anchor):
+            continue
 
         for mention_pos, ref_id in enumerate(dedup_ref_ids, start=1):
             mention_id = f"citation-mention-{snippet_idx}-{mention_pos}-{ref_id}"
@@ -659,9 +738,18 @@ def build_references_data(
     reference_entries = _clean_items(reference_entries)
     citations = _clean_items(citations)
     contexts = _clean_items(contexts)
+    max_reference_index = max(references_by_index.keys(), default=0)
+    if max_reference_index <= 0:
+        max_reference_index = len(reference_entries)
+    bibliography_start_page = (
+        bibliography_anchor[0] + 1 if bibliography_anchor is not None else None
+    )
 
     return {
         "references": reference_entries,
         "citations": citations,
         "contexts": contexts,
+        "citation_style": "numeric" if references_numbered else "non_numeric",
+        "max_reference_index": max_reference_index,
+        "bibliography_start_page": bibliography_start_page,
     }

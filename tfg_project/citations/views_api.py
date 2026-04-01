@@ -240,12 +240,47 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
     start_time = time.time()
     try:
-        data = process_manuscript(temp_path, engine=engine, debug=debug)
+        references = []
+        ref_stats = {
+            "pages_total": 0,
+            "references_total": 0,
+            "dois_total": 0,
+            "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
+        }
+        if suffix == ".pdf":
+            references, ref_stats = extract_pdf_references(temp_path)
+
+        citation_style = str(
+            ref_stats.get("citation_style")
+            or ("numeric" if ref_stats.get("references_numbered") else "non_numeric")
+        ).strip().lower()
+        try:
+            max_reference_index = int(
+                ref_stats.get("max_reference_index")
+                or ref_stats.get("references_total")
+                or len(references)
+                or 0
+            )
+        except (TypeError, ValueError):
+            max_reference_index = int(ref_stats.get("references_total") or len(references) or 0)
+        total_references_for_validation = (
+            max_reference_index if citation_style == "numeric" else len(references)
+        )
+        data = process_manuscript(
+            temp_path,
+            engine=engine,
+            debug=debug,
+            references=references,
+            citation_style=citation_style,
+            total_references=total_references_for_validation,
+        )
         elapsed_ms = int((time.time() - start_time) * 1000)
         data["time_ms"] = elapsed_ms
 
         if suffix == ".pdf" and data.get("ok", False):
-            references, ref_stats = extract_pdf_references(temp_path)
             snippets = build_snippets_from_results(data.get("results"))
             stats_payload = {
                 "pages_total": ref_stats.get("pages_total", 0),
@@ -255,10 +290,16 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 "engine_used": data.get("engine_used") or "",
                 "time_ms": elapsed_ms,
                 "references_numbered": ref_stats.get("references_numbered", False),
+                "citation_style": citation_style,
+                "max_reference_index": max_reference_index,
+                "bibliography_start_page": ref_stats.get("bibliography_start_page"),
             }
             data["references"] = references
             data["snippets"] = snippets
             data["stats"] = stats_payload
+            data["citation_style"] = citation_style
+            data["max_reference_index"] = max_reference_index
+            data["bibliography_start_page"] = ref_stats.get("bibliography_start_page")
             # Datos de capas (pages/layers) para la pestaña "Capas".
             # Para el flujo unificado del preview, si falla PaperMage aquí
             # devolvemos error para que no quede una extracción a medias.
@@ -291,6 +332,27 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 layers=data.get("layers", {}),
                 references_numbered=bool(stats_payload.get("references_numbered")),
             )
+            references_data_payload = data.get("references_data")
+            if isinstance(references_data_payload, dict):
+                data["citation_style"] = str(
+                    references_data_payload.get("citation_style") or citation_style
+                ).strip().lower()
+                try:
+                    data["max_reference_index"] = int(
+                        references_data_payload.get("max_reference_index")
+                        or max_reference_index
+                        or 0
+                    )
+                except (TypeError, ValueError):
+                    data["max_reference_index"] = int(max_reference_index or 0)
+                data["bibliography_start_page"] = references_data_payload.get(
+                    "bibliography_start_page"
+                )
+                data["stats"]["citation_style"] = data["citation_style"]
+                data["stats"]["max_reference_index"] = data["max_reference_index"]
+                data["stats"]["bibliography_start_page"] = data[
+                    "bibliography_start_page"
+                ]
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
@@ -320,6 +382,9 @@ def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
             "references_total": len(references),
             "dois_total": sum(1 for ref in references if ref.get("doi")),
             "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
         }
     return JsonResponse(
         {
@@ -335,6 +400,9 @@ def api_reader_data(request: HttpRequest, report_id: int) -> JsonResponse:
                 "engine_used": "",
                 "time_ms": None,
                 "references_numbered": ref_stats.get("references_numbered", False),
+                "citation_style": ref_stats.get("citation_style", "non_numeric"),
+                "max_reference_index": ref_stats.get("max_reference_index", 0),
+                "bibliography_start_page": ref_stats.get("bibliography_start_page"),
             },
         },
         status=200,
