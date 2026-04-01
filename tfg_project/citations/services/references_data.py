@@ -64,7 +64,9 @@ def _normalize_mention_text(text: str) -> str:
     return re.sub(r"\s+", " ", normalized).strip()
 
 
-def _quantize_box(box: Any, decimals: int = 3) -> Optional[Tuple[float, float, float, float]]:
+def _quantize_box(
+    box: Any, decimals: int = 3
+) -> Optional[Tuple[float, float, float, float]]:
     normalized_box = _normalize_box(box)
     if normalized_box is None:
         return None
@@ -177,7 +179,9 @@ def _layer_items(layers: Dict[str, Any], key: str) -> List[Dict[str, Any]]:
     return out
 
 
-def _reference_match_score(reference_text: str, reference_index: int, reference_doi: str, candidate_text: str) -> float:
+def _reference_match_score(
+    reference_text: str, reference_index: int, reference_doi: str, candidate_text: str
+) -> float:
     score = 0.0
     cand_norm = _normalize_text(candidate_text)
     if not cand_norm:
@@ -207,10 +211,9 @@ def _box_center(box: Sequence[float]) -> Tuple[float, float]:
 
 def _contains_box(container: Sequence[float], inner: Sequence[float]) -> bool:
     cx, cy = _box_center(inner)
-    return (
-        float(container[0]) <= cx <= float(container[0]) + float(container[2])
-        and float(container[1]) <= cy <= float(container[1]) + float(container[3])
-    )
+    return float(container[0]) <= cx <= float(container[0]) + float(
+        container[2]
+    ) and float(container[1]) <= cy <= float(container[1]) + float(container[3])
 
 
 def is_after_bibliography(
@@ -345,11 +348,7 @@ def _candidate_pages(
     available_pages: Sequence[int],
 ) -> List[int]:
     known_pages = sorted(
-        {
-            int(page)
-            for page in available_pages
-            if isinstance(page, int) and page >= 0
-        }
+        {int(page) for page in available_pages if isinstance(page, int) and page >= 0}
     )
     if page_hint is None:
         return known_pages
@@ -414,7 +413,9 @@ def _find_citation_marker_box(
                     if token_index >= len(ordered_tokens):
                         break
                     token = ordered_tokens[token_index]
-                    token_piece = _normalize_citation_marker(str(token.get("text") or ""))
+                    token_piece = _normalize_citation_marker(
+                        str(token.get("text") or "")
+                    )
                     if not token_piece:
                         continue
                     current_box = token["box"]
@@ -471,7 +472,9 @@ def _pick_best_text_box(
     if page_hint is None and not page_candidates:
         page_candidates = [None]
 
-    def _best_item_in_pool(pool: Sequence[Dict[str, Any]]) -> Tuple[Optional[Dict[str, Any]], float]:
+    def _best_item_in_pool(
+        pool: Sequence[Dict[str, Any]],
+    ) -> Tuple[Optional[Dict[str, Any]], float]:
         best_item: Optional[Dict[str, Any]] = None
         best_score = 0.0
         for item in pool:
@@ -540,9 +543,7 @@ def _pick_context_paragraph(
         if iou >= 0.08:
             iou_candidates.append((iou, paragraph))
     if iou_candidates:
-        iou_candidates.sort(
-            key=lambda item: (-item[0], _box_area(item[1]["box"]))
-        )
+        iou_candidates.sort(key=lambda item: (-item[0], _box_area(item[1]["box"])))
         return iou_candidates[0][1]
 
     overlap_candidates: List[Tuple[float, Dict[str, Any]]] = []
@@ -551,9 +552,7 @@ def _pick_context_paragraph(
         if overlap >= 0.2:
             overlap_candidates.append((overlap, paragraph))
     if overlap_candidates:
-        overlap_candidates.sort(
-            key=lambda item: (-item[0], _box_area(item[1]["box"]))
-        )
+        overlap_candidates.sort(key=lambda item: (-item[0], _box_area(item[1]["box"])))
         return overlap_candidates[0][1]
 
     return None
@@ -682,9 +681,7 @@ def build_references_data(
             paragraph_items,
         )
         mention_page = (
-            mention_anchor["page"]
-            if mention_anchor is not None
-            else page_hint
+            mention_anchor["page"] if mention_anchor is not None else page_hint
         )
         mention_box = mention_anchor["box"] if mention_anchor is not None else None
         mention_y = _to_float(mention_box[1]) if mention_box is not None else None
@@ -734,7 +731,9 @@ def build_references_data(
 
             if mention_page is None or mention_box is None:
                 continue
-            page_paragraphs = [item for item in paragraph_items if item["page"] == mention_page]
+            page_paragraphs = [
+                item for item in paragraph_items if item["page"] == mention_page
+            ]
             if not page_paragraphs:
                 continue
 

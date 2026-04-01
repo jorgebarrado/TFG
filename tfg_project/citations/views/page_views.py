@@ -88,7 +88,11 @@ def _base_edit_data(citation):
 
 
 def _extract_report_title(citation) -> str:
-    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    metadata = (
+        citation.metadata_original
+        if isinstance(citation.metadata_original, dict)
+        else {}
+    )
     override = str(metadata.get("title_override") or "").strip()
     if override:
         return override
@@ -99,7 +103,11 @@ def _extract_report_title(citation) -> str:
 
 
 def _set_report_title(citation, title_value: str) -> None:
-    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    metadata = (
+        citation.metadata_original
+        if isinstance(citation.metadata_original, dict)
+        else {}
+    )
     metadata = dict(metadata)
     clean_title = str(title_value or "").strip()
     if clean_title:
@@ -175,7 +183,9 @@ def _normalize_context_text(value) -> str:
 
 
 def _context_dedupe_key(page, paragraph: str, snippet: str) -> tuple[str, str]:
-    primary_text = _normalize_context_text(paragraph) or _normalize_context_text(snippet)
+    primary_text = _normalize_context_text(paragraph) or _normalize_context_text(
+        snippet
+    )
     page_key = str(page).strip() if page is not None else ""
     return page_key, primary_text
 
@@ -188,7 +198,9 @@ AUTHOR_YEAR_REGEX = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*((?:19|20)\d{2})\s*
 def _normalize_doi(value: str) -> str:
     candidate = str(value or "").strip()
     candidate = re.sub(r"^doi:\s*", "", candidate, flags=re.IGNORECASE)
-    candidate = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE)
+    candidate = re.sub(
+        r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE
+    )
     return candidate.rstrip(").,;:]").strip().lower()
 
 
@@ -235,7 +247,11 @@ def _extract_original_authors(metadata: dict) -> set[str]:
 
 
 def _build_target_hints(citation) -> dict:
-    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    metadata = (
+        citation.metadata_original
+        if isinstance(citation.metadata_original, dict)
+        else {}
+    )
     return {
         "doi": _normalize_doi(citation.doi_original or ""),
         "year": _extract_original_year(metadata),
@@ -249,9 +265,9 @@ def _reference_entry_matches_target(reference_entry: dict, target_hints: dict) -
     target_authors: set[str] = set(target_hints.get("authors") or set())
 
     reference_raw = str(reference_entry.get("raw") or "")
-    reference_doi = _normalize_doi(str(reference_entry.get("doi") or "")) or _extract_doi(
-        reference_raw
-    )
+    reference_doi = _normalize_doi(
+        str(reference_entry.get("doi") or "")
+    ) or _extract_doi(reference_raw)
     reference_lower = reference_raw.lower()
 
     if target_doi and reference_doi:
@@ -267,7 +283,9 @@ def _reference_entry_matches_target(reference_entry: dict, target_hints: dict) -
     return False
 
 
-def _item_mentions_target(item: dict, target_hints: dict, references_by_index: dict[int, dict]) -> bool:
+def _item_mentions_target(
+    item: dict, target_hints: dict, references_by_index: dict[int, dict]
+) -> bool:
     target_doi = str(target_hints.get("doi") or "")
     target_year = str(target_hints.get("year") or "")
     target_authors: set[str] = set(target_hints.get("authors") or set())
@@ -307,7 +325,9 @@ def _item_mentions_target(item: dict, target_hints: dict, references_by_index: d
 
         for number in numbers:
             reference_entry = references_by_index.get(number)
-            if reference_entry and _reference_entry_matches_target(reference_entry, target_hints):
+            if reference_entry and _reference_entry_matches_target(
+                reference_entry, target_hints
+            ):
                 return True
         return False
 
@@ -429,12 +449,9 @@ def citation_detail(request, pk):
     )
 
     # reportes populares (por ngmero de votos positivos)
-    popular_reports = (
-        IncorrectCitation.objects.annotate(
-            upvotes_count=Count("votes", filter=Q(votes__value=1))
-        )
-        .order_by("-upvotes_count", "-created_at")[:5]
-    )
+    popular_reports = IncorrectCitation.objects.annotate(
+        upvotes_count=Count("votes", filter=Q(votes__value=1))
+    ).order_by("-upvotes_count", "-created_at")[:5]
 
     for report in other_area_reports:
         type_tags, area_tags = extract_report_tag_labels(report)
@@ -485,7 +502,9 @@ def citation_detail(request, pk):
         metadata_attr="metadata_original",
         path_keys=("uploaded_pdf_path", "uploaded_pdf_path_original"),
     )
-    if original_uploaded_pdf_path and default_storage.exists(original_uploaded_pdf_path):
+    if original_uploaded_pdf_path and default_storage.exists(
+        original_uploaded_pdf_path
+    ):
         original_pdf_url = reverse(
             "citation_uploaded_pdf_article",
             kwargs={"pk": citation.pk, "article": "original"},
@@ -498,7 +517,9 @@ def citation_detail(request, pk):
         metadata_attr="metadata_incorrect",
         path_keys=("uploaded_pdf_path", "uploaded_pdf_path_incorrect"),
     )
-    if incorrect_uploaded_pdf_path and default_storage.exists(incorrect_uploaded_pdf_path):
+    if incorrect_uploaded_pdf_path and default_storage.exists(
+        incorrect_uploaded_pdf_path
+    ):
         incorrect_pdf_url = reverse(
             "citation_uploaded_pdf_article",
             kwargs={"pk": citation.pk, "article": "incorrect"},
@@ -671,7 +692,9 @@ def citation_edit(request, pk):
             uploaded_original_pdf,
         )
         metadata_original = (
-            citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+            citation.metadata_original
+            if isinstance(citation.metadata_original, dict)
+            else {}
         )
         metadata_original = dict(metadata_original)
         metadata_original["uploaded_pdf_path"] = upload_path
@@ -681,7 +704,9 @@ def citation_edit(request, pk):
         citation.save(update_fields=["metadata_original"])
         uploaded_pdf_saved = True
 
-    uploaded_incorrect_pdf = request.FILES.get("uploaded_pdf_incorrect_file") or request.FILES.get("uploaded_pdf_file")
+    uploaded_incorrect_pdf = request.FILES.get(
+        "uploaded_pdf_incorrect_file"
+    ) or request.FILES.get("uploaded_pdf_file")
     if uploaded_incorrect_pdf:
         original_name = uploaded_incorrect_pdf.name or "uploaded.pdf"
         if not original_name.lower().endswith(".pdf"):
@@ -691,7 +716,9 @@ def citation_edit(request, pk):
             uploaded_incorrect_pdf,
         )
         metadata_incorrect = (
-            citation.metadata_incorrect if isinstance(citation.metadata_incorrect, dict) else {}
+            citation.metadata_incorrect
+            if isinstance(citation.metadata_incorrect, dict)
+            else {}
         )
         metadata_incorrect = dict(metadata_incorrect)
         metadata_incorrect["uploaded_pdf_path"] = upload_path
@@ -787,9 +814,7 @@ def citation_uploaded_pdf(request, pk, article: str = "incorrect"):
 
 def citation_preview(request, pk):
     citation = get_object_or_404(
-        IncorrectCitation.objects
-            .select_related("author")
-            .prefetch_related("votes"),
+        IncorrectCitation.objects.select_related("author").prefetch_related("votes"),
         pk=pk,
     )
 
@@ -836,7 +861,7 @@ def citation_preview(request, pk):
             "user_vote": user_vote,
             "vote_buttons_html": vote_buttons_html,
             "save_button_html": save_button_html,
-        }
+        },
     )
 
 
@@ -845,12 +870,16 @@ def citation_preview(request, pk):
 def citation_extract_contexts(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     if not _can_edit_report(request.user, citation):
-        messages.error(request, "No tienes permiso para actualizar los parrafos de cita.")
+        messages.error(
+            request, "No tienes permiso para actualizar los parrafos de cita."
+        )
         return redirect("citation_detail", pk=pk)
 
     if request.POST.get("context_selection") == "1":
         existing_contexts = (
-            citation.citation_contexts if isinstance(citation.citation_contexts, list) else []
+            citation.citation_contexts
+            if isinstance(citation.citation_contexts, list)
+            else []
         )
         selected_indices = set()
         for raw_idx in request.POST.getlist("selected_context_index"):
@@ -906,7 +935,8 @@ def citation_extract_contexts(request, pk):
         if not data.get("ok", False):
             messages.error(
                 request,
-                data.get("error") or "No se pudieron extraer parrafos con el motor seleccionado.",
+                data.get("error")
+                or "No se pudieron extraer parrafos con el motor seleccionado.",
             )
             return redirect("citation_detail", pk=pk)
 
@@ -982,6 +1012,7 @@ def citation_extract_contexts(request, pk):
         except OSError:
             pass
 
+
 def semantic_citations_view(request):
     """
     Muestra las citas de un art??culo obtenidas de Semantic Scholar.
@@ -995,7 +1026,9 @@ def semantic_citations_view(request):
     registered_citations = IncorrectCitation.objects.filter(
         doi_original=doi, doi_incorrect__in=citing_dois
     ).values("doi_incorrect", "id")
-    registered_map = {item["doi_incorrect"]: item["id"] for item in registered_citations}
+    registered_map = {
+        item["doi_incorrect"]: item["id"] for item in registered_citations
+    }
 
     for c in citations:
         citing_doi = c.get("doi")
