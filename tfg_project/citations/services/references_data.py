@@ -58,6 +58,19 @@ def _normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip().lower()
 
 
+def _normalize_mention_text(text: str) -> str:
+    normalized = _normalize_text(text or "")
+    normalized = re.sub(r"[^\w\s]", " ", normalized)
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _quantize_box(box: Any, decimals: int = 3) -> Optional[Tuple[float, float, float, float]]:
+    normalized_box = _normalize_box(box)
+    if normalized_box is None:
+        return None
+    return tuple(round(float(value), decimals) for value in normalized_box)
+
+
 def _tokenize(value: str) -> set[str]:
     text = _normalize_text(value)
     return {
@@ -628,6 +641,8 @@ def build_references_data(
         )
 
     contexts_seen: set[Tuple[str, int, str]] = set()
+    seen_mentions: set[Tuple[Any, ...]] = set()
+    mention_text_key_max_len = 220
 
     for snippet_idx, snippet in enumerate(snippets, start=1):
         if not isinstance(snippet, dict):
@@ -687,6 +702,26 @@ def build_references_data(
             continue
 
         for mention_pos, ref_id in enumerate(dedup_ref_ids, start=1):
+            quantized_mention_box = _quantize_box(mention_box)
+            if quantized_mention_box is not None:
+                dedup_key: Tuple[Any, ...] = (
+                    "box",
+                    ref_id,
+                    mention_page,
+                    quantized_mention_box,
+                )
+            else:
+                dedup_key = (
+                    "text",
+                    ref_id,
+                    mention_page,
+                    _normalize_mention_text(snippet_text)[:mention_text_key_max_len],
+                )
+
+            if dedup_key in seen_mentions:
+                continue
+            seen_mentions.add(dedup_key)
+
             mention_id = f"citation-mention-{snippet_idx}-{mention_pos}-{ref_id}"
             mention_item = {
                 "id": mention_id,
