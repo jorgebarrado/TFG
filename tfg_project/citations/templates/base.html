@@ -87,13 +87,8 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'home' %}#home-reportes-card">
-              {% trans "Ir a sección" %}
-            </a>
-          </li>
-          <li>
             <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">
-              {% trans "Manual" %}
+              {% trans "Rapido" %}
             </button>
           </li>
           <li>
@@ -118,14 +113,14 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'home' %}#pdf-upload-card">
-              {% trans "Ir a sección" %}
-            </a>
+            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractModal">
+              {% trans "Extraer citas" %}
+            </button>
           </li>
           <li>
-            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractModal">
-              {% trans "Extraer citas (PDF)" %}
-            </button>
+            <a class="dropdown-item" href="{% url 'citation_reader_preview' %}">
+              {% trans "Visualizar PDF" %}
+            </a>
           </li>
         </ul>
       </div>
@@ -138,11 +133,6 @@
           DBLP
         </a>
         <ul class="dropdown-menu shadow-sm">
-          <li>
-            <a class="dropdown-item" href="{% url 'home' %}#home-dblp-card">
-              {% trans "Ir a sección" %}
-            </a>
-          </li>
           <li>
             <a class="dropdown-item" href="{% url 'dblp_articles' %}">
               {% trans "Explorar DBLP" %}
