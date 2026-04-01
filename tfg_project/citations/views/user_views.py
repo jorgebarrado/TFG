@@ -218,9 +218,15 @@ def my_profile(request):
     }
 
     # Última actividad (simple pero efectiva)
+    # OPTIMIZATION: Slice querysets at the database level to avoid loading all objects
+    # into memory, and use select_related to avoid N+1 queries when accessing citation fields
     activities = []
 
-    for r in reports_qs:
+    # Get up to 20 most recent of each type, since we only need 20 max for the feed
+    # No select_related needed for reports_qs because the report IS the citation object,
+    # and we only access r.doi_original, but adding author just in case the template uses it
+    recent_reports = reports_qs.select_related("author").order_by("-created_at")[:20]
+    for r in recent_reports:
         activities.append(
             {
                 "type": "report",
@@ -230,7 +236,8 @@ def my_profile(request):
             }
         )
 
-    for c in comments_qs:
+    recent_comments = comments_qs.select_related("citation").order_by("-created_at")[:20]
+    for c in recent_comments:
         activities.append(
             {
                 "type": "comment",
@@ -240,7 +247,8 @@ def my_profile(request):
             }
         )
 
-    for s in saved_qs:
+    recent_saves = saved_qs.select_related("citation").order_by("-created_at")[:20]
+    for s in recent_saves:
         activities.append(
             {
                 "type": "saved",
@@ -250,7 +258,9 @@ def my_profile(request):
             }
         )
 
-    for v in votes_qs:
+    # Vote doesn't have created_at, using citation.created_at as fallback
+    recent_votes = votes_qs.select_related("citation").order_by("-citation__created_at")[:20]
+    for v in recent_votes:
         label = "Votó positivo" if v.value == 1 else "Votó negativo"
         activities.append(
             {
