@@ -46,7 +46,9 @@ def get_author_papers(dblp_url: str, timeout: int = 12) -> List[DBLPPaper]:
     """
     dblp_xml_url = _normalize_dblp_url(dblp_url)
     if not dblp_xml_url:
-        raise DBLPClientError("La URL de DBLP no es valida. Usa el enlace .html o .xml.")
+        raise DBLPClientError(
+            "La URL de DBLP no es valida. Usa el enlace .html o .xml."
+        )
 
     try:
         response = requests.get(dblp_xml_url, timeout=timeout)

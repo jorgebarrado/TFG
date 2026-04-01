@@ -71,9 +71,7 @@ def vote_view(request):
         "downvotes": downvotes,
         "user_vote": user_vote,
     }
-    return render(
-        request, "citations/partials/_vote_buttons.html", context
-    )
+    return render(request, "citations/partials/_vote_buttons.html", context)
 
 
 @require_POST
@@ -96,9 +94,7 @@ def toggle_saved(request):
         is_saved = True
 
     context = {"citation": citation, "is_saved": is_saved}
-    return render(
-        request, "citations/partials/_save_button.html", context
-    )
+    return render(request, "citations/partials/_save_button.html", context)
 
 
 def ajax_submit_citation(request):
@@ -108,9 +104,10 @@ def ajax_submit_citation(request):
     """
 
     def _is_ajax(req):
-        return req.headers.get("HX-Request") == "true" or req.headers.get(
-            "X-Requested-With"
-        ) == "XMLHttpRequest"
+        return (
+            req.headers.get("HX-Request") == "true"
+            or req.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
     if request.method != "POST":
         if _is_ajax(request):
@@ -134,7 +131,9 @@ def ajax_submit_citation(request):
         if not report_title:
             error_msg = _("El titulo del reporte es obligatorio.")
             if _is_ajax(request):
-                return JsonResponse({"errors": {"report_title": [error_msg]}}, status=400)
+                return JsonResponse(
+                    {"errors": {"report_title": [error_msg]}}, status=400
+                )
             messages.error(request, error_msg)
             return redirect("home")
 
@@ -171,11 +170,15 @@ def ajax_submit_citation(request):
 
         metadata_fields_to_update = []
         updated_original = (
-            citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+            citation.metadata_original
+            if isinstance(citation.metadata_original, dict)
+            else {}
         )
         updated_original = dict(updated_original)
         updated_incorrect = (
-            citation.metadata_incorrect if isinstance(citation.metadata_incorrect, dict) else {}
+            citation.metadata_incorrect
+            if isinstance(citation.metadata_incorrect, dict)
+            else {}
         )
         updated_incorrect = dict(updated_incorrect)
 
@@ -199,7 +202,9 @@ def ajax_submit_citation(request):
             if "metadata_original" not in metadata_fields_to_update:
                 metadata_fields_to_update.append("metadata_original")
 
-        uploaded_incorrect_pdf = request.FILES.get("uploaded_pdf_incorrect_file") or request.FILES.get("uploaded_pdf_file")
+        uploaded_incorrect_pdf = request.FILES.get(
+            "uploaded_pdf_incorrect_file"
+        ) or request.FILES.get("uploaded_pdf_file")
         if uploaded_incorrect_pdf:
             incorrect_name = uploaded_incorrect_pdf.name or "uploaded_incorrect.pdf"
             if not incorrect_name.lower().endswith(".pdf"):
@@ -322,7 +327,9 @@ def get_semantic_citations(request):
     registered_citations = IncorrectCitation.objects.filter(
         doi_original=doi, doi_incorrect__in=citing_dois
     ).values("doi_incorrect", "id")
-    registered_map = {item["doi_incorrect"]: item["id"] for item in registered_citations}
+    registered_map = {
+        item["doi_incorrect"]: item["id"] for item in registered_citations
+    }
 
     for c in citations:
         citing_doi = c.get("doi")
@@ -332,9 +339,11 @@ def get_semantic_citations(request):
         else:
             c["is_registered"] = False
 
-    return JsonResponse({
-        "doi": doi,
-        "citation_count": citation_count,
-        "citations": citations,
-        "source": source,
-    })
+    return JsonResponse(
+        {
+            "doi": doi,
+            "citation_count": citation_count,
+            "citations": citations,
+            "source": source,
+        }
+    )

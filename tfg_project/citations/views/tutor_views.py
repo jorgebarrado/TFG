@@ -81,7 +81,9 @@ def citation_review_citers(request, paper_id: int):
     profile = get_object_or_404(UserProfile, user=request.user)
     dblp_url = profile.dblp_url
     if not dblp_url:
-        messages.warning(request, "Configura tu URL de DBLP antes de usar la revision de citas.")
+        messages.warning(
+            request, "Configura tu URL de DBLP antes de usar la revision de citas."
+        )
         return redirect("citation_review_papers")
 
     try:
@@ -137,7 +139,9 @@ def citation_review_citers(request, paper_id: int):
             _build_citing_metadata(citing), ensure_ascii=True
         )
 
-    paper["metadata_json"] = json.dumps(_build_original_metadata(paper), ensure_ascii=True)
+    paper["metadata_json"] = json.dumps(
+        _build_original_metadata(paper), ensure_ascii=True
+    )
 
     next_offset = None
     if total and (offset + limit) < total:

@@ -35,7 +35,9 @@ def notifications_context(request):
 def next_report_number_context(request):
     try:
         latest_id = (
-            IncorrectCitation.objects.order_by("-id").values_list("id", flat=True).first()
+            IncorrectCitation.objects.order_by("-id")
+            .values_list("id", flat=True)
+            .first()
             or 0
         )
         next_report_number = int(latest_id) + 1

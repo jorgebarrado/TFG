@@ -85,6 +85,7 @@ def _extract_text_with_pypdf2(pdf_path: str) -> str:
                 pass
     return "\n".join(text_parts)
 
+
 def _extract_text_with_pypdf2_with_positions(pdf_path: str) -> List[dict]:
     paragraphs: List[dict] = []
     index = 0

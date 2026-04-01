@@ -46,12 +46,8 @@ class HomePageTests(SocialAppTestCase):
 class LoggedInTestCase(SocialAppTestCase):
     def setUp(self):
         super().setUp()
-        self.user1 = User.objects.create_user(
-            username="user1", password="password"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2", password="password"
-        )
+        self.user1 = User.objects.create_user(username="user1", password="password")
+        self.user2 = User.objects.create_user(username="user2", password="password")
 
         # Datos para user1
         self.report1 = IncorrectCitation.objects.create(
@@ -84,9 +80,7 @@ class PageLoadTests(LoggedInTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_citation_detail_loads(self):
-        response = self.client.get(
-            reverse("citation_detail", args=[self.report1.id])
-        )
+        response = self.client.get(reverse("citation_detail", args=[self.report1.id]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -121,6 +115,7 @@ class ReportTests(TestCase):
         self.client.login(username="jorge", password="test1234")
 
     def test_create_report(self):
+        self.client.login(username="user1", password="password")
         response = self.client.post(
             reverse("ajax_submit"),
             {
@@ -130,6 +125,7 @@ class ReportTests(TestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(IncorrectCitation.objects.count(), 1)
@@ -169,10 +165,13 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
-        self.assertEqual(self.report1.incorrect_reason, "Motivo actualizado por el autor")
+        self.assertEqual(
+            self.report1.incorrect_reason, "Motivo actualizado por el autor"
+        )
 
     def test_admin_can_edit_report(self):
         admin = User.objects.create_superuser(
@@ -188,6 +187,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -205,6 +205,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -222,7 +223,9 @@ class ReportEditTests(LoggedInTestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
-        self.assertEqual(self.report1.incorrect_reason, "Motivo actualizado solo en bloque")
+        self.assertEqual(
+            self.report1.incorrect_reason, "Motivo actualizado solo en bloque"
+        )
         self.assertEqual(self.report1.doi_original, old_doi_original)
 
     def test_creator_can_edit_header_title(self):
@@ -236,6 +239,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -310,8 +314,8 @@ class VoteViewTests(LoggedInTestCase):
             reverse("vote"), {"citation_id": self.report1.id, "vote": 1}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '1')
-        self.assertContains(response, '0')
+        self.assertContains(response, "1")
+        self.assertContains(response, "0")
 
     def test_vote_toggles_off(self):
         self.client.login(username="user1", password="password")
@@ -320,7 +324,7 @@ class VoteViewTests(LoggedInTestCase):
             reverse("vote"), {"citation_id": self.report1.id, "vote": 1}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '0')
+        self.assertContains(response, "0")
 
     def test_vote_switches(self):
         self.client.login(username="user1", password="password")
@@ -329,14 +333,14 @@ class VoteViewTests(LoggedInTestCase):
             reverse("vote"), {"citation_id": self.report1.id, "vote": -1}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '1') # Downvotes
+        self.assertContains(response, "1")  # Downvotes
 
     def test_anonymous_user_sees_modal_buttons(self):
         response = self.client.get(reverse("citation_detail", args=[self.report1.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'data-bs-toggle="modal"')
         self.assertContains(response, 'data-bs-target="#loginModal"')
-        self.assertNotContains(response, 'hx-post')
+        self.assertNotContains(response, "hx-post")
 
 
 class ExternalApiInteractionTests(TestCase):
@@ -365,7 +369,9 @@ class ExternalApiInteractionTests(TestCase):
         mock_response.status_code = 200
         mock_response.json.return_value = {"message": {"title": ["A Valid Title"]}}
 
-        response = self.client.get(reverse("get_all_metadata"), {"doi": "10.1000/valid"})
+        response = self.client.get(
+            reverse("get_all_metadata"), {"doi": "10.1000/valid"}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["title"], ["A Valid Title"])
 
@@ -379,7 +385,7 @@ class ApiViewTests(LoggedInTestCase):
             reverse("toggle_saved"), {"citation_id": self.report1.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Saved")
+        self.assertContains(response, "Guardado")
         self.assertTrue(
             SavedCitation.objects.filter(
                 user=self.user2, citation=self.report1
@@ -391,7 +397,7 @@ class ApiViewTests(LoggedInTestCase):
             reverse("toggle_saved"), {"citation_id": self.report1.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Save")
+        self.assertContains(response, "Guardar")
         self.assertFalse(
             SavedCitation.objects.filter(
                 user=self.user2, citation=self.report1
@@ -409,6 +415,7 @@ class ApiViewTests(LoggedInTestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
@@ -416,7 +423,8 @@ class ApiViewTests(LoggedInTestCase):
     def test_ajax_submit_citation_invalid(self):
         self.client.login(username="user1", password="password")
         response = self.client.post(
-            reverse("ajax_submit"), {"doi_original": "10.1000/new_orig"}
+            reverse("ajax_submit"), {"doi_original": "10.1000/new_orig"},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("errors", response.json())
@@ -491,6 +499,7 @@ class SemanticCitationsViewTests(SocialAppTestCase):
 
 from .trace_logger import TraceLogger
 
+
 class ContextLoggingTests(TestCase):
     @patch("citations.views_api.extract_contexts_from_pdf")
     @patch("citations.views_api.download_pdf_to_temp")
@@ -543,7 +552,9 @@ class MessageSystemTests(SocialAppTestCase):
         self.assertIn(self.user1, conversation.participants.all())
         self.assertIn(self.user2, conversation.participants.all())
 
-        self.assertRedirects(response, reverse("conversation_detail", args=[conversation.id]))
+        self.assertRedirects(
+            response, reverse("conversation_detail", args=[conversation.id])
+        )
 
     def test_new_conversation_finds_existing(self):
         self.client.login(username="user1", password="password")
@@ -578,7 +589,9 @@ class MessageSystemTests(SocialAppTestCase):
         self.assertIn(self.user2, new_conv.participants.all())
         self.assertNotIn(self.user3, new_conv.participants.all())
 
-        self.assertRedirects(response, reverse("conversation_detail", args=[new_conv.id]))
+        self.assertRedirects(
+            response, reverse("conversation_detail", args=[new_conv.id])
+        )
 
     def test_self_conversation(self):
         self.client.login(username="user1", password="password")

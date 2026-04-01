@@ -3,7 +3,9 @@ from __future__ import annotations
 from papermage.parsers.pdfplumber_parser import PDFPlumberParser
 from papermage.magelib import Document
 
-PDF_PATH = r"C:\Users\jbarr\Downloads\2017-CT-development-computational-thinking_RG (1).pdf"
+PDF_PATH = (
+    r"C:\Users\jbarr\Downloads\2017-CT-development-computational-thinking_RG (1).pdf"
+)
 
 parser = PDFPlumberParser()
 
@@ -17,7 +19,9 @@ print("Número de símbolos:", len(doc.symbols))
 print("\n=== SPANS DE LA PRIMERA PÁGINA ===")
 first_page = doc.pages[0]
 for i, span in enumerate(first_page.spans[:20]):  # solo primeros 20
-    print(f"Span {i}: start={span.start} end={span.end} text='{doc.symbols[span.start:span.end]}'")
+    print(
+        f"Span {i}: start={span.start} end={span.end} text='{doc.symbols[span.start : span.end]}'"
+    )
 
 print("\n=== TEXTO COMPLETO DE LA PRIMERA PÁGINA ===")
 page_text = ""

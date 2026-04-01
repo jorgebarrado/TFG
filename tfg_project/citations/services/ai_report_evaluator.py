@@ -11,17 +11,16 @@ def _extract_basic(meta: dict) -> tuple[str, str, Any]:
 
     authors = meta.get("author", [])
     year = (
-        meta.get("published-print", {})
-        .get("date-parts", [[None]])[0][0]
-        or meta.get("published-online", {})
-        .get("date-parts", [[None]])[0][0]
-        or meta.get("issued", {})
-        .get("date-parts", [[None]])[0][0]
+        meta.get("published-print", {}).get("date-parts", [[None]])[0][0]
+        or meta.get("published-online", {}).get("date-parts", [[None]])[0][0]
+        or meta.get("issued", {}).get("date-parts", [[None]])[0][0]
     )
-    authors_str = ", ".join(
-        f"{a.get('given', '')} {a.get('family', '')}".strip()
-        for a in authors
-    ) or "N/A"
+    authors_str = (
+        ", ".join(
+            f"{a.get('given', '')} {a.get('family', '')}".strip() for a in authors
+        )
+        or "N/A"
+    )
     return title, authors_str, year
 
 
@@ -42,12 +41,12 @@ def _build_report_prompt(citation: IncorrectCitation) -> str:
         "probablemente correcta, incierta, probablemente incorrecta o incorrecta.\n\n"
         "Devuelve SOLO un JSON con este formato (sin texto adicional):\n"
         "{\n"
-        '  \"evaluation\": \"correct | probably_correct | unclear | probably_incorrect | incorrect\",\n'
-        '  \"confidence\": 0.0,\n'
-        '  \"suggested_error_type\": \"not said | misinterpretation | contextual misattribution | other\",\n'
-        '  \"matches_user_type\": true,\n'
-        '  \"reasoning\": \"<explicacion breve>\",\n'
-        '  \"notes_for_author\": \"<sugerencias de mejora para el autor del articulo B>\"\n'
+        '  "evaluation": "correct | probably_correct | unclear | probably_incorrect | incorrect",\n'
+        '  "confidence": 0.0,\n'
+        '  "suggested_error_type": "not said | misinterpretation | contextual misattribution | other",\n'
+        '  "matches_user_type": true,\n'
+        '  "reasoning": "<explicacion breve>",\n'
+        '  "notes_for_author": "<sugerencias de mejora para el autor del articulo B>"\n'
         "}\n\n"
         "Artículo A (original):\n"
         f"- DOI: {citation.doi_original}\n"
@@ -65,7 +64,9 @@ def _build_report_prompt(citation: IncorrectCitation) -> str:
         f"{user_reason}\n\n"
     )
 
-    context_str = "Fragmentos de B donde, según el sistema o el usuario, aparece la cita:\n\n"
+    context_str = (
+        "Fragmentos de B donde, según el sistema o el usuario, aparece la cita:\n\n"
+    )
     if not contexts:
         context_str += "(No hay fragmentos específicos; responde con menor confianza y justifica la incertidumbre.)\n"
     else:
