@@ -3,20 +3,28 @@
     {% if user.is_authenticated %}
         <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
                 hx-vals='{"citation_id": "{{ citation.id }}", "vote": "1"}'
-                class="btn btn-sm {% if user_vote == 1 %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            <i class="bi bi-arrow-up"></i> {{ upvotes }}
+                class="btn btn-sm {% if user_vote == 1 %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                aria-pressed="{% if user_vote == 1 %}true{% else %}false{% endif %}">
+            <span class="visually-hidden">{% trans "Votar a favor" %}</span>
+            <i class="bi bi-arrow-up" aria-hidden="true"></i> {{ upvotes }}
         </button>
         <button hx-post="{% url 'vote' %}" hx-target="#vote-buttons-{{ citation.id }}" hx-swap="outerHTML"
                 hx-vals='{"citation_id": "{{ citation.id }}", "vote": "-1"}'
-                class="btn btn-sm {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
-            <i class="bi bi-arrow-down"></i> {{ downvotes }}
+                class="btn btn-sm {% if user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                aria-pressed="{% if user_vote == -1 %}true{% else %}false{% endif %}">
+            <span class="visually-hidden">{% trans "Votar en contra" %}</span>
+            <i class="bi bi-arrow-down" aria-hidden="true"></i> {{ downvotes }}
         </button>
     {% else %}
-        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
-            <i class="bi bi-arrow-up"></i> {{ upvotes }}
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal"
+                aria-pressed="false">
+            <span class="visually-hidden">{% trans "Votar a favor" %}</span>
+            <i class="bi bi-arrow-up" aria-hidden="true"></i> {{ upvotes }}
         </button>
-        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#loginModal">
-            <i class="bi bi-arrow-down"></i> {{ downvotes }}
+        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#loginModal"
+                aria-pressed="false">
+            <span class="visually-hidden">{% trans "Votar en contra" %}</span>
+            <i class="bi bi-arrow-down" aria-hidden="true"></i> {{ downvotes }}
         </button>
     {% endif %}
 </div>

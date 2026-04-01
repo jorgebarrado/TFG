@@ -6,10 +6,12 @@
     type="button"
     data-bs-toggle="dropdown"
     aria-expanded="false">
-    <i class="bi bi-bell"></i>
+    <i class="bi bi-bell" aria-hidden="true"></i>
+    <span class="visually-hidden">{% trans "Notificaciones" %}</span>
     {% if notifications_unread_count %}
       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
         {{ notifications_unread_count }}
+        <span class="visually-hidden">{% trans "no leídas" %}</span>
       </span>
     {% endif %}
   </button>
