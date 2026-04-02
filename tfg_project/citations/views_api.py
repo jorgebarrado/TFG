@@ -30,6 +30,7 @@ from .services.pdf_citation_analyzer import (
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .services.references_data import build_references_data
+from .services.doi_enrichment_service import enrich_extraction_with_doi
 from .models import IncorrectCitation
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
@@ -234,6 +235,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             status=400,
         )
     debug = request.POST.get("debug") in ("1", "true", "True", "yes", "on")
+    article_doi = (request.POST.get("article_doi") or request.POST.get("doi") or "").strip()
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -362,6 +364,79 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 data["stats"]["bibliography_start_page"] = data[
                     "bibliography_start_page"
                 ]
+
+            try:
+                enrichment_result = enrich_extraction_with_doi(
+                    doi_input=article_doi,
+                    local_references=data.get("references", []),
+                    references_data_references=(
+                        references_data_payload.get("references", [])
+                        if isinstance(references_data_payload, dict)
+                        else []
+                    ),
+                )
+            except Exception as exc:  # pragma: no cover - defensive guard
+                logger.warning("doi enrichment failed doi=%s error=%s", article_doi, exc)
+                enrichment_result = {
+                    "local_references": data.get("references", []),
+                    "references_data_references": (
+                        references_data_payload.get("references", [])
+                        if isinstance(references_data_payload, dict)
+                        else []
+                    ),
+                    "cited_by": [],
+                    "enrichment": {
+                        "doi_provided": bool(article_doi),
+                        "doi_normalized": "",
+                        "paper_resolved": False,
+                        "references_enriched": 0,
+                        "cited_by_count": 0,
+                        "sources_used": [],
+                        "warning": "enrichment_exception",
+                    },
+                }
+
+            if isinstance(enrichment_result.get("local_references"), list):
+                data["references"] = enrichment_result["local_references"]
+            if isinstance(references_data_payload, dict) and isinstance(
+                enrichment_result.get("references_data_references"), list
+            ):
+                references_data_payload["references"] = enrichment_result[
+                    "references_data_references"
+                ]
+            data["cited_by"] = (
+                enrichment_result.get("cited_by")
+                if isinstance(enrichment_result.get("cited_by"), list)
+                else []
+            )
+            data["enrichment"] = (
+                enrichment_result.get("enrichment")
+                if isinstance(enrichment_result.get("enrichment"), dict)
+                else {
+                    "doi_provided": bool(article_doi),
+                    "doi_normalized": "",
+                    "paper_resolved": False,
+                    "references_enriched": 0,
+                    "cited_by_count": 0,
+                    "sources_used": [],
+                }
+            )
+            if isinstance(data.get("stats"), dict):
+                data["stats"]["dois_total"] = sum(
+                    1
+                    for ref in (data.get("references") or [])
+                    if isinstance(ref, dict) and ref.get("doi")
+                )
+        else:
+            data["cited_by"] = []
+            data["enrichment"] = {
+                "doi_provided": bool(article_doi),
+                "doi_normalized": "",
+                "paper_resolved": False,
+                "references_enriched": 0,
+                "cited_by_count": 0,
+                "sources_used": [],
+            }
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
