@@ -1903,6 +1903,11 @@ export default function ReaderApp({
     hint: "",
     tone: "idle",
   });
+  const [articleDoiInput, setArticleDoiInput] = useState(
+    String(reportOriginalDoi || "").trim()
+  );
+  const [extractEnrichment, setExtractEnrichment] = useState(null);
+  const [extractionExportData, setExtractionExportData] = useState(null);
   const [readerV2Data, setReaderV2Data] = useState(null);
   const [showReaderV2, setShowReaderV2] = useState(false);
   const [readerV2Opacity, setReaderV2Opacity] = useState(1);
@@ -1937,6 +1942,8 @@ export default function ReaderApp({
       max_reference_index: null,
       bibliography_start_page: null,
     });
+    setExtractEnrichment(null);
+    setExtractionExportData(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -1963,6 +1970,14 @@ export default function ReaderApp({
   }, [previewReferences]);
 
   useEffect(() => {
+    const normalized = String(reportOriginalDoi || "").trim();
+    if (!normalized) return;
+    setArticleDoiInput((current) =>
+      String(current || "").trim() ? current : normalized
+    );
+  }, [reportOriginalDoi]);
+
+  useEffect(() => {
     setStats(previewStats || null);
   }, [previewStats]);
 
@@ -1980,6 +1995,8 @@ export default function ReaderApp({
         max_reference_index: null,
         bibliography_start_page: null,
       });
+      setExtractEnrichment(null);
+      setExtractionExportData(null);
       setSelectedReferenceId("");
       setHoveredReferenceId("");
       setSelectedCitationId("");
@@ -2047,10 +2064,15 @@ export default function ReaderApp({
               bibliography_start_page: null,
             };
       const nextStats = event.detail?.stats || null;
+      const nextEnrichment =
+        event.detail?.enrichment && typeof event.detail.enrichment === "object"
+          ? event.detail.enrichment
+          : null;
       setSnippetsData(nextSnippets);
       setReferencesData(nextReferences);
       setReferencesVisualData(nextReferencesVisual);
       setStats(nextStats);
+      setExtractEnrichment(nextEnrichment);
     };
     window.addEventListener("reader:data", handler);
     return () => window.removeEventListener("reader:data", handler);
@@ -2100,29 +2122,37 @@ export default function ReaderApp({
       data.references_data && typeof data.references_data === "object"
         ? data.references_data
         : null;
-    if (!rawReferencesData) return;
-    setReferencesVisualData({
-      references: Array.isArray(rawReferencesData.references)
-        ? rawReferencesData.references
-        : [],
-      citations: Array.isArray(rawReferencesData.citations)
-        ? rawReferencesData.citations
-        : [],
-      contexts: Array.isArray(rawReferencesData.contexts)
-        ? rawReferencesData.contexts
-        : [],
-      citation_style: String(rawReferencesData.citation_style || "")
-        .trim()
-        .toLowerCase(),
-      max_reference_index: Number.isFinite(Number(rawReferencesData.max_reference_index))
-        ? Number(rawReferencesData.max_reference_index)
-        : null,
-      bibliography_start_page: Number.isFinite(
-        Number(rawReferencesData.bibliography_start_page)
-      )
-        ? Number(rawReferencesData.bibliography_start_page)
-        : null,
-    });
+    if (rawReferencesData) {
+      setReferencesVisualData({
+        references: Array.isArray(rawReferencesData.references)
+          ? rawReferencesData.references
+          : [],
+        citations: Array.isArray(rawReferencesData.citations)
+          ? rawReferencesData.citations
+          : [],
+        contexts: Array.isArray(rawReferencesData.contexts)
+          ? rawReferencesData.contexts
+          : [],
+        citation_style: String(rawReferencesData.citation_style || "")
+          .trim()
+          .toLowerCase(),
+        max_reference_index: Number.isFinite(
+          Number(rawReferencesData.max_reference_index)
+        )
+          ? Number(rawReferencesData.max_reference_index)
+          : null,
+        bibliography_start_page: Number.isFinite(
+          Number(rawReferencesData.bibliography_start_page)
+        )
+          ? Number(rawReferencesData.bibliography_start_page)
+          : null,
+      });
+    }
+    setExtractEnrichment(
+      data.enrichment && typeof data.enrichment === "object"
+        ? data.enrichment
+        : null
+    );
   }, [data]);
 
   useEffect(() => {
@@ -2392,6 +2422,7 @@ export default function ReaderApp({
 
   const resolvedPdfUrl = previewUrl || data?.pdf_url || pdfUrl || "";
   const canExtract = !extractStatus.loading && Boolean(activeFile || resolvedPdfUrl);
+  const canDownloadExtraction = Boolean(extractionExportData);
   const readerV2LayerOptions = useMemo(
     () => getReaderV2LayerKeys(readerV2Data),
     [readerV2Data]
@@ -3635,6 +3666,143 @@ export default function ReaderApp({
     return { snippets, references, stats, readerData, referencesVisual };
   };
 
+  const buildNestedReferencesForExport = (references, citations, contexts) => {
+    const safeReferences = Array.isArray(references) ? references : [];
+    const safeCitations = Array.isArray(citations) ? citations : [];
+    const safeContexts = Array.isArray(contexts) ? contexts : [];
+    const CONTEXT_ID_PREFIX = "citation-context-";
+
+    const contextByCitationId = new Map();
+    safeContexts.forEach((contextItem) => {
+      const contextId = String(contextItem?.id || "").trim();
+      if (!contextId.startsWith(CONTEXT_ID_PREFIX)) return;
+      const citationId = contextId.slice(CONTEXT_ID_PREFIX.length).trim();
+      if (!citationId) return;
+      contextByCitationId.set(citationId, contextItem);
+    });
+
+    const citationsByRefId = new Map();
+    safeCitations.forEach((citationItem) => {
+      const refId = String(citationItem?.ref_id || "").trim();
+      if (!refId) return;
+      const citationId = String(citationItem?.id || "").trim();
+      const linkedContext = citationId ? (contextByCitationId.get(citationId) || null) : null;
+      const citationWithContext = {
+        ...citationItem,
+        context: linkedContext,
+      };
+      if (!citationsByRefId.has(refId)) {
+        citationsByRefId.set(refId, []);
+      }
+      citationsByRefId.get(refId).push(citationWithContext);
+    });
+
+    const nestedReferences = safeReferences.map((referenceItem) => {
+      const refId = String(referenceItem?.ref_id || "").trim();
+      return {
+        ...referenceItem,
+        citations: refId ? (citationsByRefId.get(refId) || []) : [],
+      };
+    });
+
+    const existingRefIds = new Set(
+      nestedReferences
+        .map((item) => String(item?.ref_id || "").trim())
+        .filter(Boolean)
+    );
+    citationsByRefId.forEach((groupedCitations, refId) => {
+      if (existingRefIds.has(refId)) return;
+      nestedReferences.push({
+        id: `reference-entry-${refId}`,
+        ref_id: refId,
+        index: null,
+        text: "",
+        page: null,
+        box: null,
+        doi: null,
+        citations: groupedCitations,
+      });
+    });
+
+    return nestedReferences;
+  };
+
+  const buildExtractionExportData = (payload, result, file) => {
+    const rawReferencesData =
+      payload?.references_data && typeof payload.references_data === "object"
+        ? payload.references_data
+        : {};
+    const references = Array.isArray(rawReferencesData.references)
+      ? rawReferencesData.references
+      : result?.referencesVisual?.references || [];
+    const citations = Array.isArray(rawReferencesData.citations)
+      ? rawReferencesData.citations
+      : result?.referencesVisual?.citations || [];
+    const contexts = Array.isArray(rawReferencesData.contexts)
+      ? rawReferencesData.contexts
+      : result?.referencesVisual?.contexts || [];
+    const nestedReferences = buildNestedReferencesForExport(
+      references,
+      citations,
+      contexts
+    );
+    const resolvedCitationStyle = String(
+      rawReferencesData.citation_style ||
+        result?.stats?.citation_style ||
+        payload?.citation_style ||
+        ""
+    )
+      .trim()
+      .toLowerCase();
+    const maxReferenceIndexCandidate =
+      rawReferencesData.max_reference_index ??
+      result?.stats?.max_reference_index ??
+      payload?.max_reference_index;
+    const bibliographyStartPageCandidate =
+      rawReferencesData.bibliography_start_page ??
+      result?.stats?.bibliography_start_page ??
+      payload?.bibliography_start_page;
+    const maxReferenceIndex = Number(maxReferenceIndexCandidate);
+    const bibliographyStartPage = Number(bibliographyStartPageCandidate);
+    const statsForExport =
+      result?.stats && typeof result.stats === "object"
+        ? result.stats
+        : (payload?.stats && typeof payload.stats === "object" ? payload.stats : {});
+    const fileName = String(file?.name || payload?.file_name || payload?.filename || "document.pdf");
+    const engine = String(
+      statsForExport?.engine_used || payload?.engine_used || PREVIEW_EXTRACT_ENGINE
+    ).trim();
+    return {
+      file_name: fileName,
+      engine: engine || PREVIEW_EXTRACT_ENGINE,
+      citation_style: resolvedCitationStyle,
+      max_reference_index: Number.isFinite(maxReferenceIndex) ? maxReferenceIndex : null,
+      bibliography_start_page: Number.isFinite(bibliographyStartPage)
+        ? bibliographyStartPage
+        : null,
+      stats: statsForExport,
+      references: nestedReferences,
+    };
+  };
+
+  const downloadExtractionJson = (exportData) => {
+    if (!exportData || typeof exportData !== "object") return;
+    const jsonData = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const rawFileName = String(exportData.file_name || "document.pdf");
+    const baseName = rawFileName.replace(/\.[^./\\]+$/, "").trim() || "document";
+    const safeBaseName = baseName.replace(/[<>:"/\\|?*\u0000-\u001F]+/g, "_").replace(/\s+/g, "_");
+    const downloadName = `${safeBaseName}_refs_citations_contexts.json`;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  };
+
   const describeExtractionOutcome = (result, nextLayer, nextItems) => {
     const referencesCount = Math.max(
       Number(result?.references?.length || 0),
@@ -3688,6 +3856,7 @@ export default function ReaderApp({
   };
 
   const handleExtract = async () => {
+    setExtractEnrichment(null);
     setExtractStatus({
       loading: true,
       error: "",
@@ -3711,6 +3880,10 @@ export default function ReaderApp({
       const fd = new FormData();
       fd.append("manuscript", file);
       fd.append("engine", PREVIEW_EXTRACT_ENGINE);
+      const normalizedArticleDoi = String(articleDoiInput || "").trim();
+      if (normalizedArticleDoi) {
+        fd.append("article_doi", normalizedArticleDoi);
+      }
 
       const res = await fetch(EXTRACT_ENDPOINT, { method: "POST", body: fd });
       const payload = await res.json().catch(() => null);
@@ -3731,9 +3904,15 @@ export default function ReaderApp({
       }
 
       const result = buildExtractionResult(payload);
+      const enrichmentPayload =
+        payload?.enrichment && typeof payload.enrichment === "object"
+          ? payload.enrichment
+          : null;
       setSnippetsData(result.snippets);
       setReferencesData(result.references);
       setReferencesVisualData(result.referencesVisual);
+      setExtractionExportData(buildExtractionExportData(payload, result, file));
+      setExtractEnrichment(enrichmentPayload);
       setSelectedReferenceId("");
       setHoveredReferenceId("");
       setSelectedCitationId("");
@@ -3753,11 +3932,20 @@ export default function ReaderApp({
       setReaderV2Opacity(1);
       setActiveTab("references");
       const outcome = describeExtractionOutcome(result, nextLayer, nextItems);
+      const enrichmentHint =
+        enrichmentPayload?.paper_resolved &&
+        Number(enrichmentPayload?.references_enriched) > 0
+          ? `Referencias enriquecidas mediante DOI: ${Number(
+              enrichmentPayload.references_enriched
+            )}.`
+          : (enrichmentPayload?.warning === "invalid_doi"
+            ? "DOI no valido; se uso extraccion local."
+            : "");
       setExtractStatus({
         loading: false,
         error: "",
         message: outcome.message,
-        hint: outcome.hint,
+        hint: [outcome.hint, enrichmentHint].filter(Boolean).join(" "),
         tone: outcome.tone,
       });
     } catch (err) {
@@ -3990,6 +4178,8 @@ export default function ReaderApp({
       max_reference_index: null,
       bibliography_start_page: null,
     });
+    setExtractEnrichment(null);
+    setExtractionExportData(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -4048,6 +4238,8 @@ export default function ReaderApp({
       max_reference_index: null,
       bibliography_start_page: null,
     });
+    setExtractEnrichment(null);
+    setExtractionExportData(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -4219,14 +4411,45 @@ export default function ReaderApp({
         onChange={handlePdfChange}
       />
       <div className="reader-muted">Motor: PaperMage (unificado)</div>
-      <button
-        type="button"
-        className="reader-tool-btn"
-        onClick={handleExtract}
-        disabled={!canExtract}
-      >
-        {extractStatus.loading ? "Extrayendo..." : "Extraer"}
-      </button>
+      <label className="reader-v2-layer">
+        <span className="reader-v2-layer-label">DOI del articulo</span>
+        <input
+          type="text"
+          className="reader-engine-select"
+          value={articleDoiInput}
+          onChange={(event) => setArticleDoiInput(event.target.value)}
+          placeholder="10.xxxx/xxxxx"
+        />
+      </label>
+      <div className="reader-muted">
+        Opcional: anade el DOI del articulo para mejorar la precision de las referencias.
+      </div>
+      {extractEnrichment?.paper_resolved &&
+        Number(extractEnrichment?.references_enriched) > 0 && (
+          <div className="reader-muted">
+            Referencias enriquecidas mediante DOI ({Number(
+              extractEnrichment.references_enriched
+            )}).
+          </div>
+        )}
+      <div className="reader-extract-actions">
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={handleExtract}
+          disabled={!canExtract}
+        >
+          {extractStatus.loading ? "Extrayendo..." : "Extraer"}
+        </button>
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={() => downloadExtractionJson(extractionExportData)}
+          disabled={!canDownloadExtraction}
+        >
+          Descargar
+        </button>
+      </div>
       {(extractStatus.error || extractStatus.message || extractStatus.hint) && (
         <div
           className={
