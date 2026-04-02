@@ -14,8 +14,13 @@
 {% endblock %}
 
 {% block scripts %}
+{% if reader_vite_url %}
+<script type="module" src="{{ reader_vite_url }}/@vite/client"></script>
+<script type="module" src="{{ reader_vite_url }}/src/main.jsx"></script>
+{% else %}
 <link rel="stylesheet" href="{% static 'reader/reader.css' %}?v={{ reader_build }}">
 <script src="{% static 'reader/reader.js' %}?v={{ reader_build }}"></script>
+{% endif %}
 <script>
   document.body.classList.add("reader-fullscreen");
 </script>
