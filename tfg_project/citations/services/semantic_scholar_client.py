@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
-from typing import List, Optional, TypedDict
+import re
+from typing import Any, Dict, List, Optional, TypedDict
 
 import requests
 
 SEMANTIC_SCHOLAR_API_URL = "https://api.semanticscholar.org/graph/v1"
 SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
+DOI_URL_RE = re.compile(r"^https?://(?:dx\.)?doi\.org/", re.IGNORECASE)
 
 
 class SemanticScholarError(RuntimeError):
@@ -27,6 +29,41 @@ def _build_headers() -> dict:
     if SEMANTIC_SCHOLAR_API_KEY:
         headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
     return headers
+
+
+def _normalize_doi(value: Any) -> str:
+    candidate = str(value or "").strip()
+    if not candidate:
+        return ""
+    candidate = re.sub(r"^doi:\s*", "", candidate, flags=re.IGNORECASE)
+    candidate = DOI_URL_RE.sub("", candidate)
+    candidate = candidate.rstrip(").,;:]").strip().lower()
+    return candidate
+
+
+def _normalize_authors(raw_authors: Any) -> List[str]:
+    if not isinstance(raw_authors, list):
+        return []
+    out: List[str] = []
+    for author in raw_authors:
+        if isinstance(author, dict):
+            name = str(author.get("name") or "").strip()
+            if name:
+                out.append(name)
+    return out
+
+
+def _normalize_paper_item(item: Dict[str, Any], *, source: str = "semantic_scholar") -> Dict[str, Any]:
+    external_ids = item.get("externalIds") or {}
+    return {
+        "doi": _normalize_doi(external_ids.get("DOI")),
+        "title": str(item.get("title") or "").strip(),
+        "authors": _normalize_authors(item.get("authors")),
+        "year": item.get("year") if isinstance(item.get("year"), int) else None,
+        "venue": str(item.get("venue") or "").strip() or None,
+        "url": str(item.get("url") or "").strip() or None,
+        "source": source,
+    }
 
 
 def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
@@ -90,6 +127,63 @@ def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
         )
 
     return citing_papers
+
+
+def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
+    """
+    Resuelve metadatos de un paper por DOI e incluye references/citations normalizadas.
+    """
+    normalized_doi = _normalize_doi(doi)
+    if not normalized_doi:
+        return None
+
+    url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/DOI:{normalized_doi}"
+    fields = (
+        "title,year,venue,externalIds,authors.name,url,"
+        "references.title,references.year,references.venue,references.externalIds,references.authors.name,references.url,"
+        "citations.title,citations.year,citations.venue,citations.externalIds,citations.authors.name,citations.url"
+    )
+    try:
+        response = requests.get(
+            url,
+            headers=_build_headers(),
+            params={"fields": fields},
+            timeout=timeout,
+        )
+    except requests.RequestException as exc:
+        raise SemanticScholarError(f"Error de conexion con Semantic Scholar: {exc}") from exc
+
+    if response.status_code == 404:
+        return None
+    if response.status_code == 429:
+        raise SemanticScholarError("Rate limit en Semantic Scholar.")
+    if response.status_code != 200:
+        raise SemanticScholarError(
+            f"Error en la API de Semantic Scholar (HTTP {response.status_code})."
+        )
+
+    data = response.json() if response.content else {}
+    if not isinstance(data, dict):
+        return None
+
+    work = _normalize_paper_item(data, source="semantic_scholar")
+    work["doi"] = work.get("doi") or normalized_doi
+
+    references: List[Dict[str, Any]] = []
+    for reference in data.get("references") or []:
+        if not isinstance(reference, dict):
+            continue
+        references.append(_normalize_paper_item(reference, source="semantic_scholar"))
+
+    citations: List[Dict[str, Any]] = []
+    for citation in data.get("citations") or []:
+        if not isinstance(citation, dict):
+            continue
+        citations.append(_normalize_paper_item(citation, source="semantic_scholar"))
+
+    work["references"] = references
+    work["citations"] = citations
+    return work
 
 
 def get_citing_papers_for_doi_paginated(
