@@ -1,13 +1,11 @@
 """Views related to user profiles and personalized content."""
 
-from itertools import chain
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import activate
@@ -37,10 +35,9 @@ def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
-    latest_reports = (
-        IncorrectCitation.objects.filter(author=profile_user)
-        .order_by("-created_at")[:5]
-    )
+    latest_reports = IncorrectCitation.objects.filter(author=profile_user).order_by(
+        "-created_at"
+    )[:5]
 
     context = {
         "profile_user": profile_user,
@@ -236,7 +233,9 @@ def my_profile(request):
             }
         )
 
-    recent_comments = comments_qs.select_related("citation").order_by("-created_at")[:20]
+    recent_comments = comments_qs.select_related("citation").order_by("-created_at")[
+        :20
+    ]
     for c in recent_comments:
         activities.append(
             {
@@ -259,7 +258,9 @@ def my_profile(request):
         )
 
     # Vote doesn't have created_at, using citation.created_at as fallback
-    recent_votes = votes_qs.select_related("citation").order_by("-citation__created_at")[:20]
+    recent_votes = votes_qs.select_related("citation").order_by(
+        "-citation__created_at"
+    )[:20]
     for v in recent_votes:
         label = "Votó positivo" if v.value == 1 else "Votó negativo"
         activities.append(
@@ -279,9 +280,13 @@ def my_profile(request):
         "stats": stats,
         "activities": activities,
         "reports_list": reports_qs.order_by("-created_at")[:20],
-        "comments_list": comments_qs.select_related("citation").order_by("-created_at")[:20],
+        "comments_list": comments_qs.select_related("citation").order_by("-created_at")[
+            :20
+        ],
         "saved_list": saved_qs.select_related("citation").order_by("-created_at")[:20],
-        "votes_list": votes_qs.select_related("citation").order_by("citation__created_at")[:20],
+        "votes_list": votes_qs.select_related("citation").order_by(
+            "citation__created_at"
+        )[:20],
         "avatar_initial": get_avatar_initial(user),
     }
 

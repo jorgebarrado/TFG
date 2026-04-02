@@ -7,8 +7,12 @@ from typing import Iterable
 from ..models import AREA_CHOICES, IncorrectCitation
 
 
-CITATION_TYPE_CHOICES = tuple(IncorrectCitation._meta.get_field("citation_type").choices)
-CITATION_TYPE_LABELS = {str(value): str(label) for value, label in CITATION_TYPE_CHOICES}
+CITATION_TYPE_CHOICES = tuple(
+    IncorrectCitation._meta.get_field("citation_type").choices
+)
+CITATION_TYPE_LABELS = {
+    str(value): str(label) for value, label in CITATION_TYPE_CHOICES
+}
 PUBLICATION_AREA_LABELS = {str(value): str(label) for value, label in AREA_CHOICES}
 
 
@@ -27,14 +31,25 @@ def normalize_tag_values(
     return normalized
 
 
-def extract_report_tag_values(citation: IncorrectCitation) -> tuple[list[str], list[str]]:
-    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
-    type_values = normalize_tag_values(metadata.get("citation_type_tags"), CITATION_TYPE_LABELS)
+def extract_report_tag_values(
+    citation: IncorrectCitation,
+) -> tuple[list[str], list[str]]:
+    metadata = (
+        citation.metadata_original
+        if isinstance(citation.metadata_original, dict)
+        else {}
+    )
+    type_values = normalize_tag_values(
+        metadata.get("citation_type_tags"), CITATION_TYPE_LABELS
+    )
     area_values = normalize_tag_values(
         metadata.get("publication_area_tags"), PUBLICATION_AREA_LABELS
     )
 
-    if not type_values and str(citation.citation_type or "").strip() in CITATION_TYPE_LABELS:
+    if (
+        not type_values
+        and str(citation.citation_type or "").strip() in CITATION_TYPE_LABELS
+    ):
         type_values = [citation.citation_type]
     if (
         not area_values
@@ -45,10 +60,20 @@ def extract_report_tag_values(citation: IncorrectCitation) -> tuple[list[str], l
     return type_values, area_values
 
 
-def extract_report_tag_labels(citation: IncorrectCitation) -> tuple[list[str], list[str]]:
+def extract_report_tag_labels(
+    citation: IncorrectCitation,
+) -> tuple[list[str], list[str]]:
     type_values, area_values = extract_report_tag_values(citation)
-    type_labels = [CITATION_TYPE_LABELS[value] for value in type_values if value in CITATION_TYPE_LABELS]
-    area_labels = [PUBLICATION_AREA_LABELS[value] for value in area_values if value in PUBLICATION_AREA_LABELS]
+    type_labels = [
+        CITATION_TYPE_LABELS[value]
+        for value in type_values
+        if value in CITATION_TYPE_LABELS
+    ]
+    area_labels = [
+        PUBLICATION_AREA_LABELS[value]
+        for value in area_values
+        if value in PUBLICATION_AREA_LABELS
+    ]
     return type_labels, area_labels
 
 
@@ -60,7 +85,11 @@ def apply_report_tags(
     type_values = normalize_tag_values(citation_type_values, CITATION_TYPE_LABELS)
     area_values = normalize_tag_values(publication_area_values, PUBLICATION_AREA_LABELS)
 
-    metadata = citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+    metadata = (
+        citation.metadata_original
+        if isinstance(citation.metadata_original, dict)
+        else {}
+    )
     metadata = dict(metadata)
     metadata["citation_type_tags"] = type_values
     metadata["publication_area_tags"] = area_values

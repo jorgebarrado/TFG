@@ -259,7 +259,9 @@ class Message(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        return (
+            f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        )
 
 
 class Notification(models.Model):
@@ -305,20 +307,26 @@ class CitationReport(models.Model):
     Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
     """
 
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     # Artículo original (A)
     original_doi = models.CharField(max_length=255)
     original_metadata = models.JSONField(null=True, blank=True)
     original_pdf_url = models.URLField(null=True, blank=True)
-    original_pdf_uploaded = models.FileField(upload_to="original_pdfs/", null=True, blank=True)
+    original_pdf_uploaded = models.FileField(
+        upload_to="original_pdfs/", null=True, blank=True
+    )
     original_snippet = models.TextField(null=True, blank=True)
 
     # Artículo que cita (B)
     citing_doi = models.CharField(max_length=255)
     citing_metadata = models.JSONField(null=True, blank=True)
     citing_pdf_url = models.URLField(null=True, blank=True)
-    citing_pdf_uploaded = models.FileField(upload_to="citing_pdfs/", null=True, blank=True)
+    citing_pdf_uploaded = models.FileField(
+        upload_to="citing_pdfs/", null=True, blank=True
+    )
 
     # Párrafos seleccionados donde aparece la cita
     citing_paragraphs = models.JSONField(null=True, blank=True)  # lista de dicts
@@ -335,4 +343,3 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-

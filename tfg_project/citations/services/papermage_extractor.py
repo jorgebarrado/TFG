@@ -5,6 +5,9 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, NotRequired, Sequence, Tuple, TypedDict
+from citations.logging_utils import get_logger
+
+logger = get_logger("citations.extractor.papermage")
 
 try:
     from papermage.magelib import Document, Entity
@@ -97,17 +100,23 @@ def _load_document(pdf_path: str) -> Document:
     _ensure_papermage_available()
     path = Path(pdf_path)
     if not path.is_file():
+        logger.error(f"Fichero PDF no encontrado: {pdf_path}")
         raise FileNotFoundError(
             f"No se encontró el PDF en la ruta proporcionada: {pdf_path}"
         )
     if PDFPlumberParser is None:
+        logger.error("PDFPlumberParser no disponible en PaperMage")
         raise RuntimeError(
             "PaperMage está instalado parcialmente y no se pudo inicializar PDFPlumberParser."
         )
     try:
+        logger.debug(f"Parseando documento con PDFPlumberParser en {pdf_path}")
         parser = PDFPlumberParser()
-        return parser.parse(input_pdf_path=str(path))
+        doc = parser.parse(input_pdf_path=str(path))
+        logger.debug(f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas")
+        return doc
     except Exception as exc:
+        logger.error(f"Fallo al parsear PDF con PDFPlumberParser: {exc}")
         raise RuntimeError(f"No se pudo leer el PDF con PaperMage: {exc}") from exc
 
 
@@ -261,10 +270,7 @@ def _extract_real_pdf_page_dimensions(pdf_path: str) -> list[tuple[float, float]
             pdf_doc = PdfReader(str(path))
             dims = []
             for page in pdf_doc.pages:
-                box = (
-                    getattr(page, "cropbox", None)
-                    or getattr(page, "mediabox", None)
-                )
+                box = getattr(page, "cropbox", None) or getattr(page, "mediabox", None)
                 if box is None:
                     continue
                 width, height = _box_dims(box)
@@ -279,10 +285,7 @@ def _extract_real_pdf_page_dimensions(pdf_path: str) -> list[tuple[float, float]
             pdf_doc = LegacyPdfReader(str(path))
             dims = []
             for page in pdf_doc.pages:
-                box = (
-                    getattr(page, "cropbox", None)
-                    or getattr(page, "mediabox", None)
-                )
+                box = getattr(page, "cropbox", None) or getattr(page, "mediabox", None)
                 if box is None:
                     continue
                 width, height = _box_dims(box)
@@ -355,9 +358,17 @@ def _extract_visual_words_with_fitz(
                     if not normalized_box:
                         continue
 
-                    block_no = int(_num(raw_word[5], default=0.0)) if len(raw_word) > 5 else 0
-                    line_no = int(_num(raw_word[6], default=0.0)) if len(raw_word) > 6 else 0
-                    word_no = int(_num(raw_word[7], default=word_index)) if len(raw_word) > 7 else word_index
+                    block_no = (
+                        int(_num(raw_word[5], default=0.0)) if len(raw_word) > 5 else 0
+                    )
+                    line_no = (
+                        int(_num(raw_word[6], default=0.0)) if len(raw_word) > 6 else 0
+                    )
+                    word_no = (
+                        int(_num(raw_word[7], default=word_index))
+                        if len(raw_word) > 7
+                        else word_index
+                    )
                     token_id = f"token_{page_index}_{block_no}_{line_no}_{word_no}"
                     items.append(
                         {
@@ -391,6 +402,7 @@ def _extract_first_box(
 
     box = boxes[0]
     return _extract_box_xywh(box, page_height=page_height)
+
 
 def _extract_box_xywh(
     box: Any,
@@ -487,7 +499,12 @@ def _to_absolute_box(
         and page_width > 0
         and page_height > 0
     ):
-        return [x * page_width, y * page_height, width * page_width, height * page_height]
+        return [
+            x * page_width,
+            y * page_height,
+            width * page_width,
+            height * page_height,
+        ]
     return [x, y, width, height]
 
 
@@ -581,8 +598,14 @@ def _build_reader_layer_items(
                 if raw_page is None:
                     raw_page = getattr(entity, "page", None)
                 page_index = _normalize_box_page(raw_page, pages_total)
-                page_width = pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
-                page_height = pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
+                page_width = (
+                    pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
+                )
+                page_height = (
+                    pages[page_index]["height"]
+                    if 0 <= page_index < pages_total
+                    else 0.0
+                )
 
                 raw_box = _extract_box_xywh(
                     raw_box_obj,
@@ -597,7 +620,9 @@ def _build_reader_layer_items(
                 )
                 if not absolute_box:
                     continue
-                normalized_box = _normalize_box_to_page(absolute_box, page_width, page_height)
+                normalized_box = _normalize_box_to_page(
+                    absolute_box, page_width, page_height
+                )
                 if not normalized_box:
                     continue
 
@@ -623,8 +648,12 @@ def _build_reader_layer_items(
             else getattr(entity, "page", None)
         )
         page_index = _normalize_box_page(raw_page, pages_total)
-        page_width = pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
-        page_height = pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
+        page_width = (
+            pages[page_index]["width"] if 0 <= page_index < pages_total else 0.0
+        )
+        page_height = (
+            pages[page_index]["height"] if 0 <= page_index < pages_total else 0.0
+        )
 
         box = _extract_first_box_absolute(
             entity,
@@ -738,7 +767,9 @@ def _drop_top_clamped_duplicate_items(items: List[ReaderItem]) -> List[ReaderIte
     if not drop_indexes:
         return items
 
-    return [item for item_index, item in enumerate(items) if item_index not in drop_indexes]
+    return [
+        item for item_index, item in enumerate(items) if item_index not in drop_indexes
+    ]
 
 
 def _box_iou(box_a: Sequence[float], box_b: Sequence[float]) -> float:
@@ -816,7 +847,9 @@ def _drop_overlapping_duplicate_items(items: List[ReaderItem]) -> List[ReaderIte
                     continue
 
                 width_ratio = min(item_width, kept_width) / max(item_width, kept_width)
-                height_ratio = min(item_height, kept_height) / max(item_height, kept_height)
+                height_ratio = min(item_height, kept_height) / max(
+                    item_height, kept_height
+                )
                 if width_ratio < min_size_ratio or height_ratio < min_size_ratio:
                     continue
 
@@ -832,7 +865,9 @@ def _drop_overlapping_duplicate_items(items: List[ReaderItem]) -> List[ReaderIte
     if not drop_indexes:
         return items
 
-    return [item for item_index, item in enumerate(items) if item_index not in drop_indexes]
+    return [
+        item for item_index, item in enumerate(items) if item_index not in drop_indexes
+    ]
 
 
 _SECTION_NUMBERED_RE = re.compile(r"^(?:\d+(?:\.\d+)*|[IVXLCM]+)\.?\s+\S+")
@@ -897,9 +932,10 @@ def _is_probably_two_column_page(rows: Sequence[ReaderItem]) -> bool:
 
     left_count = sum(1 for center in narrow_centers if center < 0.5)
     right_count = len(narrow_centers) - left_count
-    return left_count >= len(narrow_centers) * 0.25 and right_count >= len(
-        narrow_centers
-    ) * 0.25
+    return (
+        left_count >= len(narrow_centers) * 0.25
+        and right_count >= len(narrow_centers) * 0.25
+    )
 
 
 def _assign_row_stream(row: ReaderItem, two_column: bool) -> int:
@@ -1033,7 +1069,9 @@ def _looks_like_section_heading(text: str, box: Sequence[float]) -> bool:
         return False
 
     uppercase_ratio = sum(1 for ch in alpha_chars if ch.isupper()) / len(alpha_chars)
-    titlecase_ratio = sum(1 for word in words if word and word[0].isupper()) / len(words)
+    titlecase_ratio = sum(1 for word in words if word and word[0].isupper()) / len(
+        words
+    )
     looks_reference_line = _YEAR_RE.search(cleaned) and "," in cleaned
 
     if looks_reference_line:
@@ -1056,7 +1094,9 @@ def _infer_sections_from_rows(rows: Sequence[ReaderItem]) -> List[ReaderItem]:
     section_items: List[ReaderItem] = []
     seen_keys: set[tuple[int, str, int]] = set()
 
-    sorted_rows = sorted(rows, key=lambda row: (row["page"], row["box"][1], row["box"][0]))
+    sorted_rows = sorted(
+        rows, key=lambda row: (row["page"], row["box"][1], row["box"][0])
+    )
     for row in sorted_rows:
         text = _normalize_whitespace(row.get("text", ""))
         box = row["box"]
@@ -1090,7 +1130,9 @@ def _find_bibliography_anchor(
         if _BIBLIO_HEADER_RE.match(text):
             return section["page"], section["box"][1]
 
-    sorted_rows = sorted(rows, key=lambda row: (row["page"], row["box"][1], row["box"][0]))
+    sorted_rows = sorted(
+        rows, key=lambda row: (row["page"], row["box"][1], row["box"][0])
+    )
     for row in sorted_rows:
         text = _normalize_whitespace(row.get("text", "")).lower()
         if _BIBLIO_HEADER_RE.match(text):
@@ -1144,8 +1186,11 @@ def _infer_bibliographies_from_rows(
     anchor_page, anchor_y = anchor
     candidate_rows = [
         row
-        for row in sorted(rows, key=lambda item: (item["page"], item["box"][1], item["box"][0]))
-        if row["page"] > anchor_page or (row["page"] == anchor_page and row["box"][1] >= anchor_y)
+        for row in sorted(
+            rows, key=lambda item: (item["page"], item["box"][1], item["box"][0])
+        )
+        if row["page"] > anchor_page
+        or (row["page"] == anchor_page and row["box"][1] >= anchor_y)
     ]
     if not candidate_rows:
         return []
@@ -1170,10 +1215,9 @@ def _infer_bibliographies_from_rows(
         reference_height = max(prev_box[3], row_box[3], 0.006)
         large_gap = vertical_gap > reference_height * 1.8 + 0.005
         page_jump = row["page"] != prev_row["page"]
-        new_entry = (
-            _starts_new_bibliography_entry(row_text)
-            and not _starts_new_bibliography_entry(prev_row.get("text", ""))
-        )
+        new_entry = _starts_new_bibliography_entry(
+            row_text
+        ) and not _starts_new_bibliography_entry(prev_row.get("text", ""))
         if page_jump or large_gap or new_entry:
             item = _build_bibliography_item(rows=current_rows, index=len(entries))
             if item:

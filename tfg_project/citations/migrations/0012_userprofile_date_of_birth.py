@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("citations", "0011_userprofile_avatar_userprofile_bio_and_more"),
     ]

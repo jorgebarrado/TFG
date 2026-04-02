@@ -33,8 +33,7 @@ def inbox(request):
             latest_message_at=Max("messages__created_at"),
             unread_count=Count(
                 "messages",
-                filter=Q(messages__is_read=False)
-                & ~Q(messages__sender=request.user),
+                filter=Q(messages__is_read=False) & ~Q(messages__sender=request.user),
             ),
         )
         .order_by("-latest_message_at", "-created_at")
@@ -58,9 +57,7 @@ def conversation_detail(request, conversation_id):
         pk=conversation_id,
     )
 
-    conversation.other_participants = _other_participants(
-        conversation, request.user
-    )
+    conversation.other_participants = _other_participants(conversation, request.user)
 
     messages = conversation.messages.select_related("sender").order_by("created_at")
 
@@ -76,9 +73,9 @@ def conversation_detail(request, conversation_id):
     else:
         form = MessageForm()
 
-    conversation.messages.filter(is_read=False).exclude(
-        sender=request.user
-    ).update(is_read=True)
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(
+        is_read=True
+    )
 
     context = {"conversation": conversation, "form": form, "messages": messages}
     return render(request, "messages/conversation.html", context)
@@ -91,9 +88,7 @@ def new_conversation(request, username):
     # 1. Obtener todas las conversaciones donde participan AMBOS
     existing_conversations = Conversation.objects.filter(
         participants=request.user
-    ).filter(
-        participants=other_user
-    )
+    ).filter(participants=other_user)
 
     found_conversation = None
 

@@ -17,7 +17,9 @@ class AiDetectionResult:
     text: str
 
 
-def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict[str, Any]]) -> str:
+def build_ai_prompt_for_detection(
+    metadata_original: dict, paragraphs: List[Dict[str, Any]]
+) -> str:
     """
     Construye el prompt para el modelo IA a partir de metadatos del artículo A y párrafos del artículo B.
     """
@@ -26,17 +28,19 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
 
     authors = metadata_original.get("author", [])
     year = (
-        metadata_original.get("published-print", {})
-        .get("date-parts", [[None]])[0][0]
-        or metadata_original.get("published-online", {})
-        .get("date-parts", [[None]])[0][0]
-        or metadata_original.get("issued", {})
-        .get("date-parts", [[None]])[0][0]
+        metadata_original.get("published-print", {}).get("date-parts", [[None]])[0][0]
+        or metadata_original.get("published-online", {}).get("date-parts", [[None]])[0][
+            0
+        ]
+        or metadata_original.get("issued", {}).get("date-parts", [[None]])[0][0]
     )
 
-    authors_str = ", ".join(
-        f"{a.get('given', '')} {a.get('family', '')}".strip() for a in authors
-    ) or "N/A"
+    authors_str = (
+        ", ".join(
+            f"{a.get('given', '')} {a.get('family', '')}".strip() for a in authors
+        )
+        or "N/A"
+    )
 
     header = (
         "Eres un asistente experto en citas académicas.\n\n"
@@ -50,11 +54,11 @@ def build_ai_prompt_for_detection(metadata_original: dict, paragraphs: List[Dict
         "Devuelve SOLO un JSON con una única clave 'matches', que es una lista.\n"
         "Cada elemento debe tener este formato:\n"
         "{\n"
-        '  \"page\": <numero>,\n'
-        '  \"paragraph_index\": <indice>,\n'
-        '  \"confidence\": <numero entre 0 y 1>,\n'
-        '  \"reason\": \"<explicacion corta>\",\n'
-        '  \"text\": \"<texto literal del parrafo o fragmento relevante>\"\n'
+        '  "page": <numero>,\n'
+        '  "paragraph_index": <indice>,\n'
+        '  "confidence": <numero entre 0 y 1>,\n'
+        '  "reason": "<explicacion corta>",\n'
+        '  "text": "<texto literal del parrafo o fragmento relevante>"\n'
         "}\n\n"
         "No incluyas texto adicional fuera del JSON.\n\n"
     )
