@@ -1420,6 +1420,11 @@ def build_references_data(
                     "accepted": bool(candidate_validation.get("accepted")),
                     "reason": candidate_validation.get("reason"),
                 }
+            if TRACE_REFERENCES:
+                logger.debug(
+                    f"Referencia {ref_id} reconstruida desde rows "
+                    f"(source={structure_source}, rows={local_row_count})"
+                )
         else:
             best_candidate: Optional[Dict[str, Any]] = None
             best_score = 0.0
@@ -1442,11 +1447,20 @@ def build_references_data(
                 box = best_candidate["box"]
                 text = str(best_candidate.get("text") or raw_text)
                 structure_source = "bibliography_box_fallback"
+                if TRACE_REFERENCES:
+                    logger.debug(
+                        f"Referencia {ref_id} emparejada con caja de bibliografía "
+                        f"(score: {best_score:.2f})"
+                    )
             else:
                 page = None
                 box = None
                 text = raw_text
                 structure_source = "raw_reference_fallback"
+                if TRACE_REFERENCES:
+                    logger.debug(
+                        f"Referencia {ref_id} sin caja de bibliografía emparejada."
+                    )
 
         reference_entries.append(
             {
