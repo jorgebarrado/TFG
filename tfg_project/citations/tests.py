@@ -122,7 +122,7 @@ class ReportTests(TestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(IncorrectCitation.objects.count(), 1)
@@ -162,7 +162,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -184,7 +184,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -202,7 +202,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -236,7 +236,7 @@ class ReportEditTests(LoggedInTestCase):
                 "citation_type": self.report1.citation_type,
                 "publication_area": self.report1.publication_area,
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 302)
         self.report1.refresh_from_db()
@@ -412,7 +412,7 @@ class ApiViewTests(LoggedInTestCase):
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
@@ -420,8 +420,9 @@ class ApiViewTests(LoggedInTestCase):
     def test_ajax_submit_citation_invalid(self):
         self.client.login(username="user1", password="password")
         response = self.client.post(
-            reverse("ajax_submit"), {"doi_original": "10.1000/new_orig"},
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            reverse("ajax_submit"),
+            {"doi_original": "10.1000/new_orig"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("errors", response.json())
@@ -492,8 +493,6 @@ class SemanticCitationsViewTests(SocialAppTestCase):
             c for c in citations_context if c["doi"] == self.citing_doi_unregistered
         )
         self.assertFalse(unregistered_citation["is_registered"])
-
-
 
 
 class ContextLoggingTests(TestCase):

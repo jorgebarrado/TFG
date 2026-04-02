@@ -1,7 +1,11 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Sequence, Tuple
 import re
+import logging
 from .engines import run_engine
+from citations.logging_utils import get_logger, log_event, log_phase
+
+logger = get_logger("citations.services.extractor")
 
 try:
     from .papermage_extractor import pm_extract_paragraphs
@@ -361,6 +365,26 @@ def process_manuscript(
     citation_style: str | None = None,
     total_references: int | None = None,
 ) -> Dict[str, Any]:
+    with log_phase(logger, "process_manuscript", engine=engine, pdf_path=pdf_path) as _:
+        return _do_process_manuscript(
+            pdf_path,
+            engine=engine,
+            debug=debug,
+            references=references,
+            citation_style=citation_style,
+            total_references=total_references,
+        )
+
+
+def _do_process_manuscript(
+    pdf_path: str,
+    *,
+    engine: str = "auto",
+    debug: bool = False,
+    references: Sequence[Dict[str, Any]] | None = None,
+    citation_style: str | None = None,
+    total_references: int | None = None,
+) -> Dict[str, Any]:
     references_list = [item for item in (references or []) if isinstance(item, dict)]
     inferred_numeric_style = infer_numeric_style(references_list)
     resolved_citation_style = str(citation_style or "").strip().lower()
@@ -389,6 +413,14 @@ def process_manuscript(
 
     # Si NO estamos en 'auto' y hubo error → NO hay fallback, devolvemos error
     if engine.lower() != "auto" and err:
+        log_event(
+            logger,
+            logging.WARNING,
+            "extraction_engine_failed",
+            message=f"Motor de extracción falló: {engine}",
+            engine=engine,
+            error=err,
+        )
         payload: Dict[str, Any] = {
             "ok": False,
             "engine_requested": engine,
@@ -405,6 +437,14 @@ def process_manuscript(
         paragraphs_with_positions,
         citation_style=resolved_citation_style,
         total_references=resolved_total_references,
+    )
+    log_event(
+        logger,
+        logging.DEBUG,
+        "extraction_results_built",
+        message=f"Construidos {total} resultados",
+        count=total,
+        citation_style=resolved_citation_style,
     )
     payload = {
         "ok": True,

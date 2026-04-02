@@ -7,66 +7,117 @@ from typing import Any
 
 # ContextVar para almacenar el ID de la petición de forma segura en entornos asíncronos o con threads
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
+trace_id_var: ContextVar[str] = ContextVar("trace_id", default="-")
+
 
 def get_request_id() -> str:
     """Devuelve el ID de la petición actual, o '-' si no hay ninguna."""
     return request_id_var.get()
 
-def generate_request_id() -> str:
-    """Genera un nuevo ID de petición."""
+
+def get_trace_id() -> str:
+    """Devuelve el ID de la traza actual, o '-' si no hay ninguna."""
+    return trace_id_var.get()
+
+
+def generate_id() -> str:
+    """Genera un nuevo ID aleatorio."""
     return str(uuid.uuid4())
+
+
+@contextmanager
+def bind_trace_context(trace_id: str | None = None):
+    """
+    Context manager para establecer un nuevo trace_id independiente.
+    Útil para operaciones largas o en background que no tienen request_id HTTP.
+    Si no se proporciona un trace_id, se generará uno nuevo.
+    """
+    new_trace_id = trace_id or generate_id()
+    token = trace_id_var.set(new_trace_id)
+    try:
+        yield new_trace_id
+    finally:
+        trace_id_var.reset(token)
+
 
 def get_logger(name: str) -> logging.Logger:
     """Obtiene un logger preconfigurado con el nombre dado."""
     return logging.getLogger(name)
 
-def log_event(logger: logging.Logger, level: int, message: str, **context: Any) -> None:
+
+def log_event(
+    logger: logging.Logger,
+    level: int,
+    event: str,
+    message: str = "",
+    exc_info: bool | Exception = False,
+    **extra: Any,
+) -> None:
     """
-    Loggea un evento con un diccionario de contexto adicional de forma estructurada.
+    Loggea un evento de forma estructurada.
+    'event' es el identificador principal machine-friendly (ej: api_extract_citations_started).
+    'message' es opcional y para lectura humana.
     """
     if not logger.isEnabledFor(level):
         return
 
-    # Preparamos el mensaje añadiendo los metadatos del contexto si existen
-    if context:
-        # truncamos valores largos en strings si los hay
-        safe_context = {}
-        for k, v in context.items():
-            if isinstance(v, str) and len(v) > 500:
-                safe_context[k] = v[:497] + "..."
-            else:
-                safe_context[k] = v
+    context = {"event": event}
+    if extra:
+        context.update(extra)
 
-        ctx_str = " ".join([f"{k}={v}" for k, v in safe_context.items()])
-        message = f"{message} | {ctx_str}"
+    # El formateador se encargará de sanitizar, aquí simplemente usamos el extra.
+    # Evitamos formatear strings para la consola si estamos usando JSON en producción,
+    # el JSONFormatter se encarga del truncado de `extra`.
+    # Para ColorFormatter podemos mantener una salida razonable:
+    logger.log(
+        level, message or event, extra={"event_context": context}, exc_info=exc_info
+    )
 
-    logger.log(level, message, extra={"event_context": context})
-
-def log_phase_start(logger: logging.Logger, phase: str, **kwargs: Any) -> float:
-    """Loggea el inicio de una fase y devuelve el tiempo de inicio."""
-    log_event(logger, logging.DEBUG, f"Empezando fase: {phase}", phase=phase, **kwargs)
-    return time.monotonic()
-
-def log_phase_end(logger: logging.Logger, phase: str, start_time: float, level: int = logging.INFO, **kwargs: Any) -> float:
-    """Loggea el fin de una fase incluyendo el tiempo invertido en milisegundos."""
-    elapsed_ms = (time.monotonic() - start_time) * 1000.0
-    log_event(logger, level, f"Fase completada: {phase}", phase=phase, elapsed_ms=round(elapsed_ms, 2), **kwargs)
-    return elapsed_ms
 
 @contextmanager
-def log_phase(logger: logging.Logger, phase: str, **kwargs: Any):
+def log_phase(
+    logger: logging.Logger, phase: str, level: int = logging.INFO, **extra: Any
+):
     """
     Context manager para medir e informar del ciclo de vida de una fase.
-    Ejemplo:
-        with log_phase(logger, "extract_pdf", pdf=pdf_name):
-            ...
+    Emite un evento de inicio (_started) y uno de fin (_completed) o fallo (_failed).
     """
-    start_time = log_phase_start(logger, phase, **kwargs)
+    start_time = time.monotonic()
+
+    # Evento de inicio
+    log_event(
+        logger,
+        logging.DEBUG,
+        f"{phase}_started",
+        message=f"Starting phase: {phase}",
+        **extra,
+    )
+
     try:
         yield
+
+        # Evento de fin
+        duration_ms = round((time.monotonic() - start_time) * 1000.0, 2)
+        log_event(
+            logger,
+            level,
+            f"{phase}_completed",
+            message=f"Completed phase: {phase}",
+            duration_ms=duration_ms,
+            **extra,
+        )
+
     except Exception as e:
-        log_event(logger, logging.ERROR, f"Fase fallida: {phase}", phase=phase, error=str(e), **kwargs)
+        # Evento de fallo
+        duration_ms = round((time.monotonic() - start_time) * 1000.0, 2)
+        log_event(
+            logger,
+            logging.ERROR,
+            f"{phase}_failed",
+            message=f"Failed phase: {phase}",
+            exc_info=True,
+            duration_ms=duration_ms,
+            error=str(e),
+            **extra,
+        )
         raise
-    finally:
-        # Usamos INFO por defecto si termina correctamente, pero podría ser DEBUG
-        log_phase_end(logger, phase, start_time, level=logging.DEBUG, **kwargs)

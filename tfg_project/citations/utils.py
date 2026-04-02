@@ -1,6 +1,10 @@
 import xml.etree.ElementTree as ET
-
+import logging
 import requests
+
+from citations.logging_utils import get_logger, log_event
+
+logger = get_logger("citations.utils")
 
 
 def get_articles_from_dblp(dblp_url):
@@ -54,7 +58,15 @@ def get_articles_from_dblp(dblp_url):
         return publications
 
     except Exception as e:
-        print("Error al obtener publicaciones desde DBLP:", e)
+        log_event(
+            logger,
+            logging.ERROR,
+            "dblp_fetch_failed",
+            message=f"Error al obtener publicaciones desde DBLP: {e}",
+            exc_info=True,
+            dblp_url=dblp_url,
+            error=str(e),
+        )
         return []
 
 
@@ -101,7 +113,15 @@ def get_citing_articles(doi):
         return result
 
     except Exception as e:
-        print("Error en Semantic Scholar:", e)
+        log_event(
+            logger,
+            logging.ERROR,
+            "semantic_scholar_fetch_failed",
+            message=f"Error en Semantic Scholar: {e}",
+            exc_info=True,
+            doi=doi,
+            error=str(e),
+        )
         return []
 
 
@@ -124,19 +144,41 @@ def check_doi_has_citations(doi):
         )
         response = requests.get(url, headers=headers, timeout=10)
 
-        print("→ Consultando DOI:", doi)
-        print("→ Código de estado:", response.status_code)
+        log_event(
+            logger,
+            logging.DEBUG,
+            "external_request_completed",
+            message=f"Consultando DOI: {doi}",
+            doi=doi,
+            status_code=response.status_code,
+        )
 
         if response.status_code != 200:
             return False
 
         data = response.json()
-        print("→ citationCount =", data.get("citationCount"))
+        count = data.get("citationCount", 0)
+        log_event(
+            logger,
+            logging.DEBUG,
+            "external_data_parsed",
+            message=f"citationCount = {count}",
+            doi=doi,
+            citation_count=count,
+        )
 
-        return data.get("citationCount", 0) > 0
+        return count > 0
 
     except Exception as e:
-        print(f"Error consultando DOI {doi}: {e}")
+        log_event(
+            logger,
+            logging.ERROR,
+            "external_request_failed",
+            message=f"Error consultando DOI {doi}: {e}",
+            exc_info=True,
+            doi=doi,
+            error=str(e),
+        )
         return False
 
 
@@ -165,5 +207,13 @@ def get_citation_count(doi):
         data = response.json()
         return data.get("citationCount", 0)
     except Exception as e:
-        print(f"Error al obtener citationCount para {doi}: {e}")
+        log_event(
+            logger,
+            logging.ERROR,
+            "external_request_failed",
+            message=f"Error al obtener citationCount para {doi}: {e}",
+            exc_info=True,
+            doi=doi,
+            error=str(e),
+        )
         return 0

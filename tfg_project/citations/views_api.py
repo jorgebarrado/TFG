@@ -47,11 +47,9 @@ from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_te
 import logging
 import json
 from django.views.decorators.http import require_http_methods
-from .trace import Trace
-from citations.logging_utils import get_logger
+from citations.logging_utils import get_logger, log_event, log_phase
 
 logger = get_logger("citations.api")
-context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
 
@@ -104,81 +102,118 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
     target_year = (payload.get("target_year") or "").strip() or None
     target_doi = (payload.get("target_doi") or "").strip() or None
 
-    trace = Trace(
-        citing_doi=citing_doi,
-        target={
-            "doi": target_doi,
-            "title": target_title,
-            "first_author": target_first_author,
-            "year": target_year,
-        },
+    trace_data = {
+        "citing_doi": citing_doi,
+        "target_doi": target_doi,
+        "target_title": target_title,
+        "target_first_author": target_first_author,
+        "target_year": target_year,
+    }
+
+    log_event(
+        logger,
+        logging.DEBUG,
+        "api_get_citation_context_started",
+        message=f"Petición de contextos de cita iniciada. citing_doi: {citing_doi}",
+        **trace_data,
     )
-    trace.add("payload", "ok", f"method={request.method}; keys={list(payload.keys())}")
 
     if not citing_doi:
-        trace.add("params", "error", "missing citing_doi")
-        context_logger.info(trace.as_log_line())
-        logger.warning("Falta 'citing_doi' en get_citation_context")
-        resp = {"ok": False, "error": "Missing 'citing_doi'"}
-        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
-            resp["trace"] = trace.as_public_trace()
-        return JsonResponse(resp, status=400)
-
-    trace.add(
-        "params", "ok", f"citing_doi={citing_doi}; target_doi={target_doi or '-'}"
-    )
-    logger.debug(f"Petición de contextos de cita para DOI: {citing_doi}")
+        log_event(
+            logger,
+            logging.WARNING,
+            "api_validation_failed",
+            message="Falta 'citing_doi' en get_citation_context",
+            error="missing_citing_doi",
+        )
+        return JsonResponse({"ok": False, "error": "Missing 'citing_doi'"}, status=400)
 
     # 1) OpenAccess PDF (Semantic Scholar)
     pdf_url = None
-    try:
-        pdf_url = get_openaccess_pdf_url(citing_doi)
-    except Exception as e:
-        trace.add("openaccess", "error", str(e))
-        trace.error = str(e)
-        logger.info(trace.as_log_line("ERROR"))
-        resp = {"ok": False, "error": "Semantic Scholar error"}
-        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
-            resp["trace"] = trace.as_public_trace()
-        return JsonResponse(resp, status=502)
+    with log_phase(logger, "semantic_scholar_openaccess_fetch", citing_doi=citing_doi):
+        try:
+            pdf_url = get_openaccess_pdf_url(citing_doi)
+        except Exception as e:
+            log_event(
+                logger,
+                logging.ERROR,
+                "semantic_scholar_error",
+                message=f"Error obteniendo OpenAccess PDF de Semantic Scholar: {e}",
+                exc_info=True,
+                error=str(e),
+                citing_doi=citing_doi,
+            )
+            return JsonResponse(
+                {"ok": False, "error": "Semantic Scholar error"}, status=502
+            )
 
     if not pdf_url:
-        trace.add("openaccess", "miss", "no openAccessPdf")
-        logger.info(trace.as_log_line())
-        resp = {"ok": False, "error": "No openAccessPdf for citing DOI"}
-        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
-            resp["trace"] = trace.as_public_trace()
-        return JsonResponse(resp, status=404)
-    else:
-        trace.pdf_url = pdf_url
-        trace.add("openaccess", "ok", pdf_url)
+        log_event(
+            logger,
+            logging.INFO,
+            "openaccess_pdf_not_found",
+            message=f"No se encontró OpenAccess PDF para el DOI: {citing_doi}",
+            citing_doi=citing_doi,
+        )
+        return JsonResponse(
+            {"ok": False, "error": "No openAccessPdf for citing DOI"}, status=404
+        )
+
+    log_event(
+        logger,
+        logging.DEBUG,
+        "openaccess_pdf_found",
+        message=f"OpenAccess PDF encontrado: {pdf_url}",
+        pdf_url=pdf_url,
+        citing_doi=citing_doi,
+    )
 
     # 2) Descarga
-    tmp_path: Optional[str] = download_pdf_to_temp(pdf_url)
+    tmp_path: Optional[str] = None
+    with log_phase(logger, "pdf_download", pdf_url=pdf_url):
+        tmp_path = download_pdf_to_temp(pdf_url)
+
     if not tmp_path:
-        trace.add("download", "error", "failed to download")
-        logger.info(trace.as_log_line("ERROR"))
-        resp = {"ok": False, "error": "Failed to download PDF"}
-        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
-            resp["trace"] = trace.as_public_trace()
-        return JsonResponse(resp, status=502)
+        log_event(
+            logger,
+            logging.ERROR,
+            "pdf_download_failed",
+            message="Fallo al descargar el PDF",
+            pdf_url=pdf_url,
+        )
+        return JsonResponse(
+            {"ok": False, "error": "Failed to download PDF"}, status=502
+        )
 
     try:
-        # 3) Extracción / matching
-        contexts = extract_contexts_from_pdf(
-            tmp_path,
-            target_title=target_title,
-            target_first_author=target_first_author,
-            target_year=target_year,
-            target_doi=target_doi,
+        pdf_size = os.path.getsize(tmp_path)
+        log_event(
+            logger,
+            logging.DEBUG,
+            "pdf_downloaded",
+            message=f"PDF descargado correctamente. Tamaño: {pdf_size} bytes",
+            pdf_url=pdf_url,
+            size_bytes=pdf_size,
         )
-        trace.hit_count = len(contexts)
-        try:
-            trace.pdf_size = os.path.getsize(tmp_path)
-        except Exception:
-            pass
-        trace.add("download", "ok", f"{trace.pdf_size or 0} bytes")
-        trace.add("extract", "ok", f"hits={len(contexts)}")
+
+        # 3) Extracción / matching
+        with log_phase(logger, "extract_contexts_from_pdf", target_doi=target_doi):
+            contexts = extract_contexts_from_pdf(
+                tmp_path,
+                target_title=target_title,
+                target_first_author=target_first_author,
+                target_year=target_year,
+                target_doi=target_doi,
+            )
+
+        log_event(
+            logger,
+            logging.INFO,
+            "api_get_citation_context_completed",
+            message=f"Éxito: extraídos {len(contexts)} contextos",
+            hit_count=len(contexts),
+            citing_doi=citing_doi,
+        )
 
         resp = {
             "ok": True,
@@ -187,15 +222,30 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
             "count": len(contexts),
             "contexts": contexts,
         }
-        if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
-            resp["trace"] = trace.as_public_trace()
-        logger.info(trace.as_log_line())
         return JsonResponse(resp, status=200)
+    except Exception as e:
+        log_event(
+            logger,
+            logging.ERROR,
+            "api_get_citation_context_failed",
+            message=f"Error inesperado procesando la petición: {e}",
+            exc_info=True,
+            error=str(e),
+            citing_doi=citing_doi,
+        )
+        return JsonResponse({"ok": False, "error": "Internal server error"}, status=500)
     finally:
         try:
-            os.remove(tmp_path)
-        except Exception:
-            pass
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except Exception as e:
+            log_event(
+                logger,
+                logging.WARNING,
+                "cleanup_failed",
+                message=f"Error borrando archivo temporal: {tmp_path} - {e}",
+                error=str(e),
+            )
 
 
 # ========= TU endpoint existente para subir manuscritos =========
@@ -235,7 +285,19 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             status=400,
         )
     debug = request.POST.get("debug") in ("1", "true", "True", "yes", "on")
-    article_doi = (request.POST.get("article_doi") or request.POST.get("doi") or "").strip()
+    article_doi = (
+        request.POST.get("article_doi") or request.POST.get("doi") or ""
+    ).strip()
+
+    log_event(
+        logger,
+        logging.INFO,
+        "api_extract_citations_started",
+        message=f"Petición de extracción de citas iniciada. engine={engine}",
+        engine=engine,
+        filename=f.name,
+        article_doi=article_doi,
+    )
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -376,7 +438,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     ),
                 )
             except Exception as exc:  # pragma: no cover - defensive guard
-                logger.warning("doi enrichment failed doi=%s error=%s", article_doi, exc)
+                logger.warning(
+                    "doi enrichment failed doi=%s error=%s", article_doi, exc
+                )
                 enrichment_result = {
                     "local_references": data.get("references", []),
                     "references_data_references": (
@@ -439,16 +503,40 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             }
 
         status = 200 if data.get("ok", False) else 422
+        log_event(
+            logger,
+            logging.INFO,
+            "api_extract_citations_completed",
+            message=f"Extracción completada. status={status}",
+            status=status,
+            engine_used=data.get("engine_used"),
+            duration_ms=int((time.time() - start_time) * 1000),
+        )
         return JsonResponse(data, status=status, safe=True)
     except Exception as e:
-        logger.exception(f"Excepción en el procesamiento de api_extract_citations: {e}")
-        return JsonResponse({"ok": False, "error": "Error interno del servidor."}, status=500)
+        log_event(
+            logger,
+            logging.ERROR,
+            "api_extract_citations_failed",
+            message=f"Excepción en el procesamiento de api_extract_citations: {e}",
+            exc_info=True,
+            error=str(e),
+        )
+        return JsonResponse(
+            {"ok": False, "error": "Error interno del servidor."}, status=500
+        )
     finally:
         try:
-            os.remove(temp_path)
+            if temp_path and os.path.exists(temp_path):
+                os.remove(temp_path)
         except Exception as e:
-            logger.warning(f"Error borrando archivo temporal: {temp_path} - {e}")
-            pass
+            log_event(
+                logger,
+                logging.WARNING,
+                "cleanup_failed",
+                message=f"Error borrando archivo temporal: {temp_path} - {e}",
+                error=str(e),
+            )
 
 
 @require_GET
@@ -517,55 +605,94 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
     """
     pdf_url = request.GET.get("pdf_url")
     if not pdf_url:
-        logger.warning("api_pdf_citation_contexts llamado sin pdf_url")
+        log_event(
+            logger,
+            logging.WARNING,
+            "api_validation_failed",
+            message="api_pdf_citation_contexts llamado sin pdf_url",
+            error="missing_pdf_url",
+        )
         return JsonResponse(
             {"error": "Falta el parámetro obligatorio 'pdf_url'."},
             status=400,
         )
 
     patterns = request.GET.getlist("pattern") or None
-    logger.info(f"Petición api_pdf_citation_contexts para: {pdf_url}")
+    log_event(
+        logger,
+        logging.INFO,
+        "api_pdf_citation_contexts_started",
+        message=f"Petición api_pdf_citation_contexts para: {pdf_url}",
+        pdf_url=pdf_url,
+    )
 
-    try:
-        contexts = analyze_pdf_citations_from_url(pdf_url, patterns)
-    except PDFDownloadError as exc:
-        logger.error(
-            f"Error descargando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}"
-        )
-        return JsonResponse({"error": str(exc)}, status=502)
-    except ValueError as exc:
-        logger.error(
-            f"Error de valor en api_pdf_citation_contexts para {pdf_url}: {exc}"
-        )
-        return JsonResponse({"error": str(exc)}, status=400)
-    except FileNotFoundError:
-        logger.error(
-            f"PDF no encontrado tras descargar en api_pdf_citation_contexts para {pdf_url}"
-        )
-        return JsonResponse(
-            {"error": "No se pudo leer el PDF descargado."},
-            status=500,
-        )
-    except RuntimeError as exc:
-        logger.error(
-            f"Error procesando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}",
-            exc_info=True,
-        )
-        return JsonResponse(
-            {"error": f"Error al procesar el PDF con PaperMage: {exc}"},
-            status=500,
-        )
-    except Exception as exc:
-        logger.exception(
-            f"Excepción inesperada en api_pdf_citation_contexts para {pdf_url}: {exc}"
-        )
-        return JsonResponse(
-            {"error": "Error interno al procesar el PDF."},
-            status=500,
-        )
+    with log_phase(logger, "analyze_pdf_citations", pdf_url=pdf_url):
+        try:
+            contexts = analyze_pdf_citations_from_url(pdf_url, patterns)
+        except PDFDownloadError as exc:
+            log_event(
+                logger,
+                logging.ERROR,
+                "pdf_download_failed",
+                message=f"Error descargando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}",
+                error=str(exc),
+            )
+            return JsonResponse({"error": str(exc)}, status=502)
+        except ValueError as exc:
+            log_event(
+                logger,
+                logging.ERROR,
+                "api_validation_failed",
+                message=f"Error de valor en api_pdf_citation_contexts para {pdf_url}: {exc}",
+                error=str(exc),
+            )
+            return JsonResponse({"error": str(exc)}, status=400)
+        except FileNotFoundError:
+            log_event(
+                logger,
+                logging.ERROR,
+                "pdf_not_found",
+                message=f"PDF no encontrado tras descargar en api_pdf_citation_contexts para {pdf_url}",
+                error="file_not_found",
+            )
+            return JsonResponse(
+                {"error": "No se pudo leer el PDF descargado."},
+                status=500,
+            )
+        except RuntimeError as exc:
+            log_event(
+                logger,
+                logging.ERROR,
+                "extraction_engine_failed",
+                message=f"Error procesando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}",
+                exc_info=True,
+                error=str(exc),
+            )
+            return JsonResponse(
+                {"error": f"Error al procesar el PDF con PaperMage: {exc}"},
+                status=500,
+            )
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.ERROR,
+                "api_pdf_citation_contexts_failed",
+                message=f"Excepción inesperada en api_pdf_citation_contexts para {pdf_url}: {exc}",
+                exc_info=True,
+                error=str(exc),
+            )
+            return JsonResponse(
+                {"error": "Error interno al procesar el PDF."},
+                status=500,
+            )
 
-    logger.info(
-        f"Éxito en api_pdf_citation_contexts: devueltos {len(contexts)} contextos para {pdf_url}"
+    log_event(
+        logger,
+        logging.INFO,
+        "api_pdf_citation_contexts_completed",
+        message=f"Éxito: devueltos {len(contexts)} contextos",
+        count=len(contexts),
+        pdf_url=pdf_url,
     )
     return JsonResponse(
         {
@@ -582,14 +709,24 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
-        logger.warning("api_pdf_citation_contexts_upload llamado sin pdf_file")
+        log_event(
+            logger,
+            logging.WARNING,
+            "api_validation_failed",
+            message="api_pdf_citation_contexts_upload llamado sin pdf_file",
+            error="missing_pdf_file",
+        )
         return JsonResponse(
             {"error": "No se ha recibido ningún archivo PDF ('pdf_file')."},
             status=400,
         )
 
-    logger.info(
-        f"Petición api_pdf_citation_contexts_upload para archivo: {uploaded_file.name}"
+    log_event(
+        logger,
+        logging.INFO,
+        "api_pdf_citation_contexts_upload_started",
+        message=f"Petición api_pdf_citation_contexts_upload para archivo: {uploaded_file.name}",
+        filename=uploaded_file.name,
     )
 
     patterns = [
@@ -605,9 +742,24 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
                 tmp.write(chunk)
             tmp_path = tmp.name
 
-        logger.debug(f"Guardado temporalmente en {tmp_path}")
-        contexts: list[ContextHit] = extract_contexts_from_pdf(tmp_path, patterns)
-        logger.info(f"Éxito: extraídos {len(contexts)} contextos del archivo subido")
+        log_event(
+            logger,
+            logging.DEBUG,
+            "temp_file_saved",
+            message=f"Guardado temporalmente en {tmp_path}",
+            path=tmp_path,
+        )
+
+        with log_phase(logger, "extract_contexts_from_pdf_upload"):
+            contexts: list[ContextHit] = extract_contexts_from_pdf(tmp_path, patterns)
+
+        log_event(
+            logger,
+            logging.INFO,
+            "api_pdf_citation_contexts_upload_completed",
+            message=f"Éxito: extraídos {len(contexts)} contextos del archivo subido",
+            count=len(contexts),
+        )
         return JsonResponse(
             {
                 "count": len(contexts),
@@ -615,8 +767,13 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
             }
         )
     except Exception as exc:
-        logger.exception(
-            f"Error procesando el PDF subido en api_pdf_citation_contexts_upload: {exc}"
+        log_event(
+            logger,
+            logging.ERROR,
+            "api_pdf_citation_contexts_upload_failed",
+            message=f"Error procesando el PDF subido: {exc}",
+            exc_info=True,
+            error=str(exc),
         )
         return JsonResponse(
             {"error": f"Error al procesar el PDF: {exc}"},
@@ -627,8 +784,12 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
             try:
                 os.unlink(tmp_path)
             except OSError as e:
-                logger.warning(
-                    f"No se pudo eliminar archivo temporal en upload_contexts: {tmp_path} - {e}"
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "cleanup_failed",
+                    message=f"No se pudo eliminar archivo temporal en upload_contexts: {tmp_path} - {e}",
+                    error=str(e),
                 )
                 pass
 
@@ -694,7 +855,13 @@ def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     """
     doi = request.GET.get("doi")
     if not doi:
-        logger.warning("api_semantic_citation_analysis llamado sin DOI")
+        log_event(
+            logger,
+            logging.WARNING,
+            "api_validation_failed",
+            message="api_semantic_citation_analysis llamado sin DOI",
+            error="missing_doi",
+        )
         return JsonResponse(
             {"error": "Falta el parámetro obligatorio 'doi'."},
             status=400,
@@ -703,26 +870,43 @@ def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     try:
         max_citing = int(request.GET.get("max_citing", "5"))
     except ValueError:
-        logger.warning(
-            f"api_semantic_citation_analysis: max_citing inválido ({request.GET.get('max_citing')})"
+        log_event(
+            logger,
+            logging.WARNING,
+            "api_validation_failed",
+            message=f"max_citing inválido ({request.GET.get('max_citing')})",
+            error="invalid_max_citing",
         )
         return JsonResponse(
             {"error": "El parámetro 'max_citing' debe ser un entero."},
             status=400,
         )
 
-    logger.info(
-        f"Petición api_semantic_citation_analysis para DOI: {doi} (max_citing={max_citing})"
+    log_event(
+        logger,
+        logging.INFO,
+        "api_semantic_citation_analysis_started",
+        message=f"Petición api_semantic_citation_analysis para DOI: {doi} (max_citing={max_citing})",
+        doi=doi,
+        max_citing=max_citing,
     )
 
     try:
-        analysis_result = analyze_citations_for_original_doi(
-            original_doi=doi,
-            max_citing_papers=max_citing,
-        )
+        with log_phase(
+            logger, "analyze_citations_for_original_doi", doi=doi, max_citing=max_citing
+        ):
+            analysis_result = analyze_citations_for_original_doi(
+                original_doi=doi,
+                max_citing_papers=max_citing,
+            )
         return JsonResponse(analysis_result, safe=False)
     except Exception as exc:
-        logger.exception(
-            f"Error no controlado en api_semantic_citation_analysis para {doi}: {exc}"
+        log_event(
+            logger,
+            logging.ERROR,
+            "api_semantic_citation_analysis_failed",
+            message=f"Error no controlado en api_semantic_citation_analysis para {doi}: {exc}",
+            exc_info=True,
+            error=str(exc),
         )
         return JsonResponse({"error": "Error interno durante el análisis."}, status=500)
