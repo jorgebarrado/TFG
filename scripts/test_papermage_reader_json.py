@@ -14,7 +14,9 @@ from citations.services.papermage_extractor import extract_pdf_data
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        raise SystemExit("Uso: python scripts/test_papermage_reader_json.py ruta/al/archivo.pdf")
+        raise SystemExit(
+            "Uso: python scripts/test_papermage_reader_json.py ruta/al/archivo.pdf"
+        )
 
     pdf_path = sys.argv[1]
     data = extract_pdf_data(pdf_path)

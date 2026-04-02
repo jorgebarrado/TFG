@@ -94,7 +94,9 @@ def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
             timeout=20,
         )
     except requests.RequestException as exc:
-        raise SemanticScholarError(f"Error de conexión con Semantic Scholar: {exc}") from exc
+        raise SemanticScholarError(
+            f"Error de conexión con Semantic Scholar: {exc}"
+        ) from exc
 
     if response.status_code == 404:
         raise SemanticScholarError(f"No se ha encontrado ningún paper con DOI '{doi}'.")
@@ -215,7 +217,9 @@ def get_citing_papers_for_doi_paginated(
 
     paper_id = (paper_response.json() or {}).get("paperId")
     if not paper_id:
-        raise SemanticScholarError("No se pudo resolver el paperId en Semantic Scholar.")
+        raise SemanticScholarError(
+            "No se pudo resolver el paperId en Semantic Scholar."
+        )
 
     citations_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_id}/citations"
     fields = (

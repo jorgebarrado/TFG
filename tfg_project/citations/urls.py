@@ -73,8 +73,16 @@ urlpatterns = [
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
     path("perfil/", user_views.my_profile, name="my_profile"),
     path("perfil/ajustes/", user_views.account_settings, name="account_settings"),
-    path("revision-citas/", tutor_views.citation_review_papers, name="citation_review_papers"),
-    path("revision-citas/<int:paper_id>/citers/", tutor_views.citation_review_citers, name="citation_review_citers"),
+    path(
+        "revision-citas/",
+        tutor_views.citation_review_papers,
+        name="citation_review_papers",
+    ),
+    path(
+        "revision-citas/<int:paper_id>/citers/",
+        tutor_views.citation_review_citers,
+        name="citation_review_citers",
+    ),
     path(
         "revision-citas/create-report/",
         tutor_views.citation_review_create_report,
@@ -153,10 +161,19 @@ urlpatterns = [
         views_api.api_semantic_citation_analysis,
         name="api_semantic_citation_analysis",
     ),
-    path("report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"),
-
+    path(
+        "report/<int:pk>/preview/", page_views.citation_preview, name="citation_preview"
+    ),
     # Messaging System
     path("messages/", message_views.inbox, name="messages_inbox"),
-    path("messages/new/<str:username>/", message_views.new_conversation, name="new_conversation"),
-    path("messages/<int:conversation_id>/", message_views.conversation_detail, name="conversation_detail"),
+    path(
+        "messages/new/<str:username>/",
+        message_views.new_conversation,
+        name="new_conversation",
+    ),
+    path(
+        "messages/<int:conversation_id>/",
+        message_views.conversation_detail,
+        name="conversation_detail",
+    ),
 ]

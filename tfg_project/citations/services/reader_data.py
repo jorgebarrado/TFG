@@ -6,6 +6,10 @@ import re
 import unicodedata
 
 from .semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
+from citations.logging_utils import get_logger, log_phase
+
+logger = get_logger("citations.citations")
+TRACE_CITATIONS = os.getenv("TRACE_CITATIONS", "0") == "1"
 
 try:
     import fitz  # PyMuPDF
@@ -54,7 +58,9 @@ def extract_pdf_url_from_metadata(metadata: Optional[Dict[str, Any]]) -> Optiona
     return None
 
 
-def resolve_pdf_url(metadata: Optional[Dict[str, Any]], doi: str | None) -> Optional[str]:
+def resolve_pdf_url(
+    metadata: Optional[Dict[str, Any]], doi: str | None
+) -> Optional[str]:
     url = extract_pdf_url_from_metadata(metadata)
     if url:
         return url
@@ -76,7 +82,9 @@ def _is_reference_header(line: str) -> bool:
     return any(normalized.startswith(header) for header in REFERENCE_HEADERS)
 
 
-def _extract_reference_section(page_texts: List[str]) -> Tuple[str, bool, Optional[int]]:
+def _extract_reference_section(
+    page_texts: List[str],
+) -> Tuple[str, bool, Optional[int]]:
     for page_idx, text in enumerate(page_texts):
         lines = text.splitlines()
         for line_idx, line in enumerate(lines):
@@ -102,7 +110,9 @@ def _fallback_reference_section(page_texts: List[str]) -> str:
 def _normalize_doi(value: str) -> str:
     candidate = value.strip()
     candidate = re.sub(r"^doi:\s*", "", candidate, flags=re.IGNORECASE)
-    candidate = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE)
+    candidate = re.sub(
+        r"^https?://(?:dx\.)?doi\.org/", "", candidate, flags=re.IGNORECASE
+    )
     candidate = candidate.rstrip(").,;:]")
     return candidate.strip().lower()
 
@@ -166,7 +176,9 @@ def _has_coherent_numbered_sequence(labels: List[int]) -> bool:
     return longest >= 3
 
 
-def _split_references(section_text: str) -> Tuple[List[Tuple[Optional[int], str]], bool]:
+def _split_references(
+    section_text: str,
+) -> Tuple[List[Tuple[Optional[int], str]], bool]:
     if not section_text:
         return [], False
     lines = [line.strip() for line in section_text.splitlines()]
@@ -226,8 +238,11 @@ def _normalize_reference_text(value: str) -> str:
     return cleaned
 
 
-def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+def extract_pdf_references(
+    pdf_path: str,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     if fitz is None or not pdf_path:
+        logger.error("extract_pdf_references: fitz no disponible o pdf_path nulo")
         return [], {
             "pages_total": 0,
             "references_total": 0,
@@ -239,14 +254,33 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
         }
 
     page_texts: List[str] = []
-    with fitz.open(pdf_path) as doc:
-        for page in doc:
-            page_texts.append(page.get_text() or "")
-        page_count = doc.page_count
+    with log_phase(logger, "extract_pdf_references_text", pdf=pdf_path):
+        try:
+            with fitz.open(pdf_path) as doc:
+                for page in doc:
+                    page_texts.append(page.get_text() or "")
+                page_count = doc.page_count
+            logger.info(f"Texto extraído de {page_count} páginas mediante fitz.")
+        except Exception as e:
+            logger.error(f"Error al leer el PDF para referencias: {e}", exc_info=True)
+            return [], {
+                "pages_total": 0,
+                "references_total": 0,
+                "dois_total": 0,
+                "references_numbered": False,
+                "citation_style": "non_numeric",
+                "max_reference_index": 0,
+                "bibliography_start_page": None,
+            }
 
-    section, found_header, bibliography_start_page = _extract_reference_section(page_texts)
+    section, found_header, bibliography_start_page = _extract_reference_section(
+        page_texts
+    )
     if not section:
+        logger.warning(f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas.")
         section = _fallback_reference_section(page_texts)
+
+    logger.debug(f"Bibliografía detectada en la página {bibliography_start_page}")
     refs_raw, numbered = _split_references(section)
     references: List[Dict[str, Any]] = []
     seen_doi: set[str] = set()
@@ -300,7 +334,9 @@ def extract_pdf_references(pdf_path: str) -> Tuple[List[Dict[str, Any]], Dict[st
     return references, stats
 
 
-def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+def extract_pdf_references_from_url(
+    pdf_url: str | None,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     if not pdf_url:
         return [], {
             "pages_total": 0,
@@ -331,7 +367,9 @@ def extract_pdf_references_from_url(pdf_url: str | None) -> Tuple[List[Dict[str,
             pass
 
 
-def build_references(metadata: Optional[Dict[str, Any]], doi: str | None) -> List[Dict[str, Any]]:
+def build_references(
+    metadata: Optional[Dict[str, Any]], doi: str | None
+) -> List[Dict[str, Any]]:
     if not metadata and not doi:
         return []
 
@@ -376,7 +414,11 @@ def build_snippets_from_results(results: Any) -> List[Dict[str, Any]]:
         if not isinstance(item, dict):
             continue
         page = item.get("page")
-        snippet = item.get("snippet") or item.get("fragment") or item.get("raw", {}).get("snippet")
+        snippet = (
+            item.get("snippet")
+            or item.get("fragment")
+            or item.get("raw", {}).get("snippet")
+        )
         if not snippet:
             continue
         snippets.append(
@@ -406,7 +448,9 @@ def build_snippets_from_mentions(mentions: Any) -> List[Dict[str, Any]]:
                 "id": mention.get("id") or f"snippet-{index}",
                 "page": mention.get("page"),
                 "snippet": snippet,
-                "type": mention.get("type") or mention.get("pattern") or mention.get("kind"),
+                "type": mention.get("type")
+                or mention.get("pattern")
+                or mention.get("kind"),
                 "confidence": float(mention.get("confidence") or 0.0),
             }
         )

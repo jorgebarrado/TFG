@@ -28,7 +28,6 @@ from .services.pdf_citation_analyzer import (
     analyze_pdf_citations_from_url,
 )
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
-from .services.semantic_scholar_client import SemanticScholarError
 from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .services.references_data import build_references_data
 from .services.doi_enrichment_service import enrich_extraction_with_doi
@@ -49,8 +48,10 @@ import logging
 import json
 from django.views.decorators.http import require_http_methods
 from .trace import Trace
+from citations.logging_utils import get_logger
 
-logger = logging.getLogger("citations.context")
+logger = get_logger("citations.api")
+context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
 
@@ -116,7 +117,8 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 
     if not citing_doi:
         trace.add("params", "error", "missing citing_doi")
-        logger.info(trace.as_log_line())
+        context_logger.info(trace.as_log_line())
+        logger.warning("Falta 'citing_doi' en get_citation_context")
         resp = {"ok": False, "error": "Missing 'citing_doi'"}
         if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
             resp["trace"] = trace.as_public_trace()
@@ -125,6 +127,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
     trace.add(
         "params", "ok", f"citing_doi={citing_doi}; target_doi={target_doi or '-'}"
     )
+    logger.debug(f"Petición de contextos de cita para DOI: {citing_doi}")
 
     # 1) OpenAccess PDF (Semantic Scholar)
     pdf_url = None
@@ -255,10 +258,16 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         if suffix == ".pdf":
             references, ref_stats = extract_pdf_references(temp_path)
 
-        citation_style = str(
-            ref_stats.get("citation_style")
-            or ("numeric" if ref_stats.get("references_numbered") else "non_numeric")
-        ).strip().lower()
+        citation_style = (
+            str(
+                ref_stats.get("citation_style")
+                or (
+                    "numeric" if ref_stats.get("references_numbered") else "non_numeric"
+                )
+            )
+            .strip()
+            .lower()
+        )
         try:
             max_reference_index = int(
                 ref_stats.get("max_reference_index")
@@ -267,7 +276,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 or 0
             )
         except (TypeError, ValueError):
-            max_reference_index = int(ref_stats.get("references_total") or len(references) or 0)
+            max_reference_index = int(
+                ref_stats.get("references_total") or len(references) or 0
+            )
         total_references_for_validation = (
             max_reference_index if citation_style == "numeric" else len(references)
         )
@@ -319,14 +330,10 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 reader_data = {"pages": [], "layers": {}}
 
             data["pages"] = (
-                reader_data.get("pages", [])
-                if isinstance(reader_data, dict)
-                else []
+                reader_data.get("pages", []) if isinstance(reader_data, dict) else []
             )
             data["layers"] = (
-                reader_data.get("layers", {})
-                if isinstance(reader_data, dict)
-                else {}
+                reader_data.get("layers", {}) if isinstance(reader_data, dict) else {}
             )
             data["references_data"] = build_references_data(
                 references=references,
@@ -336,9 +343,11 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             )
             references_data_payload = data.get("references_data")
             if isinstance(references_data_payload, dict):
-                data["citation_style"] = str(
-                    references_data_payload.get("citation_style") or citation_style
-                ).strip().lower()
+                data["citation_style"] = (
+                    str(references_data_payload.get("citation_style") or citation_style)
+                    .strip()
+                    .lower()
+                )
                 try:
                     data["max_reference_index"] = int(
                         references_data_payload.get("max_reference_index")
@@ -431,10 +440,14 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
+    except Exception as e:
+        logger.exception(f"Excepción en el procesamiento de api_extract_citations: {e}")
+        return JsonResponse({"ok": False, "error": "Error interno del servidor."}, status=500)
     finally:
         try:
             os.remove(temp_path)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Error borrando archivo temporal: {temp_path} - {e}")
             pass
 
 
@@ -504,30 +517,56 @@ def api_pdf_citation_contexts(request: HttpRequest) -> JsonResponse:
     """
     pdf_url = request.GET.get("pdf_url")
     if not pdf_url:
+        logger.warning("api_pdf_citation_contexts llamado sin pdf_url")
         return JsonResponse(
             {"error": "Falta el parámetro obligatorio 'pdf_url'."},
             status=400,
         )
 
     patterns = request.GET.getlist("pattern") or None
+    logger.info(f"Petición api_pdf_citation_contexts para: {pdf_url}")
 
     try:
         contexts = analyze_pdf_citations_from_url(pdf_url, patterns)
     except PDFDownloadError as exc:
+        logger.error(
+            f"Error descargando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}"
+        )
         return JsonResponse({"error": str(exc)}, status=502)
     except ValueError as exc:
+        logger.error(
+            f"Error de valor en api_pdf_citation_contexts para {pdf_url}: {exc}"
+        )
         return JsonResponse({"error": str(exc)}, status=400)
     except FileNotFoundError:
+        logger.error(
+            f"PDF no encontrado tras descargar en api_pdf_citation_contexts para {pdf_url}"
+        )
         return JsonResponse(
             {"error": "No se pudo leer el PDF descargado."},
             status=500,
         )
     except RuntimeError as exc:
+        logger.error(
+            f"Error procesando PDF en api_pdf_citation_contexts para {pdf_url}: {exc}",
+            exc_info=True,
+        )
         return JsonResponse(
             {"error": f"Error al procesar el PDF con PaperMage: {exc}"},
             status=500,
         )
+    except Exception as exc:
+        logger.exception(
+            f"Excepción inesperada en api_pdf_citation_contexts para {pdf_url}: {exc}"
+        )
+        return JsonResponse(
+            {"error": "Error interno al procesar el PDF."},
+            status=500,
+        )
 
+    logger.info(
+        f"Éxito en api_pdf_citation_contexts: devueltos {len(contexts)} contextos para {pdf_url}"
+    )
     return JsonResponse(
         {
             "count": len(contexts),
@@ -543,10 +582,15 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
     """
     uploaded_file = request.FILES.get("pdf_file")
     if not uploaded_file:
+        logger.warning("api_pdf_citation_contexts_upload llamado sin pdf_file")
         return JsonResponse(
             {"error": "No se ha recibido ningún archivo PDF ('pdf_file')."},
             status=400,
         )
+
+    logger.info(
+        f"Petición api_pdf_citation_contexts_upload para archivo: {uploaded_file.name}"
+    )
 
     patterns = [
         r"\[(\d+(?:\s*[,–-]\s*\d+)*)\]",  # [4], [4, 7], [4-7], [4–7]
@@ -561,7 +605,9 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
                 tmp.write(chunk)
             tmp_path = tmp.name
 
+        logger.debug(f"Guardado temporalmente en {tmp_path}")
         contexts: list[ContextHit] = extract_contexts_from_pdf(tmp_path, patterns)
+        logger.info(f"Éxito: extraídos {len(contexts)} contextos del archivo subido")
         return JsonResponse(
             {
                 "count": len(contexts),
@@ -569,6 +615,9 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
             }
         )
     except Exception as exc:
+        logger.exception(
+            f"Error procesando el PDF subido en api_pdf_citation_contexts_upload: {exc}"
+        )
         return JsonResponse(
             {"error": f"Error al procesar el PDF: {exc}"},
             status=500,
@@ -577,7 +626,10 @@ def api_pdf_citation_contexts_upload(request: HttpRequest) -> JsonResponse:
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
-            except OSError:
+            except OSError as e:
+                logger.warning(
+                    f"No se pudo eliminar archivo temporal en upload_contexts: {tmp_path} - {e}"
+                )
                 pass
 
 
@@ -591,7 +643,10 @@ def api_pdf_reader_v2_upload(request: HttpRequest) -> JsonResponse:
     uploaded_file = request.FILES.get("pdf_file") or request.FILES.get("manuscript")
     if not uploaded_file:
         return JsonResponse(
-            {"ok": False, "error": "No se ha recibido ningun archivo PDF ('pdf_file')."},
+            {
+                "ok": False,
+                "error": "No se ha recibido ningun archivo PDF ('pdf_file').",
+            },
             status=400,
         )
 
@@ -639,6 +694,7 @@ def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     """
     doi = request.GET.get("doi")
     if not doi:
+        logger.warning("api_semantic_citation_analysis llamado sin DOI")
         return JsonResponse(
             {"error": "Falta el parámetro obligatorio 'doi'."},
             status=400,
@@ -647,14 +703,26 @@ def api_semantic_citation_analysis(request: HttpRequest) -> JsonResponse:
     try:
         max_citing = int(request.GET.get("max_citing", "5"))
     except ValueError:
+        logger.warning(
+            f"api_semantic_citation_analysis: max_citing inválido ({request.GET.get('max_citing')})"
+        )
         return JsonResponse(
             {"error": "El parámetro 'max_citing' debe ser un entero."},
             status=400,
         )
 
-    analysis_result = analyze_citations_for_original_doi(
-        original_doi=doi,
-        max_citing_papers=max_citing,
+    logger.info(
+        f"Petición api_semantic_citation_analysis para DOI: {doi} (max_citing={max_citing})"
     )
 
-    return JsonResponse(analysis_result, safe=False)
+    try:
+        analysis_result = analyze_citations_for_original_doi(
+            original_doi=doi,
+            max_citing_papers=max_citing,
+        )
+        return JsonResponse(analysis_result, safe=False)
+    except Exception as exc:
+        logger.exception(
+            f"Error no controlado en api_semantic_citation_analysis para {doi}: {exc}"
+        )
+        return JsonResponse({"error": "Error interno durante el análisis."}, status=500)

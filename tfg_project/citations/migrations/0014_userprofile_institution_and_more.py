@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("citations", "0013_userprofile_country_userprofile_preferred_language"),
     ]
