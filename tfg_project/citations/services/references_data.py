@@ -458,11 +458,7 @@ def _build_repeating_page_artifacts(
         if len(key) < 9:
             continue
         pages_per_key[key].add(page)
-    repeated_keys = {
-        key
-        for key, pages in pages_per_key.items()
-        if len(pages) >= 2
-    }
+    repeated_keys = {key for key, pages in pages_per_key.items() if len(pages) >= 2}
     return {"repeated_text_keys": repeated_keys}
 
 
@@ -505,13 +501,12 @@ def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]
     content_rows = [
         row
         for row in rows
-        if (_to_float(row.get("y0")) or 0.0) > 0.08 and (_to_float(row.get("y1")) or 0.0) < 0.94
+        if (_to_float(row.get("y0")) or 0.0) > 0.08
+        and (_to_float(row.get("y1")) or 0.0) < 0.94
     ]
     sample = content_rows if len(content_rows) >= 8 else list(rows)
     x_values = sorted(
-        float(row.get("x0"))
-        for row in sample
-        if _to_float(row.get("x0")) is not None
+        float(row.get("x0")) for row in sample if _to_float(row.get("x0")) is not None
     )
     if len(x_values) < 8:
         return None
@@ -548,7 +543,9 @@ def _assign_column_ids(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         split = _detect_page_column_split(page_rows)
         for row in page_rows:
             next_row = dict(row)
-            x_center = (float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))) / 2.0
+            x_center = (
+                float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))
+            ) / 2.0
             if split is None:
                 column_id = "left"
             else:
@@ -632,7 +629,9 @@ def split_bibliography_columns(
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     if len(lines) < 8:
         return list(lines), []
-    x_values = sorted(float(line["box"][0]) for line in lines if _normalize_box(line.get("box")))
+    x_values = sorted(
+        float(line["box"][0]) for line in lines if _normalize_box(line.get("box"))
+    )
     if len(x_values) < 8:
         return list(lines), []
 
@@ -824,7 +823,15 @@ def _default_reference_validation(
     has_nested = len(foreign_anchors) > 0
     mixed_score = 0.72 if has_nested else 0.12
     accepted = bool(len(text) >= 24 and not has_nested)
-    reason = None if accepted else ("mixed_rows_multiple_references" if has_nested else "short_or_empty_reference")
+    reason = (
+        None
+        if accepted
+        else (
+            "mixed_rows_multiple_references"
+            if has_nested
+            else "short_or_empty_reference"
+        )
+    )
     return {
         "match_score": 0.0,
         "mixed_reference_score": round(mixed_score, 3),
@@ -1032,7 +1039,9 @@ def _build_references_from_lines_legacy(
     if len(first_anchor_by_index) < 2:
         return {}
 
-    anchor_positions = sorted(int(anchor["position"]) for anchor in first_anchor_by_index.values())
+    anchor_positions = sorted(
+        int(anchor["position"]) for anchor in first_anchor_by_index.values()
+    )
     parsed: Dict[int, Dict[str, Any]] = {}
     for index in sorted(first_anchor_by_index.keys()):
         anchor = first_anchor_by_index[index]
@@ -1314,14 +1323,18 @@ def build_references_data(
     layers: Dict[str, Any],
     references_numbered: bool = False,
 ) -> Dict[str, Any]:
-    logger.info(f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}")
+    logger.info(
+        f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}"
+    )
 
     bibliography_items = _layer_items(layers, "bibliographies")
     token_items = _layer_items(layers, "tokens")
     row_items = _layer_items(layers, "rows")
     paragraph_items = _layer_items(layers, "paragraphs")
 
-    logger.debug(f"Capas cargadas: {len(bibliography_items)} bibliographies, {len(token_items)} tokens, {len(row_items)} rows, {len(paragraph_items)} paragraphs")
+    logger.debug(
+        f"Capas cargadas: {len(bibliography_items)} bibliographies, {len(token_items)} tokens, {len(row_items)} rows, {len(paragraph_items)} paragraphs"
+    )
 
     bibliography_anchor: Optional[Tuple[int, float]] = None
     if bibliography_items:
@@ -1333,7 +1346,9 @@ def build_references_data(
             int(first_bibliography_item.get("page", 0)),
             float(first_bibliography_item["box"][1]),
         )
-        logger.info(f"Detección de bibliografía: página inicio {bibliography_anchor[0] + 1}")
+        logger.info(
+            f"Detección de bibliografía: página inicio {bibliography_anchor[0] + 1}"
+        )
     else:
         logger.warning("No se encontró capa 'bibliographies' (sin anchor de inicio).")
     bibliography_lines = _collect_bibliography_lines(
@@ -1351,7 +1366,9 @@ def build_references_data(
             continue
         metadata_by_index[idx] = ref
     indexed_input_references = sum(
-        1 for ref in references if isinstance(ref, dict) and _entry_index(ref) is not None
+        1
+        for ref in references
+        if isinstance(ref, dict) and _entry_index(ref) is not None
     )
     if is_numbered_bibliography(bibliography_lines):
         min_required = 2 if indexed_input_references <= 6 else 3
@@ -1414,9 +1431,15 @@ def build_references_data(
             candidate_validation = line_reference.get("reference_validation")
             if isinstance(candidate_validation, dict):
                 reference_validation = {
-                    "match_score": float(candidate_validation.get("match_score") or 0.0),
-                    "mixed_reference_score": float(candidate_validation.get("mixed_reference_score") or 0.0),
-                    "has_nested_anchor": bool(candidate_validation.get("has_nested_anchor")),
+                    "match_score": float(
+                        candidate_validation.get("match_score") or 0.0
+                    ),
+                    "mixed_reference_score": float(
+                        candidate_validation.get("mixed_reference_score") or 0.0
+                    ),
+                    "has_nested_anchor": bool(
+                        candidate_validation.get("has_nested_anchor")
+                    ),
                     "accepted": bool(candidate_validation.get("accepted")),
                     "reason": candidate_validation.get("reason"),
                 }
@@ -1510,7 +1533,9 @@ def build_references_data(
             dedup_ref_ids.append(ref_id)
         if not dedup_ref_ids:
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: sin ref_ids resueltas. '{snippet_text[:50]}'")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: sin ref_ids resueltas. '{snippet_text[:50]}'"
+                )
             continue
 
         page_hint = _normalize_page_zero_based(snippet.get("page"))
@@ -1536,11 +1561,15 @@ def build_references_data(
             bibliography_items,
         ):
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: está dentro de la bibliografía.")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: está dentro de la bibliografía."
+                )
             continue
         if is_after_bibliography(mention_page, mention_y, bibliography_anchor):
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: es posterior al inicio de bibliografía.")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: es posterior al inicio de bibliografía."
+                )
             continue
 
         for mention_pos, ref_id in enumerate(dedup_ref_ids, start=1):
@@ -1624,7 +1653,9 @@ def build_references_data(
         bibliography_anchor[0] + 1 if bibliography_anchor is not None else None
     )
 
-    logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
+    logger.info(
+        f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos."
+    )
 
     return {
         "references": reference_entries,

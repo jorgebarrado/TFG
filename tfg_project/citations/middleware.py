@@ -3,14 +3,17 @@ from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 
-from .logging_utils import request_id_var
+from .logging_utils import request_id_var, trace_id_var
+
 
 class RequestIdMiddleware:
     """
     Middleware que genera y asocia un request_id único para cada petición.
+    También inicializa el trace_id para usar en logs estructurados.
     Este ID se guarda en un ContextVar para que esté disponible para el logging
     de forma segura en hilos o llamadas asíncronas.
     """
+
     def __init__(self, get_response: Callable):
         self.get_response = get_response
 
@@ -20,11 +23,13 @@ class RequestIdMiddleware:
         if not req_id:
             req_id = str(uuid.uuid4())
 
-        # Almacenamos el request_id en la variable de contexto local (safe thread/async)
-        token = request_id_var.set(req_id)
+        # Almacenamos el request_id y trace_id en la variable de contexto local (safe thread/async)
+        req_token = request_id_var.set(req_id)
+        trace_token = trace_id_var.set(req_id)
 
         # Opcional: inyectar el request_id en el propio request por si alguna vista lo necesita
         request.request_id = req_id
+        request.trace_id = req_id
 
         try:
             response = self.get_response(request)
@@ -33,4 +38,5 @@ class RequestIdMiddleware:
             return response
         finally:
             # Restauramos el contexto
-            request_id_var.reset(token)
+            request_id_var.reset(req_token)
+            trace_id_var.reset(trace_token)

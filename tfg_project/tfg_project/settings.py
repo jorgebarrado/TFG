@@ -180,11 +180,14 @@ CACHES = {
 
 # === Logging de contexto de citas ===
 LOG_CITATIONS = os.getenv("LOG_CITATIONS", "1") == "1"
-LOG_CITATIONS_LEVEL = os.getenv("LOG_CITATIONS_LEVEL", "INFO")
+LOG_CITATIONS_LEVEL = os.getenv("LOG_CITATIONS_LEVEL", "DEBUG" if DEBUG else "INFO")
 
 # Carpeta de logs (asegurar que existe)
 LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Usamos JSON en consola si NO es modo DEBUG, para facilitar ingesta de logs en prod
+CONSOLE_FORMATTER = "color" if DEBUG else "json_line"
 
 LOGGING = {
     "version": 1,
@@ -200,7 +203,7 @@ LOGGING = {
     },
     "handlers": {
         "citations_context_file": {
-            "level": "DEBUG" if DEBUG else "INFO",
+            "level": LOG_CITATIONS_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": str(LOGS_DIR / "citations_context.log"),
             "maxBytes": 10_000_000,  # ~10MB
@@ -211,17 +214,21 @@ LOGGING = {
         "console": {
             "class": "logging.StreamHandler",
             "level": "DEBUG" if DEBUG else "INFO",
-            "formatter": "color" if DEBUG else "simple",
+            "formatter": CONSOLE_FORMATTER,
         },
     },
     "loggers": {
+        # Configuración principal para la aplicación
         "citations": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
+            + ["console"],
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
+        # Mantener retrocompatibilidad con referencias a "citations.context"
         "citations.context": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
+            + ["console"],
             "level": LOG_CITATIONS_LEVEL,
             "propagate": False,
         },

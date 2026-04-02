@@ -113,7 +113,9 @@ def _load_document(pdf_path: str) -> Document:
         logger.debug(f"Parseando documento con PDFPlumberParser en {pdf_path}")
         parser = PDFPlumberParser()
         doc = parser.parse(input_pdf_path=str(path))
-        logger.debug(f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas")
+        logger.debug(
+            f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas"
+        )
         return doc
     except Exception as exc:
         logger.error(f"Fallo al parsear PDF con PDFPlumberParser: {exc}")

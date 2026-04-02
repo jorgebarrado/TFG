@@ -277,7 +277,9 @@ def extract_pdf_references(
         page_texts
     )
     if not section:
-        logger.warning(f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas.")
+        logger.warning(
+            f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas."
+        )
         section = _fallback_reference_section(page_texts)
 
     logger.debug(f"Bibliografía detectada en la página {bibliography_start_page}")

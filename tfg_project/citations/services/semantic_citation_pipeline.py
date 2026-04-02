@@ -39,7 +39,12 @@ def analyze_citations_for_original_doi(
     """
     Dado el DOI de un artículo 'A', obtiene citadores desde Semantic Scholar y analiza sus PDFs.
     """
-    with log_phase(logger, "analyze_citations_for_original_doi", original_doi=original_doi, max_citing_papers=max_citing_papers):
+    with log_phase(
+        logger,
+        "analyze_citations_for_original_doi",
+        original_doi=original_doi,
+        max_citing_papers=max_citing_papers,
+    ):
         result: SemanticCitationAnalysisResult = {
             "original_doi": original_doi,
             "citing_count": 0,
@@ -48,23 +53,32 @@ def analyze_citations_for_original_doi(
         }
 
         try:
-            logger.debug(f"Pidiendo a SemanticScholar los papers que citan al DOI {original_doi}")
+            logger.debug(
+                f"Pidiendo a SemanticScholar los papers que citan al DOI {original_doi}"
+            )
             citing_papers: List[CitingPaper] = get_citing_papers_for_doi(
                 doi=original_doi,
                 limit=max_citing_papers,
             )
-            logger.info(f"SemanticScholar devolvió {len(citing_papers)} citadores para el DOI {original_doi}")
+            logger.info(
+                f"SemanticScholar devolvió {len(citing_papers)} citadores para el DOI {original_doi}"
+            )
         except (ValueError, SemanticScholarError) as exc:
-            logger.error(f"Fallo al obtener papers citadores para el DOI {original_doi}: {exc}", exc_info=True)
+            logger.error(
+                f"Fallo al obtener papers citadores para el DOI {original_doi}: {exc}",
+                exc_info=True,
+            )
             result["errors"].append(str(exc))
             return result
 
         result["citing_count"] = len(citing_papers)
 
         for paper in citing_papers:
-            title = paper.get('title', '')
+            title = paper.get("title", "")
             pdf_url = paper.get("open_access_pdf_url")
-            logger.debug(f"Procesando citador: '{title[:100]}' (DOI: {paper.get('doi')})")
+            logger.debug(
+                f"Procesando citador: '{title[:100]}' (DOI: {paper.get('doi')})"
+            )
 
             if not pdf_url:
                 msg = f"No hay PDF open access para el artículo que cita: '{title}'."
@@ -73,10 +87,19 @@ def analyze_citations_for_original_doi(
                 continue
 
             try:
-                logger.debug(f"Iniciando análisis de PDF para citador '{title[:50]}' en {pdf_url}")
+                logger.debug(
+                    f"Iniciando análisis de PDF para citador '{title[:50]}' en {pdf_url}"
+                )
                 contexts = analyze_pdf_citations_from_url(pdf_url)
-                logger.info(f"Análisis de PDF completado para citador '{title[:50]}'. {len(contexts)} contextos encontrados.")
-            except (PDFDownloadError, RuntimeError, FileNotFoundError, ValueError) as exc:
+                logger.info(
+                    f"Análisis de PDF completado para citador '{title[:50]}'. {len(contexts)} contextos encontrados."
+                )
+            except (
+                PDFDownloadError,
+                RuntimeError,
+                FileNotFoundError,
+                ValueError,
+            ) as exc:
                 msg = f"Error al analizar PDF '{pdf_url}' para el paper '{title[:50]}': {exc}"
                 logger.error(msg, exc_info=True)
                 result["errors"].append(msg)
@@ -91,5 +114,7 @@ def analyze_citations_for_original_doi(
             }
             result["analyzed"].append(analyzed_entry)
 
-        logger.info(f"Pipeline completado para {original_doi}: {len(result['analyzed'])} citadores analizados exitosamente, {len(result['errors'])} errores.")
+        logger.info(
+            f"Pipeline completado para {original_doi}: {len(result['analyzed'])} citadores analizados exitosamente, {len(result['errors'])} errores."
+        )
         return result

@@ -64,23 +64,34 @@ def _extract_pages_with_pymupdf(pdf_path: str) -> List[tuple[int, str]]:
 
 
 def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
-    with log_phase(logger, "generic_extract_paragraphs_with_positions", engine="generic", pdf=pdf_path):
+    with log_phase(
+        logger,
+        "generic_extract_paragraphs_with_positions",
+        engine="generic",
+        pdf=pdf_path,
+    ):
         if pdfplumber is not None:
             try:
                 page_texts = _extract_pages_with_pdfplumber(pdf_path)
                 logger.info(f"Usado pdfplumber: extraídas {len(page_texts)} páginas.")
             except Exception as e:
-                logger.error(f"Error usando pdfplumber en generic_extractor: {e}", exc_info=True)
+                logger.error(
+                    f"Error usando pdfplumber en generic_extractor: {e}", exc_info=True
+                )
                 page_texts = []
         elif fitz is not None:
             try:
                 page_texts = _extract_pages_with_pymupdf(pdf_path)
                 logger.info(f"Usado fitz: extraídas {len(page_texts)} páginas.")
             except Exception as e:
-                logger.error(f"Error usando fitz en generic_extractor: {e}", exc_info=True)
+                logger.error(
+                    f"Error usando fitz en generic_extractor: {e}", exc_info=True
+                )
                 page_texts = []
         else:
-            logger.error("No hay ningún motor de extracción disponible (pdfplumber/fitz)")
+            logger.error(
+                "No hay ningún motor de extracción disponible (pdfplumber/fitz)"
+            )
             return []
 
         paragraphs: List[dict] = []
@@ -96,12 +107,16 @@ def generic_extract_paragraphs_with_positions(pdf_path: str) -> List[dict]:
                 )
                 index += 1
 
-        logger.info(f"Párrafos extraídos: {len(paragraphs)} de {len(page_texts)} páginas")
+        logger.info(
+            f"Párrafos extraídos: {len(paragraphs)} de {len(page_texts)} páginas"
+        )
         return paragraphs
 
 
 def generic_extract_paragraphs(pdf_path: str) -> List[str]:
-    with log_phase(logger, "generic_extract_paragraphs", engine="generic", pdf=pdf_path):
+    with log_phase(
+        logger, "generic_extract_paragraphs", engine="generic", pdf=pdf_path
+    ):
         paragraphs = generic_extract_paragraphs_with_positions(pdf_path)
         if paragraphs:
             return [item["text"] for item in paragraphs]

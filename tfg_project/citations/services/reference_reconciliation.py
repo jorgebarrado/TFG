@@ -153,7 +153,9 @@ def validate_reference_against_metadata(
     local_tokens = _text_tokens(local_norm, min_len=4)
 
     candidate_doi = normalize_doi(metadata.get("doi"))
-    candidate_title = str(metadata.get("title") or metadata.get("raw_text") or "").strip()
+    candidate_title = str(
+        metadata.get("title") or metadata.get("raw_text") or ""
+    ).strip()
     candidate_authors = metadata.get("authors")
     candidate_year = extract_year(metadata.get("year"))
     candidate_venue = str(metadata.get("venue") or "").strip()
@@ -212,7 +214,9 @@ def validate_reference_against_metadata(
         year_mentions = {int(value.group(0)) for value in YEAR_RE.finditer(text)}
         if candidate_year in year_mentions:
             year_score = 1.0
-        elif (candidate_year - 1) in year_mentions or (candidate_year + 1) in year_mentions:
+        elif (candidate_year - 1) in year_mentions or (
+            candidate_year + 1
+        ) in year_mentions:
             year_score = 0.4
         weighted_score += 0.08 * year_score
 
@@ -233,7 +237,9 @@ def validate_reference_against_metadata(
         for match in NUMBERED_ANCHOR_RE.finditer(text)
         if match.group(1).isdigit()
     ]
-    foreign_anchors = [value for value in anchors if expected is None or value != expected]
+    foreign_anchors = [
+        value for value in anchors if expected is None or value != expected
+    ]
     has_nested_anchor = len(foreign_anchors) > 0
 
     mixed_score = 0.0

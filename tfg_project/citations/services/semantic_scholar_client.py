@@ -53,7 +53,9 @@ def _normalize_authors(raw_authors: Any) -> List[str]:
     return out
 
 
-def _normalize_paper_item(item: Dict[str, Any], *, source: str = "semantic_scholar") -> Dict[str, Any]:
+def _normalize_paper_item(
+    item: Dict[str, Any], *, source: str = "semantic_scholar"
+) -> Dict[str, Any]:
     external_ids = item.get("externalIds") or {}
     return {
         "doi": _normalize_doi(external_ids.get("DOI")),
@@ -151,7 +153,9 @@ def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
             timeout=timeout,
         )
     except requests.RequestException as exc:
-        raise SemanticScholarError(f"Error de conexion con Semantic Scholar: {exc}") from exc
+        raise SemanticScholarError(
+            f"Error de conexion con Semantic Scholar: {exc}"
+        ) from exc
 
     if response.status_code == 404:
         return None

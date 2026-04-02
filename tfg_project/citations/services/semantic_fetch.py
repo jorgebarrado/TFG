@@ -1,4 +1,9 @@
 import requests
+import logging
+
+from citations.logging_utils import get_logger, log_event
+
+logger = get_logger("citations.services.semantic_fetch")
 
 S2_BASE = "https://api.semanticscholar.org/graph/v1"
 CR_BASE = "https://api.crossref.org"
@@ -21,8 +26,24 @@ def _safe_get(url, params=None, timeout=12):
         r = requests.get(url, params=params or {}, headers=headers, timeout=timeout)
         if r.status_code == 200:
             return r.json()
-    except Exception:
-        pass
+        log_event(
+            logger,
+            logging.WARNING,
+            "external_request_failed",
+            message=f"Petición externa fallida con estado {r.status_code}",
+            url=url,
+            status_code=r.status_code,
+        )
+    except Exception as e:
+        log_event(
+            logger,
+            logging.ERROR,
+            "external_request_failed",
+            message=f"Excepción en petición externa: {e}",
+            exc_info=True,
+            url=url,
+            error=str(e),
+        )
     return None
 
 
@@ -39,8 +60,27 @@ def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
     url = f"{S2_BASE}/paper/DOI:{doi}"
     data = _safe_get(url, params={"fields": "paperId,citationCount"})
     if not data:
+        log_event(
+            logger,
+            logging.WARNING,
+            "s2_paperid_not_found",
+            message=f"No se encontró paperId en S2 para el DOI: {doi}",
+            doi=doi,
+        )
         return None, 0
-    return data.get("paperId"), int(data.get("citationCount") or 0)
+
+    paper_id = data.get("paperId")
+    count = int(data.get("citationCount") or 0)
+    log_event(
+        logger,
+        logging.DEBUG,
+        "s2_paperid_fetched",
+        message=f"PaperId obtenido para {doi}: {paper_id} ({count} citas)",
+        doi=doi,
+        paper_id=paper_id,
+        count=count,
+    )
+    return paper_id, count
 
 
 def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
@@ -161,4 +201,13 @@ def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
 
     # Nada
     _, count = get_s2_paperid_and_count(doi)  # para reportar el count si existe
+
+    log_event(
+        logger,
+        logging.INFO,
+        "citations_fetch_fallback_none",
+        message=f"No se encontraron citas tras fallbacks para DOI: {doi}",
+        doi=doi,
+        count=count,
+    )
     return count, [], "none"
