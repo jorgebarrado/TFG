@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import os
 import re
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+from citations.logging_utils import get_logger
+
+logger = get_logger("citations.references")
+TRACE_REFERENCES = os.getenv("TRACE_REFERENCES", "0") == "1"
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
@@ -565,10 +571,15 @@ def build_references_data(
     layers: Dict[str, Any],
     references_numbered: bool = False,
 ) -> Dict[str, Any]:
+    logger.info(f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}")
+
     bibliography_items = _layer_items(layers, "bibliographies")
     token_items = _layer_items(layers, "tokens")
     row_items = _layer_items(layers, "rows")
     paragraph_items = _layer_items(layers, "paragraphs")
+
+    logger.debug(f"Capas cargadas: {len(bibliography_items)} bibliographies, {len(token_items)} tokens, {len(row_items)} rows, {len(paragraph_items)} paragraphs")
+
     bibliography_anchor: Optional[Tuple[int, float]] = None
     if bibliography_items:
         first_bibliography_item = min(
@@ -579,6 +590,9 @@ def build_references_data(
             int(first_bibliography_item.get("page", 0)),
             float(first_bibliography_item["box"][1]),
         )
+        logger.info(f"Detección de bibliografía: página inicio {bibliography_anchor[0] + 1}")
+    else:
+        logger.warning("No se encontró capa 'bibliographies' (sin anchor de inicio).")
 
     reference_entries: List[Dict[str, Any]] = []
     citations: List[Dict[str, Any]] = []
@@ -622,10 +636,14 @@ def build_references_data(
             page = best_candidate["page"]
             box = best_candidate["box"]
             text = str(best_candidate.get("text") or raw_text)
+            if TRACE_REFERENCES:
+                logger.debug(f"Referencia {ref_id} emparejada con caja de bibliografía (score: {best_score:.2f})")
         else:
             page = None
             box = None
             text = raw_text
+            if TRACE_REFERENCES:
+                logger.debug(f"Referencia {ref_id} SIN caja de bibliografía emparejada.")
 
         reference_entries.append(
             {
@@ -670,6 +688,8 @@ def build_references_data(
             seen_ref_ids.add(ref_id)
             dedup_ref_ids.append(ref_id)
         if not dedup_ref_ids:
+            if TRACE_REFERENCES:
+                logger.debug(f"Descartando snippet {snippet_idx}: sin ref_ids resueltas. '{snippet_text[:50]}'")
             continue
 
         page_hint = _normalize_page_zero_based(snippet.get("page"))
@@ -694,8 +714,12 @@ def build_references_data(
             {"page": mention_page, "box": mention_box},
             bibliography_items,
         ):
+            if TRACE_REFERENCES:
+                logger.debug(f"Descartando snippet {snippet_idx}: está dentro de la bibliografía.")
             continue
         if is_after_bibliography(mention_page, mention_y, bibliography_anchor):
+            if TRACE_REFERENCES:
+                logger.debug(f"Descartando snippet {snippet_idx}: es posterior al inicio de bibliografía.")
             continue
 
         for mention_pos, ref_id in enumerate(dedup_ref_ids, start=1):
@@ -778,6 +802,8 @@ def build_references_data(
     bibliography_start_page = (
         bibliography_anchor[0] + 1 if bibliography_anchor is not None else None
     )
+
+    logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
 
     return {
         "references": reference_entries,

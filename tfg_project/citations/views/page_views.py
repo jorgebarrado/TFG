@@ -8,7 +8,6 @@ from urllib.parse import unquote, urlparse
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
@@ -31,9 +30,7 @@ from ..models import (
     AREA_CHOICES,
     Comment,
     IncorrectCitation,
-    SavedCitation,
     UserProfile,
-    Vote,
 )
 from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.citation_extractor import process_manuscript
