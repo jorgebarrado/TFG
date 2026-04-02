@@ -17,3 +17,5 @@ __pycache__/
 /staticfiles/
 /media/
 node_modules/
+.claude
+/design-system

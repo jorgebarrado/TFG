@@ -9,6 +9,12 @@ DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE
 INLINE_CITATION_REGEX = re.compile(
     r"\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]"
 )
+NUMBERED_REFERENCE_LINE_RE = re.compile(r"^\s*\[\s*(\d+)\s*\]")
+NUMBERED_ANCHOR_RE = re.compile(r"\[\s*(\d+)\s*\]")
+HEADER_LIKE_REFERENCE_RE = re.compile(
+    r"\b(?:wipsce|copyright|all rights reserved|acm isbn|proceedings)\b",
+    re.IGNORECASE,
+)
 
 
 def _to_float(value: Any) -> Optional[float]:
@@ -333,6 +339,333 @@ def _union_boxes(boxes: Sequence[Sequence[float]]) -> Optional[List[float]]:
     return [x0, y0, width, height]
 
 
+def _line_sort_key(line: Dict[str, Any]) -> Tuple[int, float, float]:
+    page = int(line.get("page", 0))
+    box = line.get("box") or [0.0, 0.0, 0.0, 0.0]
+    return (page, float(box[1]), float(box[0]))
+
+
+def _median(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(float(value) for value in values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2 == 1:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def _collect_bibliography_lines(
+    rows: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+    bibliography_anchor: Optional[Tuple[int, float]],
+) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    seen: set[Tuple[int, int, str]] = set()
+    for row in rows:
+        text = str(row.get("text") or "").strip()
+        page = row.get("page")
+        box = _normalize_box(row.get("box"))
+        if not text or not isinstance(page, int) or box is None:
+            continue
+
+        y = _to_float(box[1])
+        if y is not None and (y < 0.01 or y > 0.99):
+            continue
+
+        in_scope = False
+        if bibliography_items and is_inside_bibliography(
+            {"page": page, "box": box},
+            bibliography_items,
+        ):
+            in_scope = True
+        elif is_after_bibliography(page, y, bibliography_anchor):
+            in_scope = True
+        if not in_scope:
+            continue
+
+        dedupe_key = (
+            page,
+            int(round(float(box[1]) * 10000)),
+            _normalize_text(text)[:180],
+        )
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        out.append(
+            {
+                "id": str(row.get("id") or f"row-{page}-{len(out) + 1}"),
+                "text": text,
+                "page": page,
+                "box": box,
+            }
+        )
+    return out
+
+
+def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
+    if len(lines) < 6:
+        return False
+    numbers: List[int] = []
+    for line in lines:
+        match = NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
+        if not match:
+            continue
+        try:
+            number = int(match.group(1))
+        except (TypeError, ValueError):
+            continue
+        if number > 0:
+            numbers.append(number)
+    if len(numbers) < 3:
+        return False
+
+    unique_numbers = sorted(set(numbers))
+    if len(unique_numbers) < 3:
+        return False
+    if unique_numbers[0] > 10:
+        return False
+
+    density = len(numbers) / max(len(lines), 1)
+    if density < 0.08:
+        return False
+
+    if len(unique_numbers) >= 4:
+        contiguous_pairs = sum(
+            1
+            for i in range(len(unique_numbers) - 1)
+            if unique_numbers[i + 1] == unique_numbers[i] + 1
+        )
+        continuity = contiguous_pairs / max(len(unique_numbers) - 1, 1)
+        if continuity < 0.45:
+            return False
+    return True
+
+
+def split_bibliography_columns(
+    lines: Sequence[Dict[str, Any]],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    if len(lines) < 8:
+        return list(lines), []
+    x_values = sorted(float(line["box"][0]) for line in lines if _normalize_box(line.get("box")))
+    if len(x_values) < 8:
+        return list(lines), []
+
+    max_gap = 0.0
+    split_threshold: Optional[float] = None
+    for left_x, right_x in zip(x_values, x_values[1:]):
+        gap = right_x - left_x
+        if gap > max_gap:
+            max_gap = gap
+            split_threshold = (left_x + right_x) / 2.0
+
+    if split_threshold is None or max_gap < 0.14:
+        return list(lines), []
+
+    left_column: List[Dict[str, Any]] = []
+    right_column: List[Dict[str, Any]] = []
+    for line in lines:
+        box = _normalize_box(line.get("box"))
+        if box is None:
+            continue
+        if float(box[0]) < split_threshold:
+            left_column.append(line)
+        else:
+            right_column.append(line)
+
+    if len(left_column) < 3 or len(right_column) < 3:
+        return list(lines), []
+    balance_ratio = min(len(left_column), len(right_column)) / max(
+        len(left_column),
+        len(right_column),
+    )
+    if balance_ratio < 0.18:
+        return list(lines), []
+
+    left_median = _median([float(item["box"][0]) for item in left_column])
+    right_median = _median([float(item["box"][0]) for item in right_column])
+    if right_median - left_median < 0.16:
+        return list(lines), []
+    return left_column, right_column
+
+
+def _sort_bibliography_lines_reading_flow(
+    lines: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for line in lines:
+        page = line.get("page")
+        box = _normalize_box(line.get("box"))
+        if not isinstance(page, int) or box is None:
+            continue
+        by_page[page].append(
+            {
+                "id": str(line.get("id") or ""),
+                "text": str(line.get("text") or ""),
+                "page": page,
+                "box": box,
+            }
+        )
+
+    ordered: List[Dict[str, Any]] = []
+    for page in sorted(by_page.keys()):
+        page_lines = by_page[page]
+        left_column, right_column = split_bibliography_columns(page_lines)
+        if right_column:
+            ordered.extend(sorted(left_column, key=_line_sort_key))
+            ordered.extend(sorted(right_column, key=_line_sort_key))
+        else:
+            ordered.extend(sorted(page_lines, key=_line_sort_key))
+    return ordered
+
+
+def extract_numbered_anchors(lines: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    anchors: List[Dict[str, Any]] = []
+    for position, line in enumerate(lines):
+        match = NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
+        if not match:
+            continue
+        try:
+            index = int(match.group(1))
+        except (TypeError, ValueError):
+            continue
+        if index <= 0:
+            continue
+        anchors.append({"index": index, "position": position, "line": line})
+    return anchors
+
+
+def _clean_reference_text(lines: Sequence[Dict[str, Any]]) -> str:
+    parts: List[str] = []
+    for line in lines:
+        text = re.sub(r"\s+", " ", str(line.get("text") or "")).strip()
+        if not text:
+            continue
+        if parts and parts[-1].endswith("-") and text and text[0].islower():
+            parts[-1] = f"{parts[-1][:-1]}{text}"
+        else:
+            parts.append(text)
+
+    merged = " ".join(parts)
+    merged = re.sub(r"\s+([,.;:)\]])", r"\1", merged)
+    merged = re.sub(r"([\[(])\s+", r"\1", merged)
+    return re.sub(r"\s+", " ", merged).strip()
+
+
+def _is_reference_header_like(text: str) -> bool:
+    normalized = _normalize_text(text)
+    if not normalized:
+        return True
+    if not HEADER_LIKE_REFERENCE_RE.search(text or ""):
+        return False
+    has_year = bool(re.search(r"\b(?:19|20)\d{2}\b", text or ""))
+    has_doi = bool(_extract_doi(text or ""))
+    return not has_year and not has_doi
+
+
+def _is_valid_reference_block(
+    *,
+    expected_index: int,
+    lines: Sequence[Dict[str, Any]],
+    text: str,
+) -> bool:
+    if not lines:
+        return False
+    first_line = str(lines[0].get("text") or "")
+    first_match = NUMBERED_REFERENCE_LINE_RE.match(first_line)
+    if not first_match:
+        return False
+    try:
+        first_index = int(first_match.group(1))
+    except (TypeError, ValueError):
+        return False
+    if first_index != expected_index:
+        return False
+
+    extra_line_anchors = sum(
+        1
+        for line in lines[1:]
+        if NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
+    )
+    if extra_line_anchors > 0:
+        return False
+
+    if len(text) < 24:
+        return False
+    if _is_reference_header_like(text):
+        return False
+
+    anchor_mentions = [
+        int(match.group(1))
+        for match in NUMBERED_ANCHOR_RE.finditer(text)
+        if match.group(1).isdigit()
+    ]
+    foreign_anchor_mentions = [
+        value for value in anchor_mentions if value != expected_index
+    ]
+    if len(foreign_anchor_mentions) >= 2:
+        return False
+    return True
+
+
+def build_references_from_lines(
+    lines: Sequence[Dict[str, Any]],
+) -> Dict[int, Dict[str, Any]]:
+    ordered_lines = _sort_bibliography_lines_reading_flow(lines)
+    if len(ordered_lines) < 4:
+        return {}
+
+    anchors = extract_numbered_anchors(ordered_lines)
+    if len(anchors) < 2:
+        return {}
+
+    first_anchor_by_index: Dict[int, Dict[str, Any]] = {}
+    for anchor in anchors:
+        index = int(anchor["index"])
+        if index <= 0 or index in first_anchor_by_index:
+            continue
+        first_anchor_by_index[index] = anchor
+    if len(first_anchor_by_index) < 2:
+        return {}
+
+    anchor_positions = sorted(int(anchor["position"]) for anchor in first_anchor_by_index.values())
+    parsed: Dict[int, Dict[str, Any]] = {}
+    for index in sorted(first_anchor_by_index.keys()):
+        anchor = first_anchor_by_index[index]
+        start = int(anchor["position"])
+
+        next_anchor = first_anchor_by_index.get(index + 1)
+        if next_anchor and int(next_anchor["position"]) > start:
+            end = int(next_anchor["position"])
+        else:
+            end = len(ordered_lines)
+            for position in anchor_positions:
+                if position > start:
+                    end = position
+                    break
+
+        block_lines = ordered_lines[start:end]
+        if not block_lines:
+            continue
+        block_text = _clean_reference_text(block_lines)
+        if not _is_valid_reference_block(
+            expected_index=index,
+            lines=block_lines,
+            text=block_text,
+        ):
+            continue
+
+        union_box = _union_boxes(
+            [line["box"] for line in block_lines if _normalize_box(line.get("box"))]
+        )
+        parsed[index] = {
+            "text": block_text,
+            "page": block_lines[0].get("page"),
+            "box": union_box,
+        }
+    return parsed
+
+
 def _normalize_citation_marker(value: str) -> str:
     if not value:
         return ""
@@ -580,6 +913,20 @@ def build_references_data(
             int(first_bibliography_item.get("page", 0)),
             float(first_bibliography_item["box"][1]),
         )
+    bibliography_lines = _collect_bibliography_lines(
+        row_items,
+        bibliography_items,
+        bibliography_anchor,
+    )
+    line_based_references: Dict[int, Dict[str, Any]] = {}
+    indexed_input_references = sum(
+        1 for ref in references if isinstance(ref, dict) and _entry_index(ref) is not None
+    )
+    if is_numbered_bibliography(bibliography_lines):
+        candidate_line_references = build_references_from_lines(bibliography_lines)
+        min_required = 2 if indexed_input_references <= 6 else 3
+        if len(candidate_line_references) >= min_required:
+            line_based_references = candidate_line_references
 
     reference_entries: List[Dict[str, Any]] = []
     citations: List[Dict[str, Any]] = []
@@ -603,30 +950,37 @@ def build_references_data(
             references_by_doi[doi_value] = ref_id
 
         raw_text = str(ref.get("raw") or ref.get("text") or "")
-        best_candidate: Optional[Dict[str, Any]] = None
-        best_score = 0.0
-        for candidate in bibliography_items:
-            if candidate["id"] in used_bibliography_ids:
-                continue
-            score = _reference_match_score(
-                raw_text,
-                idx or 0,
-                doi_value,
-                str(candidate.get("text") or ""),
-            )
-            if score > best_score:
-                best_score = score
-                best_candidate = candidate
-
-        if best_candidate and best_score >= 0.35:
-            used_bibliography_ids.add(best_candidate["id"])
-            page = best_candidate["page"]
-            box = best_candidate["box"]
-            text = str(best_candidate.get("text") or raw_text)
+        line_reference = line_based_references.get(idx) if idx is not None else None
+        if line_reference is not None:
+            line_page = line_reference.get("page")
+            page = line_page if isinstance(line_page, int) and line_page >= 0 else None
+            box = _normalize_box(line_reference.get("box"))
+            text = str(line_reference.get("text") or raw_text)
         else:
-            page = None
-            box = None
-            text = raw_text
+            best_candidate: Optional[Dict[str, Any]] = None
+            best_score = 0.0
+            for candidate in bibliography_items:
+                if candidate["id"] in used_bibliography_ids:
+                    continue
+                score = _reference_match_score(
+                    raw_text,
+                    idx or 0,
+                    doi_value,
+                    str(candidate.get("text") or ""),
+                )
+                if score > best_score:
+                    best_score = score
+                    best_candidate = candidate
+
+            if best_candidate and best_score >= 0.35:
+                used_bibliography_ids.add(best_candidate["id"])
+                page = best_candidate["page"]
+                box = best_candidate["box"]
+                text = str(best_candidate.get("text") or raw_text)
+            else:
+                page = None
+                box = None
+                text = raw_text
 
         reference_entries.append(
             {
