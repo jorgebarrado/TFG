@@ -58,6 +58,14 @@ def _reader_build_stamp() -> str:
         return ""
 
 
+def _reader_vite_dev_server() -> str:
+    """Return the Vite dev server URL when the reader should use HMR assets."""
+    if not settings.DEBUG:
+        return ""
+    vite_url = str(os.getenv("READER_VITE_DEV_SERVER", "")).strip().rstrip("/")
+    return vite_url
+
+
 def _can_edit_report(user, citation) -> bool:
     return user.is_authenticated and (user == citation.author or user.is_superuser)
 
@@ -1056,6 +1064,7 @@ def citation_reader(request, report_id: int):
         "pdf_url": pdf_url or "",
         "report_id": report_id,
         "reader_build": _reader_build_stamp(),
+        "reader_vite_url": _reader_vite_dev_server(),
     }
     return render(request, "citations/reader.html", context)
 
@@ -1065,5 +1074,6 @@ def citation_reader_preview(request):
     context = {
         "pdf_url": pdf_url or "",
         "reader_build": _reader_build_stamp(),
+        "reader_vite_url": _reader_vite_dev_server(),
     }
     return render(request, "citations/reader_preview.html", context)

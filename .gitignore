@@ -7,6 +7,7 @@ myenv/
 __pycache__/
 *.py[cod]
 *.pyo
+.pytest_cache/
 
 # --- ARCHIVOS DE ENTORNO ---
 .env
@@ -17,5 +18,7 @@ __pycache__/
 /staticfiles/
 /media/
 node_modules/
+.cache/
+.pip-cache/
 .claude
 /design-system
