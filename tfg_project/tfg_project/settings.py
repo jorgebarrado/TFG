@@ -72,6 +72,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "citations.middleware.RequestIdMiddleware",
 ]
 
 ROOT_URLCONF = "tfg_project.urls"
@@ -171,3 +172,65 @@ CACHES = {
         "TIMEOUT": 60 * 60,  # 1h por defecto
     }
 }
+
+# Configuración de LOGGING estructurada
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {
+            "()": "citations.middleware.RequestIdFilter",
+        },
+    },
+    "formatters": {
+        "json": {
+            "()": "citations.logging_formatters.StructuredJsonFormatter",
+        },
+        "color": {
+            "()": "citations.logging_formatters.ColorFormatter",
+        },
+    },
+    "handlers": {
+        "console_json": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+            "filters": ["request_id"],
+        },
+        "console_color": {
+            "class": "logging.StreamHandler",
+            "formatter": "color",
+            "filters": ["request_id"],
+        },
+        # You could also add a FileHandler here if desired, e.g. for citations_context.log
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "citations_context.log",
+            "formatter": "json",
+            "filters": ["request_id"],
+        },
+    },
+    "loggers": {
+        "citations": {
+            "handlers": ["console_json", "file"]
+            if not DEBUG
+            else ["console_color", "console_json"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "citations.context": {
+            "handlers": ["console_json", "file"]
+            if not DEBUG
+            else ["console_color", "console_json"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "django": {
+            "handlers": ["console_color"] if DEBUG else ["console_json"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+# Ensure logs directory exists
+os.makedirs(BASE_DIR / "logs", exist_ok=True)

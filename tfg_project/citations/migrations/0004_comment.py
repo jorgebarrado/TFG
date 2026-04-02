@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("citations", "0003_rename_user_incorrectcitation_author"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

@@ -1,6 +1,12 @@
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List
 
 import requests
+from papermage.recipes.core_recipe import CoreRecipe
+
+from .logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_articles_from_dblp(dblp_url):
@@ -42,8 +48,8 @@ def get_articles_from_dblp(dblp_url):
 
         return publications
 
-    except Exception as e:
-        print("Error al obtener publicaciones desde DBLP:", e)
+    except Exception:
+        logger.exception("get_articles_from_dblp_error", extra={"url": dblp_url})
         return []
 
 
@@ -79,8 +85,8 @@ def get_citing_articles(doi):
 
         return result
 
-    except Exception as e:
-        print("Error en Semantic Scholar:", e)
+    except Exception:
+        logger.exception("get_citing_articles_error", extra={"doi": doi})
         return []
 
 
@@ -105,8 +111,8 @@ def check_doi_has_citations(doi):
 
         return data.get("citationCount", 0) > 0
 
-    except Exception as e:
-        print(f"Error consultando DOI {doi}: {e}")
+    except Exception:
+        logger.exception("check_doi_has_citations_error", extra={"doi": doi})
         return False
 
 
@@ -125,15 +131,14 @@ def get_citation_count(doi):
 
         data = response.json()
         return data.get("citationCount", 0)
-    except Exception as e:
-        print(f"Error al obtener citationCount para {doi}: {e}")
+    except Exception:
+        logger.exception("get_citation_count_error", extra={"doi": doi})
         return 0
 
 
-from typing import List, Dict, Any
-from papermage.recipes.core_recipe import CoreRecipe
-
-def extract_augmented_snippets_with_papermage(pdf_path: str) -> List[Dict[str, Any]]:
+def extract_augmented_snippets_with_papermage(
+    pdf_path: str,
+) -> List[Dict[str, Any]]:
     """
     Extracts citation snippets and their bounding box coordinates from a PDF using papermage.
     """
@@ -142,11 +147,10 @@ def extract_augmented_snippets_with_papermage(pdf_path: str) -> List[Dict[str, A
 
     results = []
 
-    if hasattr(doc, 'bibliographies'):
+    if hasattr(doc, "bibliographies"):
         for bib in doc.bibliographies:
-            results.append({
-                "text": bib.text,
-                "boxes": [box.to_json() for box in bib.boxes]
-            })
+            results.append(
+                {"text": bib.text, "boxes": [box.to_json() for box in bib.boxes]}
+            )
 
     return results
