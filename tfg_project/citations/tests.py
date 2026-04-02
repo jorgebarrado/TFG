@@ -7,9 +7,6 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from .models import Comment, IncorrectCitation, SavedCitation, Conversation
-import os
-import json
-from django.conf import settings
 
 
 @override_settings(
@@ -497,7 +494,6 @@ class SemanticCitationsViewTests(SocialAppTestCase):
         self.assertFalse(unregistered_citation["is_registered"])
 
 
-from .trace_logger import TraceLogger
 
 
 class ContextLoggingTests(TestCase):

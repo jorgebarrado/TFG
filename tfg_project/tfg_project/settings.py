@@ -63,6 +63,7 @@ ACCOUNT_FORMS = {
 }
 
 MIDDLEWARE = [
+    "citations.middleware.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -190,14 +191,16 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "json_line": {
-            # Una sola línea por evento (el payload ya viene serializado en JSON)
-            "format": "%(message)s"
+            "()": "citations.logging_formatters.StructuredJsonFormatter",
         },
         "simple": {"format": "%(levelname)s %(name)s: %(message)s"},
+        "color": {
+            "()": "citations.logging_formatters.ColorFormatter",
+        },
     },
     "handlers": {
         "citations_context_file": {
-            "level": LOG_CITATIONS_LEVEL,
+            "level": "DEBUG" if DEBUG else "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": str(LOGS_DIR / "citations_context.log"),
             "maxBytes": 10_000_000,  # ~10MB
@@ -207,14 +210,18 @@ LOGGING = {
         },
         "console": {
             "class": "logging.StreamHandler",
-            "level": "INFO",
-            "formatter": "simple",
+            "level": "DEBUG" if DEBUG else "INFO",
+            "formatter": "color" if DEBUG else "simple",
         },
     },
     "loggers": {
+        "citations": {
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
         "citations.context": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
-            + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
             "level": LOG_CITATIONS_LEVEL,
             "propagate": False,
         },

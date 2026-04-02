@@ -28,7 +28,6 @@ from .services.pdf_citation_analyzer import (
     analyze_pdf_citations_from_url,
 )
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
-from .services.semantic_scholar_client import SemanticScholarError
 from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .services.references_data import build_references_data
 from .models import IncorrectCitation
@@ -48,8 +47,10 @@ import logging
 import json
 from django.views.decorators.http import require_http_methods
 from .trace import Trace
+from citations.logging_utils import get_logger
 
-logger = logging.getLogger("citations.context")
+logger = get_logger("citations.api")
+context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
 
@@ -115,7 +116,8 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 
     if not citing_doi:
         trace.add("params", "error", "missing citing_doi")
-        logger.info(trace.as_log_line())
+        context_logger.info(trace.as_log_line())
+        logger.warning("Falta 'citing_doi' en get_citation_context")
         resp = {"ok": False, "error": "Missing 'citing_doi'"}
         if INCLUDE_TRACE_FLAG or request.GET.get("debug") == "1":
             resp["trace"] = trace.as_public_trace()
@@ -124,6 +126,7 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
     trace.add(
         "params", "ok", f"citing_doi={citing_doi}; target_doi={target_doi or '-'}"
     )
+    logger.debug(f"Petición de contextos de cita para DOI: {citing_doi}")
 
     # 1) OpenAccess PDF (Semantic Scholar)
     pdf_url = None
@@ -362,10 +365,14 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)
+    except Exception as e:
+        logger.exception(f"Excepción en el procesamiento de api_extract_citations: {e}")
+        return JsonResponse({"ok": False, "error": "Error interno del servidor."}, status=500)
     finally:
         try:
             os.remove(temp_path)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Error borrando archivo temporal: {temp_path} - {e}")
             pass
 
 

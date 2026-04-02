@@ -6,6 +6,10 @@ import re
 import unicodedata
 
 from .semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
+from citations.logging_utils import get_logger, log_phase
+
+logger = get_logger("citations.citations")
+TRACE_CITATIONS = os.getenv("TRACE_CITATIONS", "0") == "1"
 
 try:
     import fitz  # PyMuPDF
@@ -238,6 +242,7 @@ def extract_pdf_references(
     pdf_path: str,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     if fitz is None or not pdf_path:
+        logger.error("extract_pdf_references: fitz no disponible o pdf_path nulo")
         return [], {
             "pages_total": 0,
             "references_total": 0,
@@ -249,16 +254,33 @@ def extract_pdf_references(
         }
 
     page_texts: List[str] = []
-    with fitz.open(pdf_path) as doc:
-        for page in doc:
-            page_texts.append(page.get_text() or "")
-        page_count = doc.page_count
+    with log_phase(logger, "extract_pdf_references_text", pdf=pdf_path):
+        try:
+            with fitz.open(pdf_path) as doc:
+                for page in doc:
+                    page_texts.append(page.get_text() or "")
+                page_count = doc.page_count
+            logger.info(f"Texto extraído de {page_count} páginas mediante fitz.")
+        except Exception as e:
+            logger.error(f"Error al leer el PDF para referencias: {e}", exc_info=True)
+            return [], {
+                "pages_total": 0,
+                "references_total": 0,
+                "dois_total": 0,
+                "references_numbered": False,
+                "citation_style": "non_numeric",
+                "max_reference_index": 0,
+                "bibliography_start_page": None,
+            }
 
     section, found_header, bibliography_start_page = _extract_reference_section(
         page_texts
     )
     if not section:
+        logger.warning(f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas.")
         section = _fallback_reference_section(page_texts)
+
+    logger.debug(f"Bibliografía detectada en la página {bibliography_start_page}")
     refs_raw, numbered = _split_references(section)
     references: List[Dict[str, Any]] = []
     seen_doi: set[str] = set()

@@ -5,6 +5,9 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, NotRequired, Sequence, Tuple, TypedDict
+from citations.logging_utils import get_logger
+
+logger = get_logger("citations.extractor.papermage")
 
 try:
     from papermage.magelib import Document, Entity
@@ -97,17 +100,23 @@ def _load_document(pdf_path: str) -> Document:
     _ensure_papermage_available()
     path = Path(pdf_path)
     if not path.is_file():
+        logger.error(f"Fichero PDF no encontrado: {pdf_path}")
         raise FileNotFoundError(
             f"No se encontró el PDF en la ruta proporcionada: {pdf_path}"
         )
     if PDFPlumberParser is None:
+        logger.error("PDFPlumberParser no disponible en PaperMage")
         raise RuntimeError(
             "PaperMage está instalado parcialmente y no se pudo inicializar PDFPlumberParser."
         )
     try:
+        logger.debug(f"Parseando documento con PDFPlumberParser en {pdf_path}")
         parser = PDFPlumberParser()
-        return parser.parse(input_pdf_path=str(path))
+        doc = parser.parse(input_pdf_path=str(path))
+        logger.debug(f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas")
+        return doc
     except Exception as exc:
+        logger.error(f"Fallo al parsear PDF con PDFPlumberParser: {exc}")
         raise RuntimeError(f"No se pudo leer el PDF con PaperMage: {exc}") from exc
 
 
