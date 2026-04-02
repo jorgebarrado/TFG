@@ -15,6 +15,7 @@ from .semantic_scholar_client import (
     get_citing_papers_for_doi_paginated,
     get_work_by_doi as semantic_fetch_work_by_doi,
 )
+from .reference_reconciliation import validate_reference_against_metadata
 
 logger = logging.getLogger("citations.doi_enrichment")
 
@@ -243,6 +244,137 @@ def _apply_reference_metadata(
     return out
 
 
+def _coerce_reference_validation(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        return {
+            "match_score": 0.0,
+            "mixed_reference_score": 0.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": None,
+        }
+    return {
+        "match_score": float(value.get("match_score") or 0.0),
+        "mixed_reference_score": float(value.get("mixed_reference_score") or 0.0),
+        "has_nested_anchor": bool(value.get("has_nested_anchor")),
+        "accepted": bool(value.get("accepted")),
+        "reason": value.get("reason"),
+    }
+
+
+def _build_merged_reference_validation(
+    *,
+    structural_validation: Dict[str, Any],
+    metadata_validation: Dict[str, Any],
+    accepted: bool,
+    reason: Optional[str],
+) -> Dict[str, Any]:
+    merged_match = max(
+        float(structural_validation.get("match_score") or 0.0),
+        float(metadata_validation.get("match_score") or 0.0),
+    )
+    merged_mixed = max(
+        float(structural_validation.get("mixed_reference_score") or 0.0),
+        float(metadata_validation.get("mixed_reference_score") or 0.0),
+    )
+    merged_nested = bool(
+        structural_validation.get("has_nested_anchor")
+        or metadata_validation.get("has_nested_anchor")
+    )
+    return {
+        "match_score": round(max(0.0, min(merged_match, 1.0)), 3),
+        "mixed_reference_score": round(max(0.0, min(merged_mixed, 1.0)), 3),
+        "has_nested_anchor": merged_nested,
+        "accepted": bool(accepted),
+        "reason": reason if not accepted else None,
+    }
+
+
+def _evaluate_enrichment_acceptance(
+    *,
+    current: Dict[str, Any],
+    match: Dict[str, Any],
+    score: float,
+    candidates: Sequence[Dict[str, Any]],
+) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+    local_text = _extract_reference_text(current)
+    expected_index_raw = current.get("index")
+    try:
+        expected_index = int(expected_index_raw)
+    except (TypeError, ValueError):
+        expected_index = None
+    other_candidates: List[Tuple[int, Dict[str, Any]]] = []
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        raw_idx = candidate.get("index")
+        try:
+            idx = int(raw_idx)
+        except (TypeError, ValueError):
+            idx = 0
+        if idx > 0:
+            other_candidates.append((idx, candidate))
+    metadata_validation = validate_reference_against_metadata(
+        local_text,
+        match,
+        expected_index=expected_index,
+        other_metadata_candidates=other_candidates,
+    )
+    structural_validation = _coerce_reference_validation(current.get("reference_validation"))
+    structure_source = str(current.get("structure_source") or "").strip().lower()
+    local_row_count = int(current.get("local_row_count") or 0)
+    local_anchor_detected = bool(current.get("local_anchor_detected"))
+    rows_reconstruction_available = (
+        structure_source.startswith("rows")
+        and local_row_count >= 1
+        and local_anchor_detected
+    )
+    rows_reconstruction_reasonable = (
+        rows_reconstruction_available
+        and float(structural_validation.get("mixed_reference_score") or 0.0) < 0.72
+        and not bool(structural_validation.get("has_nested_anchor"))
+    )
+    if structure_source.startswith("rows") and not rows_reconstruction_reasonable:
+        accepted = False
+        reason = "unreliable_rows_structure"
+    else:
+        combined_mixed = max(
+            float(structural_validation.get("mixed_reference_score") or 0.0),
+            float(metadata_validation.get("mixed_reference_score") or 0.0),
+        )
+        has_nested = bool(
+            structural_validation.get("has_nested_anchor")
+            or metadata_validation.get("has_nested_anchor")
+        )
+        metadata_match = float(metadata_validation.get("match_score") or 0.0)
+        direct_doi_match = (
+            bool(normalize_doi(current.get("doi")))
+            and normalize_doi(current.get("doi")) == normalize_doi(match.get("doi"))
+        )
+        high_confidence = float(score or 0.0) >= 0.72
+        metadata_accepted = bool(metadata_validation.get("accepted"))
+        accepted = bool(
+            metadata_accepted
+            and combined_mixed < 0.72
+            and (metadata_match >= 0.72 or (direct_doi_match and metadata_match >= 0.52) or high_confidence)
+            and not (has_nested and not direct_doi_match)
+        )
+        if accepted:
+            reason = None
+        elif has_nested or combined_mixed >= 0.72:
+            reason = "mixed_rows_multiple_references"
+        else:
+            reason = str(metadata_validation.get("reason") or "metadata_validation_failed")
+
+    merged = _build_merged_reference_validation(
+        structural_validation=structural_validation,
+        metadata_validation=metadata_validation,
+        accepted=accepted,
+        reason=reason,
+    )
+    return accepted, merged, reason
+
+
 def resolve_work_by_doi(doi: str) -> Dict[str, Any]:
     normalized_doi = normalize_doi(doi)
     resolved: Dict[str, Any] = {
@@ -377,6 +509,9 @@ def enrich_references_with_doi_data(
         best_match: Optional[Dict[str, Any]] = None
         best_score = 0.0
         source = ""
+        validation_candidates: List[Dict[str, Any]] = [
+            candidate for candidate in candidates if isinstance(candidate, dict)
+        ]
 
         if local_doi:
             direct = by_doi.get(local_doi)
@@ -433,6 +568,9 @@ def enrich_references_with_doi_data(
                 query_cache[query_key] = query_results
                 crossref_query_lookups += 1
             if query_results:
+                validation_candidates.extend(
+                    [item for item in query_results if isinstance(item, dict)]
+                )
                 query_match, query_score = _pick_best_external_reference_match(current, query_results)
                 if query_match and query_score >= 0.62:
                     best_match = query_match
@@ -440,17 +578,43 @@ def enrich_references_with_doi_data(
                     source = str(query_match.get("source") or "crossref")
 
         if best_match is not None:
-            enriched.append(
-                _apply_reference_metadata(
+            accepted, merged_validation, rejection_reason = _evaluate_enrichment_acceptance(
+                current=current,
+                match=best_match,
+                score=best_score,
+                candidates=validation_candidates,
+            )
+            if accepted:
+                updated = _apply_reference_metadata(
                     current,
                     best_match,
                     source=source or "crossref",
                     confidence=best_score,
                 )
-            )
-            enriched_count += 1
-            if source:
-                sources_used.add(source)
+                updated["reference_validation"] = merged_validation
+                updated["enrichment_accepted"] = True
+                enriched.append(updated)
+                enriched_count += 1
+                if source:
+                    sources_used.add(source)
+            else:
+                rejected = dict(current)
+                rejected.pop("enrichment_source", None)
+                rejected.pop("enrichment_confidence", None)
+                rejected["reference_validation"] = merged_validation
+                rejected["enrichment_accepted"] = False
+                rejected["enrichment_candidate"] = {
+                    "source": source or str(best_match.get("source") or "crossref"),
+                    "confidence": round(float(best_score), 3),
+                    "doi": normalize_doi(best_match.get("doi")) or None,
+                    "title": str(best_match.get("title") or "").strip() or None,
+                    "authors": best_match.get("authors") if isinstance(best_match.get("authors"), list) else [],
+                    "year": _extract_year(best_match.get("year")),
+                    "venue": str(best_match.get("venue") or "").strip() or None,
+                    "reason": rejection_reason or "metadata_validation_failed",
+                }
+                enriched.append(rejected)
+                failed_matches += 1
         else:
             enriched.append(current)
             failed_matches += 1

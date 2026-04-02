@@ -4,6 +4,8 @@ import re
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from .reference_reconciliation import validate_reference_against_metadata
+
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
 INLINE_CITATION_REGEX = re.compile(
@@ -15,6 +17,11 @@ HEADER_LIKE_REFERENCE_RE = re.compile(
     r"\b(?:wipsce|copyright|all rights reserved|acm isbn|proceedings)\b",
     re.IGNORECASE,
 )
+FIXED_ARTIFACT_RE = re.compile(
+    r"\b(?:proceedings|copyright|all rights reserved|acm isbn|issn|vol\.|volume|number|no\.)\b",
+    re.IGNORECASE,
+)
+PAGE_NUMBER_ONLY_RE = re.compile(r"^\s*\(?\d{1,4}\)?\s*$")
 
 
 def _to_float(value: Any) -> Optional[float]:
@@ -341,8 +348,12 @@ def _union_boxes(boxes: Sequence[Sequence[float]]) -> Optional[List[float]]:
 
 def _line_sort_key(line: Dict[str, Any]) -> Tuple[int, float, float]:
     page = int(line.get("page", 0))
-    box = line.get("box") or [0.0, 0.0, 0.0, 0.0]
-    return (page, float(box[1]), float(box[0]))
+    y0 = _to_float(line.get("y0"))
+    x0 = _to_float(line.get("x0"))
+    if y0 is None or x0 is None:
+        box = line.get("box") or [0.0, 0.0, 0.0, 0.0]
+        return (page, float(box[1]), float(box[0]))
+    return (page, float(y0), float(x0))
 
 
 def _median(values: Sequence[float]) -> float:
@@ -369,7 +380,11 @@ def _collect_bibliography_lines(
         if not text or not isinstance(page, int) or box is None:
             continue
 
-        y = _to_float(box[1])
+        x0 = float(box[0])
+        y0 = float(box[1])
+        x1 = x0 + float(box[2])
+        y1 = y0 + float(box[3])
+        y = _to_float(y0)
         if y is not None and (y < 0.01 or y > 0.99):
             continue
 
@@ -398,9 +413,171 @@ def _collect_bibliography_lines(
                 "text": text,
                 "page": page,
                 "box": box,
+                "x0": x0,
+                "y0": y0,
+                "x1": x1,
+                "y1": y1,
+                "width": float(box[2]),
+                "height": float(box[3]),
             }
         )
     return out
+
+
+def _artifact_text_key(value: str) -> str:
+    normalized = _normalize_text(value)
+    normalized = re.sub(r"\b\d+\b", "#", normalized)
+    normalized = re.sub(r"[^a-z0-9#\s]", " ", normalized)
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _build_repeating_page_artifacts(
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    pages_per_key: Dict[str, set[int]] = defaultdict(set)
+    for row in rows:
+        page = row.get("page")
+        text = str(row.get("text") or "").strip()
+        y0 = _to_float(row.get("y0"))
+        y1 = _to_float(row.get("y1"))
+        if not isinstance(page, int) or not text:
+            continue
+        if y0 is None or y1 is None:
+            continue
+        if y0 > 0.16 and y1 < 0.84:
+            continue
+        key = _artifact_text_key(text)
+        if len(key) < 9:
+            continue
+        pages_per_key[key].add(page)
+    repeated_keys = {
+        key
+        for key, pages in pages_per_key.items()
+        if len(pages) >= 2
+    }
+    return {"repeated_text_keys": repeated_keys}
+
+
+def _is_header_footer_row(
+    row: Dict[str, Any],
+    artifact_info: Dict[str, Any],
+) -> bool:
+    text = str(row.get("text") or "").strip()
+    if not text:
+        return True
+    if NUMBERED_REFERENCE_LINE_RE.match(text):
+        return False
+    y0 = _to_float(row.get("y0"))
+    y1 = _to_float(row.get("y1"))
+    if y0 is None or y1 is None:
+        box = _normalize_box(row.get("box"))
+        if box is not None:
+            y0 = float(box[1])
+            y1 = y0 + float(box[3])
+    in_margin = (
+        y0 is not None and y1 is not None and (float(y0) <= 0.14 or float(y1) >= 0.88)
+    )
+    if in_margin and PAGE_NUMBER_ONLY_RE.match(text):
+        return True
+    if in_margin and FIXED_ARTIFACT_RE.search(text):
+        has_year = bool(re.search(r"\b(?:19|20)\d{2}\b", text))
+        has_doi = bool(_extract_doi(text))
+        if not has_year and not has_doi and len(text) <= 140:
+            return True
+    key = _artifact_text_key(text)
+    repeated_keys = artifact_info.get("repeated_text_keys", set())
+    if in_margin and key and key in repeated_keys:
+        return True
+    return False
+
+
+def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]:
+    if len(rows) < 8:
+        return None
+    content_rows = [
+        row
+        for row in rows
+        if (_to_float(row.get("y0")) or 0.0) > 0.08 and (_to_float(row.get("y1")) or 0.0) < 0.94
+    ]
+    sample = content_rows if len(content_rows) >= 8 else list(rows)
+    x_values = sorted(
+        float(row.get("x0"))
+        for row in sample
+        if _to_float(row.get("x0")) is not None
+    )
+    if len(x_values) < 8:
+        return None
+    max_gap = 0.0
+    split_threshold: Optional[float] = None
+    for left_x, right_x in zip(x_values, x_values[1:]):
+        gap = float(right_x) - float(left_x)
+        if gap > max_gap:
+            max_gap = gap
+            split_threshold = (float(left_x) + float(right_x)) / 2.0
+    if split_threshold is None or max_gap < 0.12:
+        return None
+    left_count = sum(1 for row in sample if float(row.get("x0", 0.0)) < split_threshold)
+    right_count = len(sample) - left_count
+    if left_count < 3 or right_count < 3:
+        return None
+    balance = min(left_count, right_count) / max(left_count, right_count)
+    if balance < 0.18:
+        return None
+    return split_threshold
+
+
+def _assign_column_ids(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        page = row.get("page")
+        if not isinstance(page, int):
+            continue
+        by_page[page].append(dict(row))
+
+    out: List[Dict[str, Any]] = []
+    for page in sorted(by_page.keys()):
+        page_rows = by_page[page]
+        split = _detect_page_column_split(page_rows)
+        for row in page_rows:
+            next_row = dict(row)
+            x_center = (float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))) / 2.0
+            if split is None:
+                column_id = "left"
+            else:
+                column_id = "left" if x_center < split else "right"
+            next_row["column_id"] = column_id
+            if split is not None:
+                next_row["column_split_x"] = split
+            out.append(next_row)
+    return out
+
+
+def build_bibliography_reading_flow(
+    rows: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for row in _assign_column_ids(rows):
+        page = row.get("page")
+        if not isinstance(page, int):
+            continue
+        by_page[page].append(row)
+
+    ordered: List[Dict[str, Any]] = []
+    flow_position = 0
+    for page in sorted(by_page.keys()):
+        page_rows = by_page[page]
+        left_rows = [row for row in page_rows if row.get("column_id") == "left"]
+        right_rows = [row for row in page_rows if row.get("column_id") == "right"]
+
+        left_ordered = sorted(left_rows, key=_line_sort_key)
+        right_ordered = sorted(right_rows, key=_line_sort_key)
+        page_flow = left_ordered + right_ordered if right_rows else left_ordered
+        for row in page_flow:
+            next_row = dict(row)
+            next_row["flow_position"] = flow_position
+            ordered.append(next_row)
+            flow_position += 1
+    return ordered
 
 
 def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
@@ -519,10 +696,13 @@ def _sort_bibliography_lines_reading_flow(
     return ordered
 
 
-def extract_numbered_anchors(lines: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def detect_reference_anchors_from_rows(
+    rows: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
     anchors: List[Dict[str, Any]] = []
-    for position, line in enumerate(lines):
-        match = NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
+    for position, row in enumerate(rows):
+        text = str(row.get("text") or "")
+        match = NUMBERED_REFERENCE_LINE_RE.match(text)
         if not match:
             continue
         try:
@@ -531,8 +711,22 @@ def extract_numbered_anchors(lines: Sequence[Dict[str, Any]]) -> List[Dict[str, 
             continue
         if index <= 0:
             continue
-        anchors.append({"index": index, "position": position, "line": line})
+        anchors.append(
+            {
+                "index": index,
+                "page": row.get("page"),
+                "column_id": row.get("column_id"),
+                "position": int(row.get("flow_position", position)),
+                "row": row,
+                "line": row,  # Compatibilidad con llamadas legacy.
+            }
+        )
     return anchors
+
+
+def extract_numbered_anchors(lines: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # Alias de compatibilidad para el flujo legacy.
+    return detect_reference_anchors_from_rows(lines)
 
 
 def _clean_reference_text(lines: Sequence[Dict[str, Any]]) -> str:
@@ -608,7 +802,209 @@ def _is_valid_reference_block(
     return True
 
 
-def build_references_from_lines(
+def _default_reference_validation(
+    *,
+    text: str,
+    expected_index: int,
+) -> Dict[str, Any]:
+    anchor_mentions = [
+        int(match.group(1))
+        for match in NUMBERED_ANCHOR_RE.finditer(text)
+        if match.group(1).isdigit()
+    ]
+    foreign_anchors = [value for value in anchor_mentions if value != expected_index]
+    has_nested = len(foreign_anchors) > 0
+    mixed_score = 0.72 if has_nested else 0.12
+    accepted = bool(len(text) >= 24 and not has_nested)
+    reason = None if accepted else ("mixed_rows_multiple_references" if has_nested else "short_or_empty_reference")
+    return {
+        "match_score": 0.0,
+        "mixed_reference_score": round(mixed_score, 3),
+        "has_nested_anchor": has_nested,
+        "accepted": accepted,
+        "reason": reason,
+    }
+
+
+def _build_reference_validation(
+    *,
+    text: str,
+    expected_index: int,
+    metadata: Optional[Dict[str, Any]],
+    metadata_by_index: Dict[int, Dict[str, Any]],
+) -> Dict[str, Any]:
+    if not isinstance(metadata, dict):
+        return _default_reference_validation(text=text, expected_index=expected_index)
+    metadata_signals = {
+        "doi": metadata.get("doi"),
+        "title": metadata.get("title"),
+        "authors": metadata.get("authors"),
+        "year": metadata.get("year"),
+        "venue": metadata.get("venue"),
+    }
+    has_metadata = any(bool(value) for value in metadata_signals.values())
+    if not has_metadata:
+        return _default_reference_validation(text=text, expected_index=expected_index)
+    other_candidates = [
+        (idx, candidate)
+        for idx, candidate in metadata_by_index.items()
+        if idx != expected_index and isinstance(candidate, dict)
+    ]
+    return validate_reference_against_metadata(
+        text,
+        metadata,
+        expected_index=expected_index,
+        other_metadata_candidates=other_candidates,
+    )
+
+
+def build_reference_rows_between_anchors(
+    *,
+    ordered_rows: Sequence[Dict[str, Any]],
+    current_anchor: Dict[str, Any],
+    next_anchor: Optional[Dict[str, Any]],
+    artifact_info: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    start = int(current_anchor.get("position", 0))
+    end = len(ordered_rows)
+    if next_anchor is not None:
+        candidate_end = int(next_anchor.get("position", end))
+        if candidate_end > start:
+            end = candidate_end
+    if start < 0 or start >= len(ordered_rows):
+        return []
+
+    expected_column = current_anchor.get("column_id")
+    selected_rows: List[Dict[str, Any]] = []
+    for position in range(start, min(end, len(ordered_rows))):
+        row = ordered_rows[position]
+        text = str(row.get("text") or "").strip()
+        if not text:
+            continue
+        is_anchor_row = position == start
+        if not is_anchor_row and NUMBERED_REFERENCE_LINE_RE.match(text):
+            break
+        if not is_anchor_row and _is_header_footer_row(row, artifact_info):
+            continue
+
+        row_column = row.get("column_id")
+        if (
+            not is_anchor_row
+            and expected_column in {"left", "right"}
+            and row_column in {"left", "right"}
+            and row_column != expected_column
+        ):
+            break
+
+        if selected_rows:
+            previous = selected_rows[-1]
+            previous_page = previous.get("page")
+            current_page = row.get("page")
+            if isinstance(previous_page, int) and isinstance(current_page, int):
+                if current_page < previous_page:
+                    break
+                if current_page == previous_page:
+                    previous_y1 = _to_float(previous.get("y1"))
+                    current_y0 = _to_float(row.get("y0"))
+                    if previous_y1 is not None and current_y0 is not None:
+                        gap = float(current_y0) - float(previous_y1)
+                        if gap > 0.085:
+                            break
+                elif current_page - previous_page > 1:
+                    break
+                elif (_to_float(row.get("y0")) or 1.0) > 0.36:
+                    break
+
+        selected_rows.append(row)
+        if len(selected_rows) >= 14:
+            break
+
+    return selected_rows
+
+
+def build_references_from_rows(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    metadata_by_index: Optional[Dict[int, Dict[str, Any]]] = None,
+) -> Dict[int, Dict[str, Any]]:
+    ordered_rows = build_bibliography_reading_flow(rows)
+    if len(ordered_rows) < 4:
+        return {}
+
+    artifact_info = _build_repeating_page_artifacts(ordered_rows)
+    anchors = detect_reference_anchors_from_rows(ordered_rows)
+    if len(anchors) < 2:
+        return {}
+
+    metadata_by_index = metadata_by_index or {}
+    first_anchor_by_index: Dict[int, Dict[str, Any]] = {}
+    for anchor in anchors:
+        index = int(anchor.get("index") or 0)
+        if index <= 0 or index in first_anchor_by_index:
+            continue
+        first_anchor_by_index[index] = anchor
+    if len(first_anchor_by_index) < 2:
+        return {}
+
+    parsed: Dict[int, Dict[str, Any]] = {}
+    ordered_indices = sorted(first_anchor_by_index.keys())
+    all_anchor_positions = sorted(
+        int(anchor.get("position", -1))
+        for anchor in first_anchor_by_index.values()
+        if int(anchor.get("position", -1)) >= 0
+    )
+    for index in ordered_indices:
+        anchor = first_anchor_by_index[index]
+        start_position = int(anchor.get("position", -1))
+        if start_position < 0:
+            continue
+        next_anchor = first_anchor_by_index.get(index + 1)
+        if next_anchor is None:
+            for position in all_anchor_positions:
+                if position > start_position:
+                    next_anchor = {"position": position}
+                    break
+
+        block_rows = build_reference_rows_between_anchors(
+            ordered_rows=ordered_rows,
+            current_anchor=anchor,
+            next_anchor=next_anchor,
+            artifact_info=artifact_info,
+        )
+        if not block_rows:
+            continue
+        block_text = _clean_reference_text(block_rows)
+        if not _is_valid_reference_block(
+            expected_index=index,
+            lines=block_rows,
+            text=block_text,
+        ):
+            continue
+        union_box = _union_boxes(
+            [row["box"] for row in block_rows if _normalize_box(row.get("box"))]
+        )
+        local_validation = _build_reference_validation(
+            text=block_text,
+            expected_index=index,
+            metadata=metadata_by_index.get(index),
+            metadata_by_index=metadata_by_index,
+        )
+        parsed[index] = {
+            "text": block_text,
+            "page": block_rows[0].get("page"),
+            "box": union_box,
+            "rows": block_rows,
+            "local_row_count": len(block_rows),
+            "local_anchor_detected": True,
+            "structure_source": "rows",
+            "reference_validation": local_validation,
+            "column_id": anchor.get("column_id"),
+            "anchor_position": start_position,
+        }
+    return parsed
+
+
+def _build_references_from_lines_legacy(
     lines: Sequence[Dict[str, Any]],
 ) -> Dict[int, Dict[str, Any]]:
     ordered_lines = _sort_bibliography_lines_reading_flow(lines)
@@ -662,8 +1058,23 @@ def build_references_from_lines(
             "text": block_text,
             "page": block_lines[0].get("page"),
             "box": union_box,
+            "rows": block_lines,
+            "local_row_count": len(block_lines),
+            "local_anchor_detected": True,
+            "structure_source": "rows_legacy",
+            "reference_validation": _default_reference_validation(
+                text=block_text,
+                expected_index=index,
+            ),
         }
     return parsed
+
+
+def build_references_from_lines(
+    lines: Sequence[Dict[str, Any]],
+) -> Dict[int, Dict[str, Any]]:
+    # Mantiene compatibilidad con el fallback previo.
+    return _build_references_from_lines_legacy(lines)
 
 
 def _normalize_citation_marker(value: str) -> str:
@@ -919,14 +1330,29 @@ def build_references_data(
         bibliography_anchor,
     )
     line_based_references: Dict[int, Dict[str, Any]] = {}
+    metadata_by_index: Dict[int, Dict[str, Any]] = {}
+    for ref in references:
+        if not isinstance(ref, dict):
+            continue
+        idx = _entry_index(ref)
+        if idx is None or idx <= 0:
+            continue
+        metadata_by_index[idx] = ref
     indexed_input_references = sum(
         1 for ref in references if isinstance(ref, dict) and _entry_index(ref) is not None
     )
     if is_numbered_bibliography(bibliography_lines):
-        candidate_line_references = build_references_from_lines(bibliography_lines)
         min_required = 2 if indexed_input_references <= 6 else 3
-        if len(candidate_line_references) >= min_required:
-            line_based_references = candidate_line_references
+        candidate_row_references = build_references_from_rows(
+            bibliography_lines,
+            metadata_by_index=metadata_by_index,
+        )
+        if len(candidate_row_references) >= min_required:
+            line_based_references = candidate_row_references
+        else:
+            candidate_line_references = build_references_from_lines(bibliography_lines)
+            if len(candidate_line_references) >= min_required:
+                line_based_references = candidate_line_references
 
     reference_entries: List[Dict[str, Any]] = []
     citations: List[Dict[str, Any]] = []
@@ -951,11 +1377,37 @@ def build_references_data(
 
         raw_text = str(ref.get("raw") or ref.get("text") or "")
         line_reference = line_based_references.get(idx) if idx is not None else None
+        structure_source = "fallback"
+        local_row_count = 0
+        local_anchor_detected = False
+        reference_validation: Dict[str, Any] = {
+            "match_score": 0.0,
+            "mixed_reference_score": 0.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": "fallback_without_rows_structure",
+        }
         if line_reference is not None:
             line_page = line_reference.get("page")
             page = line_page if isinstance(line_page, int) and line_page >= 0 else None
             box = _normalize_box(line_reference.get("box"))
             text = str(line_reference.get("text") or raw_text)
+            structure_source = str(line_reference.get("structure_source") or "rows")
+            local_row_count = int(
+                line_reference.get("local_row_count")
+                or len(line_reference.get("rows") or [])
+                or 0
+            )
+            local_anchor_detected = bool(line_reference.get("local_anchor_detected"))
+            candidate_validation = line_reference.get("reference_validation")
+            if isinstance(candidate_validation, dict):
+                reference_validation = {
+                    "match_score": float(candidate_validation.get("match_score") or 0.0),
+                    "mixed_reference_score": float(candidate_validation.get("mixed_reference_score") or 0.0),
+                    "has_nested_anchor": bool(candidate_validation.get("has_nested_anchor")),
+                    "accepted": bool(candidate_validation.get("accepted")),
+                    "reason": candidate_validation.get("reason"),
+                }
         else:
             best_candidate: Optional[Dict[str, Any]] = None
             best_score = 0.0
@@ -977,10 +1429,12 @@ def build_references_data(
                 page = best_candidate["page"]
                 box = best_candidate["box"]
                 text = str(best_candidate.get("text") or raw_text)
+                structure_source = "bibliography_box_fallback"
             else:
                 page = None
                 box = None
                 text = raw_text
+                structure_source = "raw_reference_fallback"
 
         reference_entries.append(
             {
@@ -991,6 +1445,10 @@ def build_references_data(
                 "page": page,
                 "box": box,
                 "doi": doi_value or None,
+                "structure_source": structure_source,
+                "local_row_count": max(0, local_row_count),
+                "local_anchor_detected": bool(local_anchor_detected),
+                "reference_validation": reference_validation,
             }
         )
 
