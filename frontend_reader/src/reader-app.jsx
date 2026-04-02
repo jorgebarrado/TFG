@@ -385,7 +385,7 @@ function normalizeReference(raw, index) {
   const rawText =
     typeof raw === "string"
       ? raw
-      : raw.raw || raw.text || raw.reference || "";
+      : raw.text || raw.raw || raw.reference || "";
   const cleanedRaw = String(rawText || "").trim();
   if (!cleanedRaw) return null;
   const idxValue = Number(raw.index);
@@ -1906,6 +1906,7 @@ export default function ReaderApp({
   const [articleDoiInput, setArticleDoiInput] = useState(
     String(reportOriginalDoi || "").trim()
   );
+  const [debugReferenceDetection, setDebugReferenceDetection] = useState(false);
   const [extractEnrichment, setExtractEnrichment] = useState(null);
   const [extractionExportData, setExtractionExportData] = useState(null);
   const [readerV2Data, setReaderV2Data] = useState(null);
@@ -2727,17 +2728,19 @@ export default function ReaderApp({
         indexFromRefId && referenceByIndex.has(indexFromRefId)
           ? referenceByIndex.get(indexFromRefId)
           : null;
-      const summary = extractReferenceSummary(baseRef?.raw || entry?.text || "");
+      const referenceText = String(entry?.text || baseRef?.raw || "").trim();
+      const summary = extractReferenceSummary(referenceText);
       const pageValue = Number(entry?.page);
       map.set(refId, {
         ref_id: refId,
         index: indexFromRefId || Number(entry?.index) || index + 1,
-        text: String(baseRef?.raw || entry?.text || ""),
+        text: referenceText,
         title: summary.title,
         author: summary.author,
-        doi: baseRef?.doi || null,
+        doi: entry?.doi || baseRef?.doi || null,
         page: Number.isFinite(pageValue) ? pageValue : null,
         box: normalizeOverlayBox(entry?.box),
+        structure_source: String(entry?.structure_source || "").trim(),
       });
     });
     if (!map.size) {
@@ -3596,6 +3599,7 @@ export default function ReaderApp({
           text: String(item?.text || item?.raw || ""),
           page,
           box,
+          structure_source: String(item?.structure_source || "").trim(),
           item_type: itemType,
         };
       });
@@ -3880,6 +3884,11 @@ export default function ReaderApp({
       const fd = new FormData();
       fd.append("manuscript", file);
       fd.append("engine", PREVIEW_EXTRACT_ENGINE);
+      fd.append(
+        "debug_reference_detection",
+        debugReferenceDetection ? "1" : "0"
+      );
+      fd.append("debug", debugReferenceDetection ? "1" : "0");
       const normalizedArticleDoi = String(articleDoiInput || "").trim();
       if (normalizedArticleDoi) {
         fd.append("article_doi", normalizedArticleDoi);
@@ -3908,6 +3917,9 @@ export default function ReaderApp({
         payload?.enrichment && typeof payload.enrichment === "object"
           ? payload.enrichment
           : null;
+      const referenceDebugPath = String(
+        payload?.reference_debug?.output_path || ""
+      ).trim();
       setSnippetsData(result.snippets);
       setReferencesData(result.references);
       setReferencesVisualData(result.referencesVisual);
@@ -3941,11 +3953,14 @@ export default function ReaderApp({
           : (enrichmentPayload?.warning === "invalid_doi"
             ? "DOI no valido; se uso extraccion local."
             : "");
+      const debugHint = referenceDebugPath
+        ? `Debug JSON: ${referenceDebugPath}.`
+        : "";
       setExtractStatus({
         loading: false,
         error: "",
         message: outcome.message,
-        hint: [outcome.hint, enrichmentHint].filter(Boolean).join(" "),
+        hint: [outcome.hint, enrichmentHint, debugHint].filter(Boolean).join(" "),
         tone: outcome.tone,
       });
     } catch (err) {
@@ -4450,6 +4465,14 @@ export default function ReaderApp({
           Descargar
         </button>
       </div>
+      <label className="reader-extract-debug-toggle">
+        <input
+          type="checkbox"
+          checked={debugReferenceDetection}
+          onChange={(event) => setDebugReferenceDetection(event.target.checked)}
+        />
+        <span>Guardar JSON de depuracion de referencias</span>
+      </label>
       {(extractStatus.error || extractStatus.message || extractStatus.hint) && (
         <div
           className={
@@ -4732,6 +4755,11 @@ export default function ReaderApp({
                           <span className="reader-ref-author"> - {row.author}</span>
                         )}
                       </div>
+                      {row.structure_source && (
+                        <div className="reader-ref-meta">
+                          structure_source: {row.structure_source}
+                        </div>
+                      )}
                       {row.doi && <div className="reader-ref-doi">DOI: {row.doi}</div>}
                     </div>
                     {isActive && rowMentions.length > 0 && (

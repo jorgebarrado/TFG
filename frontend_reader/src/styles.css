@@ -911,6 +911,20 @@ body.reader-fullscreen .reader-main {
   flex-wrap: wrap;
 }
 
+.reader-extract-debug-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -2px;
+  font-size: 0.76rem;
+  color: var(--reader-muted);
+}
+
+.reader-extract-debug-toggle input {
+  margin: 0;
+  accent-color: #2563eb;
+}
+
 /* ── Layers panel ── */
 .reader-v2-controls {
   display: grid;

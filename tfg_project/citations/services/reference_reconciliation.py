@@ -118,6 +118,18 @@ def _extract_dois_from_text(value: str) -> set[str]:
     return dois
 
 
+def _doi_matches(candidate: str, observed: str) -> bool:
+    left = normalize_doi(candidate)
+    right = normalize_doi(observed)
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    if min(len(left), len(right)) < 12:
+        return False
+    return left.startswith(right) or right.startswith(left)
+
+
 def _round3(value: float) -> float:
     return round(max(0.0, min(float(value), 1.0)), 3)
 
@@ -170,7 +182,7 @@ def validate_reference_against_metadata(
     local_dois = _extract_dois_from_text(text)
     if candidate_doi:
         total_weight += 0.42
-        if candidate_doi in local_dois:
+        if any(_doi_matches(candidate_doi, local_doi) for local_doi in local_dois):
             doi_match = True
             weighted_score += 0.42
 
@@ -241,9 +253,9 @@ def validate_reference_against_metadata(
         mixed_score += 0.55 + min(0.15, 0.05 * len(foreign_anchors))
 
     if candidate_doi and local_dois:
-        if candidate_doi not in local_dois:
+        if not any(_doi_matches(candidate_doi, local_doi) for local_doi in local_dois):
             mixed_score += 0.35
-        elif len({doi for doi in local_dois if doi != candidate_doi}) > 0:
+        elif len({doi for doi in local_dois if not _doi_matches(candidate_doi, doi)}) > 0:
             mixed_score += 0.2
 
     all_years = sorted({int(match.group(0)) for match in YEAR_RE.finditer(text)})

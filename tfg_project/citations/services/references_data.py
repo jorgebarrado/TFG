@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from citations.logging_utils import get_logger
 
 logger = get_logger("citations.references")
 TRACE_REFERENCES = os.getenv("TRACE_REFERENCES", "0") == "1"
+from .crossref_client import fetch_work_by_doi as crossref_fetch_work_by_doi
 from .reference_reconciliation import validate_reference_against_metadata
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
@@ -27,6 +31,25 @@ FIXED_ARTIFACT_RE = re.compile(
     re.IGNORECASE,
 )
 PAGE_NUMBER_ONLY_RE = re.compile(r"^\s*\(?\d{1,4}\)?\s*$")
+REFERENCE_NOISE_RE = re.compile(
+    r"\b(?:"
+    r"view publication stats|"
+    r"researchgate|"
+    r"wipsce\s*[’']?\s*\d{2}|"
+    r"nijmegen,\s*netherlands|"
+    r"brackmann,\s*rom[aá]n-gonz[aá]lez,\s*robles,\s*moreno-le[oó]n,\s*casali\s*and\s*barone"
+    r")\b",
+    re.IGNORECASE,
+)
+REFERENCE_SECTION_HEADING_RE = re.compile(
+    r"^\s*(?:references|bibliography|referencias|bibliografia|works cited)\s*$",
+    re.IGNORECASE,
+)
+REFERENCE_DEBUG_FILE_SUFFIX = "__reference_debug.json"
+REFERENCE_PIPELINE_VERSION = "references-phased-v1"
+REFERENCE_DEBUG_DIR = (
+    Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
+)
 
 
 def _to_float(value: Any) -> Optional[float]:
@@ -374,6 +397,250 @@ def _median(values: Sequence[float]) -> float:
     return (ordered[mid - 1] + ordered[mid]) / 2.0
 
 
+def _is_reference_noise_text(value: str) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return True
+    return bool(REFERENCE_NOISE_RE.search(text))
+
+
+def _split_reference_row_on_anchors(
+    row: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    text = str(row.get("text") or "").strip()
+    if not text or _is_reference_noise_text(text):
+        return []
+
+    matches = list(NUMBERED_ANCHOR_RE.finditer(text))
+    if not matches:
+        return [dict(row)]
+
+    spans: List[Tuple[int, int]] = []
+    if matches[0].start() > 0:
+        spans.append((0, matches[0].start()))
+    for idx, match in enumerate(matches):
+        next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+        spans.append((match.start(), next_start))
+
+    parts: List[Dict[str, Any]] = []
+    for part_idx, (start_char, end_char) in enumerate(spans):
+        segment_text = text[start_char:end_char].strip()
+        if not segment_text or _is_reference_noise_text(segment_text):
+            continue
+        next_row = dict(row)
+        next_row["id"] = f"{row.get('id') or 'row'}::seg-{part_idx}"
+        next_row["text"] = segment_text
+        next_row["split_segment"] = True
+        next_row["split_segment_index"] = part_idx
+        next_row["split_segment_total"] = len(spans)
+        parts.append(next_row)
+    return parts
+
+
+def _sanitize_filename_component(value: str) -> str:
+    cleaned = re.sub(r"[^\w.\-]+", "_", str(value or "").strip(), flags=re.UNICODE)
+    cleaned = cleaned.strip("._")
+    return cleaned or "reference_debug"
+
+
+def _box_to_corners(box: Sequence[float]) -> Dict[str, float]:
+    return {
+        "x0": round(float(box[0]), 6),
+        "y0": round(float(box[1]), 6),
+        "x1": round(float(box[0]) + float(box[2]), 6),
+        "y1": round(float(box[1]) + float(box[3]), 6),
+    }
+
+
+def _box_from_corners(
+    x0: float,
+    y0: float,
+    x1: float,
+    y1: float,
+) -> Optional[List[float]]:
+    width = float(x1) - float(x0)
+    height = float(y1) - float(y0)
+    if width <= 0 or height <= 0:
+        return None
+    return _normalize_box([x0, y0, width, height])
+
+
+def _serialize_box(box: Any) -> Optional[Dict[str, float]]:
+    normalized_box = _normalize_box(box)
+    if normalized_box is None:
+        return None
+    return _box_to_corners(normalized_box)
+
+
+def _serialize_layer_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    serialized = {
+        "id": str(item.get("id") or ""),
+        "text": str(item.get("text") or ""),
+        "page": item.get("page"),
+        "box": _serialize_box(item.get("box")),
+    }
+    if "column_id" in item:
+        serialized["column_id"] = item.get("column_id")
+    if "anchor_index" in item:
+        serialized["anchor_index"] = item.get("anchor_index")
+    return serialized
+
+
+def _is_reference_heading_text(value: str) -> bool:
+    return bool(REFERENCE_SECTION_HEADING_RE.match(str(value or "").strip()))
+
+
+def _extract_inline_anchor_numbers(text: str) -> List[int]:
+    numbers: List[int] = []
+    for match in NUMBERED_ANCHOR_RE.finditer(text or ""):
+        try:
+            number = int(match.group(1))
+        except (TypeError, ValueError):
+            continue
+        if number > 0:
+            numbers.append(number)
+    return numbers
+
+
+def _score_header_noise(text: str) -> float:
+    normalized = _normalize_text(text or "")
+    if not normalized:
+        return 1.0
+    if REFERENCE_NOISE_RE.search(normalized):
+        return 1.0
+    if _is_reference_heading_text(normalized):
+        return 0.88
+    if HEADER_LIKE_REFERENCE_RE.search(normalized):
+        return 0.74
+    if FIXED_ARTIFACT_RE.search(normalized):
+        return 0.56
+    if PAGE_NUMBER_ONLY_RE.match(normalized):
+        return 0.92
+    return 0.0
+
+
+def _normalize_crossref_reference_candidate(candidate: Dict[str, Any]) -> Dict[str, Any]:
+    normalized = {
+        "doi": _normalize_doi(candidate.get("doi")),
+        "title": str(candidate.get("title") or "").strip(),
+        "authors": [
+            str(author).strip()
+            for author in (candidate.get("authors") or [])
+            if str(author).strip()
+        ],
+        "year": candidate.get("year"),
+        "venue": str(candidate.get("venue") or "").strip() or None,
+        "raw_text": str(candidate.get("raw_text") or "").strip(),
+        "source": str(candidate.get("source") or "crossref"),
+    }
+    if not normalized["raw_text"]:
+        normalized["raw_text"] = " ".join(
+            part
+            for part in [
+                normalized["title"],
+                ", ".join(normalized["authors"]),
+                str(normalized["year"] or "").strip(),
+                str(normalized["venue"] or "").strip(),
+            ]
+            if part
+        ).strip()
+    return normalized
+
+
+def _detect_article_doi_from_rows(
+    row_items: Sequence[Dict[str, Any]],
+    bibliography_start_page: Optional[int],
+) -> str:
+    best_candidate = ""
+    best_rank: Optional[Tuple[int, float, int]] = None
+    max_page = bibliography_start_page if isinstance(bibliography_start_page, int) else 3
+    for row in row_items:
+        page = row.get("page")
+        box = _normalize_box(row.get("box"))
+        text = str(row.get("text") or "")
+        if not isinstance(page, int) or page < 0 or page > max_page:
+            continue
+        if box is None or not text:
+            continue
+        candidate_doi = _extract_doi(text)
+        if not candidate_doi:
+            continue
+        normalized = _normalize_text(text)
+        has_explicit_doi_label = "doi" in normalized
+        has_article_like_context = any(
+            token in normalized for token in ("doi:", "https://doi.org/", "acm isbn", "article")
+        )
+        y0 = float(box[1])
+        priority = 0
+        if has_explicit_doi_label:
+            priority -= 4
+        if has_article_like_context:
+            priority -= 2
+        if page == 0:
+            priority -= 2
+        rank = (priority, y0, page)
+        if best_rank is None or rank < best_rank:
+            best_rank = rank
+            best_candidate = candidate_doi
+    return best_candidate
+
+
+def _prepare_crossref_context(
+    *,
+    article_doi: str,
+    row_items: Sequence[Dict[str, Any]],
+    bibliography_start_page: Optional[int],
+) -> Dict[str, Any]:
+    detected_doi = _normalize_doi(article_doi) or _detect_article_doi_from_rows(
+        row_items,
+        bibliography_start_page,
+    )
+    context: Dict[str, Any] = {
+        "article_doi": detected_doi or None,
+        "crossref_available": False,
+        "crossref_queried": False,
+        "crossref_article_metadata": None,
+        "crossref_reference_candidates": [],
+        "crossref_reference_count": 0,
+    }
+    if not detected_doi:
+        return context
+
+    context["crossref_queried"] = True
+    try:
+        crossref_work = crossref_fetch_work_by_doi(detected_doi, timeout=6)
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.warning("crossref phase failed doi=%s error=%s", detected_doi, exc)
+        crossref_work = None
+    if not isinstance(crossref_work, dict):
+        return context
+
+    references = [
+        _normalize_crossref_reference_candidate(candidate)
+        for candidate in (crossref_work.get("references") or [])
+        if isinstance(candidate, dict)
+    ]
+    context["crossref_available"] = True
+    context["crossref_article_metadata"] = {
+        "doi": _normalize_doi(crossref_work.get("doi")),
+        "title": str(crossref_work.get("title") or "").strip(),
+        "authors": [
+            str(author).strip()
+            for author in (crossref_work.get("authors") or [])
+            if str(author).strip()
+        ],
+        "year": crossref_work.get("year"),
+        "venue": str(crossref_work.get("venue") or "").strip() or None,
+        "url": str(crossref_work.get("url") or "").strip() or None,
+        "source": str(crossref_work.get("source") or "crossref"),
+    }
+    context["crossref_reference_candidates"] = references
+    context["crossref_reference_count"] = int(
+        crossref_work.get("reference_count") or len(references)
+    )
+    return context
+
+
 def _collect_bibliography_lines(
     rows: Sequence[Dict[str, Any]],
     bibliography_items: Sequence[Dict[str, Any]],
@@ -386,6 +653,8 @@ def _collect_bibliography_lines(
         page = row.get("page")
         box = _normalize_box(row.get("box"))
         if not text or not isinstance(page, int) or box is None:
+            continue
+        if _is_reference_noise_text(text):
             continue
 
         x0 = float(box[0])
@@ -429,7 +698,11 @@ def _collect_bibliography_lines(
                 "height": float(box[3]),
             }
         )
-    return out
+
+    exploded: List[Dict[str, Any]] = []
+    for row in out:
+        exploded.extend(_split_reference_row_on_anchors(row))
+    return exploded
 
 
 def _artifact_text_key(value: str) -> str:
@@ -473,6 +746,8 @@ def _is_header_footer_row(
     text = str(row.get("text") or "").strip()
     if not text:
         return True
+    if _is_reference_noise_text(text):
+        return True
     if NUMBERED_REFERENCE_LINE_RE.match(text):
         return False
     y0 = _to_float(row.get("y0"))
@@ -500,21 +775,52 @@ def _is_header_footer_row(
 
 
 def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]:
-    if len(rows) < 8:
+    if len(rows) < 4:
         return None
     content_rows = [
         row
         for row in rows
-        if (_to_float(row.get("y0")) or 0.0) > 0.08 and (_to_float(row.get("y1")) or 0.0) < 0.94
+        if (
+            (_to_float(row.get("y0")) or (_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[1]) > 0.08
+            and (
+                _to_float(row.get("y1"))
+                or (
+                    ((_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[1])
+                    + ((_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[3])
+                )
+            )
+            < 0.94
+        )
     ]
-    sample = content_rows if len(content_rows) >= 8 else list(rows)
+    sample = content_rows if len(content_rows) >= 4 else list(rows)
     x_values = sorted(
+        float(
+            _to_float(row.get("x0"))
+            if _to_float(row.get("x0")) is not None
+            else (_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[0]
+        )
+        for row in sample
+        if _to_float(row.get("x0")) is not None or _normalize_box(row.get("box")) is not None
+    )
+    if len(x_values) < 4:
+        return None
+
+    left_cluster = [
         float(row.get("x0"))
         for row in sample
-        if _to_float(row.get("x0")) is not None
-    )
-    if len(x_values) < 8:
-        return None
+        if _to_float(row.get("x0")) is not None and float(row.get("x0")) <= 0.32
+    ]
+    right_cluster = [
+        float(row.get("x0"))
+        for row in sample
+        if _to_float(row.get("x0")) is not None and float(row.get("x0")) >= 0.45
+    ]
+    if len(left_cluster) >= 3 and len(right_cluster) >= 3:
+        left_median = _median(left_cluster)
+        right_median = _median(right_cluster)
+        if right_median - left_median >= 0.18:
+            return (left_median + right_median) / 2.0
+
     max_gap = 0.0
     split_threshold: Optional[float] = None
     for left_x, right_x in zip(x_values, x_values[1:]):
@@ -522,11 +828,13 @@ def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]
         if gap > max_gap:
             max_gap = gap
             split_threshold = (float(left_x) + float(right_x)) / 2.0
-    if split_threshold is None or max_gap < 0.12:
+    gap_threshold = 0.2 if len(sample) < 8 else 0.12
+    if split_threshold is None or max_gap < gap_threshold:
         return None
     left_count = sum(1 for row in sample if float(row.get("x0", 0.0)) < split_threshold)
     right_count = len(sample) - left_count
-    if left_count < 3 or right_count < 3:
+    min_side_count = 2 if len(sample) < 8 else 3
+    if left_count < min_side_count or right_count < min_side_count:
         return None
     balance = min(left_count, right_count) / max(left_count, right_count)
     if balance < 0.18:
@@ -540,7 +848,14 @@ def _assign_column_ids(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         page = row.get("page")
         if not isinstance(page, int):
             continue
-        by_page[page].append(dict(row))
+        next_row = dict(row)
+        box = _normalize_box(next_row.get("box"))
+        if box is not None:
+            next_row.setdefault("x0", float(box[0]))
+            next_row.setdefault("y0", float(box[1]))
+            next_row.setdefault("x1", float(box[0]) + float(box[2]))
+            next_row.setdefault("y1", float(box[1]) + float(box[3]))
+        by_page[page].append(next_row)
 
     out: List[Dict[str, Any]] = []
     for page in sorted(by_page.keys()):
@@ -548,7 +863,9 @@ def _assign_column_ids(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         split = _detect_page_column_split(page_rows)
         for row in page_rows:
             next_row = dict(row)
-            x_center = (float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))) / 2.0
+            x_center = (
+                float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))
+            ) / 2.0
             if split is None:
                 column_id = "left"
             else:
@@ -586,6 +903,685 @@ def build_bibliography_reading_flow(
             ordered.append(next_row)
             flow_position += 1
     return ordered
+
+
+def _collect_page_split_map(rows: Sequence[Dict[str, Any]]) -> Dict[int, Optional[float]]:
+    page_splits: Dict[int, Optional[float]] = {}
+    for row in rows:
+        page = row.get("page")
+        if not isinstance(page, int):
+            continue
+        split = _to_float(row.get("column_split_x"))
+        if split is not None:
+            page_splits[page] = split
+        elif page not in page_splits:
+            page_splits[page] = None
+    return page_splits
+
+
+def _detect_reference_heading_candidates(
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    page_splits: Dict[int, Optional[float]],
+) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    seen: set[Tuple[int, int, str]] = set()
+    for source, items, confidence in (
+        ("sections", sections, 0.92),
+        ("rows", rows, 0.86),
+    ):
+        for item in items:
+            page = item.get("page")
+            box = _normalize_box(item.get("box"))
+            text = str(item.get("text") or "").strip()
+            if not isinstance(page, int) or box is None or not _is_reference_heading_text(text):
+                continue
+            dedupe_key = (
+                page,
+                int(round(float(box[1]) * 10000)),
+                _normalize_text(text),
+            )
+            if dedupe_key in seen:
+                continue
+            seen.add(dedupe_key)
+            split = page_splits.get(page)
+            x_center = float(box[0]) + float(box[2]) / 2.0
+            if split is None:
+                column_id = "left"
+            else:
+                column_id = "left" if x_center < split else "right"
+            candidates.append(
+                {
+                    "page": page,
+                    "box": box,
+                    "text": text,
+                    "source": source,
+                    "confidence": confidence,
+                    "column_id": column_id,
+                }
+            )
+    return sorted(candidates, key=lambda item: (item["page"], item["box"][1], item["box"][0]))
+
+
+def _build_bibliography_segments(
+    *,
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    rows_with_columns = _assign_column_ids(rows)
+    page_splits = _collect_page_split_map(rows_with_columns)
+    max_page = max(
+        (int(row.get("page")) for row in rows_with_columns if isinstance(row.get("page"), int)),
+        default=-1,
+    )
+    tail_page_span = max(3, int((max_page + 1) * 0.35))
+    tail_start_page = max(0, max_page - tail_page_span + 1)
+    heading_candidates = _detect_reference_heading_candidates(
+        rows_with_columns,
+        sections,
+        page_splits,
+    )
+    anchors = detect_reference_anchors_from_rows(build_bibliography_reading_flow(rows_with_columns))
+    anchor_rows = [anchor for anchor in anchors if isinstance(anchor.get("page"), int)]
+    tail_heading_candidates = [
+        candidate
+        for candidate in heading_candidates
+        if int(candidate.get("page") or -1) >= tail_start_page
+    ]
+    tail_anchor_rows = [
+        anchor
+        for anchor in anchor_rows
+        if int(anchor.get("page") or -1) >= tail_start_page
+    ]
+    tail_bibliography_pages = sorted(
+        {
+            int(item.get("page"))
+            for item in bibliography_items
+            if isinstance(item.get("page"), int) and int(item.get("page")) >= tail_start_page
+        }
+    )
+    start_page_candidates = [candidate["page"] for candidate in tail_heading_candidates]
+    start_page_candidates.extend(anchor.get("page") for anchor in tail_anchor_rows[:4])
+    if not start_page_candidates and tail_bibliography_pages:
+        start_page_candidates.append(tail_bibliography_pages[0])
+    if not start_page_candidates:
+        start_page_candidates.extend(candidate["page"] for candidate in heading_candidates)
+        start_page_candidates.extend(anchor.get("page") for anchor in anchor_rows[:4])
+    valid_start_pages = [
+        int(page)
+        for page in start_page_candidates
+        if isinstance(page, int) and page >= 0
+    ]
+    start_page = min(valid_start_pages) if valid_start_pages else None
+    selected_heading = None
+    heading_pool = tail_heading_candidates or heading_candidates
+    if heading_pool:
+        selected_heading = min(
+            heading_pool,
+            key=lambda item: (
+                abs(int(item["page"]) - int(start_page or item["page"])),
+                item["box"][1],
+                item["box"][0],
+            ),
+        )
+        if start_page is None:
+            start_page = selected_heading["page"]
+
+    artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    grouped_rows: Dict[Tuple[int, str], List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows_with_columns:
+        page = row.get("page")
+        column_id = row.get("column_id") or "left"
+        if not isinstance(page, int) or start_page is None or page < start_page:
+            continue
+        grouped_rows[(page, str(column_id))].append(row)
+
+    anchor_columns_by_page: Dict[int, set[str]] = defaultdict(set)
+    for anchor in anchor_rows:
+        page = anchor.get("page")
+        column_id = str(anchor.get("column_id") or "left")
+        if isinstance(page, int):
+            anchor_columns_by_page[page].add(column_id)
+
+    bibliography_segments: List[Dict[str, Any]] = []
+    section_records: List[Dict[str, Any]] = []
+    candidate_noise_sections: List[Dict[str, Any]] = []
+    for section in sections:
+        page = section.get("page")
+        if not isinstance(page, int):
+            continue
+        record = _serialize_layer_item(section)
+        score = _score_header_noise(section.get("text") or "")
+        record["noise_score"] = round(score, 3)
+        record["kind"] = "heading" if _is_reference_heading_text(section.get("text") or "") else "section"
+        if score >= 0.5 and page >= int(start_page or page):
+            record["candidate_noise"] = True
+            candidate_noise_sections.append(record)
+        else:
+            record["candidate_noise"] = False
+        section_records.append(record)
+
+    for (page, column_id), page_rows in sorted(grouped_rows.items()):
+        ordered_rows = sorted(page_rows, key=_line_sort_key)
+        filtered_rows: List[Dict[str, Any]] = []
+        for row in ordered_rows:
+            text = str(row.get("text") or "").strip()
+            if not text:
+                continue
+            if _is_header_footer_row(row, artifact_info) and not NUMBERED_REFERENCE_LINE_RE.match(text):
+                continue
+            if page == start_page and selected_heading is not None:
+                heading_page = int(selected_heading.get("page") or -1)
+                heading_column = str(selected_heading.get("column_id") or "left")
+                heading_y = float(selected_heading["box"][1])
+                if page == heading_page:
+                    if anchor_columns_by_page.get(page):
+                        if column_id not in anchor_columns_by_page[page]:
+                            continue
+                    elif column_id != heading_column:
+                        continue
+                    if float(row.get("y1") or 0.0) < heading_y:
+                        continue
+            filtered_rows.append(row)
+        if not filtered_rows:
+            continue
+        segment_box = _union_boxes(
+            [row["box"] for row in filtered_rows if _normalize_box(row.get("box"))]
+        )
+        if segment_box is None:
+            continue
+        overlap_with_layer = max(
+            (
+                _overlap_ratio(item["box"], segment_box)
+                for item in bibliography_items
+                if item.get("page") == page and _normalize_box(item.get("box"))
+            ),
+            default=0.0,
+        )
+        confidence = 0.58
+        if anchor_columns_by_page.get(page) and column_id in anchor_columns_by_page[page]:
+            confidence += 0.22
+        if page == start_page and selected_heading is not None:
+            confidence += 0.12
+        if overlap_with_layer >= 0.2:
+            confidence += min(overlap_with_layer, 0.12)
+        bibliography_segments.append(
+            {
+                "page": page,
+                "column_id": column_id,
+                "box": segment_box,
+                "source": "+".join(
+                    part
+                    for part, enabled in (
+                        ("rows", True),
+                        ("sections", page == start_page and selected_heading is not None),
+                        ("bibliography_layer", overlap_with_layer >= 0.2),
+                    )
+                    if enabled
+                ),
+                "confidence": round(min(confidence, 0.98), 3),
+                "row_count": len(filtered_rows),
+                "raw_text": _clean_reference_text(filtered_rows),
+                "row_ids": [str(row.get("id") or "") for row in filtered_rows],
+            }
+        )
+
+    bibliography_anchor = None
+    if bibliography_segments:
+        first_segment = min(
+            bibliography_segments,
+            key=lambda item: (int(item["page"]), float(item["box"][1]), float(item["box"][0])),
+        )
+        bibliography_anchor = (
+            int(first_segment["page"]),
+            float(first_segment["box"][1]),
+        )
+    return {
+        "rows_with_columns": rows_with_columns,
+        "page_splits": page_splits,
+        "heading_candidates": heading_candidates,
+        "selected_heading": selected_heading,
+        "bibliography_segments": bibliography_segments,
+        "bibliography_anchor": bibliography_anchor,
+        "candidate_noise_sections": candidate_noise_sections,
+        "section_records": section_records,
+        "start_page": start_page,
+    }
+
+
+def _row_in_any_segment(
+    row: Dict[str, Any],
+    bibliography_segments: Sequence[Dict[str, Any]],
+) -> bool:
+    page = row.get("page")
+    box = _normalize_box(row.get("box"))
+    if not isinstance(page, int) or box is None:
+        return False
+    for segment in bibliography_segments:
+        if segment.get("page") != page:
+            continue
+        segment_box = _normalize_box(segment.get("box"))
+        if segment_box is None:
+            continue
+        if segment.get("column_id") and row.get("column_id") and segment.get("column_id") != row.get("column_id"):
+            continue
+        if _contains_box(segment_box, box) or _overlap_ratio(segment_box, box) >= 0.6:
+            return True
+    return False
+
+
+def _collect_bibliography_rows_from_segments(
+    rows_with_columns: Sequence[Dict[str, Any]],
+    bibliography_segments: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    selected_rows: List[Dict[str, Any]] = []
+    debug_rows: List[Dict[str, Any]] = []
+    seen: set[Tuple[int, int, str]] = set()
+    for row in rows_with_columns:
+        text = str(row.get("text") or "").strip()
+        page = row.get("page")
+        box = _normalize_box(row.get("box"))
+        anchor_numbers = _extract_inline_anchor_numbers(text)
+        in_zone = _row_in_any_segment(row, bibliography_segments)
+        header_footer = _is_header_footer_row(row, artifact_info)
+        reason = "accepted"
+        included = bool(in_zone and text and box is not None)
+        if not in_zone:
+            included = False
+            reason = "outside_bibliography_segments"
+        elif not text:
+            included = False
+            reason = "empty_text"
+        elif box is None:
+            included = False
+            reason = "invalid_box"
+        elif header_footer and not anchor_numbers:
+            included = False
+            reason = "header_footer_noise"
+
+        debug_rows.append(
+            {
+                "id": str(row.get("id") or ""),
+                "page": page,
+                "box": _serialize_box(box),
+                "text": text,
+                "column_id": row.get("column_id"),
+                "anchor_index": anchor_numbers[0] if anchor_numbers else None,
+                "in_bibliography_zone": in_zone,
+                "included": included,
+                "reason": reason,
+            }
+        )
+        if not included:
+            continue
+
+        dedupe_key = (
+            int(page),
+            int(round(float(box[1]) * 10000)),
+            _normalize_text(text)[:180],
+        )
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        selected_rows.append(
+            {
+                "id": str(row.get("id") or f"row-{page}-{len(selected_rows) + 1}"),
+                "text": text,
+                "page": int(page),
+                "box": box,
+                "x0": float(box[0]),
+                "y0": float(box[1]),
+                "x1": float(box[0]) + float(box[2]),
+                "y1": float(box[1]) + float(box[3]),
+                "width": float(box[2]),
+                "height": float(box[3]),
+                "column_id": row.get("column_id") or "left",
+                "column_split_x": row.get("column_split_x"),
+            }
+        )
+
+    exploded: List[Dict[str, Any]] = []
+    for row in selected_rows:
+        exploded.extend(_split_reference_row_on_anchors(row))
+    return {"rows": exploded, "debug_rows": debug_rows}
+
+
+def _build_paragraph_phase_payload(
+    paragraphs: Sequence[Dict[str, Any]],
+    bibliography_segments: Sequence[Dict[str, Any]],
+    page_splits: Dict[int, Optional[float]],
+    bibliography_rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    paragraph_records: List[Dict[str, Any]] = []
+    for paragraph in paragraphs:
+        page = paragraph.get("page")
+        box = _normalize_box(paragraph.get("box"))
+        if not isinstance(page, int) or box is None:
+            continue
+        if not _row_in_any_segment({"page": page, "box": box}, bibliography_segments):
+            continue
+        split = page_splits.get(page)
+        x_center = float(box[0]) + float(box[2]) / 2.0
+        if split is None:
+            column_id = "left"
+        else:
+            column_id = "left" if x_center < split else "right"
+        paragraph_records.append(
+            {
+                "id": str(paragraph.get("id") or ""),
+                "page": page,
+                "column_id": column_id,
+                "box": _serialize_box(box),
+                "text": str(paragraph.get("text") or ""),
+            }
+        )
+
+    row_text = " ".join(str(row.get("text") or "") for row in bibliography_rows)
+    paragraph_text = " ".join(item["text"] for item in paragraph_records)
+    inconsistencies: List[str] = []
+    if row_text and paragraph_text:
+        row_tokens = _tokenize(row_text)
+        paragraph_tokens = _tokenize(paragraph_text)
+        overlap = len(row_tokens.intersection(paragraph_tokens)) / max(len(row_tokens), 1)
+        if overlap < 0.45:
+            inconsistencies.append("paragraph_text_diverges_from_rows")
+    return {
+        "paragraphs": paragraph_records,
+        "ordered_text": paragraph_text[:4000],
+        "inconsistencies": inconsistencies,
+    }
+
+
+def _index_tokens_by_page(tokens: Sequence[Dict[str, Any]]) -> Dict[int, List[Dict[str, Any]]]:
+    indexed: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for token in tokens:
+        page = token.get("page")
+        box = _normalize_box(token.get("box"))
+        text = str(token.get("text") or "")
+        if not isinstance(page, int) or box is None or not text:
+            continue
+        indexed[page].append({"text": text, "box": box, "page": page})
+    for page in list(indexed.keys()):
+        indexed[page].sort(key=lambda item: (float(item["box"][1]), float(item["box"][0])))
+    return indexed
+
+
+def _tokens_for_row(
+    row: Dict[str, Any],
+    tokens_by_page: Dict[int, List[Dict[str, Any]]],
+) -> List[Dict[str, Any]]:
+    if row.get("split_segment"):
+        return []
+    page = row.get("page")
+    box = _normalize_box(row.get("box"))
+    if not isinstance(page, int) or box is None:
+        return []
+    matched: List[Dict[str, Any]] = []
+    row_y0 = float(box[1])
+    row_y1 = float(box[1]) + float(box[3])
+    for token in tokens_by_page.get(page, []):
+        token_box = token["box"]
+        token_center_x, token_center_y = _box_center(token_box)
+        if row_y0 - 0.004 <= token_center_y <= row_y1 + 0.004 and float(box[0]) - 0.003 <= token_center_x <= float(box[0]) + float(box[2]) + 0.003:
+            matched.append(token)
+    matched.sort(key=lambda item: (float(item["box"][1]), float(item["box"][0])))
+    return matched
+
+
+def _merge_text_fragments(parts: Sequence[str]) -> str:
+    merged = ""
+    for part in parts:
+        chunk = re.sub(r"\s+", " ", str(part or "")).strip()
+        if not chunk:
+            continue
+        if not merged:
+            merged = chunk
+            continue
+        if merged.endswith("-") and chunk[:1].isalnum():
+            merged = f"{merged[:-1]}{chunk}"
+            continue
+        if re.search(r"(https?://|doi\.org/|10\.\d{4,9}/)\Z", merged, flags=re.IGNORECASE):
+            merged = f"{merged}{chunk}"
+            continue
+        merged = f"{merged} {chunk}"
+
+    merged = re.sub(r"\s+([,.;:)\]])", r"\1", merged)
+    merged = re.sub(r"([\[(])\s+", r"\1", merged)
+    merged = re.sub(r"https?\s*:\s*//", "https://", merged, flags=re.IGNORECASE)
+    merged = re.sub(r"doi\.org/\s+", "doi.org/", merged, flags=re.IGNORECASE)
+    merged = re.sub(r"(10\.)\s+(\d)", r"\1\2", merged)
+    merged = re.sub(r"(10\.\d{4,9}/)\s+([A-Za-z0-9])", r"\1\2", merged)
+    return re.sub(r"\s+", " ", merged).strip()
+
+
+def _reconstruct_reference_text_from_rows_and_tokens(
+    rows: Sequence[Dict[str, Any]],
+    tokens_by_page: Dict[int, List[Dict[str, Any]]],
+) -> Dict[str, Any]:
+    raw_text = _clean_reference_text(rows)
+    per_row_before: List[str] = []
+    per_row_after: List[str] = []
+    token_rows_used = 0
+    for row in rows:
+        row_text = str(row.get("text") or "").strip()
+        per_row_before.append(row_text)
+        row_tokens = _tokens_for_row(row, tokens_by_page)
+        if row_tokens:
+            token_rows_used += 1
+            reconstructed = _merge_text_fragments([token["text"] for token in row_tokens])
+            per_row_after.append(reconstructed or row_text)
+        else:
+            per_row_after.append(row_text)
+    token_text = _merge_text_fragments(per_row_after)
+    final_text = token_text or raw_text
+    confidence = round(token_rows_used / max(len(rows), 1), 3)
+    return {
+        "raw_text": raw_text,
+        "final_text": final_text,
+        "token_cleanup_confidence": confidence,
+        "token_rows_used": token_rows_used,
+        "per_row_before": per_row_before,
+        "per_row_after": per_row_after,
+    }
+
+
+def _score_crossref_candidate(
+    reference_text: str,
+    reference_doi: str,
+    candidate: Dict[str, Any],
+) -> float:
+    candidate_doi = _normalize_doi(candidate.get("doi"))
+    if reference_doi and candidate_doi and reference_doi == candidate_doi:
+        return 1.0
+    local_norm = _normalize_text(reference_text)
+    candidate_text = _normalize_text(
+        candidate.get("raw_text")
+        or candidate.get("title")
+        or " ".join(candidate.get("authors") or [])
+    )
+    if not local_norm or not candidate_text:
+        return 0.0
+    local_tokens = _tokenize(local_norm)
+    candidate_tokens = _tokenize(candidate_text)
+    overlap = 0.0
+    if local_tokens and candidate_tokens:
+        overlap = len(local_tokens.intersection(candidate_tokens)) / max(len(candidate_tokens), 1)
+    score = overlap * 0.7
+    title = _normalize_text(candidate.get("title") or "")
+    if title and title in local_norm:
+        score = max(score, 0.88)
+    year = str(candidate.get("year") or "").strip()
+    if year and year in local_norm:
+        score += 0.06
+    return round(max(0.0, min(score, 0.98)), 3)
+
+
+def _match_reference_against_crossref(
+    *,
+    reference_text: str,
+    reference_doi: str,
+    crossref_context: Dict[str, Any],
+) -> Dict[str, Any]:
+    candidates = crossref_context.get("crossref_reference_candidates") or []
+    best_match = None
+    best_score = 0.0
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        score = _score_crossref_candidate(reference_text, reference_doi, candidate)
+        if score > best_score:
+            best_score = score
+            best_match = candidate
+    doi_match_score = 0.0
+    if reference_doi:
+        if best_match and _normalize_doi(best_match.get("doi")) == reference_doi:
+            doi_match_score = 1.0
+        elif bool(crossref_context.get("crossref_available")):
+            try:
+                looked_up = crossref_fetch_work_by_doi(reference_doi, timeout=5)
+            except Exception:  # pragma: no cover - defensive guard
+                looked_up = None
+            if isinstance(looked_up, dict):
+                doi_match_score = 1.0
+                if best_match is None:
+                    best_match = {
+                        "doi": _normalize_doi(looked_up.get("doi")),
+                        "title": str(looked_up.get("title") or "").strip(),
+                        "authors": looked_up.get("authors") or [],
+                        "year": looked_up.get("year"),
+                        "venue": looked_up.get("venue"),
+                        "raw_text": str(looked_up.get("title") or "").strip(),
+                        "source": "crossref_doi_lookup",
+                    }
+                    best_score = max(best_score, 0.82)
+    return {
+        "score": round(best_score, 3),
+        "doi_match_score": round(doi_match_score, 3),
+        "match": best_match,
+    }
+
+
+def _compute_row_continuity_score(rows: Sequence[Dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    if len(rows) == 1:
+        return 0.72
+    penalties = 0.0
+    previous = rows[0]
+    for row in rows[1:]:
+        previous_page = previous.get("page")
+        current_page = row.get("page")
+        if previous_page != current_page:
+            penalties += 0.18
+        previous_y1 = _to_float(previous.get("y1"))
+        current_y0 = _to_float(row.get("y0"))
+        if previous_y1 is not None and current_y0 is not None:
+            gap = float(current_y0) - float(previous_y1)
+            if gap > 0.07:
+                penalties += min(gap * 2.4, 0.26)
+        if previous.get("column_id") != row.get("column_id"):
+            penalties += 0.28
+        previous = row
+    return round(max(0.0, min(1.0, 1.0 - penalties)), 3)
+
+
+def _build_reference_decision(
+    *,
+    expected_index: int,
+    rows: Sequence[Dict[str, Any]],
+    reference_text: str,
+    block_diagnostics: Dict[str, Any],
+    token_reconstruction: Dict[str, Any],
+    crossref_match: Dict[str, Any],
+    bibliography_segments: Sequence[Dict[str, Any]],
+    validation: Dict[str, Any],
+) -> Dict[str, Any]:
+    first_row = rows[0] if rows else {}
+    first_text = str(first_row.get("text") or "")
+    starts_with_anchor = bool(
+        NUMBERED_REFERENCE_LINE_RE.match(first_text) and int(expected_index or 0) > 0
+    )
+    inside_bibliography_zone = bool(
+        rows
+        and all(_row_in_any_segment(row, bibliography_segments) for row in rows)
+    )
+    expected_column = first_row.get("column_id") if rows else None
+    inside_expected_column = bool(
+        rows and all(row.get("column_id") == expected_column for row in rows)
+    )
+    has_nested_anchor = bool(block_diagnostics.get("has_nested_anchor"))
+    header_noise_score = _score_header_noise(reference_text)
+    row_continuity_score = _compute_row_continuity_score(rows)
+    token_cleanup_confidence = float(
+        token_reconstruction.get("token_cleanup_confidence") or 0.0
+    )
+    crossref_match_score = float(crossref_match.get("score") or 0.0)
+    doi_match_score = float(crossref_match.get("doi_match_score") or 0.0)
+    final_score = 0.0
+    final_score += 0.18 if inside_bibliography_zone else -0.35
+    final_score += 0.16 if inside_expected_column else -0.32
+    final_score += 0.18 if starts_with_anchor else -0.25
+    final_score += 0.14 * row_continuity_score
+    final_score += 0.12 * crossref_match_score
+    final_score += 0.08 * doi_match_score
+    final_score += 0.08 * token_cleanup_confidence
+    final_score -= 0.28 * header_noise_score
+    if has_nested_anchor:
+        final_score -= 0.34
+    if not bool(validation.get("accepted")):
+        final_score -= 0.12
+    final_score = round(max(0.0, min(1.0, final_score)), 3)
+
+    if header_noise_score >= 0.95:
+        classification = "rejected_noise"
+        accepted = False
+        reason = "header_noise_detected"
+    elif has_nested_anchor:
+        classification = "fallback_needed"
+        accepted = False
+        reason = "mixed_rows_multiple_references"
+    elif final_score >= 0.72 and token_cleanup_confidence >= 0.25:
+        classification = "accepted_with_cleanup"
+        accepted = True
+        reason = "token_cleanup_applied"
+    elif final_score >= 0.72:
+        classification = "accepted_structured"
+        accepted = True
+        reason = "rows_structure_consistent"
+    elif final_score >= 0.5:
+        classification = "fallback_needed"
+        accepted = False
+        reason = "low_structural_score"
+    else:
+        classification = "rejected_noise"
+        accepted = False
+        reason = "insufficient_reference_evidence"
+
+    if validation.get("reason") and accepted:
+        reason = validation.get("reason")
+    if not validation.get("accepted") and validation.get("reason"):
+        accepted = False
+        if classification == "accepted_structured":
+            classification = "fallback_needed"
+        reason = str(validation.get("reason"))
+    return {
+        "inside_bibliography_zone": inside_bibliography_zone,
+        "inside_expected_column": inside_expected_column,
+        "starts_with_anchor": starts_with_anchor,
+        "expected_anchor_index": expected_index,
+        "has_nested_anchor": has_nested_anchor,
+        "header_noise_score": round(header_noise_score, 3),
+        "crossref_match_score": round(crossref_match_score, 3),
+        "doi_match_score": round(doi_match_score, 3),
+        "row_continuity_score": round(row_continuity_score, 3),
+        "token_cleanup_confidence": round(token_cleanup_confidence, 3),
+        "final_score": final_score,
+        "accepted": accepted,
+        "classification": classification,
+        "reason": reason,
+    }
 
 
 def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
@@ -743,6 +1739,8 @@ def _clean_reference_text(lines: Sequence[Dict[str, Any]]) -> str:
         text = re.sub(r"\s+", " ", str(line.get("text") or "")).strip()
         if not text:
             continue
+        if _is_reference_noise_text(text):
+            continue
         if parts and parts[-1].endswith("-") and text and text[0].islower():
             parts[-1] = f"{parts[-1][:-1]}{text}"
         else:
@@ -751,6 +1749,11 @@ def _clean_reference_text(lines: Sequence[Dict[str, Any]]) -> str:
     merged = " ".join(parts)
     merged = re.sub(r"\s+([,.;:)\]])", r"\1", merged)
     merged = re.sub(r"([\[(])\s+", r"\1", merged)
+    merged = re.sub(r"https?\s*:\s*//", "https://", merged, flags=re.IGNORECASE)
+    merged = re.sub(r"doi\.org/\s+", "doi.org/", merged, flags=re.IGNORECASE)
+    merged = re.sub(r"(doi\.org/10\.)\s+(\d)", r"\1\2", merged, flags=re.IGNORECASE)
+    merged = re.sub(r"(10\.\d{4,9}/)\s+([A-Za-z0-9])", r"\1\2", merged)
+    merged = re.sub(r"(10\.\d{4,9}/[^\s]+)\s+([A-Za-z0-9])", r"\1\2", merged)
     return re.sub(r"\s+", " ", merged).strip()
 
 
@@ -794,6 +1797,8 @@ def _is_valid_reference_block(
 
     if len(text) < 24:
         return False
+    if _is_reference_noise_text(text):
+        return False
     if _is_reference_header_like(text):
         return False
 
@@ -815,6 +1820,14 @@ def _default_reference_validation(
     text: str,
     expected_index: int,
 ) -> Dict[str, Any]:
+    if _is_reference_noise_text(text):
+        return {
+            "match_score": 0.0,
+            "mixed_reference_score": 1.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": "contains_header_footer_noise",
+        }
     anchor_mentions = [
         int(match.group(1))
         for match in NUMBERED_ANCHOR_RE.finditer(text)
@@ -841,6 +1854,14 @@ def _build_reference_validation(
     metadata: Optional[Dict[str, Any]],
     metadata_by_index: Dict[int, Dict[str, Any]],
 ) -> Dict[str, Any]:
+    if _is_reference_noise_text(text):
+        return {
+            "match_score": 0.0,
+            "mixed_reference_score": 1.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": "contains_header_footer_noise",
+        }
     if not isinstance(metadata, dict):
         return _default_reference_validation(text=text, expected_index=expected_index)
     metadata_signals = {
@@ -853,17 +1874,27 @@ def _build_reference_validation(
     has_metadata = any(bool(value) for value in metadata_signals.values())
     if not has_metadata:
         return _default_reference_validation(text=text, expected_index=expected_index)
+    candidate_doi = _normalize_doi(metadata.get("doi"))
+    has_rich_metadata = any(
+        bool(metadata_signals[key]) for key in ("title", "authors", "year", "venue")
+    )
+    if candidate_doi and len(candidate_doi) < 12 and not has_rich_metadata:
+        return _default_reference_validation(text=text, expected_index=expected_index)
     other_candidates = [
         (idx, candidate)
         for idx, candidate in metadata_by_index.items()
         if idx != expected_index and isinstance(candidate, dict)
     ]
-    return validate_reference_against_metadata(
+    result = validate_reference_against_metadata(
         text,
         metadata,
         expected_index=expected_index,
         other_metadata_candidates=other_candidates,
     )
+    if _is_reference_noise_text(text):
+        result["accepted"] = False
+        result["reason"] = "contains_header_footer_noise"
+    return result
 
 
 def build_reference_rows_between_anchors(
@@ -872,7 +1903,8 @@ def build_reference_rows_between_anchors(
     current_anchor: Dict[str, Any],
     next_anchor: Optional[Dict[str, Any]],
     artifact_info: Dict[str, Any],
-) -> List[Dict[str, Any]]:
+    include_diagnostics: bool = False,
+) -> Any:
     start = int(current_anchor.get("position", 0))
     end = len(ordered_rows)
     if next_anchor is not None:
@@ -880,19 +1912,84 @@ def build_reference_rows_between_anchors(
         if candidate_end > start:
             end = candidate_end
     if start < 0 or start >= len(ordered_rows):
-        return []
+        empty = {
+            "rows": [],
+            "row_decisions": [],
+            "cut_reasons": ["invalid_anchor_position"],
+            "has_nested_anchor": False,
+            "nested_anchor_indices": [],
+        }
+        return empty if include_diagnostics else []
 
+    expected_index = int(current_anchor.get("index") or 0)
     expected_column = current_anchor.get("column_id")
+    anchor_page = current_anchor.get("page")
+    anchor_x0 = _to_float((current_anchor.get("row") or current_anchor).get("x0"))
     selected_rows: List[Dict[str, Any]] = []
+    row_decisions: List[Dict[str, Any]] = []
+    cut_reasons: List[str] = []
+    nested_anchor_indices: List[int] = []
     for position in range(start, min(end, len(ordered_rows))):
         row = ordered_rows[position]
         text = str(row.get("text") or "").strip()
         if not text:
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "column_id": row.get("column_id"),
+                    "text": text,
+                    "included": False,
+                    "reason": "empty_text",
+                }
+            )
             continue
         is_anchor_row = position == start
+        inline_anchor_numbers = _extract_inline_anchor_numbers(text)
+        foreign_inline_anchors = [
+            value for value in inline_anchor_numbers if value != expected_index
+        ]
+        if foreign_inline_anchors and not is_anchor_row:
+            nested_anchor_indices.extend(foreign_inline_anchors)
+            cut_reasons.append(f"nested_anchor:{foreign_inline_anchors[0]}")
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "column_id": row.get("column_id"),
+                    "text": text,
+                    "included": False,
+                    "reason": "nested_anchor_detected",
+                    "inline_anchor_numbers": inline_anchor_numbers,
+                }
+            )
+            break
         if not is_anchor_row and NUMBERED_REFERENCE_LINE_RE.match(text):
+            cut_reasons.append("next_anchor_row")
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "column_id": row.get("column_id"),
+                    "text": text,
+                    "included": False,
+                    "reason": "next_anchor_row",
+                    "inline_anchor_numbers": inline_anchor_numbers,
+                }
+            )
             break
         if not is_anchor_row and _is_header_footer_row(row, artifact_info):
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "column_id": row.get("column_id"),
+                    "text": text,
+                    "included": False,
+                    "reason": "header_footer_noise",
+                    "inline_anchor_numbers": inline_anchor_numbers,
+                }
+            )
             continue
 
         row_column = row.get("column_id")
@@ -902,7 +1999,43 @@ def build_reference_rows_between_anchors(
             and row_column in {"left", "right"}
             and row_column != expected_column
         ):
+            cut_reasons.append("column_change")
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "column_id": row_column,
+                    "text": text,
+                    "included": False,
+                    "reason": "column_change",
+                    "inline_anchor_numbers": inline_anchor_numbers,
+                }
+            )
             break
+
+        if (
+            not is_anchor_row
+            and isinstance(anchor_page, int)
+            and row.get("page") == anchor_page
+        ):
+            row_x0 = _to_float(row.get("x0"))
+            if (
+                anchor_x0 is not None
+                and row_x0 is not None
+                and abs(float(row_x0) - float(anchor_x0)) > 0.18
+            ):
+                row_decisions.append(
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "page": row.get("page"),
+                        "column_id": row_column,
+                        "text": text,
+                        "included": False,
+                        "reason": "unexpected_horizontal_shift",
+                        "inline_anchor_numbers": inline_anchor_numbers,
+                    }
+                )
+                continue
 
         if selected_rows:
             previous = selected_rows[-1]
@@ -910,6 +2043,7 @@ def build_reference_rows_between_anchors(
             current_page = row.get("page")
             if isinstance(previous_page, int) and isinstance(current_page, int):
                 if current_page < previous_page:
+                    cut_reasons.append("page_order_reversed")
                     break
                 if current_page == previous_page:
                     previous_y1 = _to_float(previous.get("y1"))
@@ -917,23 +2051,62 @@ def build_reference_rows_between_anchors(
                     if previous_y1 is not None and current_y0 is not None:
                         gap = float(current_y0) - float(previous_y1)
                         if gap > 0.085:
+                            cut_reasons.append(f"vertical_gap:{round(gap, 4)}")
+                            row_decisions.append(
+                                {
+                                    "row_id": str(row.get("id") or ""),
+                                    "page": current_page,
+                                    "column_id": row_column,
+                                    "text": text,
+                                    "included": False,
+                                    "reason": "vertical_gap",
+                                    "gap": round(gap, 4),
+                                    "inline_anchor_numbers": inline_anchor_numbers,
+                                }
+                            )
                             break
                 elif current_page - previous_page > 1:
+                    cut_reasons.append("page_jump")
                     break
                 elif (_to_float(row.get("y0")) or 1.0) > 0.36:
+                    cut_reasons.append("late_page_continuation")
                     break
 
         selected_rows.append(row)
+        row_decisions.append(
+            {
+                "row_id": str(row.get("id") or ""),
+                "page": row.get("page"),
+                "column_id": row_column,
+                "text": text,
+                "included": True,
+                "reason": "selected",
+                "inline_anchor_numbers": inline_anchor_numbers,
+            }
+        )
         if len(selected_rows) >= 14:
+            cut_reasons.append("row_limit")
             break
 
-    return selected_rows
+    diagnostics = {
+        "rows": selected_rows,
+        "row_decisions": row_decisions,
+        "cut_reasons": cut_reasons,
+        "has_nested_anchor": bool(nested_anchor_indices),
+        "nested_anchor_indices": sorted(set(nested_anchor_indices)),
+    }
+    return diagnostics if include_diagnostics else selected_rows
 
 
 def build_references_from_rows(
     rows: Sequence[Dict[str, Any]],
     *,
     metadata_by_index: Optional[Dict[int, Dict[str, Any]]] = None,
+    bibliography_segments: Optional[Sequence[Dict[str, Any]]] = None,
+    token_items: Optional[Sequence[Dict[str, Any]]] = None,
+    crossref_context: Optional[Dict[str, Any]] = None,
+    row_debug_collector: Optional[List[Dict[str, Any]]] = None,
+    token_debug_collector: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[int, Dict[str, Any]]:
     ordered_rows = build_bibliography_reading_flow(rows)
     if len(ordered_rows) < 4:
@@ -954,6 +2127,9 @@ def build_references_from_rows(
     if len(first_anchor_by_index) < 2:
         return {}
 
+    tokens_by_page = _index_tokens_by_page(token_items or [])
+    bibliography_segments = list(bibliography_segments or [])
+    crossref_context = crossref_context or {}
     parsed: Dict[int, Dict[str, Any]] = {}
     ordered_indices = sorted(first_anchor_by_index.keys())
     all_anchor_positions = sorted(
@@ -973,15 +2149,21 @@ def build_references_from_rows(
                     next_anchor = {"position": position}
                     break
 
-        block_rows = build_reference_rows_between_anchors(
+        block_result = build_reference_rows_between_anchors(
             ordered_rows=ordered_rows,
             current_anchor=anchor,
             next_anchor=next_anchor,
             artifact_info=artifact_info,
+            include_diagnostics=True,
         )
+        block_rows = block_result.get("rows") or []
         if not block_rows:
             continue
-        block_text = _clean_reference_text(block_rows)
+        token_reconstruction = _reconstruct_reference_text_from_rows_and_tokens(
+            block_rows,
+            tokens_by_page,
+        )
+        block_text = str(token_reconstruction.get("final_text") or "").strip()
         if not _is_valid_reference_block(
             expected_index=index,
             lines=block_rows,
@@ -997,18 +2179,97 @@ def build_references_from_rows(
             metadata=metadata_by_index.get(index),
             metadata_by_index=metadata_by_index,
         )
+        crossref_match = _match_reference_against_crossref(
+            reference_text=block_text,
+            reference_doi=_extract_doi(block_text),
+            crossref_context=crossref_context,
+        )
+        decision = _build_reference_decision(
+            expected_index=index,
+            rows=block_rows,
+            reference_text=block_text,
+            block_diagnostics=block_result,
+            token_reconstruction=token_reconstruction,
+            crossref_match=crossref_match,
+            bibliography_segments=bibliography_segments,
+            validation=local_validation,
+        )
+        local_validation = {
+            "match_score": round(
+                max(
+                    float(local_validation.get("match_score") or 0.0),
+                    float(crossref_match.get("score") or 0.0),
+                    float(crossref_match.get("doi_match_score") or 0.0),
+                ),
+                3,
+            ),
+            "mixed_reference_score": round(
+                max(
+                    float(local_validation.get("mixed_reference_score") or 0.0),
+                    1.0 if decision["has_nested_anchor"] else 0.0,
+                ),
+                3,
+            ),
+            "has_nested_anchor": bool(decision["has_nested_anchor"]),
+            "accepted": bool(decision["accepted"]),
+            "reason": None if decision["accepted"] else decision["reason"],
+        }
+        structure_source = (
+            "rows_tokens"
+            if float(token_reconstruction.get("token_cleanup_confidence") or 0.0) >= 0.25
+            else "rows"
+        )
         parsed[index] = {
             "text": block_text,
+            "text_raw": token_reconstruction.get("raw_text"),
             "page": block_rows[0].get("page"),
             "box": union_box,
             "rows": block_rows,
             "local_row_count": len(block_rows),
             "local_anchor_detected": True,
-            "structure_source": "rows",
+            "structure_source": structure_source,
             "reference_validation": local_validation,
             "column_id": anchor.get("column_id"),
             "anchor_position": start_position,
+            "scores": decision,
+            "crossref_match": crossref_match,
+            "token_reconstruction": {
+                "token_cleanup_confidence": token_reconstruction.get(
+                    "token_cleanup_confidence"
+                ),
+                "token_rows_used": token_reconstruction.get("token_rows_used"),
+            },
+            "anomalies": {
+                "cut_reasons": block_result.get("cut_reasons") or [],
+                "nested_anchor_indices": block_result.get("nested_anchor_indices")
+                or [],
+            },
         }
+        if isinstance(row_debug_collector, list):
+            row_debug_collector.append(
+                {
+                    "reference_index": index,
+                    "row_decisions": block_result.get("row_decisions") or [],
+                    "cut_reasons": block_result.get("cut_reasons") or [],
+                    "nested_anchor_indices": block_result.get("nested_anchor_indices")
+                    or [],
+                    "scores": decision,
+                }
+            )
+        if isinstance(token_debug_collector, list):
+            token_debug_collector.append(
+                {
+                    "reference_index": index,
+                    "before": token_reconstruction.get("raw_text"),
+                    "after": token_reconstruction.get("final_text"),
+                    "per_row_before": token_reconstruction.get("per_row_before") or [],
+                    "per_row_after": token_reconstruction.get("per_row_after") or [],
+                    "token_cleanup_confidence": token_reconstruction.get(
+                        "token_cleanup_confidence"
+                    ),
+                    "doi_after_cleanup": _extract_doi(block_text) or None,
+                }
+            )
     return parsed
 
 
@@ -1313,6 +2574,10 @@ def build_references_data(
     snippets: Sequence[Dict[str, Any]],
     layers: Dict[str, Any],
     references_numbered: bool = False,
+    article_doi: str = "",
+    source_filename: str = "",
+    engine_used: str = "",
+    debug_reference_detection: bool = False,
 ) -> Dict[str, Any]:
     logger.info(f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}")
 
@@ -1320,29 +2585,55 @@ def build_references_data(
     token_items = _layer_items(layers, "tokens")
     row_items = _layer_items(layers, "rows")
     paragraph_items = _layer_items(layers, "paragraphs")
+    section_items = _layer_items(layers, "sections")
 
-    logger.debug(f"Capas cargadas: {len(bibliography_items)} bibliographies, {len(token_items)} tokens, {len(row_items)} rows, {len(paragraph_items)} paragraphs")
-
-    bibliography_anchor: Optional[Tuple[int, float]] = None
-    if bibliography_items:
-        first_bibliography_item = min(
-            bibliography_items,
-            key=lambda item: (int(item.get("page", 10**6)), float(item["box"][1])),
-        )
-        bibliography_anchor = (
-            int(first_bibliography_item.get("page", 0)),
-            float(first_bibliography_item["box"][1]),
-        )
-        logger.info(f"Detección de bibliografía: página inicio {bibliography_anchor[0] + 1}")
-    else:
-        logger.warning("No se encontró capa 'bibliographies' (sin anchor de inicio).")
-    bibliography_lines = _collect_bibliography_lines(
-        row_items,
-        bibliography_items,
-        bibliography_anchor,
+    logger.debug(
+        "Capas cargadas: %s bibliographies, %s tokens, %s rows, %s paragraphs, %s sections",
+        len(bibliography_items),
+        len(token_items),
+        len(row_items),
+        len(paragraph_items),
+        len(section_items),
     )
+
+    bibliography_phase = _build_bibliography_segments(
+        rows=row_items,
+        sections=section_items,
+        bibliography_items=bibliography_items,
+    )
+    bibliography_segments = bibliography_phase.get("bibliography_segments") or []
+    bibliography_anchor = bibliography_phase.get("bibliography_anchor")
+    bibliography_rows_phase = _collect_bibliography_rows_from_segments(
+        bibliography_phase.get("rows_with_columns") or [],
+        bibliography_segments,
+    )
+    bibliography_lines = bibliography_rows_phase.get("rows") or []
+    paragraph_phase = _build_paragraph_phase_payload(
+        paragraph_items,
+        bibliography_segments,
+        bibliography_phase.get("page_splits") or {},
+        bibliography_lines,
+    )
+    bibliography_start_page_zero_based = (
+        bibliography_anchor[0] if bibliography_anchor is not None else None
+    )
+    crossref_context = _prepare_crossref_context(
+        article_doi=article_doi,
+        row_items=row_items,
+        bibliography_start_page=bibliography_start_page_zero_based,
+    )
+    if bibliography_anchor is not None:
+        logger.info(
+            "Detección de bibliografía: página inicio %s",
+            bibliography_anchor[0] + 1,
+        )
+    else:
+        logger.warning("No se detectó un anchor bibliográfico estable.")
+
     line_based_references: Dict[int, Dict[str, Any]] = {}
     metadata_by_index: Dict[int, Dict[str, Any]] = {}
+    row_phase_details: List[Dict[str, Any]] = []
+    token_phase_details: List[Dict[str, Any]] = []
     for ref in references:
         if not isinstance(ref, dict):
             continue
@@ -1358,6 +2649,11 @@ def build_references_data(
         candidate_row_references = build_references_from_rows(
             bibliography_lines,
             metadata_by_index=metadata_by_index,
+            bibliography_segments=bibliography_segments,
+            token_items=token_items,
+            crossref_context=crossref_context,
+            row_debug_collector=row_phase_details,
+            token_debug_collector=token_phase_details,
         )
         if len(candidate_row_references) >= min_required:
             line_based_references = candidate_row_references
@@ -1373,6 +2669,7 @@ def build_references_data(
     references_by_index: Dict[int, str] = {}
     references_by_doi: Dict[str, str] = {}
     used_bibliography_ids: set[str] = set()
+    fallback_geometry_candidates = bibliography_segments or bibliography_items
 
     for fallback_idx, ref in enumerate(references, start=1):
         if not isinstance(ref, dict):
@@ -1399,11 +2696,38 @@ def build_references_data(
             "accepted": False,
             "reason": "fallback_without_rows_structure",
         }
+        decision_scores: Dict[str, Any] = {
+            "inside_bibliography_zone": False,
+            "inside_expected_column": False,
+            "starts_with_anchor": False,
+            "expected_anchor_index": idx,
+            "has_nested_anchor": False,
+            "header_noise_score": round(_score_header_noise(raw_text), 3),
+            "crossref_match_score": 0.0,
+            "doi_match_score": 0.0,
+            "row_continuity_score": 0.0,
+            "token_cleanup_confidence": 0.0,
+            "final_score": 0.0,
+            "accepted": False,
+            "classification": "fallback_needed",
+            "reason": "fallback_without_rows_structure",
+        }
+        crossref_match_payload: Dict[str, Any] = {"score": 0.0, "doi_match_score": 0.0, "match": None}
+        token_payload: Dict[str, Any] = {
+            "token_cleanup_confidence": 0.0,
+            "token_rows_used": 0,
+        }
+        anomalies: Dict[str, Any] = {"cut_reasons": [], "nested_anchor_indices": []}
+        text_candidate_raw = raw_text
         if line_reference is not None:
             line_page = line_reference.get("page")
             page = line_page if isinstance(line_page, int) and line_page >= 0 else None
             box = _normalize_box(line_reference.get("box"))
             text = str(line_reference.get("text") or raw_text)
+            text_candidate_raw = str(line_reference.get("text_raw") or raw_text)
+            doi_from_text = _extract_doi(text)
+            if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
+                doi_value = doi_from_text
             structure_source = str(line_reference.get("structure_source") or "rows")
             local_row_count = int(
                 line_reference.get("local_row_count")
@@ -1420,6 +2744,14 @@ def build_references_data(
                     "accepted": bool(candidate_validation.get("accepted")),
                     "reason": candidate_validation.get("reason"),
                 }
+            if isinstance(line_reference.get("scores"), dict):
+                decision_scores = dict(line_reference.get("scores") or {})
+            if isinstance(line_reference.get("crossref_match"), dict):
+                crossref_match_payload = dict(line_reference.get("crossref_match") or {})
+            if isinstance(line_reference.get("token_reconstruction"), dict):
+                token_payload = dict(line_reference.get("token_reconstruction") or {})
+            if isinstance(line_reference.get("anomalies"), dict):
+                anomalies = dict(line_reference.get("anomalies") or {})
             if TRACE_REFERENCES:
                 logger.debug(
                     f"Referencia {ref_id} reconstruida desde rows "
@@ -1428,8 +2760,9 @@ def build_references_data(
         else:
             best_candidate: Optional[Dict[str, Any]] = None
             best_score = 0.0
-            for candidate in bibliography_items:
-                if candidate["id"] in used_bibliography_ids:
+            for candidate in fallback_geometry_candidates:
+                candidate_id = str(candidate.get("id") or candidate.get("page") or "")
+                if candidate_id in used_bibliography_ids:
                     continue
                 score = _reference_match_score(
                     raw_text,
@@ -1442,11 +2775,23 @@ def build_references_data(
                     best_candidate = candidate
 
             if best_candidate and best_score >= 0.35:
-                used_bibliography_ids.add(best_candidate["id"])
+                candidate_id = str(best_candidate.get("id") or best_candidate.get("page") or "")
+                if candidate_id:
+                    used_bibliography_ids.add(candidate_id)
                 page = best_candidate["page"]
-                box = best_candidate["box"]
+                box = _normalize_box(best_candidate.get("box"))
                 text = str(best_candidate.get("text") or raw_text)
+                doi_from_text = _extract_doi(text)
+                if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
+                    doi_value = doi_from_text
                 structure_source = "bibliography_box_fallback"
+                decision_scores.update(
+                    {
+                        "inside_bibliography_zone": True,
+                        "final_score": round(min(best_score / 5.0, 0.52), 3),
+                        "reason": "bibliography_box_fallback",
+                    }
+                )
                 if TRACE_REFERENCES:
                     logger.debug(
                         f"Referencia {ref_id} emparejada con caja de bibliografía "
@@ -1456,11 +2801,30 @@ def build_references_data(
                 page = None
                 box = None
                 text = raw_text
+                doi_from_text = _extract_doi(text)
+                if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
+                    doi_value = doi_from_text
                 structure_source = "raw_reference_fallback"
+                decision_scores.update({"reason": "raw_reference_fallback"})
                 if TRACE_REFERENCES:
                     logger.debug(
                         f"Referencia {ref_id} sin caja de bibliografía emparejada."
                     )
+
+        if text:
+            crossref_match_payload = _match_reference_against_crossref(
+                reference_text=text,
+                reference_doi=doi_value,
+                crossref_context=crossref_context,
+            )
+            decision_scores["crossref_match_score"] = round(
+                float(crossref_match_payload.get("score") or 0.0),
+                3,
+            )
+            decision_scores["doi_match_score"] = round(
+                float(crossref_match_payload.get("doi_match_score") or 0.0),
+                3,
+            )
 
         reference_entries.append(
             {
@@ -1468,6 +2832,7 @@ def build_references_data(
                 "ref_id": ref_id,
                 "index": idx,
                 "text": text,
+                "text_candidate_raw": text_candidate_raw,
                 "page": page,
                 "box": box,
                 "doi": doi_value or None,
@@ -1475,12 +2840,17 @@ def build_references_data(
                 "local_row_count": max(0, local_row_count),
                 "local_anchor_detected": bool(local_anchor_detected),
                 "reference_validation": reference_validation,
+                "scores": decision_scores,
+                "crossref_match": crossref_match_payload,
+                "token_reconstruction": token_payload,
+                "anomalies": anomalies,
             }
         )
 
     contexts_seen: set[Tuple[str, int, str]] = set()
     seen_mentions: set[Tuple[Any, ...]] = set()
     mention_text_key_max_len = 220
+    bibliography_zone_items = bibliography_segments or bibliography_items
 
     for snippet_idx, snippet in enumerate(snippets, start=1):
         if not isinstance(snippet, dict):
@@ -1533,7 +2903,7 @@ def build_references_data(
             continue
         if is_inside_bibliography(
             {"page": mention_page, "box": mention_box},
-            bibliography_items,
+            bibliography_zone_items,
         ):
             if TRACE_REFERENCES:
                 logger.debug(f"Descartando snippet {snippet_idx}: está dentro de la bibliografía.")
@@ -1623,6 +2993,165 @@ def build_references_data(
     bibliography_start_page = (
         bibliography_anchor[0] + 1 if bibliography_anchor is not None else None
     )
+    anchors_out_of_sequence: List[Dict[str, int]] = []
+    sorted_reference_indices = [
+        int(entry.get("index"))
+        for entry in reference_entries
+        if isinstance(entry.get("index"), int)
+    ]
+    for previous, current in zip(sorted_reference_indices, sorted_reference_indices[1:]):
+        if current != previous + 1:
+            anchors_out_of_sequence.append({"expected": previous + 1, "actual": current})
+
+    references_mixed = [
+        str(entry.get("ref_id") or "")
+        for entry in reference_entries
+        if bool((entry.get("reference_validation") or {}).get("has_nested_anchor"))
+    ]
+    crossed_columns = [
+        str(entry.get("ref_id") or "")
+        for entry in reference_entries
+        if isinstance(entry.get("scores"), dict)
+        and entry["scores"].get("inside_expected_column") is False
+    ]
+    truncated_references = [
+        str(entry.get("ref_id") or "")
+        for entry in reference_entries
+        if str(entry.get("text") or "").rstrip().endswith("-")
+        or len(str(entry.get("text") or "").strip()) < 40
+    ]
+    tokens_in_bibliography = [
+        token
+        for token in token_items
+        if _row_in_any_segment(token, bibliography_zone_items)
+    ]
+    repeated_headers = sorted(
+        _build_repeating_page_artifacts(bibliography_phase.get("rows_with_columns") or [])
+        .get("repeated_text_keys", set())
+    )
+    bibliography_noise_candidates = [
+        row
+        for row in (bibliography_rows_phase.get("debug_rows") or [])
+        if not row.get("included")
+        and row.get("reason") in {"header_footer_noise", "outside_bibliography_segments"}
+    ]
+    global_alerts = {
+        "repeated_headers_detected": repeated_headers,
+        "view_publication_stats_detected": any(
+            "view publication stats" in _normalize_text(str(row.get("text") or ""))
+            for row in bibliography_rows_phase.get("debug_rows") or []
+        ),
+        "body_text_mixed_in_bibliography": [
+            {
+                "page": row.get("page"),
+                "text": str(row.get("text") or "")[:240],
+                "reason": row.get("reason"),
+            }
+            for row in bibliography_noise_candidates[:12]
+        ],
+        "anchors_out_of_sequence": anchors_out_of_sequence,
+        "references_truncated": truncated_references,
+        "references_mixed": references_mixed,
+        "columns_crossed": crossed_columns,
+    }
+
+    debug_payload = None
+    if debug_reference_detection:
+        debug_payload = {
+            "metadata": {
+                "file_name": str(source_filename or ""),
+                "article_doi": crossref_context.get("article_doi"),
+                "engine_used": str(engine_used or ""),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "debug_mode": True,
+                "pipeline_version": REFERENCE_PIPELINE_VERSION,
+                "bibliography_start_page": bibliography_start_page,
+                "references_total_detected": len(reference_entries),
+                "total_rows_in_bibliography": len(bibliography_lines),
+                "total_tokens_in_bibliography": len(tokens_in_bibliography),
+                "crossref_available": bool(crossref_context.get("crossref_available")),
+                "crossref_reference_count": int(
+                    crossref_context.get("crossref_reference_count") or 0
+                ),
+            },
+            "phases": {
+                "crossref": {
+                    "doi_detected": crossref_context.get("article_doi"),
+                    "queried": bool(crossref_context.get("crossref_queried")),
+                    "crossref_available": bool(crossref_context.get("crossref_available")),
+                    "article_metadata": crossref_context.get("crossref_article_metadata"),
+                    "reference_candidates": crossref_context.get("crossref_reference_candidates")
+                    or [],
+                    "reference_count": int(
+                        crossref_context.get("crossref_reference_count") or 0
+                    ),
+                    "matching_auxiliary": [
+                        {
+                            "ref_id": entry.get("ref_id"),
+                            "index": entry.get("index"),
+                            "crossref_match_score": (
+                                entry.get("scores") or {}
+                            ).get("crossref_match_score"),
+                            "doi_match_score": (
+                                entry.get("scores") or {}
+                            ).get("doi_match_score"),
+                            "match": (
+                                entry.get("crossref_match") or {}
+                            ).get("match"),
+                        }
+                        for entry in reference_entries
+                    ],
+                },
+                "bibliography_zone": {
+                    "segments": [
+                        {
+                            "page": segment.get("page"),
+                            "column_id": segment.get("column_id"),
+                            "box": _serialize_box(segment.get("box")),
+                            "source": segment.get("source"),
+                            "confidence": segment.get("confidence"),
+                            "raw_text": segment.get("raw_text"),
+                            "accepted_because": segment.get("source"),
+                        }
+                        for segment in bibliography_segments
+                    ],
+                    "layer_boxes": [
+                        _serialize_layer_item(item) for item in bibliography_items
+                    ],
+                },
+                "sections": {
+                    "relevant_sections": bibliography_phase.get("section_records") or [],
+                    "selected_start": (
+                        {
+                            "page": bibliography_phase["selected_heading"].get("page"),
+                            "column_id": bibliography_phase["selected_heading"].get(
+                                "column_id"
+                            ),
+                            "text": bibliography_phase["selected_heading"].get("text"),
+                            "box": _serialize_box(
+                                bibliography_phase["selected_heading"].get("box")
+                            ),
+                            "source": bibliography_phase["selected_heading"].get("source"),
+                        }
+                        if isinstance(bibliography_phase.get("selected_heading"), dict)
+                        else None
+                    ),
+                    "candidate_noise": bibliography_phase.get("candidate_noise_sections")
+                    or [],
+                },
+                "paragraphs": paragraph_phase,
+                "rows": {
+                    "rows_considered": bibliography_rows_phase.get("debug_rows") or [],
+                    "reference_blocks": row_phase_details,
+                },
+                "tokens": {
+                    "tokens_total_in_bibliography": len(tokens_in_bibliography),
+                    "references": token_phase_details,
+                },
+            },
+            "references": [dict(entry) for entry in reference_entries],
+            "alerts": global_alerts,
+        }
 
     logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
 
@@ -1633,4 +3162,79 @@ def build_references_data(
         "citation_style": "numeric" if references_numbered else "non_numeric",
         "max_reference_index": max_reference_index,
         "bibliography_start_page": bibliography_start_page,
+        "bibliography_segments": bibliography_segments,
+        "crossref_available": bool(crossref_context.get("crossref_available")),
+        "article_doi": crossref_context.get("article_doi"),
+        "crossref_article_metadata": crossref_context.get("crossref_article_metadata"),
+        "crossref_reference_candidates": crossref_context.get("crossref_reference_candidates")
+        or [],
+        "crossref_reference_count": int(crossref_context.get("crossref_reference_count") or 0),
+        "global_alerts": global_alerts,
+        "debug_payload": debug_payload,
     }
+
+
+def finalize_reference_detection_debug_payload(
+    debug_payload: Optional[Dict[str, Any]],
+    *,
+    references: Sequence[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(debug_payload, dict):
+        return None
+    finalized_references: List[Dict[str, Any]] = []
+    for entry in references:
+        if not isinstance(entry, dict):
+            continue
+        scores = entry.get("scores") if isinstance(entry.get("scores"), dict) else {}
+        validation = (
+            entry.get("reference_validation")
+            if isinstance(entry.get("reference_validation"), dict)
+            else {}
+        )
+        crossref_match = (
+            entry.get("crossref_match")
+            if isinstance(entry.get("crossref_match"), dict)
+            else {}
+        )
+        finalized_references.append(
+            {
+                "ref_id": entry.get("ref_id"),
+                "index": entry.get("index"),
+                "source": entry.get("structure_source"),
+                "structure_source": entry.get("structure_source"),
+                "candidate_text_raw": entry.get("text_candidate_raw") or entry.get("text"),
+                "final_text": entry.get("text"),
+                "doi_detected": entry.get("doi"),
+                "doi_enriched": entry.get("doi"),
+                "match_with_crossref": crossref_match.get("match"),
+                "accepted": bool(validation.get("accepted")),
+                "rejected": not bool(validation.get("accepted")),
+                "reason": validation.get("reason") or scores.get("reason"),
+                "scores": scores,
+                "anomalies": entry.get("anomalies") if isinstance(entry.get("anomalies"), dict) else {},
+                "fallback_used": "fallback" in str(entry.get("structure_source") or ""),
+            }
+        )
+    debug_payload["references"] = finalized_references
+    debug_payload.setdefault("metadata", {})
+    debug_payload["metadata"]["references_total_detected"] = len(finalized_references)
+    return debug_payload
+
+
+def write_reference_detection_debug_json(
+    debug_payload: Optional[Dict[str, Any]],
+    *,
+    source_filename: str,
+) -> Optional[str]:
+    if not isinstance(debug_payload, dict):
+        return None
+    safe_base_name = _sanitize_filename_component(
+        Path(str(source_filename or "reference_debug.pdf")).stem
+    )
+    REFERENCE_DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = REFERENCE_DEBUG_DIR / f"{safe_base_name}{REFERENCE_DEBUG_FILE_SUFFIX}"
+    output_path.write_text(
+        json.dumps(debug_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return str(output_path)

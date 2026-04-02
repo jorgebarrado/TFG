@@ -29,7 +29,11 @@ from .services.pdf_citation_analyzer import (
 )
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.papermage_extractor import ContextHit, extract_pdf_data
-from .services.references_data import build_references_data
+from .services.references_data import (
+    build_references_data,
+    finalize_reference_detection_debug_payload,
+    write_reference_detection_debug_json,
+)
 from .services.doi_enrichment_service import enrich_extraction_with_doi
 from .models import IncorrectCitation
 
@@ -235,6 +239,13 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             status=400,
         )
     debug = request.POST.get("debug") in ("1", "true", "True", "yes", "on")
+    debug_reference_detection = request.POST.get("debug_reference_detection") in (
+        "1",
+        "true",
+        "True",
+        "yes",
+        "on",
+    )
     article_doi = (request.POST.get("article_doi") or request.POST.get("doi") or "").strip()
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
@@ -340,9 +351,47 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 snippets=snippets,
                 layers=data.get("layers", {}),
                 references_numbered=bool(stats_payload.get("references_numbered")),
+                article_doi=article_doi,
+                source_filename=f.name,
+                engine_used=str(data.get("engine_used") or ""),
+                debug_reference_detection=debug_reference_detection,
             )
             references_data_payload = data.get("references_data")
+            reference_debug_payload = None
             if isinstance(references_data_payload, dict):
+                reference_debug_payload = references_data_payload.pop("debug_payload", None)
+                structured_references = [
+                    item
+                    for item in (references_data_payload.get("references") or [])
+                    if isinstance(item, dict)
+                ]
+                if structured_references:
+                    structured_references.sort(
+                        key=lambda item: (
+                            int(item.get("index") or 10**9),
+                            str(item.get("ref_id") or ""),
+                        )
+                    )
+                    data["references"] = [
+                        {
+                            "index": (
+                                int(item.get("index"))
+                                if str(item.get("index") or "").isdigit()
+                                else None
+                            ),
+                            "raw": str(item.get("text") or "").strip(),
+                            "doi": str(item.get("doi") or "").strip() or None,
+                            "doi_source": "regex" if item.get("doi") else None,
+                            "confidence": 1.0 if item.get("text") else 0.0,
+                            "numbered": bool(item.get("index")),
+                            "structure_source": str(
+                                item.get("structure_source") or ""
+                            ).strip()
+                            or None,
+                        }
+                        for item in structured_references
+                        if str(item.get("text") or "").strip()
+                    ]
                 data["citation_style"] = (
                     str(references_data_payload.get("citation_style") or citation_style)
                     .strip()
@@ -359,15 +408,28 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 data["bibliography_start_page"] = references_data_payload.get(
                     "bibliography_start_page"
                 )
+                data["article_doi"] = references_data_payload.get("article_doi")
                 data["stats"]["citation_style"] = data["citation_style"]
                 data["stats"]["max_reference_index"] = data["max_reference_index"]
                 data["stats"]["bibliography_start_page"] = data[
                     "bibliography_start_page"
                 ]
+                data["stats"]["crossref_available"] = bool(
+                    references_data_payload.get("crossref_available")
+                )
+                data["stats"]["crossref_reference_count"] = int(
+                    references_data_payload.get("crossref_reference_count") or 0
+                )
+
+            effective_article_doi = article_doi
+            if not effective_article_doi and isinstance(references_data_payload, dict):
+                effective_article_doi = str(
+                    references_data_payload.get("article_doi") or ""
+                ).strip()
 
             try:
                 enrichment_result = enrich_extraction_with_doi(
-                    doi_input=article_doi,
+                    doi_input=effective_article_doi,
                     local_references=data.get("references", []),
                     references_data_references=(
                         references_data_payload.get("references", [])
@@ -376,7 +438,11 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     ),
                 )
             except Exception as exc:  # pragma: no cover - defensive guard
-                logger.warning("doi enrichment failed doi=%s error=%s", article_doi, exc)
+                logger.warning(
+                    "doi enrichment failed doi=%s error=%s",
+                    effective_article_doi,
+                    exc,
+                )
                 enrichment_result = {
                     "local_references": data.get("references", []),
                     "references_data_references": (
@@ -386,7 +452,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     ),
                     "cited_by": [],
                     "enrichment": {
-                        "doi_provided": bool(article_doi),
+                        "doi_provided": bool(effective_article_doi),
                         "doi_normalized": "",
                         "paper_resolved": False,
                         "references_enriched": 0,
@@ -413,7 +479,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 enrichment_result.get("enrichment")
                 if isinstance(enrichment_result.get("enrichment"), dict)
                 else {
-                    "doi_provided": bool(article_doi),
+                    "doi_provided": bool(effective_article_doi),
                     "doi_normalized": "",
                     "paper_resolved": False,
                     "references_enriched": 0,
@@ -427,6 +493,28 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     for ref in (data.get("references") or [])
                     if isinstance(ref, dict) and ref.get("doi")
                 )
+            if debug_reference_detection and isinstance(reference_debug_payload, dict):
+                final_debug_payload = finalize_reference_detection_debug_payload(
+                    reference_debug_payload,
+                    references=(
+                        references_data_payload.get("references", [])
+                        if isinstance(references_data_payload, dict)
+                        else []
+                    ),
+                )
+                debug_output_path = write_reference_detection_debug_json(
+                    final_debug_payload,
+                    source_filename=f.name,
+                )
+                data["reference_debug"] = {
+                    "enabled": True,
+                    "pipeline_version": (
+                        final_debug_payload.get("metadata", {}).get("pipeline_version")
+                        if isinstance(final_debug_payload, dict)
+                        else None
+                    ),
+                    "output_path": debug_output_path,
+                }
         else:
             data["cited_by"] = []
             data["enrichment"] = {
