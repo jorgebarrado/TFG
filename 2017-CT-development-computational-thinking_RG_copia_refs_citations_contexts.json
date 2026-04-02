@@ -1,0 +1,1208 @@
+{
+  "pdf_path": "/Users/jorge/Documents/TFG/TFG/tfg_project/citations/static/citations/PDFs-Reales/2017-CT-development-computational-thinking_RG.pdf",
+  "stats": {
+    "pages_total": 9,
+    "references_total": 37,
+    "dois_total": 19,
+    "references_numbered": true,
+    "references_header_found": true,
+    "citation_style": "numeric",
+    "max_reference_index": 37,
+    "bibliography_start_page": 8
+  },
+  "references": [
+    {
+      "index": 1,
+      "raw": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+      "doi": "10.1037/0882-7974.14.2.314",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 2,
+      "raw": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+      "doi": "10.1145/3017680",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 3,
+      "raw": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 4,
+      "raw": "Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 5,
+      "raw": "Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 6,
+      "raw": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+      "doi": "10.2791/",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 7,
+      "raw": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+      "doi": "10.1109/siie.2016.7751839",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 8,
+      "raw": "Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 9,
+      "raw": "Gleider Campos, Simone Cavalheiro, Luciana Foss, Ana Pernas, Clause Piana, Marilton Aguiar, André Du Bois, and Renata Reiser. 2014. Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental. 20o. Workshop de Informática na Escola (WIE 2014) (2014).",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 10,
+      "raw": "Jacob Cohen. 1988. Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates. Hillsdale, NJ (1988), 20–26.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 11,
+      "raw": "Paul Curzon. 2013. cs4fn and computational thinking unplugged. In Proceedings of the 8th Workshop in Primary and Secondary Computing Education. ACM, 47–50.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 12,
+      "raw": "Paul Curzon, Peter W McOwan, Nicola Plant, and Laura R Meagher. 2014. In- troducing teachers to computational thinking using unplugged storytelling. In Proceedings of the 9th Workshop in Primary and Secondary Computing Education. ACM, 89–92.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 13,
+      "raw": "Mark Engelberg. 2015. Code Master Programming Logic Game, Thinkfun Inc. (2015).",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 14,
+      "raw": "Hylke Faber, Menno Wierdsma, Richard Doornbos, Jan Salvador van der Ven, and Kevin de Vette. 2017. Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons. Journal of the European Teacher Education Network 12 (2017).",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 15,
+      "raw": "Yvon Feaster, Luke Segars, Sally K Wahba, and Jason O Hallstrom. 2011. Teaching CS unplugged in the high school (with limited success). In Proceedings of the 16th annual joint conference on Innovation and technology in computer science education. ACM, 248–252.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 16,
+      "raw": "Anna Gardeli and Spyros Vosinakis. 2017. Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming. Italian Journal of Educational Technology 1 (July 2017). https://doi.org/10.17471/2499-4324/910",
+      "doi": "10.17471/2499-4324/910",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 17,
+      "raw": "S. Grover and R. Pea. 2013. Computational Thinking in K-12: A Review of the State of the Field. Educational Researcher 42, 1 (Jan. 2013), 38–43. https: //doi.org/10.3102/0013189X12463051",
+      "doi": "10.3102/0013189x12463051",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 18,
+      "raw": "Filiz Kalelioglu, Yasemin Gülbahar, and Volkan Kukul. 2016. A Framework for Computational Thinking Based on a Systematic Research Review. Baltic Journal of Modern Computing 4, 3 (2016), 583.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 19,
+      "raw": "Lorenz Klopfenstein, Andiy Fedosyeyev, and Alessandro Bogliolo. 2017. BRING- ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY. 9800–9805. https://doi.org/10.21125/inted.2017.2327",
+      "doi": "10.21125/inted.2017.2327",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 20,
+      "raw": "Lynn Lambert and Heather Guiffre. 2009. Computer science outreach in an elementary school. Journal of Computing Sciences in colleges 24, 3 (2009), 118–",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 21,
+      "raw": "Linda Liukas. 2015. Hello Ruby: adventures in coding. Feiwel & Friends.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 22,
+      "raw": "Sze Yee Lye and Joyce Hwee Ling Koh. 2014. Review on teaching and learning of computational thinking through programming: What is next for K-12? Computers in Human Behavior 41 (2014), 51 – 61. https://doi.org/10.1016/j.chb.2014.09.012",
+      "doi": "10.1016/j.chb.2014.09.012",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 23,
+      "raw": "Scott B. Morris. 2008. Estimating Effect Sizes From Pretest-Posttest-Control Group Designs. Organizational Research Methods 11, 2 (April 2008), 364–386. https://doi.org/10.1177/1094428106291059",
+      "doi": "10.1177/1094428106291059",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 24,
+      "raw": "Scott B. Morris and Richard P. DeShon. 2002. Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs. Psycho- logical Methods 7, 1 (2002), 105–125. https://doi.org/10.1037/1082-989X.7.1.105",
+      "doi": "10.1037/1082-989x.7.1.105",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 25,
+      "raw": "Brandon Rodriguez, Kennicutt Stephen, Cyndi Rader, and Tracy Camp. 2017. Assessing Computational Thinking in CS Unplugged Activities. In Proceedings of the 2017 ACM SIGCSE Technical Symposium on Computer Science Education. ACM, Seattle, Washington, USA, 501–506. https://doi.org/10.1145/3017680.3017779",
+      "doi": "10.1145/3017680.3017779",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 26,
+      "raw": "Marcos Román-González, Jesús Moreno-León, and Gregorio Robles. 2017. Com- plementary Tools for Computational Thinking Assessment. In Proceedings of International Conference on Computational Thinking Education (CTE 2017), S. C Kong, J Sheldon, and K. Y Li (Eds.). The Education University of Hong Kong, 154–159. http://www.eduhk.hk/cte2017/doc/CTE2017Proceedings.pdf",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 27,
+      "raw": "Marcos Román-González. 2015. Computational Thinking Test: Design Guidelines and Content Validation. In Proceedings of the 7th Annual International Conference on Education and New Learning Technologies (EDULEARN 2015). IATED, Barcelona, Spain, 2436–2444. https://doi.org/10.13140/RG.2.1.4203.4329",
+      "doi": "10.13140/rg.2.1.4203.4329",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 28,
+      "raw": "Marcos Román-González. 2016. Codigoalfabetización y Pensamiento Computa- cional en Educación Primaria y Secundaria: Validación de un Instrumento y Evalu- ación de Programas. Ph.D. Dissertation. Universidad Nacional de Educación a Distancia, Madrid, Spain.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 29,
+      "raw": "Marcos Román-González, Juan-Carlos Pérez-González, and Carmen Jiménez- Fernández. 2017. Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test. Computers in Human Behavior 72 (July 2017), 678–691. https://doi.org/10.1016/j.chb.2016.08.047",
+      "doi": "10.1016/j.chb.2016.08.047",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 30,
+      "raw": "Sue Sentance and Andrew Csizmadia. 2015. Teachers’ perspectives on successful strategies for teaching Computing in school. Paper presented at IFIP TCS 2015 (2015).",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 31,
+      "raw": "Rivka Taub, Mordechai Ben-Ari, and Michal Armoni. 2009. The effect of CS unplugged on middle-school students’ views of CS. ACM SIGCSE Bulletin 41, 3 (2009), 99–103.",
+      "doi": null,
+      "doi_source": null,
+      "confidence": 0.5,
+      "numbered": true
+    },
+    {
+      "index": 32,
+      "raw": "Renate Thies and Jan Vahrenhold. 2013. On plugging \"unplugged\" into CS classes. ACM Press, 365. https://doi.org/10.1145/2445196.2445303",
+      "doi": "10.1145/2445196.2445303",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 33,
+      "raw": "R. Unnikrishnan, N. Amrita, Alexander Muir, and Bhavani Rao. 2016. Of Elephants and Nested Loops: How to Introduce Computing to Youth in Rural India. ACM Press, 137–146. https://doi.org/10.1145/2930674.2930678",
+      "doi": "10.1145/2930674.2930678",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 34,
+      "raw": "Peter Wallet. 2014. ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia. Technical Report. UNESCO. https://doi.org/10.15220/978-92-9189-148-1-en",
+      "doi": "10.15220/978-92-9189-148-1-en",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 35,
+      "raw": "Peter Wallet. 2015. ICT in Education in Sub-Saharan Africa: A comparative analysis of basic e-readiness in schools. Technical Report. UNESCO. https://doi.org/10. 15220/978-92-9189-178-8-en",
+      "doi": "10",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 36,
+      "raw": "Jeannette M. Wing. 2006. Computational thinking. Commun. ACM 49, 3 (March 2006), 33. https://doi.org/10.1145/1118178.1118215",
+      "doi": "10.1145/1118178.1118215",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    },
+    {
+      "index": 37,
+      "raw": "J. M Wing. 2008. Computational thinking and thinking about computing. Philo- sophical Transactions of the Royal Society A: Mathematical, Physical and Engineer- ing Sciences 366, 1881 (Oct. 2008), 3717–3725. https://doi.org/10.1098/rsta.2008. 0118 View publication stats View publication stats",
+      "doi": "10.1098/rsta.2008",
+      "doi_source": "regex",
+      "confidence": 1.0,
+      "numbered": true
+    }
+  ],
+  "references_data": {
+    "references": [
+      {
+        "id": "reference-entry-ref-1",
+        "ref_id": "ref-1",
+        "index": 1,
+        "text": "[1] Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314",
+        "page": 7,
+        "box": [
+          0.5248333333333333,
+          0.861082158080808,
+          0.38860673013758185,
+          0.02893156565656574
+        ],
+        "doi": "10.1037/0882-7974.14.2.314",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-2",
+        "ref_id": "ref-2",
+        "index": 2,
+        "text": "[2] AshishAggarwal,ChristinaGardner-McCune,andDavidS.Touretzky.2017.Eval-uatingtheEffectofUsingPhysicalManipulativestoFosterComputationalThinkinginElementarySchool.ACMPress,9–14.https://doi.org/10.1145/3017680.3017791",
+        "page": 8,
+        "box": [
+          0.09320424836601308,
+          0.11149882474747475,
+          0.38918754967973856,
+          0.0389946969696969
+        ],
+        "doi": "10.1145/3017680.3017791",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-3",
+        "ref_id": "ref-3",
+        "index": 3,
+        "text": "[3] Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.15175135,
+          0.3890156066666667,
+          0.03899595959595961
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-4",
+        "ref_id": "ref-4",
+        "index": 4,
+        "text": "[4] Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). https://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.1718788752525253,
+          0.38840411352941173,
+          0.059129764898989856
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-5",
+        "ref_id": "ref-5",
+        "index": 5,
+        "text": "[5] Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.21213140050505053,
+          0.38840411352941173,
+          0.03899469696969693
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-6",
+        "ref_id": "ref-6",
+        "index": 6,
+        "text": "[6] Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt,PanagiotisKampylis,andYvesPunie.2016. DevelopingComputational ThinkinginCompulsoryEducation-Implicationsforpolicyandpractice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/792158",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.23225766313131307,
+          0.38800223158169933,
+          0.05912222222222224
+        ],
+        "doi": "10.2791/792158",
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-7",
+        "ref_id": "ref-7",
+        "index": 7,
+        "text": "[7] Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.29263771363636365,
+          0.38901320467973854,
+          0.03899469696969704
+        ],
+        "doi": "10.1109/siie.2016.7751839",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-8",
+        "ref_id": "ref-8",
+        "index": 8,
+        "text": "[8] Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. https://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+        "page": 8,
+        "box": [
+          0.09320424836601307,
+          0.3127639762626263,
+          0.38851364358169915,
+          0.05912222222222224
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-9",
+        "ref_id": "ref-9",
+        "index": 9,
+        "text": "[9] Gleider Campos, Simone Cavalheiro, Luciana Foss, Ana Pernas, Clause Piana, Marilton Aguiar, André Du Bois, and Renata Reiser. 2014. Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental. 20o. Workshop de Informática na Escola (WIE 2014) (2014).",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.35301776414141417,
+          0.3938126631895423,
+          0.05912095959595953
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-10",
+        "ref_id": "ref-10",
+        "index": 10,
+        "text": "[10] Jacob Cohen. 1988. Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates. Hillsdale, NJ (1988), 20–26.",
+        "page": 8,
+        "box": [
+          0.08790522875816989,
+          0.39327028939393943,
+          0.39255864479738567,
+          0.03900350227272725
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-11",
+        "ref_id": "ref-11",
+        "index": 11,
+        "text": "[11] Paul Curzon. 2013. cs4fn and computational thinking unplugged. In Proceedings ofthe8thWorkshopinPrimaryandSecondaryComputingEducation.ACM,47–50.",
+        "page": 8,
+        "box": [
+          0.08790522875816989,
+          0.41339655202020203,
+          0.3944867971895424,
+          0.038995959595959584
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-12",
+        "ref_id": "ref-12",
+        "index": 12,
+        "text": "[12] Paul Curzon, Peter W McOwan, Nicola Plant, and Laura R Meagher. 2014. Introducing teachers to computational thinking using unplugged storytelling. In Proceedings of the 9th Workshop in Primary and Secondary Computing Education. ACM, 89–92.",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.43352281464646464,
+          0.3944867971895424,
+          0.05912222222222224
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-13",
+        "ref_id": "ref-13",
+        "index": 13,
+        "text": "[13] Mark Engelberg. 2015. Code Master Programming Logic Game, Thinkfun Inc. (2015).",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.4737766025252525,
+          0.39431215591699326,
+          0.049057828282828286
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-14",
+        "ref_id": "ref-14",
+        "index": 14,
+        "text": "[14] Hylke Faber, Menno Wierdsma, Richard Doornbos, Jan Salvador van der Ven, and Kevin de Vette. 2017. Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons. Journal of the European Teacher Education Network 12 (2017).",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.4939028651515151,
+          0.3938126631895425,
+          0.04906789621212132
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-15",
+        "ref_id": "ref-15",
+        "index": 15,
+        "text": "[15] YvonFeaster,LukeSegars,SallyKWahba,andJasonOHallstrom.2011. Teaching CS unplugged in the high school (with limited success). In Proceedings of the 16th annual joint conference on Innovation and technology in computer science education. ACM, 248–252.",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.5442197843434343,
+          0.39256150657516337,
+          0.03900350227272731
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-16",
+        "ref_id": "ref-16",
+        "index": 16,
+        "text": "[16] Anna Gardeli and Spyros Vosinakis. 2017. Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming. Italian Journal of Educational Technology 1 (July 2017). https://doi.org/10.17471/2499-4324/910",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.5844723095959596,
+          0.3928611269228756,
+          0.0390035022727272
+        ],
+        "doi": "10.17471/2499-4324/910",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-17",
+        "ref_id": "ref-17",
+        "index": 17,
+        "text": "[17] S. Grover and R. Pea. 2013. Computational Thinking in K-12: A Review of the State of the Field. Educational Researcher 42, 1 (Jan. 2013), 38–43. https://doi.org/10.3102/0013189X12463051",
+        "page": 8,
+        "box": [
+          0.08790522875816992,
+          0.6247260974747475,
+          0.3938998230980392,
+          0.03899469696969704
+        ],
+        "doi": "10.3102/0013189x12463051",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-18",
+        "ref_id": "ref-18",
+        "index": 18,
+        "text": "[18] Filiz Kalelioglu, Yasemin Gülbahar, and Volkan Kukul. 2016. A Framework for Computational Thinking Based on a Systematic Research Review. Baltic Journal of Modern Computing 4, 3 (2016), 583.",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.6448523601010101,
+          0.39277183493464046,
+          0.03900350227272731
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-19",
+        "ref_id": "ref-19",
+        "index": 19,
+        "text": "[19] Lorenz Klopfenstein, Andiy Fedosyeyev, and Alessandro Bogliolo. 2017. BRING- ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY. 9800–9805. https://doi.org/10.21125/inted.2017.2327",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.6851048853535353,
+          0.39449028408954245,
+          0.038995959595959584
+        ],
+        "doi": "10.21125/inted.2017.2327",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-20",
+        "ref_id": "ref-20",
+        "index": 20,
+        "text": "[20] Lynn Lambert and Heather Guiffre. 2009. Computer science outreach in an elementary school. Journal of Computing Sciences in colleges 24, 3 (2009), 118– 124.",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.705231147979798,
+          0.393808513754902,
+          0.038995959595959584
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-21",
+        "ref_id": "ref-21",
+        "index": 21,
+        "text": "[21] Linda Liukas. 2015. Hello Ruby: adventures in coding. Feiwel & Friends.",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.7454849358585858,
+          0.392554644366013,
+          0.018868434343434437
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 1,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-22",
+        "ref_id": "ref-22",
+        "index": 22,
+        "text": "[22] Sze Yee Lye and Joyce Hwee Ling Koh. 2014. Review on teaching and learning of computationalthinkingthroughprogramming:WhatisnextforK-12? Computers in Human Behavior 41 (2014), 51 – 61. https://doi.org/10.1016/j.chb.2014.09.012",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.7454849358585858,
+          0.392560295385621,
+          0.04905782828282834
+        ],
+        "doi": "10.1016/j.chb.2014.09.012",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-23",
+        "ref_id": "ref-23",
+        "index": 23,
+        "text": "[23] Scott B. Morris. 2008. Estimating Effect Sizes From Pretest-Posttest-Control Group Designs. Organizational Research Methods 11, 2 (April 2008), 364–386. https://doi.org/10.1177/1094428106291059",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.7656111984848485,
+          0.3943192534052288,
+          0.049059090909090886
+        ],
+        "doi": "10.1177/1094428106291059",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-24",
+        "ref_id": "ref-24",
+        "index": 24,
+        "text": "[24] Scott B. Morris and Richard P. DeShon. 2002. Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs. Psychological Methods 7, 1 (2002), 105–125. https://doi.org/10.1037/1082-989X.7.1.105",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.8159281176767677,
+          0.3943124521895423,
+          0.03899469696969693
+        ],
+        "doi": "10.1037/1082-989x.7.1.105",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-25",
+        "ref_id": "ref-25",
+        "index": 25,
+        "text": "[25] Brandon Rodriguez, Kennicutt Stephen, Cyndi Rader, and Tracy Camp. 2017. Assessing Computational Thinking in CS Unplugged Activities. In Proceedings of the 2017 ACM SIGCSE Technical Symposium on Computer Science Education. ACM, Seattle, Washington, USA, 501–506. https://doi.org/10.1145/3017680.3017779",
+        "page": 8,
+        "box": [
+          0.08790522875816993,
+          0.8360543803030304,
+          0.3943124521895423,
+          0.04905782828282812
+        ],
+        "doi": "10.1145/3017680.3017779",
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-26",
+        "ref_id": "ref-26",
+        "index": 26,
+        "text": "[26] Marcos Román-González, Jesús Moreno-León, and Gregorio Robles. 2017. Com- plementary Tools for Computational Thinking Assessment. In Proceedings of International Conference on Computational Thinking Education (CTE 2017), S. C Kong, J Sheldon, and K. Y Li (Eds.). The Education University of Hong Kong, 154–159. https://www.eduhk.hk/cte2017/doc/CTE2017Proceedings.pdf",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.11149882474747475,
+          0.39449130964836576,
+          0.05912095959595959
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-27",
+        "ref_id": "ref-27",
+        "index": 27,
+        "text": "[27] MarcosRomán-González.2015. ComputationalThinkingTest:DesignGuidelines and Content Validation. In Proceedings of the 7th Annual International Conference onEducationandNewLearningTechnologies(EDULEARN2015).IATED,Barcelona, Spain, 2436–2444. https://doi.org/10.13140/RG.2.1.4203.4329",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.15175135,
+          0.39381138475163413,
+          0.05913102752525243
+        ],
+        "doi": "10.13140/rg.2.1.4203.4329",
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-28",
+        "ref_id": "ref-28",
+        "index": 28,
+        "text": "[28] Marcos Román-González. 2016. Codigoalfabetización y Pensamiento Computacional en Educación Primaria y Secundaria: Validación de un Instrumento y Evalu- ación de Programas. Ph.D. Dissertation. Universidad Nacional de Educación a Distancia, Madrid, Spain.",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.19200513787878784,
+          0.3944867971895425,
+          0.06918409090909097
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 3,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-29",
+        "ref_id": "ref-29",
+        "index": 29,
+        "text": "[29] Marcos Román-González, Juan-Carlos Pérez-González, and Carmen Jiménez- Fernández. 2017. Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test. Computers in Human Behavior 72 (July 2017), 678–691. https://doi.org/10.1016/j.chb.2016.08.047",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.23225766313131307,
+          0.3944867971895425,
+          0.049067896212121265
+        ],
+        "doi": "10.1016/j.chb.2016.08.047",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-30",
+        "ref_id": "ref-30",
+        "index": 30,
+        "text": "[30] Sue Sentance and Andrew Csizmadia. 2015. Teachers’ perspectives on successful strategies for teaching Computing in school. Paper presented at IFIP TCS 2015 (2015).",
+        "page": 8,
+        "box": [
+          0.5195343137254901,
+          0.2825745823232323,
+          0.39256561341666674,
+          0.0490666335858585
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-31",
+        "ref_id": "ref-31",
+        "index": 31,
+        "text": "[31] Rivka Taub, Mordechai Ben-Ari, and Michal Armoni. 2009. The effect of CS unplugged on middle-school students’ views of CS. ACM SIGCSE Bulletin 41, 3 (2009), 99–103.",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.30270084494949495,
+          0.39431906134640504,
+          0.049057828282828286
+        ],
+        "doi": null,
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-32",
+        "ref_id": "ref-32",
+        "index": 32,
+        "text": "[32] RenateThiesandJanVahrenhold.2013. Onplugging\"unplugged\"intoCSclasses. ACM Press, 365. https://doi.org/10.1145/2445196.2445303",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.33289023888888886,
+          0.39431906134640504,
+          0.038995959595959695
+        ],
+        "doi": "10.1145/2445196.2445303",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-33",
+        "ref_id": "ref-33",
+        "index": 33,
+        "text": "[33] R.Unnikrishnan,N.Amrita,AlexanderMuir,andBhavaniRao.2016.OfElephants andNestedLoops:HowtoIntroduceComputingtoYouthinRuralIndia.ACMPress,137–146.https://doi.org/10.1145/2930674.2930678",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.35301776414141417,
+          0.39255484947777786,
+          0.03899469696969693
+        ],
+        "doi": "10.1145/2930674.2930678",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-34",
+        "ref_id": "ref-34",
+        "index": 34,
+        "text": "[34] Peter Wallet. 2014. ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia. Technical Report. UNESCO. https://doi.org/10.15220/978-92-9189-148-1-en",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.39327028939393943,
+          0.39431701759477134,
+          0.03900350227272725
+        ],
+        "doi": "10.15220/978-92-9189-148-1-en",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-35",
+        "ref_id": "ref-35",
+        "index": 35,
+        "text": "[35] PeterWallet.2015. ICTinEducationinSub-SaharanAfrica:Acomparativeanalysis of basic e-readiness in schools. Technical Report. UNESCO. https://doi.org/10.15220/978-92-9189-178-8-en",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.41339655202020203,
+          0.39431345275817,
+          0.038995959595959584
+        ],
+        "doi": "10.15220/978-92-9189-178-8-en",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.12,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-36",
+        "ref_id": "ref-36",
+        "index": 36,
+        "text": "[36] Jeannette M. Wing. 2006. Computational thinking. Commun. ACM 49, 3 (March 2006), 33. https://doi.org/10.1145/1118178.1118215",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.4536503398989899,
+          0.3925548385398694,
+          0.018868434343434326
+        ],
+        "doi": "10.1145/1118178.1118215",
+        "structure_source": "rows",
+        "local_row_count": 1,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-37",
+        "ref_id": "ref-37",
+        "index": 37,
+        "text": "[37] J. M Wing. 2008. Computational thinking and thinking about computing. Philo- sophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 366, 1881 (Oct. 2008), 3717–3725. https://doi.org/10.1098/rsta.2008.0118",
+        "page": 8,
+        "box": [
+          0.5195343137254902,
+          0.4737766025252525,
+          0.39431058377941164,
+          0.038994696969696985
+        ],
+        "doi": "10.1098/rsta.2008.0118",
+        "structure_source": "rows",
+        "local_row_count": 2,
+        "local_anchor_detected": true,
+        "reference_validation": {
+          "match_score": 1.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": true,
+          "reason": null
+        }
+      }
+    ],
+    "citations": [],
+    "contexts": [],
+    "citation_style": "numeric",
+    "max_reference_index": 37,
+    "bibliography_start_page": 8
+  }
+}

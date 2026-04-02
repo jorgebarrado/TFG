@@ -6,6 +6,7 @@
   const BTN_JSON    = document.getElementById('btn-export-json');
   const BTN_CSV     = document.getElementById('btn-export-csv');
   const INPUT_FILE  = document.getElementById('manuscript');
+  const DEBUG_REF_DETECTION = document.getElementById('debug-reference-detection');
   const RESULTS     = document.getElementById('results');
   const COUNT_LABEL = document.getElementById('count-label');
 
@@ -174,10 +175,18 @@
     try {
       const fd = new FormData();
       fd.append('manuscript', file);
+      fd.append('debug_reference_detection', DEBUG_REF_DETECTION?.checked ? '1' : '0');
+      fd.append('debug', DEBUG_REF_DETECTION?.checked ? '1' : '0');
       const res = await fetch(EXTRACT_URL, { method: 'POST', body: fd });
       const data = await res.json();
       lastData = toFlatArray(data);
       render(lastData);
+      if (data.reference_debug?.output_path && RESULTS) {
+        const hint = document.createElement('div');
+        hint.className = 'small text-muted mt-2';
+        hint.textContent = `Debug JSON: ${data.reference_debug.output_path}`;
+        RESULTS.prepend(hint);
+      }
     } catch (e) {
       alert('Error procesando el archivo.');
     } finally {
