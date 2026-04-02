@@ -1,4 +1,7 @@
 import requests
+from ..logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 S2_BASE = "https://api.semanticscholar.org/graph/v1"
 CR_BASE = "https://api.crossref.org"
@@ -111,13 +114,24 @@ def get_citations_with_fallback(doi: str) -> tuple[int, list[dict], str]:
     """
     s2_list = get_s2_citations(doi)
     if s2_list:
+        logger.info(
+            "reference_enriched",
+            extra={"doi": doi, "source": "s2", "citation_count": len(s2_list)},
+        )
         return len(s2_list), s2_list, "s2"
 
     # Si S2 no devuelve nada pero el contador era >0, probamos Crossref:
     cr_list = get_crossref_citations(doi)
     if cr_list:
+        logger.info(
+            "reference_enriched",
+            extra={"doi": doi, "source": "crossref", "citation_count": len(cr_list)},
+        )
         return len(cr_list), cr_list, "crossref"
 
     # Nada
     _, count = get_s2_paperid_and_count(doi)  # para reportar el count si existe
+    logger.warning(
+        "enrichment_rejected", extra={"doi": doi, "reason": "no_citations_found"}
+    )
     return count, [], "none"

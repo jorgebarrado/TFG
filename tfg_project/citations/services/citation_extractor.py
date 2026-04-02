@@ -17,7 +17,12 @@ y posiciones de caracteres.
 from __future__ import annotations
 
 import re
+import os
 from typing import Any, Dict, List, Tuple
+from ..logging_utils import get_logger
+
+logger = get_logger(__name__)
+TRACE_REFERENCES = os.getenv("TRACE_REFERENCES", "0") == "1"
 
 try:
     # pypdf is lightweight and built-in text extractor is enough for many PDFs
@@ -123,6 +128,14 @@ def process_manuscript(path_or_text: str) -> Dict[str, List[Dict[str, Any]]]:
           "[1]": [...]
         }
     """
+    logger.debug(
+        "process_manuscript_start",
+        extra={
+            "is_file": any(
+                path_or_text.lower().endswith(ext) for ext in (".pdf", ".txt")
+            )
+        },
+    )
     text: str = ""
     page_spans: List[Tuple[int, int]] = []
 
@@ -141,11 +154,18 @@ def process_manuscript(path_or_text: str) -> Dict[str, List[Dict[str, Any]]]:
         text = path_or_text or ""
 
     if not text:
+        logger.warning(
+            "process_manuscript_empty", extra={"reason": "no_text_extracted"}
+        )
         return {}
 
     result: Dict[str, List[Dict[str, Any]]] = {}
-    for para in _paragraphs(text):
-        for raw_key, span in _find_matches_in_paragraph(para):
+    total_references = 0
+    paras = _paragraphs(text)
+
+    for i, para in enumerate(paras):
+        matches = _find_matches_in_paragraph(para)
+        for raw_key, span in matches:
             key = _normalize_key(raw_key)
             s, e = span
             snippet = _snippet(para, span)
@@ -158,4 +178,20 @@ def process_manuscript(path_or_text: str) -> Dict[str, List[Dict[str, Any]]]:
             result.setdefault(key, [])
             if item not in result[key]:
                 result[key].append(item)
+                total_references += 1
+
+                if TRACE_REFERENCES and total_references <= 20:
+                    logger.debug(
+                        "reference_detected",
+                        extra={"ref_key": key, "start": s, "end": e, "para_index": i},
+                    )
+
+    logger.info(
+        "process_manuscript_complete",
+        extra={
+            "total_references_detected": total_references,
+            "unique_keys": len(result),
+        },
+    )
+
     return result
