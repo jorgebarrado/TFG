@@ -1,24 +1,28 @@
 [
   {
     "id": "brackmann_2017",
+    "dataset_type": "curated",
     "pdf": "2017-CT-development-computational-thinking_RG.pdf",
     "expected_max_reference_index": 37,
     "notes": "Caso base numerico ya iterado varias veces."
   },
   {
     "id": "emnlp_demo_2023",
+    "dataset_type": "exploratory",
     "pdf": "2023.emnlp-demo.45.pdf",
     "expected_max_reference_index": null,
     "notes": "Paper del corpus real sin expectativa fijada todavia."
   },
   {
     "id": "education_12_00179_v3",
+    "dataset_type": "curated",
     "pdf": "education-12-00179-v3.pdf",
     "expected_max_reference_index": 11,
     "notes": "Caso corto numerico con debug previo en el repo."
   },
   {
     "id": "li_2020_stem",
+    "dataset_type": "exploratory",
     "pdf": "s41979-020-00044-w.pdf",
     "expected_max_reference_index": null,
     "article_doi": "10.1007/s41979-020-00044-w",
