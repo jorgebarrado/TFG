@@ -3986,6 +3986,7 @@ export default function ReaderApp({
       setActiveReferenceId(numericIndex || null);
       setHighlightReferenceId(numericIndex || null);
       setSelectedReferenceId(refId);
+      setSelectedCitationId("");
     }
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
@@ -4022,13 +4023,9 @@ export default function ReaderApp({
       setSelectedReferenceId(refId);
     }
     setSelectedCitationId("");
-    const visualMentions = refId ? (citationMentionsByRefId.get(refId) || []) : [];
-    const visualContexts = refId ? (citationContextsByRefId.get(refId) || []) : [];
     const visualReference = refId ? referencesByRefId.get(refId) : null;
-    const visualTarget = visualContexts[0] || visualMentions[0] || visualReference;
-    if (visualTarget) {
-      const blockAnchor = resolveReferenceBlockAnchor(visualTarget, refId);
-      scrollReferenceTargetToTop(blockAnchor || visualTarget);
+    if (visualReference) {
+      scrollReferenceTargetToTop(visualReference);
     }
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
@@ -4050,7 +4047,7 @@ export default function ReaderApp({
       setSelectedSnippetAnchor(null);
     }
     const statsEntry = citationStatsByReference.get(ref.index);
-    if (statsEntry && statsEntry.pages.size) {
+    if (!visualReference && statsEntry && statsEntry.pages.size) {
       const pages = Array.from(statsEntry.pages).sort((a, b) => a - b);
       if (pages[0]) {
         scrollReferenceTargetToTop(null, pages[0] - 1);
@@ -4104,8 +4101,7 @@ export default function ReaderApp({
       setHighlightReferenceId(indexFromRefId);
     }
     if (mention) {
-      const blockAnchor = resolveReferenceBlockAnchor(mention, resolvedRefId);
-      scrollReferenceTargetToTop(blockAnchor || mention);
+      scrollReferenceTargetToTop(mention);
     }
   };
 
@@ -4145,10 +4141,15 @@ export default function ReaderApp({
     const selectedMention = mentions.find(
       (mention) => String(mention?.id || "") === String(selectedCitationId || "")
     );
-    const target = selectedMention || contexts[0] || mentions[0] || refRow;
-    if (target) {
-      const blockAnchor = resolveReferenceBlockAnchor(target, selectedReferenceId);
-      scrollReferenceTargetToTop(blockAnchor || target);
+    if (selectedMention) {
+      scrollReferenceTargetToTop(selectedMention);
+    } else if (refRow) {
+      scrollReferenceTargetToTop(refRow);
+    } else {
+      const fallbackTarget = contexts[0] || mentions[0] || null;
+      if (fallbackTarget) {
+        scrollReferenceTargetToTop(fallbackTarget);
+      }
     }
     return () => {
       window.clearTimeout(sideTimer);
@@ -4160,7 +4161,6 @@ export default function ReaderApp({
     citationContextsByRefId,
     referencesByRefId,
     scrollReferenceRowToTop,
-    resolveReferenceBlockAnchor,
     scrollReferenceTargetToTop,
   ]);
 
@@ -4742,7 +4742,13 @@ export default function ReaderApp({
                           : "reader-ref-snippet is-muted"
                       }
                     >
-                      <span className="reader-ref-snippet-text">
+                      <span
+                        className={
+                          isActive
+                            ? "reader-ref-snippet-text is-expanded"
+                            : "reader-ref-snippet-text"
+                        }
+                      >
                         {row.text ? `"${row.text}"` : "\"Sin texto de referencia.\""}
                       </span>
                     </div>

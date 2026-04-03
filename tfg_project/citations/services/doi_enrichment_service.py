@@ -290,6 +290,65 @@ def _build_merged_reference_validation(
     }
 
 
+def _coerce_final_decision(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        return {
+            "accepted": False,
+            "classification": "fallback_needed",
+            "reason": "missing_final_decision",
+            "final_score": 0.0,
+        }
+    return {
+        "accepted": bool(value.get("accepted")),
+        "classification": str(value.get("classification") or "fallback_needed"),
+        "reason": value.get("reason"),
+        "final_score": round(float(value.get("final_score") or 0.0), 3),
+        "inside_bibliography_zone": bool(value.get("inside_bibliography_zone")),
+        "inside_expected_column": bool(value.get("inside_expected_column")),
+        "starts_with_anchor": bool(value.get("starts_with_anchor")),
+        "expected_anchor_index": value.get("expected_anchor_index"),
+        "has_nested_anchor": bool(value.get("has_nested_anchor")),
+        "header_noise_score": round(float(value.get("header_noise_score") or 0.0), 3),
+        "crossref_match_score": round(float(value.get("crossref_match_score") or 0.0), 3),
+        "doi_match_score": round(float(value.get("doi_match_score") or 0.0), 3),
+        "row_continuity_score": round(float(value.get("row_continuity_score") or 0.0), 3),
+        "token_cleanup_confidence": round(float(value.get("token_cleanup_confidence") or 0.0), 3),
+        "cleanup_applied": bool(value.get("cleanup_applied")),
+        "selected_candidate_source": value.get("selected_candidate_source"),
+    }
+
+
+def _sync_reference_validation_with_final_decision(
+    validation: Any,
+    final_decision: Dict[str, Any],
+) -> Dict[str, Any]:
+    normalized_validation = _coerce_reference_validation(validation)
+    if isinstance(validation, dict):
+        intermediate_accepted = (
+            validation.get("intermediate_accepted")
+            if validation.get("intermediate_accepted") is not None
+            else normalized_validation.get("accepted")
+        )
+        intermediate_reason = (
+            validation.get("intermediate_reason")
+            if validation.get("intermediate_reason") is not None
+            else normalized_validation.get("reason")
+        )
+    else:
+        intermediate_accepted = normalized_validation.get("accepted")
+        intermediate_reason = normalized_validation.get("reason")
+    synced = dict(normalized_validation)
+    synced["intermediate_accepted"] = bool(intermediate_accepted)
+    synced["intermediate_reason"] = intermediate_reason
+    synced["accepted"] = bool(final_decision.get("accepted"))
+    synced["reason"] = (
+        None if final_decision.get("accepted") else final_decision.get("reason")
+    )
+    synced["final_classification"] = final_decision.get("classification")
+    synced["final_score"] = round(float(final_decision.get("final_score") or 0.0), 3)
+    return synced
+
+
 def _evaluate_enrichment_acceptance(
     *,
     current: Dict[str, Any],
@@ -584,6 +643,15 @@ def enrich_references_with_doi_data(
                 score=best_score,
                 candidates=validation_candidates,
             )
+            current_final_decision = _coerce_final_decision(
+                current.get("final_decision")
+                if isinstance(current.get("final_decision"), dict)
+                else current.get("scores")
+            )
+            synced_reference_validation = _sync_reference_validation_with_final_decision(
+                current.get("reference_validation"),
+                current_final_decision,
+            )
             if accepted:
                 updated = _apply_reference_metadata(
                     current,
@@ -591,7 +659,10 @@ def enrich_references_with_doi_data(
                     source=source or "crossref",
                     confidence=best_score,
                 )
-                updated["reference_validation"] = merged_validation
+                updated["reference_validation"] = synced_reference_validation
+                updated["enrichment_validation"] = merged_validation
+                updated["scores"] = dict(current_final_decision)
+                updated["final_decision"] = dict(current_final_decision)
                 updated["enrichment_accepted"] = True
                 enriched.append(updated)
                 enriched_count += 1
@@ -601,7 +672,10 @@ def enrich_references_with_doi_data(
                 rejected = dict(current)
                 rejected.pop("enrichment_source", None)
                 rejected.pop("enrichment_confidence", None)
-                rejected["reference_validation"] = merged_validation
+                rejected["reference_validation"] = synced_reference_validation
+                rejected["enrichment_validation"] = merged_validation
+                rejected["scores"] = dict(current_final_decision)
+                rejected["final_decision"] = dict(current_final_decision)
                 rejected["enrichment_accepted"] = False
                 rejected["enrichment_candidate"] = {
                     "source": source or str(best_match.get("source") or "crossref"),

@@ -232,6 +232,14 @@ body.reader-fullscreen .reader-sidebar {
   line-height: 1.5;
 }
 
+.reader-ref-snippet-text.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: initial;
+  overflow: visible;
+  white-space: normal;
+}
+
 .reader-ref-footer {
   display: flex;
   flex-direction: column;
