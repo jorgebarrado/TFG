@@ -5,6 +5,7 @@ import os
 import re
 from collections import defaultdict
 from datetime import datetime, timezone
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -31,6 +32,60 @@ FIXED_ARTIFACT_RE = re.compile(
     re.IGNORECASE,
 )
 PAGE_NUMBER_ONLY_RE = re.compile(r"^\s*\(?\d{1,4}\)?\s*$")
+REFERENCE_YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+REFERENCE_WORD_RE = re.compile(r"[A-Za-zÀ-ÿ]{3,}")
+REFERENCE_GLUE_RE = re.compile(
+    r"\b[A-Za-zÀ-ÿ]{4,}[a-zà-ÿ][A-ZÀ-ß][A-Za-zÀ-ÿ]{2,}\b"
+)
+REFERENCE_TRAILING_AFTER_DOI_RE = re.compile(
+    r"(?:https?://\S+|10\.\d{4,9}/\S+)\s+[A-Za-zÀ-ÿ]",
+    re.IGNORECASE,
+)
+REFERENCE_FRAGMENT_AFTER_PAGES_RE = re.compile(
+    r"\b\d+(?:[–-]\d+)?\.\s+"
+    r"(?:of|education|network|behavior|methods|technology|sciences)\b",
+    re.IGNORECASE,
+)
+REFERENCE_END_CONNECTORS = (
+    "and",
+    "for",
+    "from",
+    "of",
+    "the",
+    "through",
+    "with",
+)
+REFERENCE_MIDDLE_CONNECTORS = (
+    "and",
+    "for",
+    "from",
+    "through",
+    "using",
+    "with",
+    "without",
+)
+REFERENCE_SUFFIX_SPLITS = (
+    "analysis",
+    "behavior",
+    "computing",
+    "education",
+    "network",
+    "practice",
+    "programming",
+    "programs",
+    "school",
+    "sciences",
+    "technology",
+    "technologies",
+    "thinking",
+)
+REFERENCE_TRAILING_VENUE_FRAGMENT_RE = re.compile(
+    r"\b(?:journal|transactions?|proceedings?|behavior|methods|network|computing)\b"
+    r".{0,80}\.\s+"
+    r"(?:of|for|education|network|behavior|methods|technology|sciences)\b",
+    re.IGNORECASE,
+)
+REFERENCE_COMPARE_NORMALIZE_RE = re.compile(r"[^\w]+", re.UNICODE)
 REFERENCE_NOISE_RE = re.compile(
     r"\b(?:"
     r"view publication stats|"
@@ -45,8 +100,9 @@ REFERENCE_SECTION_HEADING_RE = re.compile(
     r"^\s*(?:references|bibliography|referencias|bibliografia|works cited)\s*$",
     re.IGNORECASE,
 )
-REFERENCE_DEBUG_FILE_SUFFIX = "__reference_debug.json"
-REFERENCE_PIPELINE_VERSION = "references-phased-v1"
+REFERENCE_DEBUG_FILE_PREFIX = "debug-"
+REFERENCE_DEBUG_FILE_EXTENSION = ".json"
+REFERENCE_PIPELINE_VERSION = "references-phased-v3"
 REFERENCE_DEBUG_DIR = (
     Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
 )
@@ -511,9 +567,22 @@ def _score_header_noise(text: str) -> float:
     if _is_reference_heading_text(normalized):
         return 0.88
     if HEADER_LIKE_REFERENCE_RE.search(normalized):
-        return 0.74
+        has_reference_signals = bool(
+            REFERENCE_YEAR_RE.search(normalized)
+            or _extract_doi(text or "")
+            or len(normalized) >= 90
+            or NUMBERED_REFERENCE_LINE_RE.match(str(text or ""))
+        )
+        if not has_reference_signals:
+            return 0.74
     if FIXED_ARTIFACT_RE.search(normalized):
-        return 0.56
+        has_reference_signals = bool(
+            REFERENCE_YEAR_RE.search(normalized)
+            or _extract_doi(text or "")
+            or len(normalized) >= 90
+        )
+        if not has_reference_signals:
+            return 0.56
     if PAGE_NUMBER_ONLY_RE.match(normalized):
         return 0.92
     return 0.0
@@ -1356,34 +1425,981 @@ def _merge_text_fragments(parts: Sequence[str]) -> str:
     return re.sub(r"\s+", " ", merged).strip()
 
 
+def _apply_regex_substitution(
+    text: str,
+    pattern: Any,
+    replacement: Any,
+    *,
+    cleanups: set[str],
+    cleanup_name: str,
+    flags: int = 0,
+) -> str:
+    if hasattr(pattern, "sub"):
+        updated = pattern.sub(replacement, text)
+    else:
+        updated = re.sub(pattern, replacement, text, flags=flags)
+    if updated != text:
+        cleanups.add(cleanup_name)
+    return updated
+
+
+def _repair_reference_urls_and_dois(
+    text: str,
+    *,
+    cleanups: Optional[set[str]] = None,
+) -> str:
+    cleanup_set = cleanups if isinstance(cleanups, set) else set()
+    current = str(text or "")
+    previous = None
+    while current != previous:
+        previous = current
+        current = _apply_regex_substitution(
+            current,
+            r"https?\s*:\s*//",
+            lambda match: (
+                "https://"
+                if str(match.group(0) or "").lower().startswith("https")
+                else "http://"
+            ),
+            cleanups=cleanup_set,
+            cleanup_name="url_scheme_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"doi\.org/\s+",
+            "doi.org/",
+            cleanups=cleanup_set,
+            cleanup_name="doi_url_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(https?://\S+)\s+([A-Za-z0-9/_?&%#.=:+~-]+)",
+            r"\1\2",
+            cleanups=cleanup_set,
+            cleanup_name="url_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(doi\.org/[-._;()/:A-Za-z0-9]+)\s+([A-Za-z0-9._;()/:+-]+)",
+            r"\1\2",
+            cleanups=cleanup_set,
+            cleanup_name="doi_url_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)\s+([A-Za-z0-9._;()/:+-]+)",
+            r"\1\2",
+            cleanups=cleanup_set,
+            cleanup_name="doi_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(10\.)\s+(\d)",
+            r"\1\2",
+            cleanups=cleanup_set,
+            cleanup_name="doi_spacing",
+        )
+    current = _apply_regex_substitution(
+        current,
+        r"\s+([,.;:)\]])",
+        r"\1",
+        cleanups=cleanup_set,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"([\[(])\s+",
+        r"\1",
+        cleanups=cleanup_set,
+        cleanup_name="punctuation_spacing",
+    )
+    return re.sub(r"\s+", " ", current).strip()
+
+
+def _normalize_reference_fragment_text(text: str) -> Dict[str, Any]:
+    cleanups: set[str] = set()
+    current = re.sub(r"\s+", " ", str(text or "")).strip()
+    current = _repair_reference_urls_and_dois(current, cleanups=cleanups)
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-zÀ-ÿ]{2})-\s+(?=[a-zà-ÿ]{2})",
+        "",
+        cleanups=cleanups,
+        cleanup_name="line_break_hyphen",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Z]{2})-\s+(?=[A-Z]{2})",
+        "",
+        cleanups=cleanups,
+        cleanup_name="line_break_hyphen",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[,;])(?=\S)",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-z0-9])\.(?=[A-ZÀ-ß0-9])",
+        ". ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _repair_reference_urls_and_dois(current, cleanups=cleanups)
+    return {
+        "text": re.sub(r"\s+", " ", current).strip(),
+        "cleanups_applied": sorted(cleanups),
+    }
+
+
+def _split_glued_reference_words(
+    text: str,
+    *,
+    cleanups: set[str],
+) -> str:
+    current = str(text or "")
+    previous = None
+    while current != previous:
+        previous = current
+        current = _apply_regex_substitution(
+            current,
+            r"(?<=[A-Za-zÀ-ÿ0-9])\.(?=(?:https?://|doi\.org/|10\.))",
+            ". ",
+            cleanups=cleanups,
+            cleanup_name="doi_url_spacing",
+            flags=re.IGNORECASE,
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(?<=[A-Za-zÀ-ÿ]{2})-(?=[a-zà-ÿ]{2})",
+            "",
+            cleanups=cleanups,
+            cleanup_name="line_break_hyphen",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"(?<=[A-Za-zÀ-ÿ]{4})-(?=[A-ZÀ-ß][a-zà-ÿ]{3,})",
+            " ",
+            cleanups=cleanups,
+            cleanup_name="line_break_hyphen",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r'(?<=[A-Za-zÀ-ÿ])"(?=[A-Za-zÀ-ÿ])',
+            ' "',
+            cleanups=cleanups,
+            cleanup_name="word_spacing",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r'(?<=")(?=[A-Za-zÀ-ÿ])',
+            " ",
+            cleanups=cleanups,
+            cleanup_name="word_spacing",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r'"\s+([^"]+?)\s+"',
+            r'"\1"',
+            cleanups=cleanups,
+            cleanup_name="punctuation_spacing",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r'"\s+([^"]+?)"',
+            r'"\1"',
+            cleanups=cleanups,
+            cleanup_name="punctuation_spacing",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r'"([^"]+?)\s+"',
+            r'"\1"',
+            cleanups=cleanups,
+            cleanup_name="punctuation_spacing",
+        )
+        current = _apply_regex_substitution(
+            current,
+            r"\b([A-Z]{2,4})([A-Z]?[a-zà-ÿ]{4,})\b",
+            r"\1 \2",
+            cleanups=cleanups,
+            cleanup_name="word_spacing",
+        )
+        for connector in ("and", "for", "in", "of", "the", "to", "with"):
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{4,}}){connector}(?=[A-ZÀ-ß])",
+                rf"\1 {connector}",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+            )
+        for connector in ("in", "of", "to"):
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Z]{{2,4}}){connector}(?=[A-ZÀ-ß])",
+                rf"\1 {connector} ",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+            )
+        for connector in ("in", "of", "to"):
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{3,}}){connector}\s+(?=[A-ZÀ-ß])",
+                rf"\1 {connector} ",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+            )
+        for connector in REFERENCE_END_CONNECTORS:
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{4,}}){connector}\b",
+                rf"\1 {connector}",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+                flags=re.IGNORECASE,
+            )
+        for connector in REFERENCE_MIDDLE_CONNECTORS:
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{5,}}){connector}([A-Za-zÀ-ÿ]{{3,}})\b",
+                rf"\1 {connector} \2",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+                flags=re.IGNORECASE,
+            )
+        current = _apply_regex_substitution(
+            current,
+            r"\b([A-Za-zÀ-ÿ]{4,})isnext\b",
+            r"\1 is next",
+            cleanups=cleanups,
+            cleanup_name="word_spacing",
+            flags=re.IGNORECASE,
+        )
+        for suffix in REFERENCE_SUFFIX_SPLITS:
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{5,}}){suffix}\b",
+                rf"\1 {suffix}",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+                flags=re.IGNORECASE,
+            )
+    return re.sub(r"\s+", " ", current).strip()
+
+
+def _normalize_reference_author_section(
+    text: str,
+    *,
+    cleanups: set[str],
+) -> str:
+    current = str(text or "")
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[,;])(?=\S)",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[a-zà-ÿ])and(?=[A-ZÀ-ß])",
+        " and ",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=\band)(?=[A-ZÀ-ß])",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-zÀ-ÿ])\.(?=[A-ZÀ-ß0-9])",
+        ". ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[a-zà-ÿ])(?=[A-ZÀ-ß])",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=\b[A-Z])(?=[A-Z][a-zà-ÿ]{2,})",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bMc\s+([A-Z])",
+        r"Mc\1",
+        cleanups=cleanups,
+        cleanup_name="author_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\b([A-Z])\.([A-Z])",
+        r"\1. \2",
+        cleanups=cleanups,
+        cleanup_name="author_initial_spacing",
+    )
+    return re.sub(r"\s+", " ", current).strip()
+
+
+def _normalize_reference_body_section(
+    text: str,
+    *,
+    cleanups: set[str],
+) -> str:
+    current = str(text or "")
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-zÀ-ÿ]{2})-\s+(?=[a-zà-ÿ]{2})",
+        "",
+        cleanups=cleanups,
+        cleanup_name="line_break_hyphen",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Z]{2})-\s+(?=[A-Z]{2})",
+        "",
+        cleanups=cleanups,
+        cleanup_name="line_break_hyphen",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[,;])(?=\S)",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-z0-9])\.(?=[A-ZÀ-ß0-9])",
+        ". ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bACM(?=[A-Z])",
+        "ACM ",
+        cleanups=cleanups,
+        cleanup_name="publisher_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bIEEE(?=[A-Z])",
+        "IEEE ",
+        cleanups=cleanups,
+        cleanup_name="publisher_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bIATED(?=[A-Z])",
+        "IATED ",
+        cleanups=cleanups,
+        cleanup_name="publisher_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bSIGCSE(?=[A-Z])",
+        "SIGCSE ",
+        cleanups=cleanups,
+        cleanup_name="publisher_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\bCS(?=[A-Z])",
+        "CS ",
+        cleanups=cleanups,
+        cleanup_name="publisher_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[a-zà-ÿ])(?=[A-ZÀ-ß])",
+        " ",
+        cleanups=cleanups,
+        cleanup_name="word_spacing",
+    )
+    for pattern in (
+        (r"(?<=[a-zà-ÿ])and(?=[A-ZÀ-ß])", " and "),
+        (r"(?<=[a-zà-ÿ])of(?=[A-ZÀ-ß0-9])", " of "),
+        (r"(?<=[a-zà-ÿ])in(?=[A-ZÀ-ß0-9])", " in "),
+        (r"(?<=[a-zà-ÿ])the(?=[A-ZÀ-ß0-9])", " the "),
+        (r"(?<=[a-zà-ÿ])to(?=[A-ZÀ-ß])", " to "),
+        (r"(?<=[a-zà-ÿ])for(?=[A-ZÀ-ß])", " for "),
+        (r"(?<=[a-zà-ÿ])with(?=[A-ZÀ-ß])", " with "),
+    ):
+        current = _apply_regex_substitution(
+            current,
+            pattern[0],
+            pattern[1],
+            cleanups=cleanups,
+            cleanup_name="word_spacing",
+        )
+    current = _apply_regex_substitution(
+        current,
+        r":(?=[A-Za-zÀ-ÿ])",
+        ": ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r":\s+A(?=[a-zà-ÿ]{5,})",
+        ": A ",
+        cleanups=cleanups,
+        cleanup_name="word_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"(?<=[A-Za-zÀ-ÿ])\((?=[A-Za-z0-9])",
+        " (",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\)\.(?=[A-Za-zÀ-ÿ])",
+        "). ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _split_glued_reference_words(current, cleanups=cleanups)
+    return re.sub(r"\s+", " ", current).strip()
+
+
+def _normalize_reference_text_candidate(text: str) -> Dict[str, Any]:
+    cleanups: set[str] = set()
+    current = re.sub(r"\s+", " ", str(text or "")).strip()
+    current = _repair_reference_urls_and_dois(current, cleanups=cleanups)
+    year_match = REFERENCE_YEAR_RE.search(current)
+    if year_match:
+        author_prefix = _normalize_reference_author_section(
+            current[:year_match.start()].strip(),
+            cleanups=cleanups,
+        )
+        year_value = year_match.group(0)
+        body_suffix = _normalize_reference_body_section(
+            current[year_match.end():].lstrip(" ."),
+            cleanups=cleanups,
+        )
+        current = (
+            f"{author_prefix} {year_value}".strip()
+            if author_prefix
+            else year_value
+        )
+        if body_suffix:
+            current = f"{current}. {body_suffix}"
+    else:
+        current = _normalize_reference_body_section(current, cleanups=cleanups)
+    current = _repair_reference_urls_and_dois(current, cleanups=cleanups)
+    current = _apply_regex_substitution(
+        current,
+        r"\bPh\.\s+D\.",
+        "Ph.D.",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\s+([,.;:)\]])",
+        r"\1",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"([\[(])\s+",
+        r"\1",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    return {
+        "text": re.sub(r"\s+", " ", current).strip(),
+        "cleanups_applied": sorted(cleanups),
+    }
+
+
+def _reference_text_quality_metrics(text: str) -> Dict[str, Any]:
+    normalized = re.sub(r"\s+", " ", str(text or "")).strip()
+    return {
+        "word_count": len(REFERENCE_WORD_RE.findall(normalized)),
+        "glued_fragments": len(REFERENCE_GLUE_RE.findall(normalized)),
+        "has_doi_or_url": bool(
+            re.search(r"https?://\S+", normalized, flags=re.IGNORECASE)
+            or DOI_REGEX.search(normalized)
+        ),
+        "broken_url_like": bool(
+            re.search(r"https?://\S+\s+[A-Za-zÀ-ÿ]", normalized, flags=re.IGNORECASE)
+            or re.search(r"10\.\d{4,9}/\S+\s+[A-Za-z0-9]", normalized, flags=re.IGNORECASE)
+        ),
+        "trailing_after_doi": bool(REFERENCE_TRAILING_AFTER_DOI_RE.search(normalized)),
+        "fragment_after_pages": bool(REFERENCE_FRAGMENT_AFTER_PAGES_RE.search(normalized)),
+        "trailing_venue_fragment": bool(
+            REFERENCE_TRAILING_VENUE_FRAGMENT_RE.search(normalized)
+        ),
+    }
+
+
+def _reference_text_quality_score(text: str) -> float:
+    metrics = _reference_text_quality_metrics(text)
+    score = 0.52
+    score += min(float(metrics["word_count"]) * 0.008, 0.18)
+    if metrics["has_doi_or_url"]:
+        score += 0.06
+    if metrics["glued_fragments"] == 0:
+        score += 0.04
+    score -= min(float(metrics["glued_fragments"]) * 0.08, 0.24)
+    if metrics["broken_url_like"]:
+        score -= 0.38
+    if metrics["trailing_after_doi"]:
+        score -= 0.28
+    if metrics["fragment_after_pages"]:
+        score -= 0.18
+    if metrics["trailing_venue_fragment"]:
+        score -= 0.24
+    return round(max(0.0, min(score, 1.0)), 3)
+
+
+def _reference_text_order_similarity(left: str, right: str) -> float:
+    left_compact = REFERENCE_COMPARE_NORMALIZE_RE.sub("", str(left or "")).lower()
+    right_compact = REFERENCE_COMPARE_NORMALIZE_RE.sub("", str(right or "")).lower()
+    if not left_compact or not right_compact:
+        return 0.0
+    return round(
+        SequenceMatcher(None, left_compact[:2200], right_compact[:2200]).ratio(),
+        3,
+    )
+
+
+def _reference_cleanup_signature(text: str) -> str:
+    return REFERENCE_COMPARE_NORMALIZE_RE.sub("", str(text or "")).lower()
+
+
+def _evaluate_reference_backbone_guard(
+    backbone_text: str,
+    candidate_text: str,
+) -> Dict[str, Any]:
+    if not str(candidate_text or "").strip():
+        return {
+            "signature_match": False,
+            "cleanup_only": False,
+            "order_similarity": 0.0,
+            "order_penalty": 0.46,
+            "eligible": False,
+            "reasons": ["empty_candidate"],
+        }
+    if str(backbone_text or "") == str(candidate_text or ""):
+        return {
+            "signature_match": True,
+            "cleanup_only": True,
+            "order_similarity": 1.0,
+            "order_penalty": 0.0,
+            "eligible": True,
+            "reasons": ["rows_raw_backbone"],
+        }
+    backbone_signature = _reference_cleanup_signature(backbone_text)
+    candidate_signature = _reference_cleanup_signature(candidate_text)
+    signature_match = bool(
+        backbone_signature
+        and candidate_signature
+        and backbone_signature == candidate_signature
+    )
+    order_similarity = _reference_text_order_similarity(backbone_text, candidate_text)
+    backbone_metrics = _reference_text_quality_metrics(backbone_text)
+    candidate_metrics = _reference_text_quality_metrics(candidate_text)
+    order_penalty = 0.0
+    reasons: List[str] = []
+    if not signature_match:
+        order_penalty += 0.22
+        reasons.append("backbone_signature_changed")
+    if order_similarity < 0.985:
+        order_penalty += min((0.985 - order_similarity) * 2.4, 0.34)
+        reasons.append("order_similarity_below_backbone")
+    if (
+        candidate_metrics.get("fragment_after_pages")
+        and not backbone_metrics.get("fragment_after_pages")
+    ):
+        order_penalty += 0.22
+        reasons.append("pages_fragment_reordered")
+    if (
+        candidate_metrics.get("trailing_venue_fragment")
+        and not backbone_metrics.get("trailing_venue_fragment")
+    ):
+        order_penalty += 0.24
+        reasons.append("venue_fragment_reordered")
+    if (
+        candidate_metrics.get("trailing_after_doi")
+        and not backbone_metrics.get("trailing_after_doi")
+    ):
+        order_penalty += 0.24
+        reasons.append("doi_tail_reordered")
+    cleanup_only = bool(signature_match and order_similarity >= 0.995)
+    eligible = bool(signature_match and order_similarity >= 0.985 and order_penalty <= 0.18)
+    if not reasons:
+        reasons.append("backbone_preserved")
+    return {
+        "signature_match": signature_match,
+        "cleanup_only": cleanup_only,
+        "order_similarity": round(order_similarity, 3),
+        "order_penalty": round(min(order_penalty, 0.95), 3),
+        "eligible": eligible,
+        "reasons": reasons,
+    }
+
+
+def _pick_preferred_reference_fragment(
+    raw_fragment: str,
+    token_fragment: str,
+) -> Dict[str, Any]:
+    raw_score = _reference_text_quality_score(raw_fragment)
+    token_score = _reference_text_quality_score(token_fragment)
+    order_similarity = _reference_text_order_similarity(raw_fragment, token_fragment)
+    if (
+        token_fragment
+        and token_fragment != raw_fragment
+        and order_similarity >= 0.9
+        and token_score >= raw_score + 0.08
+    ):
+        return {
+            "text": token_fragment,
+            "source": "rows_tokens",
+            "reason": "token_fragment_preferred",
+            "raw_score": raw_score,
+            "token_score": token_score,
+            "order_similarity": order_similarity,
+        }
+    return {
+        "text": raw_fragment,
+        "source": "rows_raw",
+        "reason": (
+            "raw_fragment_preserved_order"
+            if token_fragment and order_similarity < 0.9
+            else "raw_fragment_preserved"
+        ),
+        "raw_score": raw_score,
+        "token_score": token_score,
+        "order_similarity": order_similarity,
+    }
+
+
+def _apply_token_local_cleanups_preserving_row_order(
+    row_variants: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    selected_parts: List[str] = []
+    row_decisions: List[Dict[str, Any]] = []
+    cleanups_applied: set[str] = set()
+    rows_with_token_cleanup = 0
+    for row_variant in row_variants:
+        raw_text = str(row_variant.get("raw_text") or "").strip()
+        token_text = str(row_variant.get("token_text") or "").strip()
+        raw_score = _reference_text_quality_score(raw_text)
+        token_score = _reference_text_quality_score(token_text or raw_text)
+        token_available = bool(row_variant.get("token_available"))
+        guard = _evaluate_reference_backbone_guard(raw_text, token_text or raw_text)
+        selected_text = raw_text
+        selected_source = "rows_raw"
+        selection_reason = "raw_backbone_preserved"
+        if (
+            token_available
+            and token_text
+            and token_text != raw_text
+            and guard["cleanup_only"]
+            and token_score >= raw_score - 0.03
+        ):
+            selected_text = token_text
+            selected_source = "rows_tokens_local_cleanup"
+            selection_reason = "token_local_cleanup_preserving_row_order"
+            rows_with_token_cleanup += 1
+            cleanups_applied.update(row_variant.get("token_cleanups_applied") or [])
+        else:
+            cleanups_applied.update(row_variant.get("raw_cleanups_applied") or [])
+            if token_available and token_text and token_text != raw_text and not guard["eligible"]:
+                selection_reason = "token_cleanup_rejected_backbone_guard"
+        selected_parts.append(selected_text)
+        row_decisions.append(
+            {
+                "raw_text": raw_text,
+                "token_text": token_text or raw_text,
+                "selected_text": selected_text,
+                "selected_source": selected_source,
+                "selection_reason": selection_reason,
+                "token_available": token_available,
+                "raw_score": round(raw_score, 3),
+                "token_score": round(token_score, 3),
+                "order_similarity_to_rows": guard.get("order_similarity"),
+                "backbone_signature_match": guard.get("signature_match"),
+                "backbone_cleanup_only": guard.get("cleanup_only"),
+                "backbone_eligible": guard.get("eligible"),
+                "order_penalty": guard.get("order_penalty"),
+                "order_guard_reasons": guard.get("reasons") or [],
+            }
+        )
+    normalized_backbone = _normalize_reference_text_candidate(
+        _merge_text_fragments(selected_parts)
+    )
+    cleanups_applied.update(normalized_backbone.get("cleanups_applied") or [])
+    return {
+        "text": str(normalized_backbone.get("text") or "").strip(),
+        "per_row_selected": row_decisions,
+        "cleanups_applied": sorted(
+            str(name).strip() for name in cleanups_applied if str(name).strip()
+        ),
+        "rows_with_token_cleanup": rows_with_token_cleanup,
+    }
+
+
+def _select_reference_text_candidate(
+    *,
+    candidates: Sequence[Dict[str, Any]],
+    reference_doi: str,
+    crossref_context: Dict[str, Any],
+) -> Dict[str, Any]:
+    source_bias = {
+        "rows_raw": 0.08,
+        "rows_hybrid": 0.06,
+        "rows_tokens": -0.04,
+    }
+    evaluations: List[Dict[str, Any]] = []
+    best_evaluation: Optional[Dict[str, Any]] = None
+    evaluation_by_source: Dict[str, Dict[str, Any]] = {}
+    seen_keys: set[Tuple[str, str]] = set()
+    raw_backbone_text = ""
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        if str(candidate.get("source") or "").strip() == "rows_raw":
+            raw_backbone_text = str(candidate.get("text") or "").strip()
+            break
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        source = str(candidate.get("source") or "").strip() or "rows_raw"
+        text = str(candidate.get("text") or "").strip()
+        if not text:
+            continue
+        dedupe_key = (source, text)
+        if dedupe_key in seen_keys:
+            continue
+        seen_keys.add(dedupe_key)
+        preview_match = _match_reference_against_crossref(
+            reference_text=text,
+            reference_doi=reference_doi,
+            crossref_context=crossref_context,
+            allow_doi_lookup=False,
+        )
+        quality_score = float(
+            candidate.get("quality_score")
+            if candidate.get("quality_score") is not None
+            else _reference_text_quality_score(text)
+        )
+        order_guard = _evaluate_reference_backbone_guard(
+            raw_backbone_text or text,
+            text,
+        )
+        combined_score = round(
+            quality_score
+            + source_bias.get(source, 0.0)
+            + 0.18 * float(preview_match.get("score") or 0.0)
+            + 0.08 * float(preview_match.get("doi_match_score") or 0.0),
+            3,
+        )
+        combined_score = round(
+            combined_score - float(order_guard.get("order_penalty") or 0.0),
+            3,
+        )
+        evaluation = {
+            "source": source,
+            "text": text,
+            "quality_score": round(quality_score, 3),
+            "crossref_preview_score": round(
+                float(preview_match.get("score") or 0.0),
+                3,
+            ),
+            "doi_preview_score": round(
+                float(preview_match.get("doi_match_score") or 0.0),
+                3,
+            ),
+            "combined_score": combined_score,
+            "cleanups_applied": candidate.get("cleanups_applied") or [],
+            "order_similarity_to_rows": order_guard.get("order_similarity"),
+            "backbone_signature_match": order_guard.get("signature_match"),
+            "backbone_cleanup_only": order_guard.get("cleanup_only"),
+            "backbone_eligible": order_guard.get("eligible"),
+            "order_penalty": order_guard.get("order_penalty"),
+            "order_guard_reasons": order_guard.get("reasons") or [],
+        }
+        evaluations.append(evaluation)
+        evaluation_by_source[source] = evaluation
+        if best_evaluation is None or combined_score > best_evaluation["combined_score"]:
+            best_evaluation = evaluation
+
+    if best_evaluation is None:
+        return {
+            "source": "rows_raw",
+            "text": "",
+            "candidate_scores": evaluations,
+            "cleanups_applied": [],
+        }
+
+    raw_evaluation = evaluation_by_source.get("rows_raw") or best_evaluation
+    backbone_evaluation = raw_evaluation
+    hybrid_evaluation = evaluation_by_source.get("rows_hybrid")
+    if (
+        hybrid_evaluation is not None
+        and hybrid_evaluation.get("backbone_eligible")
+        and str(hybrid_evaluation.get("text") or "") != str(raw_evaluation.get("text") or "")
+        and (
+            hybrid_evaluation["combined_score"] >= raw_evaluation["combined_score"] + 0.02
+            or hybrid_evaluation["quality_score"] >= raw_evaluation["quality_score"] + 0.02
+        )
+    ):
+        backbone_evaluation = hybrid_evaluation
+
+    selected_evaluation = backbone_evaluation
+    for evaluation in evaluations:
+        if evaluation is backbone_evaluation:
+            continue
+        if not evaluation.get("backbone_eligible"):
+            continue
+        if (
+            evaluation.get("source") == "rows_tokens"
+            and not evaluation.get("backbone_cleanup_only")
+        ):
+            continue
+        minimum_gain = 0.06 if evaluation.get("source") == "rows_tokens" else 0.04
+        if evaluation["combined_score"] >= selected_evaluation["combined_score"] + minimum_gain:
+            selected_evaluation = evaluation
+
+    return {
+        "source": selected_evaluation["source"],
+        "text": selected_evaluation["text"],
+        "candidate_scores": evaluations,
+        "cleanups_applied": selected_evaluation.get("cleanups_applied") or [],
+        "order_similarity_to_rows": selected_evaluation.get("order_similarity_to_rows"),
+        "backbone_source": backbone_evaluation.get("source"),
+        "backbone_text": backbone_evaluation.get("text"),
+    }
+
+
 def _reconstruct_reference_text_from_rows_and_tokens(
     rows: Sequence[Dict[str, Any]],
     tokens_by_page: Dict[int, List[Dict[str, Any]]],
 ) -> Dict[str, Any]:
-    raw_text = _clean_reference_text(rows)
+    raw_text_candidate = _normalize_reference_text_candidate(_clean_reference_text(rows))
+    raw_text = str(raw_text_candidate.get("text") or "")
     per_row_before: List[str] = []
     per_row_after: List[str] = []
+    per_row_selected: List[Dict[str, Any]] = []
     token_rows_used = 0
+    row_variants: List[Dict[str, Any]] = []
+    candidate_cleanups: set[str] = set(raw_text_candidate.get("cleanups_applied") or [])
     for row in rows:
         row_text = str(row.get("text") or "").strip()
-        per_row_before.append(row_text)
+        normalized_row = _normalize_reference_fragment_text(row_text)
+        normalized_row_text = str(normalized_row.get("text") or row_text)
+        per_row_before.append(normalized_row_text)
         row_tokens = _tokens_for_row(row, tokens_by_page)
+        reconstructed = normalized_row_text
         if row_tokens:
             token_rows_used += 1
-            reconstructed = _merge_text_fragments([token["text"] for token in row_tokens])
-            per_row_after.append(reconstructed or row_text)
+            token_fragment = _merge_text_fragments([token["text"] for token in row_tokens])
+            reconstructed_payload = _normalize_reference_fragment_text(token_fragment)
+            reconstructed = str(
+                reconstructed_payload.get("text") or normalized_row_text
+            )
         else:
-            per_row_after.append(row_text)
-    token_text = _merge_text_fragments(per_row_after)
-    final_text = token_text or raw_text
+            reconstructed_payload = {"text": normalized_row_text, "cleanups_applied": []}
+        per_row_after.append(reconstructed or normalized_row_text)
+        row_variants.append(
+            {
+                "raw_text": normalized_row_text,
+                "token_text": reconstructed or normalized_row_text,
+                "token_available": bool(row_tokens),
+                "raw_cleanups_applied": normalized_row.get("cleanups_applied") or [],
+                "token_cleanups_applied": reconstructed_payload.get("cleanups_applied")
+                or [],
+            }
+        )
+        candidate_cleanups.update(normalized_row.get("cleanups_applied") or [])
+        candidate_cleanups.update(reconstructed_payload.get("cleanups_applied") or [])
+
+    token_text_candidate = _normalize_reference_text_candidate(
+        _merge_text_fragments(per_row_after)
+    )
+    backbone_payload = _apply_token_local_cleanups_preserving_row_order(row_variants)
+    per_row_selected = list(backbone_payload.get("per_row_selected") or [])
+    hybrid_text_candidate = _normalize_reference_text_candidate(
+        backbone_payload.get("text") or raw_text
+    )
+    candidate_cleanups.update(token_text_candidate.get("cleanups_applied") or [])
+    candidate_cleanups.update(hybrid_text_candidate.get("cleanups_applied") or [])
+    candidate_cleanups.update(backbone_payload.get("cleanups_applied") or [])
+    token_text = str(token_text_candidate.get("text") or raw_text)
+    hybrid_text = str(hybrid_text_candidate.get("text") or raw_text)
+    final_text = hybrid_text or raw_text
     confidence = round(token_rows_used / max(len(rows), 1), 3)
     return {
         "raw_text": raw_text,
+        "token_text": token_text,
+        "hybrid_text": hybrid_text,
         "final_text": final_text,
         "token_cleanup_confidence": confidence,
         "token_rows_used": token_rows_used,
         "per_row_before": per_row_before,
         "per_row_after": per_row_after,
+        "per_row_selected": per_row_selected,
+        "selected_candidate_source": (
+            "rows_hybrid"
+            if int(backbone_payload.get("rows_with_token_cleanup") or 0) > 0
+            else "rows_raw"
+        ),
+        "backbone_text": hybrid_text,
+        "backbone_source": "rows_hybrid",
+        "cleanups_applied": sorted(candidate_cleanups),
+        "candidates": [
+            {
+                "source": "rows_raw",
+                "text": raw_text,
+                "quality_score": _reference_text_quality_score(raw_text),
+                "cleanups_applied": raw_text_candidate.get("cleanups_applied") or [],
+            },
+            {
+                "source": "rows_tokens",
+                "text": token_text,
+                "quality_score": _reference_text_quality_score(token_text),
+                "cleanups_applied": token_text_candidate.get("cleanups_applied") or [],
+            },
+            {
+                "source": "rows_hybrid",
+                "text": hybrid_text,
+                "quality_score": _reference_text_quality_score(hybrid_text),
+                "cleanups_applied": sorted(
+                    {
+                        str(name).strip()
+                        for name in list(hybrid_text_candidate.get("cleanups_applied") or [])
+                        + list(backbone_payload.get("cleanups_applied") or [])
+                        if str(name).strip()
+                    }
+                ),
+            },
+        ],
     }
 
 
@@ -1423,6 +2439,7 @@ def _match_reference_against_crossref(
     reference_text: str,
     reference_doi: str,
     crossref_context: Dict[str, Any],
+    allow_doi_lookup: bool = True,
 ) -> Dict[str, Any]:
     candidates = crossref_context.get("crossref_reference_candidates") or []
     best_match = None
@@ -1438,7 +2455,7 @@ def _match_reference_against_crossref(
     if reference_doi:
         if best_match and _normalize_doi(best_match.get("doi")) == reference_doi:
             doi_match_score = 1.0
-        elif bool(crossref_context.get("crossref_available")):
+        elif allow_doi_lookup and bool(crossref_context.get("crossref_available")):
             try:
                 looked_up = crossref_fetch_work_by_doi(reference_doi, timeout=5)
             except Exception:  # pragma: no cover - defensive guard
@@ -1517,8 +2534,29 @@ def _build_reference_decision(
     token_cleanup_confidence = float(
         token_reconstruction.get("token_cleanup_confidence") or 0.0
     )
+    selected_candidate_source = str(
+        token_reconstruction.get("selected_candidate_source") or "rows_raw"
+    ).strip() or "rows_raw"
+    selected_candidate_quality = 0.0
+    for candidate_score in token_reconstruction.get("candidate_scores") or []:
+        if not isinstance(candidate_score, dict):
+            continue
+        if str(candidate_score.get("source") or "").strip() == selected_candidate_source:
+            selected_candidate_quality = float(candidate_score.get("quality_score") or 0.0)
+            break
+    cleanup_applied = bool(
+        token_reconstruction.get("cleanups_applied")
+        or selected_candidate_source in {"rows_tokens", "rows_hybrid"}
+    )
     crossref_match_score = float(crossref_match.get("score") or 0.0)
     doi_match_score = float(crossref_match.get("doi_match_score") or 0.0)
+    validation_reason = str(validation.get("reason") or "").strip() or None
+    validation_hard_failure = validation_reason in {
+        "contains_header_footer_noise",
+        "empty_local_text",
+        "mixed_rows_multiple_references",
+        "short_or_empty_reference",
+    }
     final_score = 0.0
     final_score += 0.18 if inside_bibliography_zone else -0.35
     final_score += 0.16 if inside_expected_column else -0.32
@@ -1527,12 +2565,22 @@ def _build_reference_decision(
     final_score += 0.12 * crossref_match_score
     final_score += 0.08 * doi_match_score
     final_score += 0.08 * token_cleanup_confidence
+    final_score += 0.04 * selected_candidate_quality
     final_score -= 0.28 * header_noise_score
     if has_nested_anchor:
         final_score -= 0.34
-    if not bool(validation.get("accepted")):
+    if validation_hard_failure:
         final_score -= 0.12
     final_score = round(max(0.0, min(1.0, final_score)), 3)
+    strong_structural_evidence = bool(
+        inside_bibliography_zone
+        and inside_expected_column
+        and starts_with_anchor
+        and not has_nested_anchor
+        and row_continuity_score >= 0.9
+        and selected_candidate_quality >= 0.62
+        and len(reference_text or "") >= 72
+    )
 
     if header_noise_score >= 0.95:
         classification = "rejected_noise"
@@ -1542,7 +2590,19 @@ def _build_reference_decision(
         classification = "fallback_needed"
         accepted = False
         reason = "mixed_rows_multiple_references"
-    elif final_score >= 0.72 and token_cleanup_confidence >= 0.25:
+    elif validation_hard_failure:
+        classification = "fallback_needed"
+        accepted = False
+        reason = validation_reason or "validation_failed"
+    elif strong_structural_evidence and final_score >= 0.62:
+        classification = (
+            "accepted_with_cleanup"
+            if cleanup_applied
+            else "accepted_structured"
+        )
+        accepted = True
+        reason = "strong_structural_evidence"
+    elif final_score >= 0.72 and cleanup_applied:
         classification = "accepted_with_cleanup"
         accepted = True
         reason = "token_cleanup_applied"
@@ -1559,13 +2619,8 @@ def _build_reference_decision(
         accepted = False
         reason = "insufficient_reference_evidence"
 
-    if validation.get("reason") and accepted:
-        reason = validation.get("reason")
-    if not validation.get("accepted") and validation.get("reason"):
-        accepted = False
-        if classification == "accepted_structured":
-            classification = "fallback_needed"
-        reason = str(validation.get("reason"))
+    if validation_reason and accepted and validation_hard_failure:
+        reason = validation_reason
     return {
         "inside_bibliography_zone": inside_bibliography_zone,
         "inside_expected_column": inside_expected_column,
@@ -1577,11 +2632,68 @@ def _build_reference_decision(
         "doi_match_score": round(doi_match_score, 3),
         "row_continuity_score": round(row_continuity_score, 3),
         "token_cleanup_confidence": round(token_cleanup_confidence, 3),
+        "selected_candidate_quality": round(selected_candidate_quality, 3),
+        "validation_warning": None if validation_hard_failure else validation_reason,
+        "cleanup_applied": cleanup_applied,
+        "selected_candidate_source": selected_candidate_source,
         "final_score": final_score,
         "accepted": accepted,
         "classification": classification,
         "reason": reason,
     }
+
+
+def _coerce_reference_validation_payload(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        return {
+            "match_score": 0.0,
+            "mixed_reference_score": 0.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": None,
+        }
+    return {
+        "match_score": round(float(value.get("match_score") or 0.0), 3),
+        "mixed_reference_score": round(
+            float(value.get("mixed_reference_score") or 0.0),
+            3,
+        ),
+        "has_nested_anchor": bool(value.get("has_nested_anchor")),
+        "accepted": bool(value.get("accepted")),
+        "reason": value.get("reason"),
+    }
+
+
+def _sync_reference_validation_with_final_decision(
+    validation: Any,
+    final_decision: Any,
+) -> Dict[str, Any]:
+    normalized_validation = _coerce_reference_validation_payload(validation)
+    normalized_decision = (
+        dict(final_decision)
+        if isinstance(final_decision, dict)
+        else {
+            "accepted": False,
+            "classification": "fallback_needed",
+            "reason": "missing_final_decision",
+            "final_score": 0.0,
+        }
+    )
+    synced = dict(normalized_validation)
+    synced["intermediate_accepted"] = bool(normalized_validation.get("accepted"))
+    synced["intermediate_reason"] = normalized_validation.get("reason")
+    synced["accepted"] = bool(normalized_decision.get("accepted"))
+    synced["reason"] = (
+        None
+        if normalized_decision.get("accepted")
+        else normalized_decision.get("reason")
+    )
+    synced["final_classification"] = normalized_decision.get("classification")
+    synced["final_score"] = round(
+        float(normalized_decision.get("final_score") or 0.0),
+        3,
+    )
+    return synced
 
 
 def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
@@ -2163,6 +3275,53 @@ def build_references_from_rows(
             block_rows,
             tokens_by_page,
         )
+        reference_doi_seed = (
+            _extract_doi(token_reconstruction.get("raw_text"))
+            or _extract_doi(token_reconstruction.get("hybrid_text"))
+            or _extract_doi(token_reconstruction.get("token_text"))
+            or ""
+        )
+        selected_candidate = _select_reference_text_candidate(
+            candidates=token_reconstruction.get("candidates") or [],
+            reference_doi=reference_doi_seed,
+            crossref_context=crossref_context,
+        )
+        selected_candidate_source = str(
+            selected_candidate.get("source")
+            or token_reconstruction.get("selected_candidate_source")
+            or "rows_hybrid"
+        ).strip() or "rows_hybrid"
+        token_reconstruction["selected_candidate_source"] = selected_candidate_source
+        token_reconstruction["candidate_scores"] = (
+            selected_candidate.get("candidate_scores") or []
+        )
+        token_reconstruction["order_similarity_to_rows"] = selected_candidate.get(
+            "order_similarity_to_rows"
+        )
+        token_reconstruction["backbone_source"] = selected_candidate.get(
+            "backbone_source"
+        ) or token_reconstruction.get("backbone_source")
+        token_reconstruction["backbone_text"] = str(
+            selected_candidate.get("backbone_text")
+            or token_reconstruction.get("backbone_text")
+            or token_reconstruction.get("hybrid_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
+        token_reconstruction["cleanups_applied"] = sorted(
+            {
+                str(name).strip()
+                for name in list(token_reconstruction.get("cleanups_applied") or [])
+                + list(selected_candidate.get("cleanups_applied") or [])
+                if str(name).strip()
+            }
+        )
+        token_reconstruction["final_text"] = str(
+            selected_candidate.get("text")
+            or token_reconstruction.get("hybrid_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
         block_text = str(token_reconstruction.get("final_text") or "").strip()
         if not _is_valid_reference_block(
             expected_index=index,
@@ -2179,6 +3338,7 @@ def build_references_from_rows(
             metadata=metadata_by_index.get(index),
             metadata_by_index=metadata_by_index,
         )
+        intermediate_validation = _coerce_reference_validation_payload(local_validation)
         crossref_match = _match_reference_against_crossref(
             reference_text=block_text,
             reference_doi=_extract_doi(block_text),
@@ -2194,7 +3354,7 @@ def build_references_from_rows(
             bibliography_segments=bibliography_segments,
             validation=local_validation,
         )
-        local_validation = {
+        merged_validation = {
             "match_score": round(
                 max(
                     float(local_validation.get("match_score") or 0.0),
@@ -2214,9 +3374,14 @@ def build_references_from_rows(
             "accepted": bool(decision["accepted"]),
             "reason": None if decision["accepted"] else decision["reason"],
         }
+        final_decision = dict(decision)
+        local_validation = _sync_reference_validation_with_final_decision(
+            merged_validation,
+            final_decision,
+        )
         structure_source = (
-            "rows_tokens"
-            if float(token_reconstruction.get("token_cleanup_confidence") or 0.0) >= 0.25
+            selected_candidate_source
+            if selected_candidate_source.startswith("rows")
             else "rows"
         )
         parsed[index] = {
@@ -2229,11 +3394,25 @@ def build_references_from_rows(
             "local_anchor_detected": True,
             "structure_source": structure_source,
             "reference_validation": local_validation,
+            "validation_intermediate": intermediate_validation,
             "column_id": anchor.get("column_id"),
             "anchor_position": start_position,
-            "scores": decision,
+            "scores": final_decision,
+            "final_decision": final_decision,
             "crossref_match": crossref_match,
             "token_reconstruction": {
+                "raw_text": token_reconstruction.get("raw_text"),
+                "token_text": token_reconstruction.get("token_text"),
+                "hybrid_text": token_reconstruction.get("hybrid_text"),
+                "final_text": token_reconstruction.get("final_text"),
+                "selected_candidate_source": selected_candidate_source,
+                "order_similarity_to_rows": token_reconstruction.get(
+                    "order_similarity_to_rows"
+                ),
+                "backbone_source": token_reconstruction.get("backbone_source"),
+                "backbone_text": token_reconstruction.get("backbone_text"),
+                "cleanups_applied": token_reconstruction.get("cleanups_applied") or [],
+                "candidate_scores": token_reconstruction.get("candidate_scores") or [],
                 "token_cleanup_confidence": token_reconstruction.get(
                     "token_cleanup_confidence"
                 ),
@@ -2253,7 +3432,8 @@ def build_references_from_rows(
                     "cut_reasons": block_result.get("cut_reasons") or [],
                     "nested_anchor_indices": block_result.get("nested_anchor_indices")
                     or [],
-                    "scores": decision,
+                    "validation_intermediate": intermediate_validation,
+                    "final_decision": final_decision,
                 }
             )
         if isinstance(token_debug_collector, list):
@@ -2262,8 +3442,23 @@ def build_references_from_rows(
                     "reference_index": index,
                     "before": token_reconstruction.get("raw_text"),
                     "after": token_reconstruction.get("final_text"),
+                    "before_full": token_reconstruction.get("raw_text"),
+                    "token_full": token_reconstruction.get("token_text"),
+                    "hybrid_full": token_reconstruction.get("hybrid_text"),
+                    "selected_candidate_source": selected_candidate_source,
+                    "order_similarity_to_rows": token_reconstruction.get(
+                        "order_similarity_to_rows"
+                    ),
+                    "backbone_source": token_reconstruction.get("backbone_source"),
+                    "backbone_text": token_reconstruction.get("backbone_text"),
+                    "candidate_scores": token_reconstruction.get("candidate_scores")
+                    or [],
+                    "cleanups_applied": token_reconstruction.get("cleanups_applied")
+                    or [],
                     "per_row_before": token_reconstruction.get("per_row_before") or [],
                     "per_row_after": token_reconstruction.get("per_row_after") or [],
+                    "per_row_selected": token_reconstruction.get("per_row_selected")
+                    or [],
                     "token_cleanup_confidence": token_reconstruction.get(
                         "token_cleanup_confidence"
                     ),
@@ -2696,6 +3891,13 @@ def build_references_data(
             "accepted": False,
             "reason": "fallback_without_rows_structure",
         }
+        validation_intermediate: Dict[str, Any] = {
+            "match_score": 0.0,
+            "mixed_reference_score": 0.0,
+            "has_nested_anchor": False,
+            "accepted": False,
+            "reason": "fallback_without_rows_structure",
+        }
         decision_scores: Dict[str, Any] = {
             "inside_bibliography_zone": False,
             "inside_expected_column": False,
@@ -2707,13 +3909,23 @@ def build_references_data(
             "doi_match_score": 0.0,
             "row_continuity_score": 0.0,
             "token_cleanup_confidence": 0.0,
+            "cleanup_applied": False,
+            "selected_candidate_source": structure_source,
             "final_score": 0.0,
             "accepted": False,
             "classification": "fallback_needed",
             "reason": "fallback_without_rows_structure",
         }
+        final_decision: Dict[str, Any] = dict(decision_scores)
         crossref_match_payload: Dict[str, Any] = {"score": 0.0, "doi_match_score": 0.0, "match": None}
         token_payload: Dict[str, Any] = {
+            "raw_text": raw_text,
+            "token_text": raw_text,
+            "hybrid_text": raw_text,
+            "final_text": raw_text,
+            "selected_candidate_source": structure_source,
+            "cleanups_applied": [],
+            "candidate_scores": [],
             "token_cleanup_confidence": 0.0,
             "token_rows_used": 0,
         }
@@ -2744,8 +3956,33 @@ def build_references_data(
                     "accepted": bool(candidate_validation.get("accepted")),
                     "reason": candidate_validation.get("reason"),
                 }
+                validation_intermediate = {
+                    "match_score": float(
+                        candidate_validation.get("match_score") or 0.0
+                    ),
+                    "mixed_reference_score": float(
+                        candidate_validation.get("mixed_reference_score") or 0.0
+                    ),
+                    "has_nested_anchor": bool(
+                        candidate_validation.get("has_nested_anchor")
+                    ),
+                    "accepted": bool(
+                        candidate_validation.get("intermediate_accepted")
+                        if candidate_validation.get("intermediate_accepted") is not None
+                        else candidate_validation.get("accepted")
+                    ),
+                    "reason": (
+                        candidate_validation.get("intermediate_reason")
+                        if candidate_validation.get("intermediate_reason") is not None
+                        else candidate_validation.get("reason")
+                    ),
+                }
             if isinstance(line_reference.get("scores"), dict):
                 decision_scores = dict(line_reference.get("scores") or {})
+            if isinstance(line_reference.get("final_decision"), dict):
+                final_decision = dict(line_reference.get("final_decision") or {})
+            else:
+                final_decision = dict(decision_scores)
             if isinstance(line_reference.get("crossref_match"), dict):
                 crossref_match_payload = dict(line_reference.get("crossref_match") or {})
             if isinstance(line_reference.get("token_reconstruction"), dict):
@@ -2789,9 +4026,11 @@ def build_references_data(
                     {
                         "inside_bibliography_zone": True,
                         "final_score": round(min(best_score / 5.0, 0.52), 3),
+                        "selected_candidate_source": structure_source,
                         "reason": "bibliography_box_fallback",
                     }
                 )
+                final_decision = dict(decision_scores)
                 if TRACE_REFERENCES:
                     logger.debug(
                         f"Referencia {ref_id} emparejada con caja de bibliografía "
@@ -2805,7 +4044,13 @@ def build_references_data(
                 if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
                     doi_value = doi_from_text
                 structure_source = "raw_reference_fallback"
-                decision_scores.update({"reason": "raw_reference_fallback"})
+                decision_scores.update(
+                    {
+                        "selected_candidate_source": structure_source,
+                        "reason": "raw_reference_fallback",
+                    }
+                )
+                final_decision = dict(decision_scores)
                 if TRACE_REFERENCES:
                     logger.debug(
                         f"Referencia {ref_id} sin caja de bibliografía emparejada."
@@ -2825,6 +4070,21 @@ def build_references_data(
                 float(crossref_match_payload.get("doi_match_score") or 0.0),
                 3,
             )
+            final_decision["crossref_match_score"] = decision_scores["crossref_match_score"]
+            final_decision["doi_match_score"] = decision_scores["doi_match_score"]
+
+        final_decision = dict(final_decision or decision_scores)
+        final_decision.setdefault("cleanup_applied", False)
+        final_decision.setdefault("selected_candidate_source", structure_source)
+        final_decision.setdefault("accepted", False)
+        final_decision.setdefault("classification", "fallback_needed")
+        final_decision.setdefault("reason", "fallback_without_rows_structure")
+        final_decision.setdefault("final_score", 0.0)
+        decision_scores = dict(final_decision)
+        reference_validation = _sync_reference_validation_with_final_decision(
+            reference_validation,
+            final_decision,
+        )
 
         reference_entries.append(
             {
@@ -2840,7 +4100,9 @@ def build_references_data(
                 "local_row_count": max(0, local_row_count),
                 "local_anchor_detected": bool(local_anchor_detected),
                 "reference_validation": reference_validation,
+                "validation_intermediate": validation_intermediate,
                 "scores": decision_scores,
+                "final_decision": final_decision,
                 "crossref_match": crossref_match_payload,
                 "token_reconstruction": token_payload,
                 "anomalies": anomalies,
@@ -3185,16 +4447,51 @@ def finalize_reference_detection_debug_payload(
     for entry in references:
         if not isinstance(entry, dict):
             continue
-        scores = entry.get("scores") if isinstance(entry.get("scores"), dict) else {}
+        final_decision = (
+            entry.get("final_decision")
+            if isinstance(entry.get("final_decision"), dict)
+            else (
+                entry.get("scores")
+                if isinstance(entry.get("scores"), dict)
+                else {}
+            )
+        )
+        scores = dict(final_decision)
         validation = (
             entry.get("reference_validation")
             if isinstance(entry.get("reference_validation"), dict)
             else {}
         )
+        validation_intermediate = (
+            entry.get("validation_intermediate")
+            if isinstance(entry.get("validation_intermediate"), dict)
+            else {
+                "match_score": validation.get("match_score"),
+                "mixed_reference_score": validation.get("mixed_reference_score"),
+                "has_nested_anchor": validation.get("has_nested_anchor"),
+                "accepted": validation.get("intermediate_accepted"),
+                "reason": validation.get("intermediate_reason"),
+            }
+        )
         crossref_match = (
             entry.get("crossref_match")
             if isinstance(entry.get("crossref_match"), dict)
             else {}
+        )
+        token_info = (
+            entry.get("token_reconstruction")
+            if isinstance(entry.get("token_reconstruction"), dict)
+            else {}
+        )
+        enrichment_validation = (
+            entry.get("enrichment_validation")
+            if isinstance(entry.get("enrichment_validation"), dict)
+            else None
+        )
+        enrichment_candidate = (
+            entry.get("enrichment_candidate")
+            if isinstance(entry.get("enrichment_candidate"), dict)
+            else None
         )
         finalized_references.append(
             {
@@ -3203,14 +4500,31 @@ def finalize_reference_detection_debug_payload(
                 "source": entry.get("structure_source"),
                 "structure_source": entry.get("structure_source"),
                 "candidate_text_raw": entry.get("text_candidate_raw") or entry.get("text"),
+                "token_candidate_text": token_info.get("token_text"),
+                "hybrid_candidate_text": token_info.get("hybrid_text"),
+                "backbone_text": token_info.get("backbone_text"),
                 "final_text": entry.get("text"),
                 "doi_detected": entry.get("doi"),
                 "doi_enriched": entry.get("doi"),
                 "match_with_crossref": crossref_match.get("match"),
-                "accepted": bool(validation.get("accepted")),
-                "rejected": not bool(validation.get("accepted")),
-                "reason": validation.get("reason") or scores.get("reason"),
+                "accepted": bool(scores.get("accepted")),
+                "rejected": not bool(scores.get("accepted")),
+                "reason": scores.get("reason"),
+                "final_decision": scores,
+                "validation_intermediate": validation_intermediate,
                 "scores": scores,
+                "cleanups_applied": token_info.get("cleanups_applied") or [],
+                "selected_candidate_source": token_info.get(
+                    "selected_candidate_source"
+                ),
+                "order_similarity_to_rows": token_info.get(
+                    "order_similarity_to_rows"
+                ),
+                "backbone_source": token_info.get("backbone_source"),
+                "candidate_scores": token_info.get("candidate_scores") or [],
+                "enrichment_validation": enrichment_validation,
+                "enrichment_candidate": enrichment_candidate,
+                "enrichment_accepted": entry.get("enrichment_accepted"),
                 "anomalies": entry.get("anomalies") if isinstance(entry.get("anomalies"), dict) else {},
                 "fallback_used": "fallback" in str(entry.get("structure_source") or ""),
             }
@@ -3231,8 +4545,13 @@ def write_reference_detection_debug_json(
     safe_base_name = _sanitize_filename_component(
         Path(str(source_filename or "reference_debug.pdf")).stem
     )
-    REFERENCE_DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = REFERENCE_DEBUG_DIR / f"{safe_base_name}{REFERENCE_DEBUG_FILE_SUFFIX}"
+    debug_timestamp = int(datetime.now(timezone.utc).timestamp())
+    output_dir = REFERENCE_DEBUG_DIR / safe_base_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = (
+        output_dir
+        / f"{REFERENCE_DEBUG_FILE_PREFIX}{debug_timestamp}{REFERENCE_DEBUG_FILE_EXTENSION}"
+    )
     output_path.write_text(
         json.dumps(debug_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
