@@ -1,0 +1,27 @@
+{
+  "paper_id": "li_2020_stem",
+  "pdf_file": "s41979-020-00044-w.pdf",
+  "engine_used": "papermage",
+  "references_total": 4,
+  "expected_max_reference_index": null,
+  "max_reference_index_detected": 4,
+  "difference_vs_expected": null,
+  "references_numbered": false,
+  "bibliography_start_page": 16,
+  "pct_structured_rows_raw": 0.0,
+  "pct_raw_reference_fallback": 100.0,
+  "pct_inside_bibliography_zone_true": 0.0,
+  "pct_local_anchor_detected_true": 0.0,
+  "pct_references_with_page_index": 0.0,
+  "pct_references_with_doi": 75.0,
+  "pct_accepted": 0.0,
+  "last_reference_tail_noise_detected": true,
+  "appendix_contamination_detected": true,
+  "reference_count_mismatch_detected": false,
+  "fallback_rate_high": true,
+  "status": "FAIL",
+  "status_reasons": [
+    "appendix_contamination"
+  ],
+  "notes": "PDF real del corpus base; expectativa de referencias pendiente de fijar."
+}

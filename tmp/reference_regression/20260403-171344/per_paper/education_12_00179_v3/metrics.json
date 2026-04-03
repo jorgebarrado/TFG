@@ -1,0 +1,28 @@
+{
+  "paper_id": "education_12_00179_v3",
+  "pdf_file": "education-12-00179-v3.pdf",
+  "engine_used": "papermage",
+  "references_total": 11,
+  "expected_max_reference_index": 11,
+  "max_reference_index_detected": 11,
+  "difference_vs_expected": 0,
+  "references_numbered": true,
+  "bibliography_start_page": 6,
+  "pct_structured_rows_raw": 0.0,
+  "pct_raw_reference_fallback": 100.0,
+  "pct_inside_bibliography_zone_true": 0.0,
+  "pct_local_anchor_detected_true": 0.0,
+  "pct_references_with_page_index": 0.0,
+  "pct_references_with_doi": 0.0,
+  "pct_accepted": 0.0,
+  "last_reference_tail_noise_detected": false,
+  "appendix_contamination_detected": false,
+  "reference_count_mismatch_detected": false,
+  "fallback_rate_high": true,
+  "status": "WARN",
+  "status_reasons": [
+    "fallback_rate_high",
+    "accepted_rate_low"
+  ],
+  "notes": "Caso corto numerico con debug previo en el repo."
+}
