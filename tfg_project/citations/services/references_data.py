@@ -1283,6 +1283,7 @@ def _sections_for_segment(
     *,
     start_page: Optional[int],
     heading_y: Optional[float],
+    artifact_info: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     page_index = _page_index_value(segment.get("page"))
     segment_box = _normalize_box(segment.get("box"))
@@ -1312,7 +1313,19 @@ def _sections_for_segment(
         overlaps = _boxes_overlap_vertically(segment_box, section_box)
         near_segment_start = abs(float(section_box[1]) - segment_y0) <= 0.08
         if overlaps or near_segment_start:
-            related.append(_serialize_layer_item(section))
+            related_record = _serialize_layer_item(section)
+            transition_kind = _classify_section_transition_kind(
+                text=text,
+                box=section_box,
+                artifact_info=artifact_info or {},
+            )
+            related_record["noise_score"] = round(_score_header_noise(text), 3)
+            related_record["transition_kind"] = transition_kind
+            related_record["header_footer_noise_detected"] = transition_kind in {
+                "running_header",
+                "footer_noise",
+            }
+            related.append(related_record)
     return related
 
 
@@ -1349,6 +1362,475 @@ def _paragraphs_for_segment(
             }
         )
     return related
+
+
+def _classify_section_transition_kind(
+    *,
+    text: str,
+    box: Sequence[float],
+    artifact_info: Dict[str, Any],
+) -> str:
+    normalized = _normalize_text(text)
+    if not normalized:
+        return "unknown"
+    key = _artifact_text_key(text)
+    repeated_keys = artifact_info.get("repeated_text_keys", set())
+    noise_score = _score_header_noise(text)
+    y0 = float(box[1])
+    y1 = y0 + float(box[3])
+    in_top_margin = y1 <= 0.2
+    in_bottom_margin = y0 >= 0.8
+    repeated_artifact = bool(key and key in repeated_keys)
+
+    if PAGE_NUMBER_ONLY_RE.match(text):
+        return "footer_noise"
+    if (repeated_artifact or noise_score >= 0.72) and in_top_margin:
+        return "running_header"
+    if (repeated_artifact or noise_score >= 0.72) and in_bottom_margin:
+        return "footer_noise"
+    if repeated_artifact and noise_score >= 0.56:
+        return "running_header" if y0 <= 0.35 else "footer_noise"
+    if noise_score >= 0.82:
+        return "running_header" if y0 <= 0.35 else "footer_noise"
+    return "semantic_section"
+
+
+def _build_segment_reading_units(
+    *,
+    segment: Dict[str, Any],
+    row_by_id: Dict[str, Dict[str, Any]],
+) -> Dict[str, Any]:
+    ordered_rows = [
+        row_by_id[row_id]
+        for row_id in (segment.get("row_ids") or [])
+        if str(row_id) in row_by_id
+    ]
+    ordered_rows = sorted(ordered_rows, key=_line_sort_key)
+    units: List[Dict[str, Any]] = []
+    current_rows: List[Dict[str, Any]] = []
+    unit_split_reason = "segment_end"
+
+    def _flush_current_rows(split_reason: str) -> None:
+        nonlocal current_rows
+        if not current_rows:
+            return
+        row_texts = [str(row.get("text") or "") for row in current_rows]
+        leading_anchors = [
+            anchor_index
+            for anchor_index in (
+                _extract_leading_reference_index(str(row.get("text") or ""))
+                for row in current_rows
+            )
+            if isinstance(anchor_index, int) and anchor_index > 0
+        ]
+        density = _compute_reference_density(row_texts)
+        unit_box = _union_boxes(
+            [
+                row_box
+                for row_box in (_normalize_box(row.get("box")) for row in current_rows)
+                if row_box is not None
+            ]
+        )
+        unit_type = "anchor_window" if leading_anchors else "continuation_window"
+        units.append(
+            {
+                "reading_unit_type": unit_type,
+                "row_count": len(current_rows),
+                "page_index": _page_index_value(current_rows[0].get("page")),
+                "page_number": _page_number_from_index(current_rows[0].get("page")),
+                "column_id": current_rows[0].get("column_id"),
+                "first_anchor_index": leading_anchors[0] if leading_anchors else None,
+                "last_anchor_index": leading_anchors[-1] if leading_anchors else None,
+                "anchor_count": len(leading_anchors),
+                "reference_density": density["score"],
+                "reference_density_mean": density["mean_score"],
+                "reference_density_strong_ratio": density["strong_ratio"],
+                "split_reason": split_reason,
+                "box": _serialize_box(unit_box),
+                "raw_text": _clean_reference_text(current_rows),
+            }
+        )
+        current_rows = []
+
+    for row in ordered_rows:
+        text = str(row.get("text") or "").strip()
+        if not text:
+            continue
+        row_anchor_index = _extract_leading_reference_index(text)
+        if current_rows and row_anchor_index is not None:
+            _flush_current_rows("next_local_anchor")
+        elif current_rows:
+            previous_row = current_rows[-1]
+            previous_page = _page_index_value(previous_row.get("page"))
+            current_page = _page_index_value(row.get("page"))
+            previous_y1 = _to_float(previous_row.get("y1"))
+            current_y0 = _to_float(row.get("y0"))
+            if (
+                previous_page is not None
+                and current_page is not None
+                and previous_page == current_page
+                and previous_y1 is not None
+                and current_y0 is not None
+                and float(current_y0) - float(previous_y1) > 0.085
+            ):
+                _flush_current_rows("vertical_gap")
+        current_rows.append(row)
+    _flush_current_rows(unit_split_reason)
+
+    anchored_units = [
+        unit for unit in units if int(unit.get("anchor_count") or 0) > 0
+    ]
+    anchor_sequence = [
+        int(unit.get("first_anchor_index") or 0)
+        for unit in anchored_units
+        if int(unit.get("first_anchor_index") or 0) > 0
+    ]
+    local_anchor_progression_score = 0.0
+    if len(anchor_sequence) == 1:
+        local_anchor_progression_score = 1.0
+    elif len(anchor_sequence) > 1:
+        progression_steps = 0
+        near_continuous_steps = 0
+        total_steps = len(anchor_sequence) - 1
+        for previous_anchor, current_anchor in zip(anchor_sequence, anchor_sequence[1:]):
+            if current_anchor > previous_anchor:
+                progression_steps += 1
+            if 0 < current_anchor - previous_anchor <= 6:
+                near_continuous_steps += 1
+        local_anchor_progression_score = (
+            (progression_steps / max(total_steps, 1)) * 0.55
+            + (near_continuous_steps / max(total_steps, 1)) * 0.45
+        )
+
+    return {
+        "reading_units": units,
+        "unit_count": len(units),
+        "anchored_unit_count": len(anchored_units),
+        "anchor_sequence": anchor_sequence,
+        "local_anchor_progression_score": round(local_anchor_progression_score, 3),
+    }
+
+
+def _evaluate_bibliography_continuity(
+    *,
+    flow_position: int,
+    segment: Dict[str, Any],
+    leading_anchor_indices: Sequence[int],
+    density: Dict[str, Any],
+    paragraph_density: Dict[str, Any],
+    continuity_from_previous: bool,
+    previous_last_anchor: Optional[int],
+    anchorless_run: int,
+    section_transition_kind: str,
+    header_footer_noise_detected: bool,
+    reading_unit_payload: Dict[str, Any],
+    negative_streak: int,
+) -> Dict[str, Any]:
+    positive_signals: List[Dict[str, Any]] = []
+    negative_signals: List[Dict[str, Any]] = []
+    positive_score = 0.0
+    negative_score = 0.0
+    anchor_count = len(leading_anchor_indices)
+    anchor_continuity_status = "no_anchors"
+    if leading_anchor_indices:
+        first_anchor = leading_anchor_indices[0]
+        if previous_last_anchor is None:
+            anchor_continuity_status = (
+                "start_anchor_sequence" if first_anchor <= 10 else "late_anchor_start"
+            )
+        elif first_anchor <= previous_last_anchor + 1:
+            anchor_continuity_status = "continuous"
+        elif first_anchor <= previous_last_anchor + 3 and density["score"] >= 0.62:
+            anchor_continuity_status = "near_continuous_high_density"
+        else:
+            anchor_continuity_status = "anchor_gap"
+
+    anchored_unit_count = int(reading_unit_payload.get("anchored_unit_count") or 0)
+    local_anchor_progression_score = float(
+        reading_unit_payload.get("local_anchor_progression_score") or 0.0
+    )
+
+    def _add_signal(
+        target: List[Dict[str, Any]],
+        *,
+        name: str,
+        weight: float,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        signal = {"name": name, "weight": round(weight, 3)}
+        if details:
+            signal["details"] = details
+        target.append(signal)
+
+    if anchor_count > 0:
+        positive_score += 0.18
+        _add_signal(
+            positive_signals,
+            name="anchors_visible",
+            weight=0.18,
+            details={"anchor_count": anchor_count},
+        )
+    if anchor_count >= 2:
+        positive_score += 0.12
+        _add_signal(
+            positive_signals,
+            name="multiple_anchors_visible",
+            weight=0.12,
+            details={"anchor_count": anchor_count},
+        )
+    if anchored_unit_count >= 2:
+        positive_score += 0.12
+        _add_signal(
+            positive_signals,
+            name="multiple_anchor_windows",
+            weight=0.12,
+            details={"anchored_unit_count": anchored_unit_count},
+        )
+    if local_anchor_progression_score >= 0.5:
+        progression_bonus = round(min(local_anchor_progression_score * 0.18, 0.18), 3)
+        positive_score += progression_bonus
+        _add_signal(
+            positive_signals,
+            name="local_anchor_progression",
+            weight=progression_bonus,
+            details={"score": round(local_anchor_progression_score, 3)},
+        )
+    if anchor_continuity_status in {
+        "continuous",
+        "near_continuous_high_density",
+        "start_anchor_sequence",
+    }:
+        positive_score += 0.1
+        _add_signal(
+            positive_signals,
+            name="anchor_continuity_plausible",
+            weight=0.1,
+            details={"status": anchor_continuity_status},
+        )
+    if density["score"] >= 0.45:
+        positive_score += 0.18
+        _add_signal(
+            positive_signals,
+            name="high_bibliography_density",
+            weight=0.18,
+            details={"score": density["score"]},
+        )
+    elif density["score"] >= 0.35:
+        positive_score += 0.08
+        _add_signal(
+            positive_signals,
+            name="moderate_bibliography_density",
+            weight=0.08,
+            details={"score": density["score"]},
+        )
+    if paragraph_density["score"] >= 0.45:
+        positive_score += 0.14
+        _add_signal(
+            positive_signals,
+            name="paragraphs_look_bibliographic",
+            weight=0.14,
+            details={"score": paragraph_density["score"]},
+        )
+    elif paragraph_density["score"] >= 0.35:
+        positive_score += 0.06
+        _add_signal(
+            positive_signals,
+            name="paragraphs_partially_bibliographic",
+            weight=0.06,
+            details={"score": paragraph_density["score"]},
+        )
+    if continuity_from_previous:
+        positive_score += 0.08
+        _add_signal(
+            positive_signals,
+            name="material_continuity_from_previous_unit",
+            weight=0.08,
+        )
+    if (
+        anchor_continuity_status == "anchor_gap"
+        and anchor_count >= 2
+        and (
+            density["score"] >= 0.42
+            or paragraph_density["score"] >= 0.55
+            or local_anchor_progression_score >= 0.5
+        )
+    ):
+        positive_score += 0.16
+        _add_signal(
+            positive_signals,
+            name="strong_bibliography_despite_anchor_gap",
+            weight=0.16,
+        )
+    if section_transition_kind in {"running_header", "footer_noise"}:
+        positive_score += 0.04
+        _add_signal(
+            positive_signals,
+            name="section_transition_classified_as_noise",
+            weight=0.04,
+            details={"kind": section_transition_kind},
+        )
+
+    if anchor_continuity_status == "anchor_gap":
+        negative_score += 0.14
+        _add_signal(
+            negative_signals,
+            name="anchor_gap_detected",
+            weight=0.14,
+            details={"status": anchor_continuity_status},
+        )
+    if anchor_count == 0 and previous_last_anchor is not None:
+        negative_score += 0.16
+        _add_signal(
+            negative_signals,
+            name="anchors_missing_after_previous_bibliography_unit",
+            weight=0.16,
+        )
+    if anchor_count == 0 and anchorless_run > 0:
+        anchorless_penalty = round(min(0.07 * anchorless_run, 0.18), 3)
+        negative_score += anchorless_penalty
+        _add_signal(
+            negative_signals,
+            name="anchorless_run_persists",
+            weight=anchorless_penalty,
+            details={"anchorless_run": anchorless_run},
+        )
+    if section_transition_kind == "semantic_section":
+        negative_score += 0.22
+        _add_signal(
+            negative_signals,
+            name="semantic_section_transition_detected",
+            weight=0.22,
+        )
+    elif header_footer_noise_detected:
+        negative_score += 0.03
+        _add_signal(
+            negative_signals,
+            name="header_footer_noise_detected",
+            weight=0.03,
+            details={"kind": section_transition_kind},
+        )
+    if density["score"] < 0.35:
+        low_density_penalty = 0.18 if density["score"] < 0.25 else 0.1
+        negative_score += low_density_penalty
+        _add_signal(
+            negative_signals,
+            name="low_bibliography_density",
+            weight=low_density_penalty,
+            details={"score": density["score"]},
+        )
+    if paragraph_density["score"] < 0.35:
+        low_paragraph_penalty = 0.16 if paragraph_density["score"] < 0.25 else 0.08
+        negative_score += low_paragraph_penalty
+        _add_signal(
+            negative_signals,
+            name="paragraphs_not_bibliographic",
+            weight=low_paragraph_penalty,
+            details={"score": paragraph_density["score"]},
+        )
+    if anchor_count == 0 and anchored_unit_count == 0:
+        negative_score += 0.08
+        _add_signal(
+            negative_signals,
+            name="no_local_anchor_windows",
+            weight=0.08,
+        )
+
+    strong_positive_evidence = bool(
+        anchor_count >= 2
+        or (
+            anchor_count >= 1
+            and (
+                density["score"] >= 0.42
+                or paragraph_density["score"] >= 0.55
+                or local_anchor_progression_score >= 0.5
+            )
+        )
+        or (
+            anchored_unit_count >= 2
+            and paragraph_density["score"] >= 0.5
+        )
+    )
+    continuity_delta = positive_score - negative_score
+    bibliography_continuity_score = round(max(-1.0, min(1.0, continuity_delta)), 3)
+    bibliography_continuity_confidence = round(
+        max(0.0, min(1.0, 0.5 + continuity_delta * 0.8)),
+        3,
+    )
+    closure_evidence_score = round(
+        max(0.0, min(1.0, negative_score - positive_score)),
+        3,
+    )
+
+    strong_negative_bundle = bool(
+        len(negative_signals) >= 3
+        and section_transition_kind == "semantic_section"
+        and anchor_count == 0
+        and anchored_unit_count == 0
+        and density["score"] < 0.28
+        and paragraph_density["score"] < 0.28
+    )
+    persistent_negative_candidate = bool(
+        closure_evidence_score >= 0.18
+        and len(negative_signals) >= 2
+        and not strong_positive_evidence
+    )
+    next_negative_streak = 0
+    if strong_negative_bundle:
+        next_negative_streak = max(negative_streak + 1, 2)
+    elif persistent_negative_candidate:
+        next_negative_streak = negative_streak + 1
+    elif strong_positive_evidence or bibliography_continuity_score >= 0.0:
+        next_negative_streak = 0
+    else:
+        next_negative_streak = max(0, negative_streak - 1)
+
+    closure_requires_persistent_negative_evidence = True
+    closure_blocked_by_positive_evidence = False
+    keep_segment = True
+    keep_reason = "bibliography_continuity_preserved"
+    closure_triggered_after_units: Optional[int] = None
+    if strong_negative_bundle:
+        keep_segment = False
+        keep_reason = "confirmed_structural_regime_change"
+        closure_triggered_after_units = next_negative_streak
+    elif next_negative_streak >= 2 and closure_evidence_score >= 0.18:
+        if strong_positive_evidence:
+            closure_blocked_by_positive_evidence = True
+            keep_segment = True
+            keep_reason = "positive_evidence_overrides_negative_streak"
+            next_negative_streak = max(0, next_negative_streak - 1)
+        else:
+            keep_segment = False
+            keep_reason = "persistent_negative_bibliography_evidence"
+            closure_triggered_after_units = next_negative_streak
+    elif closure_evidence_score >= 0.18 and strong_positive_evidence:
+        closure_blocked_by_positive_evidence = True
+        keep_reason = "positive_evidence_overrides_single_negative_signal"
+
+    return {
+        "anchor_continuity_status": anchor_continuity_status,
+        "section_transition_detected": section_transition_kind == "semantic_section",
+        "section_transition_kind": section_transition_kind,
+        "header_footer_noise_detected": header_footer_noise_detected,
+        "continuity_positive_signals": positive_signals,
+        "continuity_negative_signals": negative_signals,
+        "bibliography_continuity_score": bibliography_continuity_score,
+        "bibliography_continuity_confidence": bibliography_continuity_confidence,
+        "closure_evidence_score": closure_evidence_score,
+        "closure_blocked_by_positive_evidence": closure_blocked_by_positive_evidence,
+        "closure_requires_persistent_negative_evidence": (
+            closure_requires_persistent_negative_evidence
+        ),
+        "closure_triggered_after_units": closure_triggered_after_units,
+        "rejected_only_due_to_single_signal": bool(
+            not keep_segment and len(negative_signals) == 1
+        ),
+        "keep_segment": keep_segment,
+        "keep_reason": keep_reason,
+        "next_negative_streak": next_negative_streak,
+        "strong_positive_evidence": strong_positive_evidence,
+        "reading_unit_type": "segment_column_block",
+    }
 
 
 def _reference_row_has_terminal_signal(text: str) -> bool:
@@ -1467,6 +1949,7 @@ def _trim_bibliography_segments_with_structure(
     page_splits: Dict[int, Optional[float]],
     start_page: Optional[int],
     selected_heading: Optional[Dict[str, Any]],
+    artifact_info: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     row_by_id = {
         str(row.get("id") or ""): row for row in rows_with_columns if str(row.get("id") or "")
@@ -1486,6 +1969,7 @@ def _trim_bibliography_segments_with_structure(
     bibliography_end_reason = "kept_all_candidate_segments"
     previous_last_anchor: Optional[int] = None
     anchorless_run = 0
+    negative_streak = 0
 
     for flow_position, segment in enumerate(ordered_segments):
         row_ids = [str(value) for value in segment.get("row_ids") or [] if str(value)]
@@ -1504,6 +1988,11 @@ def _trim_bibliography_segments_with_structure(
             sections,
             start_page=start_page,
             heading_y=heading_y,
+            artifact_info=artifact_info,
+        )
+        reading_unit_payload = _build_segment_reading_units(
+            segment=segment,
+            row_by_id=row_by_id,
         )
         leading_anchor_indices = sorted(
             {
@@ -1512,22 +2001,19 @@ def _trim_bibliography_segments_with_structure(
                 if isinstance(value, int) and value > 0
             }
         )
-
-        anchor_continuity_status = "no_anchors"
-        if leading_anchor_indices:
-            first_anchor = leading_anchor_indices[0]
-            if previous_last_anchor is None:
-                anchor_continuity_status = (
-                    "start_anchor_sequence" if first_anchor <= 10 else "late_anchor_start"
-                )
-            elif first_anchor <= previous_last_anchor + 1:
-                anchor_continuity_status = "continuous"
-            elif first_anchor <= previous_last_anchor + 3 and density["score"] >= 0.62:
-                anchor_continuity_status = "near_continuous_high_density"
-            else:
-                anchor_continuity_status = "anchor_gap"
-
-        section_transition_detected = bool(related_sections)
+        section_transition_kind = "none"
+        if related_sections:
+            kinds = [str(item.get("transition_kind") or "") for item in related_sections]
+            if "semantic_section" in kinds:
+                section_transition_kind = "semantic_section"
+            elif "running_header" in kinds:
+                section_transition_kind = "running_header"
+            elif "footer_noise" in kinds:
+                section_transition_kind = "footer_noise"
+        header_footer_noise_detected = section_transition_kind in {
+            "running_header",
+            "footer_noise",
+        }
         continuity_from_previous = bool(
             accepted_segments
             and (
@@ -1541,42 +2027,29 @@ def _trim_bibliography_segments_with_structure(
                 )
             )
         )
-
-        keep_segment = True
-        keep_reason = "bibliography_continuity_preserved"
         if leading_anchor_indices:
             anchorless_run = 0
-            if anchor_continuity_status == "anchor_gap" and density["score"] < 0.58:
-                keep_segment = False
-                keep_reason = "anchor_continuity_lost"
         else:
             anchorless_run += 1
-            if (
-                previous_last_anchor is not None
-                and section_transition_detected
-                and density["score"] < 0.4
-                and paragraph_density["score"] < 0.4
-            ):
-                keep_segment = False
-                keep_reason = "section_transition_without_bibliography_density"
-            elif (
-                previous_last_anchor is not None
-                and anchorless_run >= 1
-                and density["score"] < 0.3
-                and paragraph_density["score"] < 0.34
-            ):
-                keep_segment = False
-                keep_reason = "anchor_continuity_lost"
-
-        if (
-            keep_segment
-            and section_transition_detected
-            and not leading_anchor_indices
-            and density["score"] < 0.32
-            and paragraph_density["score"] < 0.36
-        ):
-            keep_segment = False
-            keep_reason = "section_transition_low_density"
+        continuity_eval = _evaluate_bibliography_continuity(
+            flow_position=flow_position,
+            segment=segment,
+            leading_anchor_indices=leading_anchor_indices,
+            density=density,
+            paragraph_density=paragraph_density,
+            continuity_from_previous=continuity_from_previous,
+            previous_last_anchor=previous_last_anchor,
+            anchorless_run=anchorless_run,
+            section_transition_kind=section_transition_kind,
+            header_footer_noise_detected=header_footer_noise_detected,
+            reading_unit_payload=reading_unit_payload,
+            negative_streak=negative_streak,
+        )
+        keep_segment = bool(continuity_eval.get("keep_segment"))
+        keep_reason = str(
+            continuity_eval.get("keep_reason") or "bibliography_continuity_preserved"
+        )
+        negative_streak = int(continuity_eval.get("next_negative_streak") or 0)
 
         block_record = {
             "flow_position": flow_position,
@@ -1584,15 +2057,51 @@ def _trim_bibliography_segments_with_structure(
             "page_index": _page_index_value(segment.get("page")),
             "page_number": _page_number_from_index(segment.get("page")),
             "column_id": segment.get("column_id"),
+            "reading_unit_type": continuity_eval.get("reading_unit_type"),
+            "reading_units": reading_unit_payload.get("reading_units") or [],
             "box": _serialize_box(segment.get("box")),
             "row_count": int(segment.get("row_count") or len(row_ids)),
             "first_anchor_index": leading_anchor_indices[0] if leading_anchor_indices else None,
             "last_anchor_index": leading_anchor_indices[-1] if leading_anchor_indices else None,
             "anchor_count": len(leading_anchor_indices),
-            "anchor_continuity_status": anchor_continuity_status,
+            "anchor_continuity_status": continuity_eval.get("anchor_continuity_status"),
             "bibliography_density": density["score"],
             "paragraph_bibliography_density": paragraph_density["score"],
-            "section_transition_detected": section_transition_detected,
+            "section_transition_detected": continuity_eval.get(
+                "section_transition_detected"
+            ),
+            "section_transition_kind": continuity_eval.get("section_transition_kind"),
+            "header_footer_noise_detected": continuity_eval.get(
+                "header_footer_noise_detected"
+            ),
+            "continuity_positive_signals": continuity_eval.get(
+                "continuity_positive_signals"
+            )
+            or [],
+            "continuity_negative_signals": continuity_eval.get(
+                "continuity_negative_signals"
+            )
+            or [],
+            "bibliography_continuity_score": continuity_eval.get(
+                "bibliography_continuity_score"
+            ),
+            "bibliography_continuity_confidence": continuity_eval.get(
+                "bibliography_continuity_confidence"
+            ),
+            "closure_evidence_score": continuity_eval.get("closure_evidence_score"),
+            "closure_blocked_by_positive_evidence": continuity_eval.get(
+                "closure_blocked_by_positive_evidence"
+            ),
+            "closure_requires_persistent_negative_evidence": continuity_eval.get(
+                "closure_requires_persistent_negative_evidence"
+            ),
+            "closure_triggered_after_units": continuity_eval.get(
+                "closure_triggered_after_units"
+            ),
+            "rejected_only_due_to_single_signal": continuity_eval.get(
+                "rejected_only_due_to_single_signal"
+            ),
+            "negative_streak": negative_streak,
             "continuity_from_previous": continuity_from_previous,
             "accepted": keep_segment,
             "reason": keep_reason,
@@ -1610,6 +2119,7 @@ def _trim_bibliography_segments_with_structure(
         accepted_segments.append(segment)
         if leading_anchor_indices:
             previous_last_anchor = leading_anchor_indices[-1]
+            negative_streak = 0
 
     column_reading_order: List[Dict[str, Any]] = []
     for page_index in sorted(
@@ -1848,6 +2358,7 @@ def _build_bibliography_segments(
         page_splits=page_splits,
         start_page=start_page,
         selected_heading=selected_heading,
+        artifact_info=artifact_info,
     )
     bibliography_segments = structure_trim.get("accepted_segments") or []
 
