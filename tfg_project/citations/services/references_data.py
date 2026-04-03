@@ -79,6 +79,13 @@ REFERENCE_SUFFIX_SPLITS = (
     "technologies",
     "thinking",
 )
+REFERENCE_GLUE_SUFFIX_CONNECTORS = (
+    "and",
+    "for",
+    "the",
+    "through",
+    "with",
+)
 REFERENCE_TRAILING_VENUE_FRAGMENT_RE = re.compile(
     r"\b(?:journal|transactions?|proceedings?|behavior|methods|network|computing)\b"
     r".{0,80}\.\s+"
@@ -1641,6 +1648,15 @@ def _split_glued_reference_words(
                 cleanups=cleanups,
                 cleanup_name="word_spacing",
             )
+        for connector in REFERENCE_GLUE_SUFFIX_CONNECTORS:
+            current = _apply_regex_substitution(
+                current,
+                rf"\b([A-Za-zÀ-ÿ]{{4,}}){connector}\b",
+                rf"\1 {connector}",
+                cleanups=cleanups,
+                cleanup_name="word_spacing",
+                flags=re.IGNORECASE,
+            )
         for connector in ("in", "of", "to"):
             current = _apply_regex_substitution(
                 current,
@@ -1656,15 +1672,6 @@ def _split_glued_reference_words(
                 rf"\1 {connector} ",
                 cleanups=cleanups,
                 cleanup_name="word_spacing",
-            )
-        for connector in REFERENCE_END_CONNECTORS:
-            current = _apply_regex_substitution(
-                current,
-                rf"\b([A-Za-zÀ-ÿ]{{4,}}){connector}\b",
-                rf"\1 {connector}",
-                cleanups=cleanups,
-                cleanup_name="word_spacing",
-                flags=re.IGNORECASE,
             )
         for connector in REFERENCE_MIDDLE_CONNECTORS:
             current = _apply_regex_substitution(
@@ -1992,6 +1999,346 @@ def _reference_cleanup_signature(text: str) -> str:
     return REFERENCE_COMPARE_NORMALIZE_RE.sub("", str(text or "")).lower()
 
 
+def _reference_edit_word_key(value: str) -> str:
+    return _reference_cleanup_signature(value)
+
+
+def _reference_edit_words(text: str) -> List[str]:
+    return re.findall(r"[A-Za-zÀ-ÿ]{2,}", str(text or ""))
+
+
+def _reference_edit_bigram_keys(text: str) -> set[str]:
+    words = _reference_edit_words(text)
+    bigrams: set[str] = set()
+    for left, right in zip(words, words[1:]):
+        left_key = _reference_edit_word_key(left)
+        right_key = _reference_edit_word_key(right)
+        if left_key and right_key:
+            bigrams.add(f"{left_key} {right_key}")
+    return bigrams
+
+
+def _build_reference_edit_evidence(texts: Sequence[str]) -> Dict[str, Any]:
+    words: set[str] = set()
+    bigrams: set[str] = set()
+    normalized_texts: List[str] = []
+    for text in texts:
+        normalized = re.sub(r"\s+", " ", str(text or "")).strip()
+        if not normalized:
+            continue
+        normalized_lower = normalized.lower()
+        normalized_texts.append(normalized_lower)
+        for word in _reference_edit_words(normalized):
+            word_key = _reference_edit_word_key(word)
+            if word_key:
+                words.add(word_key)
+        bigrams.update(_reference_edit_bigram_keys(normalized))
+    return {
+        "words": words,
+        "bigrams": bigrams,
+        "texts": normalized_texts,
+    }
+
+
+def _evidence_contains_phrase(evidence: Dict[str, Any], phrase: str) -> bool:
+    normalized_phrase = re.sub(r"\s+", " ", str(phrase or "")).strip().lower()
+    if not normalized_phrase:
+        return False
+    for candidate in evidence.get("texts") or []:
+        if normalized_phrase in candidate:
+            return True
+    return False
+
+
+def _looks_like_glued_artifact_word(word: str) -> bool:
+    candidate = str(word or "")
+    lowered = candidate.lower()
+    if not candidate or len(candidate) < 5:
+        return False
+    if re.search(r"[a-zà-ÿ][A-ZÀ-ß]", candidate):
+        return True
+    if re.match(r"^[A-Z]{2,}[A-Z]?[a-zà-ÿ]{2,}$", candidate):
+        return True
+    if re.search(r"\d", candidate):
+        return True
+    for suffix in REFERENCE_SUFFIX_SPLITS:
+        suffix_key = _reference_edit_word_key(suffix)
+        if suffix_key and lowered.endswith(suffix_key) and len(lowered) > len(suffix_key) + 4:
+            return True
+    for connector in REFERENCE_GLUE_SUFFIX_CONNECTORS:
+        if lowered.endswith(connector) and len(lowered) > len(connector) + 4:
+            return True
+    return False
+
+
+def _detect_new_reference_word_splits(
+    text: str,
+    *,
+    evidence: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    words = _reference_edit_words(text)
+    hits: List[Dict[str, Any]] = []
+    for left, right in zip(words, words[1:]):
+        left_key = _reference_edit_word_key(left)
+        right_key = _reference_edit_word_key(right)
+        if not left_key or not right_key:
+            continue
+        combined = f"{left}{right}"
+        combined_key = _reference_edit_word_key(combined)
+        bigram_key = f"{left_key} {right_key}"
+        if combined_key not in (evidence.get("words") or set()):
+            continue
+        if bigram_key in (evidence.get("bigrams") or set()):
+            continue
+        if _looks_like_glued_artifact_word(combined):
+            continue
+        hits.append(
+            {
+                "left": left,
+                "right": right,
+                "combined": combined,
+                "bigram_key": bigram_key,
+            }
+        )
+    return hits
+
+
+def _classify_local_reference_edit(
+    before_segment: str,
+    after_segment: str,
+    *,
+    before_window: str = "",
+    after_window: str = "",
+) -> str:
+    context = " ".join(
+        part
+        for part in (
+            str(before_window or ""),
+            str(before_segment or ""),
+            str(after_segment or ""),
+            str(after_window or ""),
+        )
+        if str(part or "").strip()
+    )
+    compact_before = _reference_cleanup_signature(before_segment)
+    compact_after = _reference_cleanup_signature(after_segment)
+    if DOI_URL_REGEX.search(context):
+        return "doi_url_spacing"
+    if DOI_REGEX.search(context):
+        return "doi_spacing"
+    if re.search(r"https?://", context, flags=re.IGNORECASE):
+        return "url_spacing"
+    if "-" in str(before_segment or "") and compact_before == compact_after:
+        return "line_break_hyphen"
+    if compact_before == compact_after:
+        if any(symbol in context for symbol in ("(", ")", "[", "]", '"', "”", "’", "'", ".", ",", ";", ":")):
+            return "punctuation_spacing"
+        if re.search(r"\b(?:ACM|IEEE|IATED|SIGCSE|CS)\b", context):
+            return "publisher_spacing"
+        if re.search(r"\b[A-Z]\.\s*[A-Z]\b", context):
+            return "author_initial_spacing"
+        return "word_spacing"
+    if re.search(r"\b(?:ACM|IEEE|IATED|SIGCSE|CS)\b", context):
+        return "publisher_spacing"
+    return "word_spacing"
+
+
+def _has_strong_local_spacing_pattern(before_window: str, after_window: str) -> bool:
+    before_compact = _reference_cleanup_signature(before_window)
+    after_compact = _reference_cleanup_signature(after_window)
+    if not before_compact or before_compact != after_compact:
+        return False
+    if re.search(r"[a-zà-ÿ][A-ZÀ-ß]", before_window):
+        return True
+    if re.search(r"\b[A-Z]{2,}[A-Z]?[a-zà-ÿ]{2,}\b", before_window):
+        return True
+    lowered = before_compact.lower()
+    for suffix in REFERENCE_SUFFIX_SPLITS:
+        suffix_key = _reference_edit_word_key(suffix)
+        if suffix_key and lowered.endswith(suffix_key) and len(lowered) > len(suffix_key) + 4:
+            return True
+    for connector in REFERENCE_GLUE_SUFFIX_CONNECTORS:
+        connector_key = _reference_edit_word_key(connector)
+        if connector_key and lowered.endswith(connector_key) and len(lowered) > len(connector_key) + 4:
+            return True
+    return False
+
+
+def _local_edit_supported_by_evidence(
+    *,
+    before_window: str,
+    after_window: str,
+    evidence: Dict[str, Any],
+) -> bool:
+    before_bigrams = _reference_edit_bigram_keys(before_window)
+    after_bigrams = _reference_edit_bigram_keys(after_window)
+    if (after_bigrams - before_bigrams).intersection(evidence.get("bigrams") or set()):
+        return True
+    normalized_after = re.sub(r"\s+", " ", str(after_window or "")).strip()
+    normalized_before = re.sub(r"\s+", " ", str(before_window or "")).strip()
+    if normalized_after and normalized_after != normalized_before:
+        if _evidence_contains_phrase(evidence, normalized_after):
+            return True
+    return False
+
+
+def _apply_validated_reference_local_edits(
+    *,
+    base_text: str,
+    candidate_text: str,
+    row_evidence_texts: Sequence[str],
+    token_evidence_texts: Sequence[str],
+    edit_scope: str,
+) -> Dict[str, Any]:
+    base_value = re.sub(r"\s+", " ", str(base_text or "")).strip()
+    candidate_value = re.sub(r"\s+", " ", str(candidate_text or "")).strip()
+    if not base_value:
+        return {
+            "text": candidate_value,
+            "edits": [],
+            "cleanups_applied": [],
+            "new_word_split_detected": False,
+            "lexical_degradation_detected": False,
+            "accepted_local_edit_count": 0,
+            "rejected_local_edit_count": 0,
+        }
+    row_evidence = _build_reference_edit_evidence(list(row_evidence_texts) + [base_value])
+    token_evidence = _build_reference_edit_evidence(list(token_evidence_texts))
+    combined_evidence = _build_reference_edit_evidence(
+        list(row_evidence_texts) + list(token_evidence_texts) + [base_value]
+    )
+    output_parts: List[str] = []
+    edits: List[Dict[str, Any]] = []
+    accepted_cleanups: set[str] = set()
+    accepted_count = 0
+    rejected_count = 0
+    new_word_split_detected = False
+    lexical_degradation_detected = False
+
+    for tag, i1, i2, j1, j2 in SequenceMatcher(None, base_value, candidate_value).get_opcodes():
+        if tag == "equal":
+            output_parts.append(base_value[i1:i2])
+            continue
+        before_segment = base_value[i1:i2]
+        after_segment = candidate_value[j1:j2]
+        prefix = base_value[max(0, i1 - 48):i1]
+        suffix = base_value[i2:min(len(base_value), i2 + 48)]
+        left_char = prefix[-1:] if prefix else ""
+        right_char = suffix[:1] if suffix else ""
+        before_window = f"{prefix}{before_segment}{suffix}"
+        after_window = f"{prefix}{after_segment}{suffix}"
+        edit_type = _classify_local_reference_edit(
+            before_segment,
+            after_segment,
+            before_window=before_window,
+            after_window=after_window,
+        )
+        if (
+            str(after_segment or "").isspace()
+            and left_char.isalpha()
+            and right_char.isalpha()
+        ):
+            edit_type = "word_spacing"
+        elif (
+            str(before_segment or "").isspace()
+            and left_char.isalpha()
+            and right_char.isalpha()
+        ):
+            edit_type = "word_spacing"
+        new_split_hits = _detect_new_reference_word_splits(
+            after_window,
+            evidence=combined_evidence,
+        )
+        previous_split_hits = {
+            hit.get("bigram_key")
+            for hit in _detect_new_reference_word_splits(
+                before_window,
+                evidence=combined_evidence,
+            )
+        }
+        new_split_hits = [
+            hit for hit in new_split_hits if hit.get("bigram_key") not in previous_split_hits
+        ]
+        would_break_valid_word = bool(new_split_hits)
+        supported_by_rows = _local_edit_supported_by_evidence(
+            before_window=before_window,
+            after_window=after_window,
+            evidence=row_evidence,
+        )
+        supported_by_tokens = _local_edit_supported_by_evidence(
+            before_window=before_window,
+            after_window=after_window,
+            evidence=token_evidence,
+        )
+        would_change_backbone_signature = bool(
+            _reference_cleanup_signature(before_segment)
+            != _reference_cleanup_signature(after_segment)
+        )
+        strong_pattern = _has_strong_local_spacing_pattern(before_window, after_window)
+        accept_edit = False
+        reason = "unsupported_local_edit"
+        if would_break_valid_word:
+            reason = "rejected_new_word_split"
+        elif edit_type in {
+            "line_break_hyphen",
+            "doi_spacing",
+            "doi_url_spacing",
+            "url_spacing",
+            "url_scheme_spacing",
+            "punctuation_spacing",
+            "author_initial_spacing",
+        }:
+            accept_edit = True
+            reason = "accepted_safe_cleanup"
+        elif would_change_backbone_signature:
+            reason = "rejected_signature_change"
+        elif supported_by_tokens:
+            accept_edit = True
+            reason = "accepted_supported_by_tokens"
+        elif supported_by_rows:
+            accept_edit = True
+            reason = "accepted_supported_by_rows"
+        elif edit_type in {"author_spacing", "publisher_spacing", "word_spacing"} and strong_pattern:
+            accept_edit = True
+            reason = "accepted_strong_spacing_pattern"
+
+        if accept_edit:
+            output_parts.append(after_segment)
+            accepted_cleanups.add(edit_type)
+            accepted_count += 1
+        else:
+            output_parts.append(before_segment)
+            rejected_count += 1
+            if would_break_valid_word:
+                new_word_split_detected = True
+                lexical_degradation_detected = True
+
+        edits.append(
+            {
+                "scope": edit_scope,
+                "type": edit_type,
+                "before": before_segment,
+                "after": after_segment,
+                "status": "accepted" if accept_edit else "rejected",
+                "reason": reason,
+                "supported_by_rows": supported_by_rows,
+                "supported_by_tokens": supported_by_tokens,
+                "would_break_valid_word": would_break_valid_word,
+                "would_change_backbone_signature": would_change_backbone_signature,
+            }
+        )
+
+    return {
+        "text": re.sub(r"\s+", " ", "".join(output_parts)).strip(),
+        "edits": edits,
+        "cleanups_applied": sorted(accepted_cleanups),
+        "new_word_split_detected": new_word_split_detected,
+        "lexical_degradation_detected": lexical_degradation_detected,
+        "accepted_local_edit_count": accepted_count,
+        "rejected_local_edit_count": rejected_count,
+    }
+
+
 def _evaluate_reference_backbone_guard(
     backbone_text: str,
     candidate_text: str,
@@ -2151,13 +2498,42 @@ def _apply_token_local_cleanups_preserving_row_order(
                 "order_guard_reasons": guard.get("reasons") or [],
             }
         )
-    normalized_backbone = _normalize_reference_text_candidate(
-        _merge_text_fragments(selected_parts)
+    backbone_seed_text = _merge_text_fragments(selected_parts)
+    normalized_backbone = _normalize_reference_text_candidate(backbone_seed_text)
+    validated_backbone = _apply_validated_reference_local_edits(
+        base_text=backbone_seed_text,
+        candidate_text=str(normalized_backbone.get("text") or backbone_seed_text),
+        row_evidence_texts=[
+            str(row_variant.get("raw_text") or "")
+            for row_variant in row_variants
+            if str(row_variant.get("raw_text") or "").strip()
+        ],
+        token_evidence_texts=[
+            str(row_variant.get("token_text") or "")
+            for row_variant in row_variants
+            if str(row_variant.get("token_text") or "").strip()
+        ],
+        edit_scope="rows_backbone",
     )
-    cleanups_applied.update(normalized_backbone.get("cleanups_applied") or [])
+    cleanups_applied.update(validated_backbone.get("cleanups_applied") or [])
     return {
-        "text": str(normalized_backbone.get("text") or "").strip(),
+        "seed_text": backbone_seed_text,
+        "candidate_text": str(normalized_backbone.get("text") or "").strip(),
+        "text": str(validated_backbone.get("text") or backbone_seed_text).strip(),
         "per_row_selected": row_decisions,
+        "backbone_local_edits": validated_backbone.get("edits") or [],
+        "new_word_split_detected": bool(
+            validated_backbone.get("new_word_split_detected")
+        ),
+        "lexical_degradation_detected": bool(
+            validated_backbone.get("lexical_degradation_detected")
+        ),
+        "accepted_local_edit_count": int(
+            validated_backbone.get("accepted_local_edit_count") or 0
+        ),
+        "rejected_local_edit_count": int(
+            validated_backbone.get("rejected_local_edit_count") or 0
+        ),
         "cleanups_applied": sorted(
             str(name).strip() for name in cleanups_applied if str(name).strip()
         ),
@@ -2173,8 +2549,8 @@ def _select_reference_text_candidate(
 ) -> Dict[str, Any]:
     source_bias = {
         "rows_raw": 0.08,
-        "rows_hybrid": 0.06,
-        "rows_tokens": -0.04,
+        "rows_hybrid": 0.04,
+        "rows_tokens": -0.08,
     }
     evaluations: List[Dict[str, Any]] = []
     best_evaluation: Optional[Dict[str, Any]] = None
@@ -2261,30 +2637,23 @@ def _select_reference_text_candidate(
     raw_evaluation = evaluation_by_source.get("rows_raw") or best_evaluation
     backbone_evaluation = raw_evaluation
     hybrid_evaluation = evaluation_by_source.get("rows_hybrid")
+
+    selected_evaluation = raw_evaluation
     if (
         hybrid_evaluation is not None
         and hybrid_evaluation.get("backbone_eligible")
         and str(hybrid_evaluation.get("text") or "") != str(raw_evaluation.get("text") or "")
-        and (
-            hybrid_evaluation["combined_score"] >= raw_evaluation["combined_score"] + 0.02
-            or hybrid_evaluation["quality_score"] >= raw_evaluation["quality_score"] + 0.02
-        )
+        and hybrid_evaluation["combined_score"] >= raw_evaluation["combined_score"] - 0.01
     ):
-        backbone_evaluation = hybrid_evaluation
-
-    selected_evaluation = backbone_evaluation
+        selected_evaluation = hybrid_evaluation
     for evaluation in evaluations:
-        if evaluation is backbone_evaluation:
+        if evaluation is selected_evaluation:
             continue
         if not evaluation.get("backbone_eligible"):
             continue
-        if (
-            evaluation.get("source") == "rows_tokens"
-            and not evaluation.get("backbone_cleanup_only")
-        ):
+        if evaluation.get("source") != "rows_hybrid":
             continue
-        minimum_gain = 0.06 if evaluation.get("source") == "rows_tokens" else 0.04
-        if evaluation["combined_score"] >= selected_evaluation["combined_score"] + minimum_gain:
+        if evaluation["combined_score"] >= selected_evaluation["combined_score"] + 0.02:
             selected_evaluation = evaluation
 
     return {
@@ -2293,8 +2662,8 @@ def _select_reference_text_candidate(
         "candidate_scores": evaluations,
         "cleanups_applied": selected_evaluation.get("cleanups_applied") or [],
         "order_similarity_to_rows": selected_evaluation.get("order_similarity_to_rows"),
-        "backbone_source": backbone_evaluation.get("source"),
-        "backbone_text": backbone_evaluation.get("text"),
+        "backbone_source": raw_evaluation.get("source"),
+        "backbone_text": raw_evaluation.get("text"),
     }
 
 
@@ -2302,14 +2671,13 @@ def _reconstruct_reference_text_from_rows_and_tokens(
     rows: Sequence[Dict[str, Any]],
     tokens_by_page: Dict[int, List[Dict[str, Any]]],
 ) -> Dict[str, Any]:
-    raw_text_candidate = _normalize_reference_text_candidate(_clean_reference_text(rows))
-    raw_text = str(raw_text_candidate.get("text") or "")
+    raw_text_seed = _clean_reference_text(rows)
     per_row_before: List[str] = []
     per_row_after: List[str] = []
     per_row_selected: List[Dict[str, Any]] = []
     token_rows_used = 0
     row_variants: List[Dict[str, Any]] = []
-    candidate_cleanups: set[str] = set(raw_text_candidate.get("cleanups_applied") or [])
+    candidate_cleanups: set[str] = set()
     for row in rows:
         row_text = str(row.get("text") or "").strip()
         normalized_row = _normalize_reference_fragment_text(row_text)
@@ -2337,22 +2705,41 @@ def _reconstruct_reference_text_from_rows_and_tokens(
                 or [],
             }
         )
-        candidate_cleanups.update(normalized_row.get("cleanups_applied") or [])
-        candidate_cleanups.update(reconstructed_payload.get("cleanups_applied") or [])
 
-    token_text_candidate = _normalize_reference_text_candidate(
-        _merge_text_fragments(per_row_after)
-    )
     backbone_payload = _apply_token_local_cleanups_preserving_row_order(row_variants)
     per_row_selected = list(backbone_payload.get("per_row_selected") or [])
-    hybrid_text_candidate = _normalize_reference_text_candidate(
-        backbone_payload.get("text") or raw_text
+    raw_text = str(
+        backbone_payload.get("text")
+        or backbone_payload.get("seed_text")
+        or raw_text_seed
+        or ""
+    ).strip()
+    token_seed_text = _merge_text_fragments(per_row_after)
+    token_text_candidate = _normalize_reference_text_candidate(token_seed_text)
+    token_edit_payload = _apply_validated_reference_local_edits(
+        base_text=raw_text,
+        candidate_text=str(token_text_candidate.get("text") or raw_text),
+        row_evidence_texts=[
+            text
+            for text in list(per_row_before)
+            + [str(backbone_payload.get("seed_text") or ""), raw_text]
+            if str(text or "").strip()
+        ],
+        token_evidence_texts=[
+            text
+            for text in list(per_row_after)
+            + [token_seed_text]
+            if str(text or "").strip()
+        ],
+        edit_scope="tokens",
     )
-    candidate_cleanups.update(token_text_candidate.get("cleanups_applied") or [])
-    candidate_cleanups.update(hybrid_text_candidate.get("cleanups_applied") or [])
+    hybrid_text_candidate = _normalize_reference_text_candidate(
+        token_edit_payload.get("text") or raw_text
+    )
     candidate_cleanups.update(backbone_payload.get("cleanups_applied") or [])
+    candidate_cleanups.update(token_edit_payload.get("cleanups_applied") or [])
     token_text = str(token_text_candidate.get("text") or raw_text)
-    hybrid_text = str(hybrid_text_candidate.get("text") or raw_text)
+    hybrid_text = str(token_edit_payload.get("text") or raw_text)
     final_text = hybrid_text or raw_text
     confidence = round(token_rows_used / max(len(rows), 1), 3)
     return {
@@ -2365,20 +2752,45 @@ def _reconstruct_reference_text_from_rows_and_tokens(
         "per_row_before": per_row_before,
         "per_row_after": per_row_after,
         "per_row_selected": per_row_selected,
+        "backbone_local_edits": backbone_payload.get("backbone_local_edits") or [],
+        "local_token_edits": token_edit_payload.get("edits") or [],
+        "new_word_split_detected": bool(
+            backbone_payload.get("new_word_split_detected")
+            or token_edit_payload.get("new_word_split_detected")
+        ),
+        "lexical_degradation_detected": bool(
+            backbone_payload.get("lexical_degradation_detected")
+            or token_edit_payload.get("lexical_degradation_detected")
+        ),
+        "accepted_local_edit_count": int(
+            backbone_payload.get("accepted_local_edit_count") or 0
+        )
+        + int(token_edit_payload.get("accepted_local_edit_count") or 0),
+        "rejected_local_edit_count": int(
+            backbone_payload.get("rejected_local_edit_count") or 0
+        )
+        + int(token_edit_payload.get("rejected_local_edit_count") or 0),
         "selected_candidate_source": (
             "rows_hybrid"
-            if int(backbone_payload.get("rows_with_token_cleanup") or 0) > 0
+            if str(hybrid_text or "") != str(raw_text or "")
+            and int(token_edit_payload.get("accepted_local_edit_count") or 0) > 0
             else "rows_raw"
         ),
-        "backbone_text": hybrid_text,
-        "backbone_source": "rows_hybrid",
+        "backbone_text": raw_text,
+        "backbone_source": "rows_raw",
         "cleanups_applied": sorted(candidate_cleanups),
         "candidates": [
             {
                 "source": "rows_raw",
                 "text": raw_text,
                 "quality_score": _reference_text_quality_score(raw_text),
-                "cleanups_applied": raw_text_candidate.get("cleanups_applied") or [],
+                "cleanups_applied": sorted(
+                    {
+                        str(name).strip()
+                        for name in list(backbone_payload.get("cleanups_applied") or [])
+                        if str(name).strip()
+                    }
+                ),
             },
             {
                 "source": "rows_tokens",
@@ -2395,6 +2807,7 @@ def _reconstruct_reference_text_from_rows_and_tokens(
                         str(name).strip()
                         for name in list(hybrid_text_candidate.get("cleanups_applied") or [])
                         + list(backbone_payload.get("cleanups_applied") or [])
+                        + list(token_edit_payload.get("cleanups_applied") or [])
                         if str(name).strip()
                     }
                 ),
@@ -2548,6 +2961,16 @@ def _build_reference_decision(
         token_reconstruction.get("cleanups_applied")
         or selected_candidate_source in {"rows_tokens", "rows_hybrid"}
     )
+    new_word_split_detected = bool(token_reconstruction.get("new_word_split_detected"))
+    lexical_degradation_detected = bool(
+        token_reconstruction.get("lexical_degradation_detected")
+    )
+    accepted_local_edit_count = int(
+        token_reconstruction.get("accepted_local_edit_count") or 0
+    )
+    rejected_local_edit_count = int(
+        token_reconstruction.get("rejected_local_edit_count") or 0
+    )
     crossref_match_score = float(crossref_match.get("score") or 0.0)
     doi_match_score = float(crossref_match.get("doi_match_score") or 0.0)
     validation_reason = str(validation.get("reason") or "").strip() or None
@@ -2636,6 +3059,10 @@ def _build_reference_decision(
         "validation_warning": None if validation_hard_failure else validation_reason,
         "cleanup_applied": cleanup_applied,
         "selected_candidate_source": selected_candidate_source,
+        "new_word_split_detected": new_word_split_detected,
+        "lexical_degradation_detected": lexical_degradation_detected,
+        "accepted_local_edit_count": accepted_local_edit_count,
+        "rejected_local_edit_count": rejected_local_edit_count,
         "final_score": final_score,
         "accepted": accepted,
         "classification": classification,
@@ -3289,14 +3716,17 @@ def build_references_from_rows(
         selected_candidate_source = str(
             selected_candidate.get("source")
             or token_reconstruction.get("selected_candidate_source")
-            or "rows_hybrid"
-        ).strip() or "rows_hybrid"
+            or "rows_raw"
+        ).strip() or "rows_raw"
         token_reconstruction["selected_candidate_source"] = selected_candidate_source
         token_reconstruction["candidate_scores"] = (
             selected_candidate.get("candidate_scores") or []
         )
         token_reconstruction["order_similarity_to_rows"] = selected_candidate.get(
             "order_similarity_to_rows"
+        )
+        token_reconstruction["order_guard_reasons"] = (
+            selected_candidate.get("order_guard_reasons") or []
         )
         token_reconstruction["backbone_source"] = selected_candidate.get(
             "backbone_source"
@@ -3409,6 +3839,8 @@ def build_references_from_rows(
                 "order_similarity_to_rows": token_reconstruction.get(
                     "order_similarity_to_rows"
                 ),
+                "order_guard_reasons": token_reconstruction.get("order_guard_reasons")
+                or [],
                 "backbone_source": token_reconstruction.get("backbone_source"),
                 "backbone_text": token_reconstruction.get("backbone_text"),
                 "cleanups_applied": token_reconstruction.get("cleanups_applied") or [],
@@ -3417,6 +3849,22 @@ def build_references_from_rows(
                     "token_cleanup_confidence"
                 ),
                 "token_rows_used": token_reconstruction.get("token_rows_used"),
+                "backbone_local_edits": token_reconstruction.get("backbone_local_edits")
+                or [],
+                "local_token_edits": token_reconstruction.get("local_token_edits")
+                or [],
+                "new_word_split_detected": bool(
+                    token_reconstruction.get("new_word_split_detected")
+                ),
+                "lexical_degradation_detected": bool(
+                    token_reconstruction.get("lexical_degradation_detected")
+                ),
+                "accepted_local_edit_count": int(
+                    token_reconstruction.get("accepted_local_edit_count") or 0
+                ),
+                "rejected_local_edit_count": int(
+                    token_reconstruction.get("rejected_local_edit_count") or 0
+                ),
             },
             "anomalies": {
                 "cut_reasons": block_result.get("cut_reasons") or [],
@@ -3449,6 +3897,10 @@ def build_references_from_rows(
                     "order_similarity_to_rows": token_reconstruction.get(
                         "order_similarity_to_rows"
                     ),
+                    "order_guard_reasons": token_reconstruction.get(
+                        "order_guard_reasons"
+                    )
+                    or [],
                     "backbone_source": token_reconstruction.get("backbone_source"),
                     "backbone_text": token_reconstruction.get("backbone_text"),
                     "candidate_scores": token_reconstruction.get("candidate_scores")
@@ -3459,6 +3911,24 @@ def build_references_from_rows(
                     "per_row_after": token_reconstruction.get("per_row_after") or [],
                     "per_row_selected": token_reconstruction.get("per_row_selected")
                     or [],
+                    "backbone_local_edits": token_reconstruction.get(
+                        "backbone_local_edits"
+                    )
+                    or [],
+                    "local_token_edits": token_reconstruction.get("local_token_edits")
+                    or [],
+                    "new_word_split_detected": bool(
+                        token_reconstruction.get("new_word_split_detected")
+                    ),
+                    "lexical_degradation_detected": bool(
+                        token_reconstruction.get("lexical_degradation_detected")
+                    ),
+                    "accepted_local_edit_count": int(
+                        token_reconstruction.get("accepted_local_edit_count") or 0
+                    ),
+                    "rejected_local_edit_count": int(
+                        token_reconstruction.get("rejected_local_edit_count") or 0
+                    ),
                     "token_cleanup_confidence": token_reconstruction.get(
                         "token_cleanup_confidence"
                     ),
@@ -3928,6 +4398,15 @@ def build_references_data(
             "candidate_scores": [],
             "token_cleanup_confidence": 0.0,
             "token_rows_used": 0,
+            "order_guard_reasons": [],
+            "backbone_source": "rows_raw",
+            "backbone_text": raw_text,
+            "backbone_local_edits": [],
+            "local_token_edits": [],
+            "new_word_split_detected": False,
+            "lexical_degradation_detected": False,
+            "accepted_local_edit_count": 0,
+            "rejected_local_edit_count": 0,
         }
         anomalies: Dict[str, Any] = {"cut_reasons": [], "nested_anchor_indices": []}
         text_candidate_raw = raw_text
@@ -4520,8 +4999,23 @@ def finalize_reference_detection_debug_payload(
                 "order_similarity_to_rows": token_info.get(
                     "order_similarity_to_rows"
                 ),
+                "order_guard_reasons": token_info.get("order_guard_reasons") or [],
                 "backbone_source": token_info.get("backbone_source"),
                 "candidate_scores": token_info.get("candidate_scores") or [],
+                "backbone_local_edits": token_info.get("backbone_local_edits") or [],
+                "local_token_edits": token_info.get("local_token_edits") or [],
+                "new_word_split_detected": bool(
+                    token_info.get("new_word_split_detected")
+                ),
+                "lexical_degradation_detected": bool(
+                    token_info.get("lexical_degradation_detected")
+                ),
+                "accepted_local_edit_count": int(
+                    token_info.get("accepted_local_edit_count") or 0
+                ),
+                "rejected_local_edit_count": int(
+                    token_info.get("rejected_local_edit_count") or 0
+                ),
                 "enrichment_validation": enrichment_validation,
                 "enrichment_candidate": enrichment_candidate,
                 "enrichment_accepted": entry.get("enrichment_accepted"),
