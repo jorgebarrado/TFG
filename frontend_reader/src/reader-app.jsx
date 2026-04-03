@@ -1367,7 +1367,7 @@ function useReaderV2Overlay(
             event.preventDefault();
             event.stopPropagation();
             if (typeof onSelectItem === "function") {
-              onSelectItem(entry.sourceId);
+              onSelectItem(entry.sourceId, "overlay");
             }
           });
           overlay.appendChild(rect);
@@ -1922,6 +1922,7 @@ export default function ReaderApp({
   const viewerShellRef = useRef(null);
   const snippetPopoverRef = useRef(null);
   const referenceElements = useRef(new Map());
+  const readerV2SelectionOriginRef = useRef("panel");
   const citationHitMapRef = useRef(new Map());
   const activeCitationRef = useRef(null);
   const inlineCitationsKeyRef = useRef("");
@@ -2520,8 +2521,12 @@ export default function ReaderApp({
   const handleReaderV2ItemHover = useCallback((itemId) => {
     setHoveredItemId(itemId || null);
   }, []);
-  const handleReaderV2ItemSelect = useCallback((itemId) => {
+  const handleReaderV2ItemSelect = useCallback((itemId, origin = "panel") => {
+    readerV2SelectionOriginRef.current = origin;
     setSelectedItemId(itemId || null);
+    if (itemId) {
+      setActiveTab("v2");
+    }
   }, []);
   const registerReaderV2ItemRow = useCallback((itemId) => {
     return (element) => {
@@ -2532,6 +2537,32 @@ export default function ReaderApp({
         readerV2ItemRefs.current.delete(itemId);
       }
     };
+  }, []);
+  const scrollReaderV2ItemRowToTop = useCallback((itemId) => {
+    if (!itemId) return false;
+    const el = readerV2ItemRefs.current.get(itemId);
+    if (!el) return false;
+    const scrollContainer =
+      el.closest(".reader-v2-items-list") || el.closest(".reader-panel");
+    const topPadding = 8;
+    if (scrollContainer && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = el.getBoundingClientRect();
+      const nextTop =
+        scrollContainer.scrollTop +
+        (elementRect.top - containerRect.top) -
+        topPadding;
+      scrollContainer.scrollTo({
+        top: Math.max(0, Math.round(nextTop)),
+        behavior: "smooth",
+      });
+      return true;
+    }
+    if (typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return true;
+    }
+    return false;
   }, []);
 
   useEffect(() => {
@@ -2574,11 +2605,31 @@ export default function ReaderApp({
       setSelectedItemId(null);
       return;
     }
-    const rowEl = readerV2ItemRefs.current.get(selectedItemId);
-    if (rowEl && typeof rowEl.scrollIntoView === "function") {
-      rowEl.scrollIntoView({ block: "nearest" });
+    if (activeTab !== "v2") {
+      return;
     }
-  }, [selectedItemId, currentLayerItems]);
+    let cancelled = false;
+    let attempts = 0;
+    let retryTimer = null;
+
+    const attemptScroll = () => {
+      if (cancelled) return;
+      const scrolled = scrollReaderV2ItemRowToTop(selectedItemId);
+      if (scrolled || attempts >= 6) {
+        return;
+      }
+      attempts += 1;
+      retryTimer = window.setTimeout(attemptScroll, 70);
+    };
+
+    attemptScroll();
+    return () => {
+      cancelled = true;
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [selectedItemId, currentLayerItems, activeTab, scrollReaderV2ItemRowToTop]);
 
   const citationStatsByReference = useMemo(() => {
     const map = new Map();
@@ -3400,6 +3451,82 @@ export default function ReaderApp({
     });
     return true;
   }, [viewerRef]);
+
+  const scrollReaderV2ItemTargetToTop = useCallback((item) => {
+    if (!item) return false;
+    const pageIndex = Number(item?.page);
+    if (!Number.isFinite(pageIndex) || pageIndex < 0) {
+      return false;
+    }
+
+    const rawBox = Array.isArray(item?.box) ? item.box : null;
+    let normalizedBox = null;
+    if (rawBox && rawBox.length >= 4) {
+      let x = Number(rawBox[0]);
+      let y = Number(rawBox[1]);
+      let width = Number(rawBox[2]);
+      let height = Number(rawBox[3]);
+      const looksNormalized =
+        [x, y, width, height].every((value) => Number.isFinite(value)) &&
+        x >= 0 &&
+        y >= 0 &&
+        width > 0 &&
+        height > 0 &&
+        x <= 1.05 &&
+        y <= 1.05 &&
+        width <= 1.05 &&
+        height <= 1.05;
+
+      if (!looksNormalized) {
+        const pageMeta =
+          Array.isArray(readerV2Data?.pages) && pageIndex >= 0
+            ? readerV2Data.pages[pageIndex]
+            : null;
+        const pageWidth = Number(pageMeta?.width);
+        const pageHeight = Number(pageMeta?.height);
+        if (
+          Number.isFinite(pageWidth) &&
+          pageWidth > 0 &&
+          Number.isFinite(pageHeight) &&
+          pageHeight > 0
+        ) {
+          x /= pageWidth;
+          y /= pageHeight;
+          width /= pageWidth;
+          height /= pageHeight;
+        }
+      }
+      normalizedBox = normalizeOverlayBox([x, y, width, height]);
+    }
+
+    return scrollReferenceTargetToTop(
+      {
+        page: pageIndex,
+        box: normalizedBox,
+      },
+      pageIndex
+    );
+  }, [readerV2Data, scrollReferenceTargetToTop]);
+
+  useEffect(() => {
+    if (!selectedItemId) return;
+    const selectionOrigin = String(readerV2SelectionOriginRef.current || "panel");
+    if (selectionOrigin !== "panel") {
+      return;
+    }
+    const selectedLayerItem =
+      currentLayerItems.find(
+        (item) =>
+          String(item?.__v2sourceId || item?.__v2id || "") === String(selectedItemId)
+      ) ||
+      currentLayerItems.find(
+        (item) => String(item?.__v2id || "") === String(selectedItemId)
+      ) ||
+      null;
+    if (selectedLayerItem) {
+      scrollReaderV2ItemTargetToTop(selectedLayerItem);
+    }
+  }, [selectedItemId, currentLayerItems, scrollReaderV2ItemTargetToTop]);
 
   const resolveReferenceBlockAnchor = useCallback((target, refId) => {
     if (!target) return target;
@@ -4314,7 +4441,7 @@ export default function ReaderApp({
         ) : (
           <div className="reader-v2-items-list">
             {currentLayerItems.map((item, index) => {
-              const itemId = item.__v2id;
+              const itemId = String(item?.__v2sourceId || item?.__v2id || "");
               const itemText = String(item?.text || "");
               const pageValue = Number(item?.page);
               const pageLabel = Number.isFinite(pageValue) ? pageValue + 1 : "-";
@@ -4335,7 +4462,7 @@ export default function ReaderApp({
                   title={itemText}
                   onMouseEnter={() => handleReaderV2ItemHover(itemId)}
                   onMouseLeave={() => handleReaderV2ItemHover(null)}
-                  onClick={() => handleReaderV2ItemSelect(itemId)}
+                  onClick={() => handleReaderV2ItemSelect(itemId, "panel")}
                 >
                   <span className="reader-v2-item-index">{index + 1}</span>
                   <span className="reader-v2-item-main">

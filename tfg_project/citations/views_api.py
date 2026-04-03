@@ -414,6 +414,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 data["stats"]["bibliography_start_page"] = data[
                     "bibliography_start_page"
                 ]
+                data["stats"]["references_total"] = len(data.get("references") or [])
                 data["stats"]["crossref_available"] = bool(
                     references_data_payload.get("crossref_available")
                 )
@@ -488,6 +489,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 }
             )
             if isinstance(data.get("stats"), dict):
+                data["stats"]["references_total"] = len(data.get("references") or [])
                 data["stats"]["dois_total"] = sum(
                     1
                     for ref in (data.get("references") or [])

@@ -21,8 +21,15 @@ DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE
 INLINE_CITATION_REGEX = re.compile(
     r"\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]"
 )
-NUMBERED_REFERENCE_LINE_RE = re.compile(r"^\s*\[\s*(\d+)\s*\]")
+NUMBERED_REFERENCE_LINE_RE = re.compile(
+    r"^\s*(?:\[\s*(?P<bracket>\d{1,3})\s*\]|(?P<plain>\d{1,3})\s*[\.\)])"
+    r"(?=\s|[A-ZÀ-ß]|$)"
+)
 NUMBERED_ANCHOR_RE = re.compile(r"\[\s*(\d+)\s*\]")
+REFERENCE_BLOCK_ANCHOR_RE = re.compile(
+    r"(?<!\w)(?:\[\s*(?P<bracket>\d{1,3})\s*\]|(?P<plain>\d{1,3})\s*[\.\)])"
+    r"(?=\s|[A-ZÀ-ß]|$)"
+)
 HEADER_LIKE_REFERENCE_RE = re.compile(
     r"\b(?:wipsce|copyright|all rights reserved|acm isbn|proceedings)\b",
     re.IGNORECASE,
@@ -93,6 +100,16 @@ REFERENCE_TRAILING_VENUE_FRAGMENT_RE = re.compile(
     re.IGNORECASE,
 )
 REFERENCE_COMPARE_NORMALIZE_RE = re.compile(r"[^\w]+", re.UNICODE)
+REFERENCE_AUTHOR_LEAD_RE = re.compile(
+    r"^[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+(?:\s+[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+){0,2}\s+"
+    r"(?:[A-ZÀ-Ý](?:[A-Za-zÀ-ÿ'’.-]+)?[,\.]|et al\b)"
+)
+REFERENCE_AUTHOR_PREFIX_LEAD_RE = re.compile(
+    r"^(?:da|de|del|della|der|des|di|dos|das|du|la|le|van|von)\s+"
+    r"[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+(?:\s+[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+){0,2}\s+"
+    r"(?:[A-ZÀ-Ý](?:[A-Za-zÀ-ÿ'’.-]+)?[,\.]|et al\b)",
+    re.IGNORECASE,
+)
 REFERENCE_NOISE_RE = re.compile(
     r"\b(?:"
     r"view publication stats|"
@@ -134,6 +151,31 @@ def _normalize_page_zero_based(raw_page: Any) -> Optional[int]:
     if page > 0:
         return page - 1
     return page
+
+
+def _page_index_value(raw_page: Any) -> Optional[int]:
+    try:
+        page_index = int(raw_page)
+    except (TypeError, ValueError):
+        return None
+    if page_index < 0:
+        return None
+    return page_index
+
+
+def _page_number_from_index(raw_page: Any) -> Optional[int]:
+    page_index = _page_index_value(raw_page)
+    if page_index is None:
+        return None
+    return page_index + 1
+
+
+def _page_debug_fields(raw_page: Any) -> Dict[str, Optional[int]]:
+    page_index = _page_index_value(raw_page)
+    return {
+        "page_index": page_index,
+        "page_number": _page_number_from_index(page_index),
+    }
 
 
 def _normalize_box(raw_box: Any) -> Optional[List[float]]:
@@ -255,6 +297,111 @@ def _entry_index(entry: Dict[str, Any]) -> Optional[int]:
     return None
 
 
+def _pick_preferred_reference_input(
+    candidates: Sequence[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    valid_candidates = [candidate for candidate in candidates if isinstance(candidate, dict)]
+    if not valid_candidates:
+        return None
+    return max(
+        valid_candidates,
+        key=lambda candidate: (
+            len(str(candidate.get("raw") or candidate.get("text") or "")),
+            1 if _extract_doi(str(candidate.get("raw") or candidate.get("text") or "")) else 0,
+            1 if REFERENCE_YEAR_RE.search(str(candidate.get("raw") or candidate.get("text") or "")) else 0,
+        ),
+    )
+
+
+def _reference_anchor_index_from_match(match: Optional[re.Match[str]]) -> Optional[int]:
+    if match is None:
+        return None
+    raw_value = match.groupdict().get("bracket") or match.groupdict().get("plain")
+    try:
+        parsed = int(raw_value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _looks_like_reference_lead_text(text: str) -> bool:
+    value = str(text or "").lstrip(" \t\n\r-–—;:,.")
+    if not value:
+        return False
+    lowered = value.lower()
+    if lowered.startswith(
+        (
+            "doi",
+            "http",
+            "www",
+            "pmid",
+            "available from",
+            "vol.",
+            "volume",
+            "p.",
+            "pp.",
+            "article",
+        )
+    ):
+        return False
+    if re.match(r"^\d", value):
+        return False
+    tokens = [
+        token.strip("()[]{}.,;:'\"")
+        for token in value.split()
+        if token.strip("()[]{}.,;:'\"")
+    ]
+    if len(tokens) >= 2 and ("," in value[:60] or ". " in value[:30]):
+        second_token = tokens[1]
+        if second_token[:1].isupper():
+            return True
+        if (
+            tokens[0].lower()
+            in {"da", "de", "del", "della", "der", "des", "di", "dos", "das", "du", "la", "le", "van", "von"}
+            and len(tokens) >= 3
+            and tokens[2][:1].isupper()
+        ):
+            return True
+    return bool(
+        REFERENCE_AUTHOR_LEAD_RE.match(value)
+        or REFERENCE_AUTHOR_PREFIX_LEAD_RE.match(value)
+    )
+
+
+def _extract_leading_reference_index(text: str) -> Optional[int]:
+    value = str(text or "")
+    match = NUMBERED_REFERENCE_LINE_RE.match(value)
+    if match is None:
+        return None
+    if not _looks_like_reference_lead_text(value[match.end() :]):
+        return None
+    return _reference_anchor_index_from_match(match)
+
+
+def _find_reference_block_anchor_matches(text: str) -> List[re.Match[str]]:
+    matches: List[re.Match[str]] = []
+    for match in REFERENCE_BLOCK_ANCHOR_RE.finditer(text or ""):
+        if not _looks_like_reference_lead_text(str(text or "")[match.end() :]):
+            continue
+        matches.append(match)
+    return matches
+
+
+def _extract_reference_anchor_numbers(text: str) -> List[int]:
+    numbers: List[int] = []
+    leading_index = _extract_leading_reference_index(text)
+    if leading_index is not None:
+        numbers.append(leading_index)
+    for match in NUMBERED_ANCHOR_RE.finditer(text or ""):
+        try:
+            number = int(match.group(1))
+        except (TypeError, ValueError):
+            continue
+        if number > 0 and number not in numbers:
+            numbers.append(number)
+    return numbers
+
+
 def _layer_items(layers: Dict[str, Any], key: str) -> List[Dict[str, Any]]:
     raw_items = layers.get(key)
     if not isinstance(raw_items, list):
@@ -318,6 +465,14 @@ def _contains_box(container: Sequence[float], inner: Sequence[float]) -> bool:
     return float(container[0]) <= cx <= float(container[0]) + float(
         container[2]
     ) and float(container[1]) <= cy <= float(container[1]) + float(container[3])
+
+
+def _boxes_overlap_vertically(box_a: Sequence[float], box_b: Sequence[float]) -> bool:
+    ay0 = float(box_a[1])
+    ay1 = ay0 + float(box_a[3])
+    by0 = float(box_b[1])
+    by1 = by0 + float(box_b[3])
+    return max(ay0, by0) <= min(ay1, by1)
 
 
 def is_after_bibliography(
@@ -474,7 +629,7 @@ def _split_reference_row_on_anchors(
     if not text or _is_reference_noise_text(text):
         return []
 
-    matches = list(NUMBERED_ANCHOR_RE.finditer(text))
+    matches = _find_reference_block_anchor_matches(text)
     if not matches:
         return [dict(row)]
 
@@ -536,10 +691,13 @@ def _serialize_box(box: Any) -> Optional[Dict[str, float]]:
 
 
 def _serialize_layer_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    page_index = _page_index_value(item.get("page"))
     serialized = {
         "id": str(item.get("id") or ""),
         "text": str(item.get("text") or ""),
-        "page": item.get("page"),
+        "page": page_index,
+        "page_index": page_index,
+        "page_number": _page_number_from_index(page_index),
         "box": _serialize_box(item.get("box")),
     }
     if "column_id" in item:
@@ -554,15 +712,7 @@ def _is_reference_heading_text(value: str) -> bool:
 
 
 def _extract_inline_anchor_numbers(text: str) -> List[int]:
-    numbers: List[int] = []
-    for match in NUMBERED_ANCHOR_RE.finditer(text or ""):
-        try:
-            number = int(match.group(1))
-        except (TypeError, ValueError):
-            continue
-        if number > 0:
-            numbers.append(number)
-    return numbers
+    return _extract_reference_anchor_numbers(text)
 
 
 def _score_header_noise(text: str) -> float:
@@ -939,13 +1089,17 @@ def _assign_column_ids(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         split = _detect_page_column_split(page_rows)
         for row in page_rows:
             next_row = dict(row)
-            x_center = (
-                float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))
-            ) / 2.0
-            if split is None:
-                column_id = "left"
+            existing_column_id = str(next_row.get("column_id") or "").strip().lower()
+            if existing_column_id in {"left", "right"}:
+                column_id = existing_column_id
             else:
-                column_id = "left" if x_center < split else "right"
+                x_center = (
+                    float(next_row.get("x0", 0.0)) + float(next_row.get("x1", 0.0))
+                ) / 2.0
+                if split is None:
+                    column_id = "left"
+                else:
+                    column_id = "left" if x_center < split else "right"
             next_row["column_id"] = column_id
             if split is not None:
                 next_row["column_split_x"] = split
@@ -1039,10 +1193,461 @@ def _detect_reference_heading_candidates(
     return sorted(candidates, key=lambda item: (item["page"], item["box"][1], item["box"][0]))
 
 
+def _resolve_box_column_id(
+    page: int,
+    box: Sequence[float],
+    page_splits: Dict[int, Optional[float]],
+) -> str:
+    split = page_splits.get(page)
+    x_center = float(box[0]) + float(box[2]) / 2.0
+    if split is None:
+        return "left"
+    return "left" if x_center < split else "right"
+
+
+def _score_reference_like_text(text: str) -> float:
+    value = str(text or "").strip()
+    if not value:
+        return 0.0
+    normalized = _normalize_text(value)
+    if not normalized:
+        return 0.0
+
+    score = 0.0
+    if _extract_leading_reference_index(value) is not None:
+        score += 0.34
+    if _extract_doi(value):
+        score += 0.24
+    if REFERENCE_YEAR_RE.search(value):
+        score += 0.14
+    if re.search(
+        r"\b(?:journal|proceedings|conference|review|educ|trans|press|springer|ieee|acm|scand|technol|comput|curric)\b",
+        normalized,
+    ):
+        score += 0.14
+    if re.search(
+        r"\b[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+(?:\s+[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+){0,2},\s*(?:[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+|et al)\b",
+        value,
+    ):
+        score += 0.16
+    elif re.search(r"\b[A-ZÀ-Ý][A-Za-zÀ-ÿ'’.-]+(?:,\s*[A-ZÀ-Ý])", value):
+        score += 0.12
+    if re.search(r"\b\d{1,4}\s*(?:[–-]\s*\d{1,4}|:\s*\d{1,4})\b", value):
+        score += 0.08
+    if len(value) >= 80:
+        score += 0.06
+    if PAGE_NUMBER_ONLY_RE.match(value):
+        score -= 0.24
+    if re.fullmatch(r"(?:\d+(?:\.\d+)?\s*){2,}", value):
+        score -= 0.26
+    return round(max(0.0, min(score, 1.0)), 3)
+
+
+def _compute_reference_density(texts: Sequence[str]) -> Dict[str, Any]:
+    normalized_texts = [str(text or "").strip() for text in texts if str(text or "").strip()]
+    if not normalized_texts:
+        return {
+            "score": 0.0,
+            "mean_score": 0.0,
+            "strong_ratio": 0.0,
+            "row_count": 0,
+        }
+    scores = [_score_reference_like_text(text) for text in normalized_texts]
+    mean_score = sum(scores) / max(len(scores), 1)
+    strong_ratio = sum(1 for score in scores if score >= 0.45) / max(len(scores), 1)
+    density_score = min(1.0, mean_score * 0.7 + strong_ratio * 0.3)
+    return {
+        "score": round(density_score, 3),
+        "mean_score": round(mean_score, 3),
+        "strong_ratio": round(strong_ratio, 3),
+        "row_count": len(normalized_texts),
+    }
+
+
+def _segment_reading_order_key(segment: Dict[str, Any]) -> Tuple[int, int, float, float]:
+    page_index = _page_index_value(segment.get("page"))
+    box = _normalize_box(segment.get("box")) or [0.0, 0.0, 0.0, 0.0]
+    column_id = str(segment.get("column_id") or "left")
+    column_order = 0 if column_id == "left" else 1 if column_id == "right" else 2
+    return (
+        int(page_index if page_index is not None else 10**6),
+        column_order,
+        float(box[1]),
+        float(box[0]),
+    )
+
+
+def _sections_for_segment(
+    segment: Dict[str, Any],
+    sections: Sequence[Dict[str, Any]],
+    *,
+    start_page: Optional[int],
+    heading_y: Optional[float],
+) -> List[Dict[str, Any]]:
+    page_index = _page_index_value(segment.get("page"))
+    segment_box = _normalize_box(segment.get("box"))
+    if page_index is None or segment_box is None:
+        return []
+
+    related: List[Dict[str, Any]] = []
+    segment_y0 = float(segment_box[1])
+    for section in sections:
+        section_page = _page_index_value(section.get("page"))
+        section_box = _normalize_box(section.get("box"))
+        text = str(section.get("text") or "").strip()
+        if (
+            section_page != page_index
+            or section_box is None
+            or not text
+            or _is_reference_heading_text(text)
+        ):
+            continue
+        if (
+            start_page is not None
+            and page_index == start_page
+            and heading_y is not None
+            and float(section_box[1]) + float(section_box[3]) < float(heading_y)
+        ):
+            continue
+        overlaps = _boxes_overlap_vertically(segment_box, section_box)
+        near_segment_start = abs(float(section_box[1]) - segment_y0) <= 0.08
+        if overlaps or near_segment_start:
+            related.append(_serialize_layer_item(section))
+    return related
+
+
+def _paragraphs_for_segment(
+    segment: Dict[str, Any],
+    paragraphs: Sequence[Dict[str, Any]],
+    page_splits: Dict[int, Optional[float]],
+) -> List[Dict[str, Any]]:
+    page_index = _page_index_value(segment.get("page"))
+    segment_box = _normalize_box(segment.get("box"))
+    segment_column = str(segment.get("column_id") or "left")
+    if page_index is None or segment_box is None:
+        return []
+
+    related: List[Dict[str, Any]] = []
+    for paragraph in paragraphs:
+        paragraph_page = _page_index_value(paragraph.get("page"))
+        paragraph_box = _normalize_box(paragraph.get("box"))
+        text = str(paragraph.get("text") or "").strip()
+        if paragraph_page != page_index or paragraph_box is None or not text:
+            continue
+        if _resolve_box_column_id(page_index, paragraph_box, page_splits) != segment_column:
+            continue
+        if not _boxes_overlap_vertically(segment_box, paragraph_box):
+            continue
+        related.append(
+            {
+                "page": page_index,
+                "page_index": page_index,
+                "page_number": _page_number_from_index(page_index),
+                "column_id": segment_column,
+                "box": _serialize_box(paragraph_box),
+                "text": text,
+            }
+        )
+    return related
+
+
+def _reference_row_has_terminal_signal(text: str) -> bool:
+    value = str(text or "").strip()
+    if not value:
+        return False
+    if _extract_doi(value) or re.search(r"https?://\S+", value, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\b\d{1,4}(?:[–-]\d{1,4}|:\d{1,6})\b", value) and value.rstrip().endswith("."):
+        return True
+    normalized = _normalize_text(value)
+    return bool(
+        REFERENCE_YEAR_RE.search(value)
+        and re.search(
+            r"\b(?:journal|review|educ|trans|proceedings|conference|press|springer|ieee|acm|technol|comput)\b",
+            normalized,
+        )
+    )
+
+
+def _trim_bibliography_segment_tail_rows(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    artifact_info: Dict[str, Any],
+) -> Dict[str, Any]:
+    local_rows: List[Dict[str, Any]] = []
+    for position, row in enumerate(rows):
+        next_row = dict(row)
+        next_row["flow_position"] = position
+        local_rows.append(next_row)
+
+    anchors = detect_reference_anchors_from_rows(local_rows)
+    if not anchors:
+        return {
+            "rows": list(rows),
+            "tail_trim_applied": False,
+            "tail_trim_reason": None,
+            "tail_trim_removed_text": "",
+            "tail_trim_removed_rows_count": 0,
+            "tail_trim_scope": "segment_tail_after_last_anchor",
+        }
+
+    last_anchor = anchors[-1]
+    last_anchor_position = int(last_anchor.get("position", -1))
+    if last_anchor_position < 0 or last_anchor_position >= len(local_rows) - 1:
+        return {
+            "rows": list(rows),
+            "tail_trim_applied": False,
+            "tail_trim_reason": None,
+            "tail_trim_removed_text": "",
+            "tail_trim_removed_rows_count": 0,
+            "tail_trim_scope": "segment_tail_after_last_anchor",
+        }
+
+    diagnostics = build_reference_rows_between_anchors(
+        ordered_rows=local_rows,
+        current_anchor=last_anchor,
+        next_anchor=None,
+        artifact_info=artifact_info,
+        include_diagnostics=True,
+    )
+    selected_tail_rows = diagnostics.get("rows") or []
+    if not selected_tail_rows:
+        return {
+            "rows": list(rows),
+            "tail_trim_applied": False,
+            "tail_trim_reason": None,
+            "tail_trim_removed_text": "",
+            "tail_trim_removed_rows_count": 0,
+            "tail_trim_scope": "segment_tail_after_last_anchor",
+        }
+
+    last_selected_row_id = str(selected_tail_rows[-1].get("id") or "")
+    keep_until = len(local_rows)
+    for position, row in enumerate(local_rows):
+        if str(row.get("id") or "") == last_selected_row_id:
+            keep_until = position + 1
+            break
+
+    kept_rows = list(rows[:keep_until])
+    removed_rows = list(rows[keep_until:])
+    rejected_tail_decision = next(
+        (
+            decision
+            for decision in (diagnostics.get("row_decisions") or [])
+            if not decision.get("included")
+            and int(decision.get("position", -1)) >= last_anchor_position
+        ),
+        None,
+    )
+    tail_trim_reason = (
+        rejected_tail_decision.get("reason")
+        if isinstance(rejected_tail_decision, dict)
+        else None
+    ) or (
+        (diagnostics.get("cut_reasons") or [None])[0]
+        if removed_rows
+        else None
+    )
+    return {
+        "rows": kept_rows,
+        "tail_trim_applied": bool(removed_rows),
+        "tail_trim_reason": tail_trim_reason,
+        "tail_trim_removed_text": _clean_reference_text(removed_rows),
+        "tail_trim_removed_rows_count": len(removed_rows),
+        "tail_trim_scope": "segment_tail_after_last_anchor",
+    }
+
+
+def _trim_bibliography_segments_with_structure(
+    *,
+    bibliography_segments: Sequence[Dict[str, Any]],
+    rows_with_columns: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    paragraphs: Sequence[Dict[str, Any]],
+    page_splits: Dict[int, Optional[float]],
+    start_page: Optional[int],
+    selected_heading: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    row_by_id = {
+        str(row.get("id") or ""): row for row in rows_with_columns if str(row.get("id") or "")
+    }
+    ordered_segments = sorted(
+        [dict(segment) for segment in bibliography_segments],
+        key=_segment_reading_order_key,
+    )
+    heading_y = None
+    if isinstance(selected_heading, dict) and _normalize_box(selected_heading.get("box")) is not None:
+        heading_y = float(_normalize_box(selected_heading.get("box"))[1])
+
+    accepted_segments: List[Dict[str, Any]] = []
+    reading_order_blocks: List[Dict[str, Any]] = []
+    bibliography_end_candidates: List[Dict[str, Any]] = []
+    end_of_bibliography_signals: Optional[Dict[str, Any]] = None
+    bibliography_end_reason = "kept_all_candidate_segments"
+    previous_last_anchor: Optional[int] = None
+    anchorless_run = 0
+
+    for flow_position, segment in enumerate(ordered_segments):
+        row_ids = [str(value) for value in segment.get("row_ids") or [] if str(value)]
+        row_texts = [
+            str(row_by_id[row_id].get("text") or "")
+            for row_id in row_ids
+            if row_id in row_by_id
+        ]
+        density = _compute_reference_density(row_texts)
+        paragraph_records = _paragraphs_for_segment(segment, paragraphs, page_splits)
+        paragraph_density = _compute_reference_density(
+            [record.get("text") or "" for record in paragraph_records]
+        )
+        related_sections = _sections_for_segment(
+            segment,
+            sections,
+            start_page=start_page,
+            heading_y=heading_y,
+        )
+        leading_anchor_indices = sorted(
+            {
+                int(value)
+                for value in (segment.get("leading_anchor_indices") or [])
+                if isinstance(value, int) and value > 0
+            }
+        )
+
+        anchor_continuity_status = "no_anchors"
+        if leading_anchor_indices:
+            first_anchor = leading_anchor_indices[0]
+            if previous_last_anchor is None:
+                anchor_continuity_status = (
+                    "start_anchor_sequence" if first_anchor <= 10 else "late_anchor_start"
+                )
+            elif first_anchor <= previous_last_anchor + 1:
+                anchor_continuity_status = "continuous"
+            elif first_anchor <= previous_last_anchor + 3 and density["score"] >= 0.62:
+                anchor_continuity_status = "near_continuous_high_density"
+            else:
+                anchor_continuity_status = "anchor_gap"
+
+        section_transition_detected = bool(related_sections)
+        continuity_from_previous = bool(
+            accepted_segments
+            and (
+                _page_index_value(segment.get("page"))
+                == _page_index_value(accepted_segments[-1].get("page"))
+                or (
+                    _page_index_value(segment.get("page")) is not None
+                    and _page_index_value(accepted_segments[-1].get("page")) is not None
+                    and _page_index_value(segment.get("page"))
+                    == _page_index_value(accepted_segments[-1].get("page")) + 1
+                )
+            )
+        )
+
+        keep_segment = True
+        keep_reason = "bibliography_continuity_preserved"
+        if leading_anchor_indices:
+            anchorless_run = 0
+            if anchor_continuity_status == "anchor_gap" and density["score"] < 0.58:
+                keep_segment = False
+                keep_reason = "anchor_continuity_lost"
+        else:
+            anchorless_run += 1
+            if (
+                previous_last_anchor is not None
+                and section_transition_detected
+                and density["score"] < 0.4
+                and paragraph_density["score"] < 0.4
+            ):
+                keep_segment = False
+                keep_reason = "section_transition_without_bibliography_density"
+            elif (
+                previous_last_anchor is not None
+                and anchorless_run >= 1
+                and density["score"] < 0.3
+                and paragraph_density["score"] < 0.34
+            ):
+                keep_segment = False
+                keep_reason = "anchor_continuity_lost"
+
+        if (
+            keep_segment
+            and section_transition_detected
+            and not leading_anchor_indices
+            and density["score"] < 0.32
+            and paragraph_density["score"] < 0.36
+        ):
+            keep_segment = False
+            keep_reason = "section_transition_low_density"
+
+        block_record = {
+            "flow_position": flow_position,
+            "page": _page_index_value(segment.get("page")),
+            "page_index": _page_index_value(segment.get("page")),
+            "page_number": _page_number_from_index(segment.get("page")),
+            "column_id": segment.get("column_id"),
+            "box": _serialize_box(segment.get("box")),
+            "row_count": int(segment.get("row_count") or len(row_ids)),
+            "first_anchor_index": leading_anchor_indices[0] if leading_anchor_indices else None,
+            "last_anchor_index": leading_anchor_indices[-1] if leading_anchor_indices else None,
+            "anchor_count": len(leading_anchor_indices),
+            "anchor_continuity_status": anchor_continuity_status,
+            "bibliography_density": density["score"],
+            "paragraph_bibliography_density": paragraph_density["score"],
+            "section_transition_detected": section_transition_detected,
+            "continuity_from_previous": continuity_from_previous,
+            "accepted": keep_segment,
+            "reason": keep_reason,
+            "related_sections": related_sections,
+            "related_paragraph_count": len(paragraph_records),
+            "raw_text": segment.get("raw_text"),
+        }
+        reading_order_blocks.append(block_record)
+        bibliography_end_candidates.append(dict(block_record))
+        if not keep_segment:
+            end_of_bibliography_signals = dict(block_record)
+            bibliography_end_reason = keep_reason
+            break
+
+        accepted_segments.append(segment)
+        if leading_anchor_indices:
+            previous_last_anchor = leading_anchor_indices[-1]
+
+    column_reading_order: List[Dict[str, Any]] = []
+    for page_index in sorted(
+        {
+            _page_index_value(segment.get("page"))
+            for segment in accepted_segments
+            if _page_index_value(segment.get("page")) is not None
+        }
+    ):
+        page_segments = [
+            segment
+            for segment in accepted_segments
+            if _page_index_value(segment.get("page")) == page_index
+        ]
+        column_reading_order.append(
+            {
+                "page": page_index,
+                "page_index": page_index,
+                "page_number": _page_number_from_index(page_index),
+                "columns": [str(segment.get("column_id") or "left") for segment in page_segments],
+            }
+        )
+
+    return {
+        "accepted_segments": accepted_segments,
+        "reading_order_blocks": reading_order_blocks,
+        "column_reading_order": column_reading_order,
+        "bibliography_end_candidates": bibliography_end_candidates,
+        "end_of_bibliography_signals": end_of_bibliography_signals,
+        "bibliography_end_reason": bibliography_end_reason,
+    }
+
+
 def _build_bibliography_segments(
     *,
     rows: Sequence[Dict[str, Any]],
     sections: Sequence[Dict[str, Any]],
+    paragraphs: Sequence[Dict[str, Any]],
     bibliography_items: Sequence[Dict[str, Any]],
 ) -> Dict[str, Any]:
     rows_with_columns = _assign_column_ids(rows)
@@ -1157,9 +1762,19 @@ def _build_bibliography_segments(
                             continue
                     elif column_id != heading_column:
                         continue
-                    if float(row.get("y1") or 0.0) < heading_y:
+                    apply_heading_cutoff = (
+                        not anchor_columns_by_page.get(page) or column_id == heading_column
+                    )
+                    if apply_heading_cutoff and float(row.get("y1") or 0.0) < heading_y:
                         continue
             filtered_rows.append(row)
+        if not filtered_rows:
+            continue
+        tail_trim = _trim_bibliography_segment_tail_rows(
+            filtered_rows,
+            artifact_info=artifact_info,
+        )
+        filtered_rows = tail_trim.get("rows") or []
         if not filtered_rows:
             continue
         segment_box = _union_boxes(
@@ -1182,6 +1797,17 @@ def _build_bibliography_segments(
             confidence += 0.12
         if overlap_with_layer >= 0.2:
             confidence += min(overlap_with_layer, 0.12)
+        leading_anchor_indices = [
+            value
+            for value in (
+                _extract_leading_reference_index(str(row.get("text") or ""))
+                for row in filtered_rows
+            )
+            if isinstance(value, int) and value > 0
+        ]
+        density = _compute_reference_density(
+            [str(row.get("text") or "") for row in filtered_rows]
+        )
         bibliography_segments.append(
             {
                 "page": page,
@@ -1198,10 +1824,32 @@ def _build_bibliography_segments(
                 ),
                 "confidence": round(min(confidence, 0.98), 3),
                 "row_count": len(filtered_rows),
+                "reference_density": density["score"],
+                "reference_density_mean": density["mean_score"],
+                "reference_density_strong_ratio": density["strong_ratio"],
+                "leading_anchor_indices": leading_anchor_indices,
                 "raw_text": _clean_reference_text(filtered_rows),
                 "row_ids": [str(row.get("id") or "") for row in filtered_rows],
+                "tail_trim_applied": bool(tail_trim.get("tail_trim_applied")),
+                "tail_trim_reason": tail_trim.get("tail_trim_reason"),
+                "tail_trim_removed_text": tail_trim.get("tail_trim_removed_text") or "",
+                "tail_trim_removed_rows_count": int(
+                    tail_trim.get("tail_trim_removed_rows_count") or 0
+                ),
+                "tail_trim_scope": tail_trim.get("tail_trim_scope"),
             }
         )
+
+    structure_trim = _trim_bibliography_segments_with_structure(
+        bibliography_segments=bibliography_segments,
+        rows_with_columns=rows_with_columns,
+        sections=sections,
+        paragraphs=paragraphs,
+        page_splits=page_splits,
+        start_page=start_page,
+        selected_heading=selected_heading,
+    )
+    bibliography_segments = structure_trim.get("accepted_segments") or []
 
     bibliography_anchor = None
     if bibliography_segments:
@@ -1223,28 +1871,173 @@ def _build_bibliography_segments(
         "candidate_noise_sections": candidate_noise_sections,
         "section_records": section_records,
         "start_page": start_page,
+        "reading_order_blocks": structure_trim.get("reading_order_blocks") or [],
+        "column_reading_order": structure_trim.get("column_reading_order") or [],
+        "bibliography_end_candidates": structure_trim.get("bibliography_end_candidates")
+        or [],
+        "end_of_bibliography_signals": structure_trim.get("end_of_bibliography_signals"),
+        "bibliography_end_reason": structure_trim.get("bibliography_end_reason"),
     }
+
+
+def _match_row_to_bibliography_segment(
+    row: Dict[str, Any],
+    bibliography_segments: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    page_index = _page_index_value(row.get("page"))
+    box = _normalize_box(row.get("box"))
+    row_column_id = str(row.get("column_id") or "").strip().lower() or None
+    detail: Dict[str, Any] = {
+        "reference_page_index": page_index,
+        "reference_page_number": _page_number_from_index(page_index),
+        "reference_box": _serialize_box(box),
+        "reference_column_id": row_column_id,
+        "matched_segment_index": None,
+        "matched_segment_page_index": None,
+        "matched_segment_page_number": None,
+        "matched_segment_box": None,
+        "matched_segment_column_id": None,
+        "page_index_match": False,
+        "column_id_match": None,
+        "contains_match": False,
+        "box_overlap_ratio": 0.0,
+        "box_overlap_match": False,
+        "inside_bibliography_zone": False,
+        "inside_bibliography_zone_reason": "invalid_reference_geometry",
+    }
+    if page_index is None:
+        detail["inside_bibliography_zone_reason"] = "invalid_reference_page_index"
+        return detail
+    if box is None:
+        detail["inside_bibliography_zone_reason"] = "invalid_reference_box"
+        return detail
+
+    best_candidate: Optional[Dict[str, Any]] = None
+    best_rank: Optional[Tuple[int, int, int, float]] = None
+    for segment_index, segment in enumerate(bibliography_segments):
+        segment_page_index = _page_index_value(segment.get("page"))
+        segment_box = _normalize_box(segment.get("box"))
+        segment_column_id = str(segment.get("column_id") or "").strip().lower() or None
+        page_index_match = bool(
+            segment_page_index is not None and segment_page_index == page_index
+        )
+        column_id_match = (
+            None
+            if not page_index_match
+            else not (segment_column_id and row_column_id) or segment_column_id == row_column_id
+        )
+        contains_match = False
+        box_overlap_ratio = 0.0
+        box_overlap_match = False
+        if page_index_match and segment_box is not None:
+            contains_match = _contains_box(segment_box, box)
+            box_overlap_ratio = round(_overlap_ratio(segment_box, box), 3)
+            box_overlap_match = bool(contains_match or box_overlap_ratio >= 0.6)
+        inside_bibliography_zone = bool(
+            page_index_match
+            and box_overlap_match
+            and (column_id_match is None or column_id_match)
+        )
+        if inside_bibliography_zone:
+            reason = "matched_bibliography_segment"
+        elif not page_index_match:
+            reason = "page_index_mismatch"
+        elif column_id_match is False:
+            reason = "column_id_mismatch"
+        elif not box_overlap_match:
+            reason = "box_not_inside_segment"
+        else:
+            reason = "segment_not_matched"
+        candidate = {
+            "reference_page_index": page_index,
+            "reference_page_number": _page_number_from_index(page_index),
+            "reference_box": _serialize_box(box),
+            "reference_column_id": row_column_id,
+            "matched_segment_index": segment_index,
+            "matched_segment_page_index": segment_page_index,
+            "matched_segment_page_number": _page_number_from_index(segment_page_index),
+            "matched_segment_box": _serialize_box(segment_box),
+            "matched_segment_column_id": segment_column_id,
+            "page_index_match": page_index_match,
+            "column_id_match": column_id_match,
+            "contains_match": contains_match,
+            "box_overlap_ratio": box_overlap_ratio,
+            "box_overlap_match": box_overlap_match,
+            "inside_bibliography_zone": inside_bibliography_zone,
+            "inside_bibliography_zone_reason": reason,
+        }
+        rank = (
+            1 if page_index_match else 0,
+            1 if box_overlap_match else 0,
+            1 if (column_id_match is True or column_id_match is None) else 0,
+            float(box_overlap_ratio),
+        )
+        if best_rank is None or rank > best_rank:
+            best_rank = rank
+            best_candidate = candidate
+
+    if best_candidate is not None:
+        return best_candidate
+    detail["inside_bibliography_zone_reason"] = "no_bibliography_segments_available"
+    return detail
 
 
 def _row_in_any_segment(
     row: Dict[str, Any],
     bibliography_segments: Sequence[Dict[str, Any]],
 ) -> bool:
-    page = row.get("page")
-    box = _normalize_box(row.get("box"))
-    if not isinstance(page, int) or box is None:
-        return False
-    for segment in bibliography_segments:
-        if segment.get("page") != page:
-            continue
-        segment_box = _normalize_box(segment.get("box"))
-        if segment_box is None:
-            continue
-        if segment.get("column_id") and row.get("column_id") and segment.get("column_id") != row.get("column_id"):
-            continue
-        if _contains_box(segment_box, box) or _overlap_ratio(segment_box, box) >= 0.6:
-            return True
-    return False
+    return bool(
+        _match_row_to_bibliography_segment(row, bibliography_segments).get(
+            "inside_bibliography_zone"
+        )
+    )
+
+
+def _build_bibliography_zone_match_detail(
+    rows: Sequence[Dict[str, Any]],
+    bibliography_segments: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    row_matches = [
+        _match_row_to_bibliography_segment(row, bibliography_segments)
+        for row in rows
+        if isinstance(row, dict)
+    ]
+    inside_bibliography_zone = bool(
+        row_matches and all(match.get("inside_bibliography_zone") for match in row_matches)
+    )
+    failing_match = next(
+        (match for match in row_matches if not match.get("inside_bibliography_zone")),
+        None,
+    )
+    primary_match = row_matches[0] if row_matches else {}
+    if inside_bibliography_zone:
+        reason = "all_rows_inside_bibliography_segments"
+    elif isinstance(failing_match, dict):
+        reason = str(
+            failing_match.get("inside_bibliography_zone_reason")
+            or "bibliography_segment_mismatch"
+        )
+    else:
+        reason = "no_rows_to_evaluate"
+    return {
+        "reference_page_index": primary_match.get("reference_page_index"),
+        "reference_page_number": primary_match.get("reference_page_number"),
+        "reference_box": primary_match.get("reference_box"),
+        "matched_segment_index": primary_match.get("matched_segment_index"),
+        "matched_segment_page_index": primary_match.get("matched_segment_page_index"),
+        "matched_segment_page_number": primary_match.get("matched_segment_page_number"),
+        "matched_segment_box": primary_match.get("matched_segment_box"),
+        "matched_segment_column_id": primary_match.get("matched_segment_column_id"),
+        "page_index_match": bool(
+            row_matches and all(match.get("page_index_match") for match in row_matches)
+        ),
+        "box_overlap_match": bool(
+            row_matches and all(match.get("box_overlap_match") for match in row_matches)
+        ),
+        "inside_bibliography_zone": inside_bibliography_zone,
+        "inside_bibliography_zone_reason": reason,
+        "row_matches": row_matches,
+    }
 
 
 def _collect_bibliography_rows_from_segments(
@@ -1260,7 +2053,11 @@ def _collect_bibliography_rows_from_segments(
         page = row.get("page")
         box = _normalize_box(row.get("box"))
         anchor_numbers = _extract_inline_anchor_numbers(text)
-        in_zone = _row_in_any_segment(row, bibliography_segments)
+        bibliography_zone_match_detail = _match_row_to_bibliography_segment(
+            row,
+            bibliography_segments,
+        )
+        in_zone = bool(bibliography_zone_match_detail.get("inside_bibliography_zone"))
         header_footer = _is_header_footer_row(row, artifact_info)
         reason = "accepted"
         included = bool(in_zone and text and box is not None)
@@ -1280,12 +2077,14 @@ def _collect_bibliography_rows_from_segments(
         debug_rows.append(
             {
                 "id": str(row.get("id") or ""),
-                "page": page,
+                "page": _page_index_value(page),
+                **_page_debug_fields(page),
                 "box": _serialize_box(box),
                 "text": text,
                 "column_id": row.get("column_id"),
                 "anchor_index": anchor_numbers[0] if anchor_numbers else None,
                 "in_bibliography_zone": in_zone,
+                "bibliography_zone_match_detail": bibliography_zone_match_detail,
                 "included": included,
                 "reason": reason,
             }
@@ -1318,10 +2117,27 @@ def _collect_bibliography_rows_from_segments(
             }
         )
 
+    ordered_rows = build_bibliography_reading_flow(selected_rows)
     exploded: List[Dict[str, Any]] = []
-    for row in selected_rows:
+    rows_sorted_for_bibliography: List[Dict[str, Any]] = []
+    for row in ordered_rows:
+        rows_sorted_for_bibliography.append(
+            {
+                "id": str(row.get("id") or ""),
+                "page": _page_index_value(row.get("page")),
+                **_page_debug_fields(row.get("page")),
+                "column_id": row.get("column_id"),
+                "flow_position": row.get("flow_position"),
+                "box": _serialize_box(row.get("box")),
+                "text": str(row.get("text") or ""),
+            }
+        )
         exploded.extend(_split_reference_row_on_anchors(row))
-    return {"rows": exploded, "debug_rows": debug_rows}
+    return {
+        "rows": exploded,
+        "debug_rows": debug_rows,
+        "rows_sorted_for_bibliography": rows_sorted_for_bibliography,
+    }
 
 
 def _build_paragraph_phase_payload(
@@ -1338,16 +2154,13 @@ def _build_paragraph_phase_payload(
             continue
         if not _row_in_any_segment({"page": page, "box": box}, bibliography_segments):
             continue
-        split = page_splits.get(page)
-        x_center = float(box[0]) + float(box[2]) / 2.0
-        if split is None:
-            column_id = "left"
-        else:
-            column_id = "left" if x_center < split else "right"
+        column_id = _resolve_box_column_id(page, box, page_splits)
         paragraph_records.append(
             {
                 "id": str(paragraph.get("id") or ""),
                 "page": page,
+                "page_index": page,
+                "page_number": _page_number_from_index(page),
                 "column_id": column_id,
                 "box": _serialize_box(box),
                 "text": str(paragraph.get("text") or ""),
@@ -2339,6 +3152,97 @@ def _apply_validated_reference_local_edits(
     }
 
 
+def _detect_reference_punctuation_anomalies(text: str) -> List[str]:
+    value = re.sub(r"\s+", " ", str(text or "")).strip()
+    anomalies: List[str] = []
+    if re.search(r"\b(?:19|20)\d{2}\.\s+(?:and|to|through)\b", value, flags=re.IGNORECASE):
+        anomalies.append("year_connector_dot")
+    if re.search(r"\b(?:19|20)\d{2}\.\s*-\s*(?:19|20)\d{2}\b", value):
+        anomalies.append("year_range_dot")
+    if re.search(r"\b(?:19|20)\d{2}\.\s*;\s*", value):
+        anomalies.append("year_semicolon_dot")
+    if re.search(r"\b(?:19|20)\d{2}\.\s*/\s*\d{2}(?=\))", value):
+        anomalies.append("year_month_slash_dot")
+    return anomalies
+
+
+def _build_reference_fine_cleanup_candidate(text: str) -> Dict[str, Any]:
+    cleanups: set[str] = set()
+    current = re.sub(r"\s+", " ", str(text or "")).strip()
+    anomalies = _detect_reference_punctuation_anomalies(current)
+    current = _apply_regex_substitution(
+        current,
+        r"\b((?:19|20)\d{2})\.\s+(and|to|through)\b",
+        r"\1 \2",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+        flags=re.IGNORECASE,
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\b((?:19|20)\d{2})\.\s*-\s*((?:19|20)\d{2})\b",
+        r"\1-\2",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\b((?:19|20)\d{2})\.\s*;\s*",
+        r"\1; ",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    current = _apply_regex_substitution(
+        current,
+        r"\b((?:19|20)\d{2})\.\s*/\s*(\d{2})(?=\))",
+        r"\1/\2",
+        cleanups=cleanups,
+        cleanup_name="punctuation_spacing",
+    )
+    return {
+        "text": re.sub(r"\s+", " ", current).strip(),
+        "cleanups_applied": sorted(cleanups),
+        "anomalies_detected": anomalies,
+    }
+
+
+def _apply_reference_fine_cleanup(
+    *,
+    base_text: str,
+    row_evidence_texts: Sequence[str],
+    token_evidence_texts: Sequence[str],
+) -> Dict[str, Any]:
+    base_value = re.sub(r"\s+", " ", str(base_text or "")).strip()
+    if not base_value:
+        return {
+            "text": "",
+            "accepted_edits": [],
+            "rejected_edits": [],
+            "cleanups_applied": [],
+            "punctuation_normalization_applied": False,
+            "punctuation_anomalies_detected": [],
+        }
+    candidate = _build_reference_fine_cleanup_candidate(base_value)
+    validated = _apply_validated_reference_local_edits(
+        base_text=base_value,
+        candidate_text=str(candidate.get("text") or base_value),
+        row_evidence_texts=row_evidence_texts,
+        token_evidence_texts=token_evidence_texts,
+        edit_scope="fine_cleanup",
+    )
+    edits = validated.get("edits") or []
+    accepted_edits = [edit for edit in edits if edit.get("status") == "accepted"]
+    rejected_edits = [edit for edit in edits if edit.get("status") == "rejected"]
+    return {
+        "text": str(validated.get("text") or base_value).strip(),
+        "accepted_edits": accepted_edits,
+        "rejected_edits": rejected_edits,
+        "cleanups_applied": validated.get("cleanups_applied") or [],
+        "punctuation_normalization_applied": bool(accepted_edits),
+        "punctuation_anomalies_detected": candidate.get("anomalies_detected") or [],
+    }
+
+
 def _evaluate_reference_backbone_guard(
     backbone_text: str,
     candidate_text: str,
@@ -2933,9 +3837,12 @@ def _build_reference_decision(
     starts_with_anchor = bool(
         NUMBERED_REFERENCE_LINE_RE.match(first_text) and int(expected_index or 0) > 0
     )
+    bibliography_zone_match_detail = _build_bibliography_zone_match_detail(
+        rows,
+        bibliography_segments,
+    )
     inside_bibliography_zone = bool(
-        rows
-        and all(_row_in_any_segment(row, bibliography_segments) for row in rows)
+        bibliography_zone_match_detail.get("inside_bibliography_zone")
     )
     expected_column = first_row.get("column_id") if rows else None
     inside_expected_column = bool(
@@ -3046,6 +3953,7 @@ def _build_reference_decision(
         reason = validation_reason
     return {
         "inside_bibliography_zone": inside_bibliography_zone,
+        "bibliography_zone_match_detail": bibliography_zone_match_detail,
         "inside_expected_column": inside_expected_column,
         "starts_with_anchor": starts_with_anchor,
         "expected_anchor_index": expected_index,
@@ -3128,14 +4036,8 @@ def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
         return False
     numbers: List[int] = []
     for line in lines:
-        match = NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
-        if not match:
-            continue
-        try:
-            number = int(match.group(1))
-        except (TypeError, ValueError):
-            continue
-        if number > 0:
+        number = _extract_leading_reference_index(str(line.get("text") or ""))
+        if isinstance(number, int) and number > 0:
             numbers.append(number)
     if len(numbers) < 3:
         return False
@@ -3245,12 +4147,8 @@ def detect_reference_anchors_from_rows(
     anchors: List[Dict[str, Any]] = []
     for position, row in enumerate(rows):
         text = str(row.get("text") or "")
-        match = NUMBERED_REFERENCE_LINE_RE.match(text)
-        if not match:
-            continue
-        try:
-            index = int(match.group(1))
-        except (TypeError, ValueError):
+        index = _extract_leading_reference_index(text)
+        if index is None:
             continue
         if index <= 0:
             continue
@@ -3316,12 +4214,8 @@ def _is_valid_reference_block(
     if not lines:
         return False
     first_line = str(lines[0].get("text") or "")
-    first_match = NUMBERED_REFERENCE_LINE_RE.match(first_line)
-    if not first_match:
-        return False
-    try:
-        first_index = int(first_match.group(1))
-    except (TypeError, ValueError):
+    first_index = _extract_leading_reference_index(first_line)
+    if first_index is None:
         return False
     if first_index != expected_index:
         return False
@@ -3341,11 +4235,7 @@ def _is_valid_reference_block(
     if _is_reference_header_like(text):
         return False
 
-    anchor_mentions = [
-        int(match.group(1))
-        for match in NUMBERED_ANCHOR_RE.finditer(text)
-        if match.group(1).isdigit()
-    ]
+    anchor_mentions = _extract_reference_anchor_numbers(text)
     foreign_anchor_mentions = [
         value for value in anchor_mentions if value != expected_index
     ]
@@ -3367,11 +4257,7 @@ def _default_reference_validation(
             "accepted": False,
             "reason": "contains_header_footer_noise",
         }
-    anchor_mentions = [
-        int(match.group(1))
-        for match in NUMBERED_ANCHOR_RE.finditer(text)
-        if match.group(1).isdigit()
-    ]
+    anchor_mentions = _extract_reference_anchor_numbers(text)
     foreign_anchors = [value for value in anchor_mentions if value != expected_index]
     has_nested = len(foreign_anchors) > 0
     mixed_score = 0.72 if has_nested else 0.12
@@ -3457,6 +4343,11 @@ def build_reference_rows_between_anchors(
             "cut_reasons": ["invalid_anchor_position"],
             "has_nested_anchor": False,
             "nested_anchor_indices": [],
+            "tail_trim_applied": False,
+            "tail_trim_reason": None,
+            "tail_trim_removed_text": "",
+            "tail_trim_removed_rows_count": 0,
+            "tail_trim_scope": "reference_tail_rows",
         }
         return empty if include_diagnostics else []
 
@@ -3468,12 +4359,15 @@ def build_reference_rows_between_anchors(
     row_decisions: List[Dict[str, Any]] = []
     cut_reasons: List[str] = []
     nested_anchor_indices: List[int] = []
+    trimmed_tail_rows: List[Dict[str, Any]] = []
+    tail_trim_reason: Optional[str] = None
     for position in range(start, min(end, len(ordered_rows))):
         row = ordered_rows[position]
         text = str(row.get("text") or "").strip()
         if not text:
             row_decisions.append(
                 {
+                    "position": position,
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
                     "column_id": row.get("column_id"),
@@ -3493,6 +4387,7 @@ def build_reference_rows_between_anchors(
             cut_reasons.append(f"nested_anchor:{foreign_inline_anchors[0]}")
             row_decisions.append(
                 {
+                    "position": position,
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
                     "column_id": row.get("column_id"),
@@ -3507,6 +4402,7 @@ def build_reference_rows_between_anchors(
             cut_reasons.append("next_anchor_row")
             row_decisions.append(
                 {
+                    "position": position,
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
                     "column_id": row.get("column_id"),
@@ -3520,6 +4416,7 @@ def build_reference_rows_between_anchors(
         if not is_anchor_row and _is_header_footer_row(row, artifact_info):
             row_decisions.append(
                 {
+                    "position": position,
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
                     "column_id": row.get("column_id"),
@@ -3541,6 +4438,7 @@ def build_reference_rows_between_anchors(
             cut_reasons.append("column_change")
             row_decisions.append(
                 {
+                    "position": position,
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
                     "column_id": row_column,
@@ -3563,8 +4461,35 @@ def build_reference_rows_between_anchors(
                 and row_x0 is not None
                 and abs(float(row_x0) - float(anchor_x0)) > 0.18
             ):
+                previous_text = (
+                    str(selected_rows[-1].get("text") or "") if selected_rows else ""
+                )
+                if _reference_row_has_terminal_signal(previous_text):
+                    trimmed_tail_rows = [
+                        candidate
+                        for candidate in ordered_rows[position:min(end, len(ordered_rows))]
+                        if str(candidate.get("text") or "").strip()
+                    ]
+                    tail_trim_reason = (
+                        "tail_row_horizontal_reset_after_terminal_reference_line"
+                    )
+                    cut_reasons.append("tail_row_horizontal_reset")
+                    row_decisions.append(
+                        {
+                            "position": position,
+                            "row_id": str(row.get("id") or ""),
+                            "page": row.get("page"),
+                            "column_id": row_column,
+                            "text": text,
+                            "included": False,
+                            "reason": "tail_row_horizontal_reset",
+                            "inline_anchor_numbers": inline_anchor_numbers,
+                        }
+                    )
+                    break
                 row_decisions.append(
                     {
+                        "position": position,
                         "row_id": str(row.get("id") or ""),
                         "page": row.get("page"),
                         "column_id": row_column,
@@ -3591,8 +4516,15 @@ def build_reference_rows_between_anchors(
                         gap = float(current_y0) - float(previous_y1)
                         if gap > 0.085:
                             cut_reasons.append(f"vertical_gap:{round(gap, 4)}")
+                            trimmed_tail_rows = [
+                                candidate
+                                for candidate in ordered_rows[position:min(end, len(ordered_rows))]
+                                if str(candidate.get("text") or "").strip()
+                            ]
+                            tail_trim_reason = "tail_row_vertical_gap"
                             row_decisions.append(
                                 {
+                                    "position": position,
                                     "row_id": str(row.get("id") or ""),
                                     "page": current_page,
                                     "column_id": row_column,
@@ -3606,14 +4538,27 @@ def build_reference_rows_between_anchors(
                             break
                 elif current_page - previous_page > 1:
                     cut_reasons.append("page_jump")
+                    trimmed_tail_rows = [
+                        candidate
+                        for candidate in ordered_rows[position:min(end, len(ordered_rows))]
+                        if str(candidate.get("text") or "").strip()
+                    ]
+                    tail_trim_reason = "tail_row_page_jump"
                     break
                 elif (_to_float(row.get("y0")) or 1.0) > 0.36:
                     cut_reasons.append("late_page_continuation")
+                    trimmed_tail_rows = [
+                        candidate
+                        for candidate in ordered_rows[position:min(end, len(ordered_rows))]
+                        if str(candidate.get("text") or "").strip()
+                    ]
+                    tail_trim_reason = "tail_row_late_page_continuation"
                     break
 
         selected_rows.append(row)
         row_decisions.append(
             {
+                "position": position,
                 "row_id": str(row.get("id") or ""),
                 "page": row.get("page"),
                 "column_id": row_column,
@@ -3633,6 +4578,11 @@ def build_reference_rows_between_anchors(
         "cut_reasons": cut_reasons,
         "has_nested_anchor": bool(nested_anchor_indices),
         "nested_anchor_indices": sorted(set(nested_anchor_indices)),
+        "tail_trim_applied": bool(trimmed_tail_rows),
+        "tail_trim_reason": tail_trim_reason,
+        "tail_trim_removed_text": _clean_reference_text(trimmed_tail_rows),
+        "tail_trim_removed_rows_count": len(trimmed_tail_rows),
+        "tail_trim_scope": "reference_tail_rows",
     }
     return diagnostics if include_diagnostics else selected_rows
 
@@ -3752,6 +4702,41 @@ def build_references_from_rows(
             or token_reconstruction.get("raw_text")
             or ""
         ).strip()
+        fine_cleanup = _apply_reference_fine_cleanup(
+            base_text=str(token_reconstruction.get("final_text") or ""),
+            row_evidence_texts=[
+                str(token_reconstruction.get("raw_text") or ""),
+                str(token_reconstruction.get("backbone_text") or ""),
+            ]
+            + [str(row.get("text") or "") for row in block_rows],
+            token_evidence_texts=[
+                str(token_reconstruction.get("token_text") or ""),
+                str(token_reconstruction.get("hybrid_text") or ""),
+            ],
+        )
+        token_reconstruction["final_text"] = str(
+            fine_cleanup.get("text") or token_reconstruction.get("final_text") or ""
+        ).strip()
+        token_reconstruction["fine_cleanup_edits"] = (
+            fine_cleanup.get("accepted_edits") or []
+        )
+        token_reconstruction["fine_cleanup_rejected_edits"] = (
+            fine_cleanup.get("rejected_edits") or []
+        )
+        token_reconstruction["punctuation_normalization_applied"] = bool(
+            fine_cleanup.get("punctuation_normalization_applied")
+        )
+        token_reconstruction["punctuation_anomalies_detected"] = (
+            fine_cleanup.get("punctuation_anomalies_detected") or []
+        )
+        token_reconstruction["cleanups_applied"] = sorted(
+            {
+                str(name).strip()
+                for name in list(token_reconstruction.get("cleanups_applied") or [])
+                + list(fine_cleanup.get("cleanups_applied") or [])
+                if str(name).strip()
+            }
+        )
         block_text = str(token_reconstruction.get("final_text") or "").strip()
         if not _is_valid_reference_block(
             expected_index=index,
@@ -3865,11 +4850,32 @@ def build_references_from_rows(
                 "rejected_local_edit_count": int(
                     token_reconstruction.get("rejected_local_edit_count") or 0
                 ),
+                "fine_cleanup_edits": token_reconstruction.get("fine_cleanup_edits")
+                or [],
+                "fine_cleanup_rejected_edits": token_reconstruction.get(
+                    "fine_cleanup_rejected_edits"
+                )
+                or [],
+                "punctuation_normalization_applied": bool(
+                    token_reconstruction.get("punctuation_normalization_applied")
+                ),
+                "punctuation_anomalies_detected": token_reconstruction.get(
+                    "punctuation_anomalies_detected"
+                )
+                or [],
             },
             "anomalies": {
                 "cut_reasons": block_result.get("cut_reasons") or [],
                 "nested_anchor_indices": block_result.get("nested_anchor_indices")
                 or [],
+                "tail_trim_applied": bool(block_result.get("tail_trim_applied")),
+                "tail_trim_reason": block_result.get("tail_trim_reason"),
+                "tail_trim_removed_text": block_result.get("tail_trim_removed_text")
+                or "",
+                "tail_trim_removed_rows_count": int(
+                    block_result.get("tail_trim_removed_rows_count") or 0
+                ),
+                "tail_trim_scope": block_result.get("tail_trim_scope"),
             },
         }
         if isinstance(row_debug_collector, list):
@@ -3880,6 +4886,14 @@ def build_references_from_rows(
                     "cut_reasons": block_result.get("cut_reasons") or [],
                     "nested_anchor_indices": block_result.get("nested_anchor_indices")
                     or [],
+                    "tail_trim_applied": bool(block_result.get("tail_trim_applied")),
+                    "tail_trim_reason": block_result.get("tail_trim_reason"),
+                    "tail_trim_removed_text": block_result.get("tail_trim_removed_text")
+                    or "",
+                    "tail_trim_removed_rows_count": int(
+                        block_result.get("tail_trim_removed_rows_count") or 0
+                    ),
+                    "tail_trim_scope": block_result.get("tail_trim_scope"),
                     "validation_intermediate": intermediate_validation,
                     "final_decision": final_decision,
                 }
@@ -3929,6 +4943,21 @@ def build_references_from_rows(
                     "rejected_local_edit_count": int(
                         token_reconstruction.get("rejected_local_edit_count") or 0
                     ),
+                    "fine_cleanup_edits": token_reconstruction.get(
+                        "fine_cleanup_edits"
+                    )
+                    or [],
+                    "fine_cleanup_rejected_edits": token_reconstruction.get(
+                        "fine_cleanup_rejected_edits"
+                    )
+                    or [],
+                    "punctuation_normalization_applied": bool(
+                        token_reconstruction.get("punctuation_normalization_applied")
+                    ),
+                    "punctuation_anomalies_detected": token_reconstruction.get(
+                        "punctuation_anomalies_detected"
+                    )
+                    or [],
                     "token_cleanup_confidence": token_reconstruction.get(
                         "token_cleanup_confidence"
                     ),
@@ -4264,6 +5293,7 @@ def build_references_data(
     bibliography_phase = _build_bibliography_segments(
         rows=row_items,
         sections=section_items,
+        paragraphs=paragraph_items,
         bibliography_items=bibliography_items,
     )
     bibliography_segments = bibliography_phase.get("bibliography_segments") or []
@@ -4282,6 +5312,9 @@ def build_references_data(
     bibliography_start_page_zero_based = (
         bibliography_anchor[0] if bibliography_anchor is not None else None
     )
+    bibliography_start_page_number = _page_number_from_index(
+        bibliography_start_page_zero_based
+    )
     crossref_context = _prepare_crossref_context(
         article_doi=article_doi,
         row_items=row_items,
@@ -4297,6 +5330,7 @@ def build_references_data(
 
     line_based_references: Dict[int, Dict[str, Any]] = {}
     metadata_by_index: Dict[int, Dict[str, Any]] = {}
+    input_references_by_index: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     row_phase_details: List[Dict[str, Any]] = []
     token_phase_details: List[Dict[str, Any]] = []
     for ref in references:
@@ -4305,7 +5339,11 @@ def build_references_data(
         idx = _entry_index(ref)
         if idx is None or idx <= 0:
             continue
-        metadata_by_index[idx] = ref
+        input_references_by_index[idx].append(ref)
+    for idx, candidates in input_references_by_index.items():
+        preferred_input = _pick_preferred_reference_input(candidates)
+        if preferred_input is not None:
+            metadata_by_index[idx] = preferred_input
     indexed_input_references = sum(
         1 for ref in references if isinstance(ref, dict) and _entry_index(ref) is not None
     )
@@ -4335,11 +5373,36 @@ def build_references_data(
     references_by_doi: Dict[str, str] = {}
     used_bibliography_ids: set[str] = set()
     fallback_geometry_candidates = bibliography_segments or bibliography_items
+    reference_input_sequence: List[Tuple[Optional[int], Dict[str, Any]]] = []
+    canonical_row_indices = sorted(
+        idx for idx in line_based_references.keys() if isinstance(idx, int) and idx > 0
+    )
+    if canonical_row_indices:
+        for idx in canonical_row_indices:
+            preferred_input = _pick_preferred_reference_input(
+                input_references_by_index.get(idx) or []
+            )
+            if preferred_input is None:
+                line_reference = line_based_references.get(idx) or {}
+                preferred_input = {
+                    "index": idx,
+                    "raw": str(
+                        line_reference.get("text_raw")
+                        or line_reference.get("text")
+                        or ""
+                    ),
+                }
+            reference_input_sequence.append((idx, preferred_input))
+    else:
+        for ref in references:
+            if not isinstance(ref, dict):
+                continue
+            reference_input_sequence.append((_entry_index(ref), ref))
 
-    for fallback_idx, ref in enumerate(references, start=1):
+    for fallback_idx, (canonical_idx, ref) in enumerate(reference_input_sequence, start=1):
         if not isinstance(ref, dict):
             continue
-        idx = _entry_index(ref)
+        idx = canonical_idx if isinstance(canonical_idx, int) and canonical_idx > 0 else _entry_index(ref)
         if idx is not None:
             ref_id = f"ref-{idx}"
             references_by_index[idx] = ref_id
@@ -4370,6 +5433,11 @@ def build_references_data(
         }
         decision_scores: Dict[str, Any] = {
             "inside_bibliography_zone": False,
+            "bibliography_zone_match_detail": {
+                "inside_bibliography_zone": False,
+                "inside_bibliography_zone_reason": "not_evaluated_fallback",
+                "row_matches": [],
+            },
             "inside_expected_column": False,
             "starts_with_anchor": False,
             "expected_anchor_index": idx,
@@ -4407,8 +5475,20 @@ def build_references_data(
             "lexical_degradation_detected": False,
             "accepted_local_edit_count": 0,
             "rejected_local_edit_count": 0,
+            "fine_cleanup_edits": [],
+            "fine_cleanup_rejected_edits": [],
+            "punctuation_normalization_applied": False,
+            "punctuation_anomalies_detected": [],
         }
-        anomalies: Dict[str, Any] = {"cut_reasons": [], "nested_anchor_indices": []}
+        anomalies: Dict[str, Any] = {
+            "cut_reasons": [],
+            "nested_anchor_indices": [],
+            "tail_trim_applied": False,
+            "tail_trim_reason": None,
+            "tail_trim_removed_text": "",
+            "tail_trim_removed_rows_count": 0,
+            "tail_trim_scope": None,
+        }
         text_candidate_raw = raw_text
         if line_reference is not None:
             line_page = line_reference.get("page")
@@ -4504,6 +5584,19 @@ def build_references_data(
                 decision_scores.update(
                     {
                         "inside_bibliography_zone": True,
+                        "bibliography_zone_match_detail": {
+                            "reference_page_index": _page_index_value(page),
+                            "reference_page_number": _page_number_from_index(page),
+                            "reference_box": _serialize_box(box),
+                            "matched_segment_page_index": _page_index_value(page),
+                            "matched_segment_page_number": _page_number_from_index(page),
+                            "matched_segment_box": _serialize_box(box),
+                            "page_index_match": True,
+                            "box_overlap_match": True,
+                            "inside_bibliography_zone": True,
+                            "inside_bibliography_zone_reason": "bibliography_box_fallback",
+                            "row_matches": [],
+                        },
                         "final_score": round(min(best_score / 5.0, 0.52), 3),
                         "selected_candidate_source": structure_source,
                         "reason": "bibliography_box_fallback",
@@ -4534,6 +5627,39 @@ def build_references_data(
                     logger.debug(
                         f"Referencia {ref_id} sin caja de bibliografía emparejada."
                     )
+
+        if text and line_reference is None:
+            fine_cleanup = _apply_reference_fine_cleanup(
+                base_text=text,
+                row_evidence_texts=[raw_text, text_candidate_raw],
+                token_evidence_texts=[
+                    str(token_payload.get("raw_text") or ""),
+                    str(token_payload.get("token_text") or ""),
+                    str(token_payload.get("hybrid_text") or ""),
+                ],
+            )
+            text = str(fine_cleanup.get("text") or text).strip()
+            token_payload["final_text"] = text
+            token_payload["fine_cleanup_edits"] = (
+                fine_cleanup.get("accepted_edits") or []
+            )
+            token_payload["fine_cleanup_rejected_edits"] = (
+                fine_cleanup.get("rejected_edits") or []
+            )
+            token_payload["punctuation_normalization_applied"] = bool(
+                fine_cleanup.get("punctuation_normalization_applied")
+            )
+            token_payload["punctuation_anomalies_detected"] = (
+                fine_cleanup.get("punctuation_anomalies_detected") or []
+            )
+            token_payload["cleanups_applied"] = sorted(
+                {
+                    str(name).strip()
+                    for name in list(token_payload.get("cleanups_applied") or [])
+                    + list(fine_cleanup.get("cleanups_applied") or [])
+                    if str(name).strip()
+                }
+            )
 
         if text:
             crossref_match_payload = _match_reference_against_crossref(
@@ -4572,7 +5698,8 @@ def build_references_data(
                 "index": idx,
                 "text": text,
                 "text_candidate_raw": text_candidate_raw,
-                "page": page,
+                "page": _page_index_value(page),
+                **_page_debug_fields(page),
                 "box": box,
                 "doi": doi_value or None,
                 "structure_source": structure_source,
@@ -4582,6 +5709,11 @@ def build_references_data(
                 "validation_intermediate": validation_intermediate,
                 "scores": decision_scores,
                 "final_decision": final_decision,
+                "bibliography_zone_match_detail": (
+                    final_decision.get("bibliography_zone_match_detail")
+                    if isinstance(final_decision, dict)
+                    else None
+                ),
                 "crossref_match": crossref_match_payload,
                 "token_reconstruction": token_payload,
                 "anomalies": anomalies,
@@ -4717,10 +5849,12 @@ def build_references_data(
     def _clean_items(items: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         cleaned: List[Dict[str, Any]] = []
         for item in items:
-            page = item.get("page")
+            page = _page_index_value(item.get("page"))
             box = _normalize_box(item.get("box"))
             next_item = dict(item)
-            next_item["page"] = page if isinstance(page, int) and page >= 0 else None
+            next_item["page"] = page
+            next_item["page_index"] = page
+            next_item["page_number"] = _page_number_from_index(page)
             next_item["box"] = box
             cleaned.append(next_item)
         return cleaned
@@ -4728,12 +5862,15 @@ def build_references_data(
     reference_entries = _clean_items(reference_entries)
     citations = _clean_items(citations)
     contexts = _clean_items(contexts)
+    final_reference_ids_serialized = [
+        str(entry.get("ref_id") or "")
+        for entry in reference_entries
+        if str(entry.get("ref_id") or "").strip()
+    ]
     max_reference_index = max(references_by_index.keys(), default=0)
     if max_reference_index <= 0:
         max_reference_index = len(reference_entries)
-    bibliography_start_page = (
-        bibliography_anchor[0] + 1 if bibliography_anchor is not None else None
-    )
+    bibliography_start_page = bibliography_start_page_number
     anchors_out_of_sequence: List[Dict[str, int]] = []
     sorted_reference_indices = [
         int(entry.get("index"))
@@ -4806,8 +5943,16 @@ def build_references_data(
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "debug_mode": True,
                 "pipeline_version": REFERENCE_PIPELINE_VERSION,
+                "page_convention_internal": "page_index_zero_based",
+                "page_convention_human": "page_number_one_based",
                 "bibliography_start_page": bibliography_start_page,
+                "bibliography_start_page_index": bibliography_start_page_zero_based,
+                "bibliography_start_page_number": bibliography_start_page_number,
                 "references_total_detected": len(reference_entries),
+                "references_total_debug": len(reference_entries),
+                "references_total_serialized": len(reference_entries),
+                "references_total_source": "reference_entries_final",
+                "final_reference_ids_serialized": final_reference_ids_serialized,
                 "total_rows_in_bibliography": len(bibliography_lines),
                 "total_tokens_in_bibliography": len(tokens_in_bibliography),
                 "crossref_available": bool(crossref_context.get("crossref_available")),
@@ -4846,16 +5991,54 @@ def build_references_data(
                 "bibliography_zone": {
                     "segments": [
                         {
-                            "page": segment.get("page"),
+                            "page": _page_index_value(segment.get("page")),
+                            **_page_debug_fields(segment.get("page")),
                             "column_id": segment.get("column_id"),
                             "box": _serialize_box(segment.get("box")),
                             "source": segment.get("source"),
                             "confidence": segment.get("confidence"),
+                            "row_count": segment.get("row_count"),
+                            "leading_anchor_indices": segment.get("leading_anchor_indices")
+                            or [],
+                            "reference_density": segment.get("reference_density"),
+                            "reference_density_mean": segment.get(
+                                "reference_density_mean"
+                            ),
+                            "reference_density_strong_ratio": segment.get(
+                                "reference_density_strong_ratio"
+                            ),
                             "raw_text": segment.get("raw_text"),
+                            "tail_trim_applied": bool(segment.get("tail_trim_applied")),
+                            "tail_trim_reason": segment.get("tail_trim_reason"),
+                            "tail_trim_removed_text": segment.get(
+                                "tail_trim_removed_text"
+                            )
+                            or "",
+                            "tail_trim_removed_rows_count": int(
+                                segment.get("tail_trim_removed_rows_count") or 0
+                            ),
+                            "tail_trim_scope": segment.get("tail_trim_scope"),
                             "accepted_because": segment.get("source"),
                         }
                         for segment in bibliography_segments
                     ],
+                    "reading_order_blocks": bibliography_phase.get("reading_order_blocks")
+                    or [],
+                    "column_reading_order": bibliography_phase.get("column_reading_order")
+                    or [],
+                    "reading_order_reason": (
+                        "ordered_by_page_then_column_left_to_right_then_top_to_bottom_within_bibliography_segments"
+                    ),
+                    "bibliography_end_candidates": bibliography_phase.get(
+                        "bibliography_end_candidates"
+                    )
+                    or [],
+                    "end_of_bibliography_signals": bibliography_phase.get(
+                        "end_of_bibliography_signals"
+                    ),
+                    "bibliography_end_reason": bibliography_phase.get(
+                        "bibliography_end_reason"
+                    ),
                     "layer_boxes": [
                         _serialize_layer_item(item) for item in bibliography_items
                     ],
@@ -4864,7 +6047,12 @@ def build_references_data(
                     "relevant_sections": bibliography_phase.get("section_records") or [],
                     "selected_start": (
                         {
-                            "page": bibliography_phase["selected_heading"].get("page"),
+                            "page": _page_index_value(
+                                bibliography_phase["selected_heading"].get("page")
+                            ),
+                            **_page_debug_fields(
+                                bibliography_phase["selected_heading"].get("page")
+                            ),
                             "column_id": bibliography_phase["selected_heading"].get(
                                 "column_id"
                             ),
@@ -4883,6 +6071,10 @@ def build_references_data(
                 "paragraphs": paragraph_phase,
                 "rows": {
                     "rows_considered": bibliography_rows_phase.get("debug_rows") or [],
+                    "rows_sorted_for_bibliography": bibliography_rows_phase.get(
+                        "rows_sorted_for_bibliography"
+                    )
+                    or [],
                     "reference_blocks": row_phase_details,
                 },
                 "tokens": {
@@ -4898,11 +6090,16 @@ def build_references_data(
 
     return {
         "references": reference_entries,
+        "references_total": len(reference_entries),
+        "references_total_source": "reference_entries_final",
+        "final_reference_ids_serialized": final_reference_ids_serialized,
         "citations": citations,
         "contexts": contexts,
         "citation_style": "numeric" if references_numbered else "non_numeric",
         "max_reference_index": max_reference_index,
         "bibliography_start_page": bibliography_start_page,
+        "bibliography_start_page_index": bibliography_start_page_zero_based,
+        "bibliography_start_page_number": bibliography_start_page_number,
         "bibliography_segments": bibliography_segments,
         "crossref_available": bool(crossref_context.get("crossref_available")),
         "article_doi": crossref_context.get("article_doi"),
@@ -4962,6 +6159,9 @@ def finalize_reference_detection_debug_payload(
             if isinstance(entry.get("token_reconstruction"), dict)
             else {}
         )
+        anomalies = (
+            entry.get("anomalies") if isinstance(entry.get("anomalies"), dict) else {}
+        )
         enrichment_validation = (
             entry.get("enrichment_validation")
             if isinstance(entry.get("enrichment_validation"), dict)
@@ -4976,6 +6176,9 @@ def finalize_reference_detection_debug_payload(
             {
                 "ref_id": entry.get("ref_id"),
                 "index": entry.get("index"),
+                "page": _page_index_value(entry.get("page")),
+                "page_index": _page_index_value(entry.get("page")),
+                "page_number": _page_number_from_index(entry.get("page")),
                 "source": entry.get("structure_source"),
                 "structure_source": entry.get("structure_source"),
                 "candidate_text_raw": entry.get("text_candidate_raw") or entry.get("text"),
@@ -4992,6 +6195,9 @@ def finalize_reference_detection_debug_payload(
                 "final_decision": scores,
                 "validation_intermediate": validation_intermediate,
                 "scores": scores,
+                "bibliography_zone_match_detail": scores.get(
+                    "bibliography_zone_match_detail"
+                ),
                 "cleanups_applied": token_info.get("cleanups_applied") or [],
                 "selected_candidate_source": token_info.get(
                     "selected_candidate_source"
@@ -5016,16 +6222,46 @@ def finalize_reference_detection_debug_payload(
                 "rejected_local_edit_count": int(
                     token_info.get("rejected_local_edit_count") or 0
                 ),
+                "fine_cleanup_edits": token_info.get("fine_cleanup_edits") or [],
+                "fine_cleanup_rejected_edits": token_info.get(
+                    "fine_cleanup_rejected_edits"
+                )
+                or [],
+                "punctuation_normalization_applied": bool(
+                    token_info.get("punctuation_normalization_applied")
+                ),
+                "punctuation_anomalies_detected": token_info.get(
+                    "punctuation_anomalies_detected"
+                )
+                or [],
                 "enrichment_validation": enrichment_validation,
                 "enrichment_candidate": enrichment_candidate,
                 "enrichment_accepted": entry.get("enrichment_accepted"),
-                "anomalies": entry.get("anomalies") if isinstance(entry.get("anomalies"), dict) else {},
+                "tail_trim_applied": bool(anomalies.get("tail_trim_applied")),
+                "tail_trim_reason": anomalies.get("tail_trim_reason"),
+                "tail_trim_removed_text": anomalies.get("tail_trim_removed_text")
+                or "",
+                "tail_trim_removed_rows_count": int(
+                    anomalies.get("tail_trim_removed_rows_count") or 0
+                ),
+                "tail_trim_scope": anomalies.get("tail_trim_scope"),
+                "anomalies": anomalies,
                 "fallback_used": "fallback" in str(entry.get("structure_source") or ""),
             }
         )
     debug_payload["references"] = finalized_references
     debug_payload.setdefault("metadata", {})
     debug_payload["metadata"]["references_total_detected"] = len(finalized_references)
+    debug_payload["metadata"]["references_total_debug"] = len(finalized_references)
+    debug_payload["metadata"]["references_total_serialized"] = len(
+        finalized_references
+    )
+    debug_payload["metadata"]["references_total_source"] = "reference_entries_final"
+    debug_payload["metadata"]["final_reference_ids_serialized"] = [
+        str(entry.get("ref_id") or "")
+        for entry in finalized_references
+        if str(entry.get("ref_id") or "").strip()
+    ]
     return debug_payload
 
 
