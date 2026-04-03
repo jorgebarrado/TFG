@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from citations.views import message_views, notification_views, user_views
+from django.shortcuts import redirect
 from citations.views.page_views import home
 
 urlpatterns = [
@@ -26,6 +27,9 @@ urlpatterns = [
         name="notifications_read",
     ),
     path("citations/", include("citations.urls")),
+    path(
+        "citations/perfil/dblp-articulos/", lambda r: redirect("citation_review_papers")
+    ),
     path("messages/", message_views.inbox, name="messages_inbox"),
     path(
         "messages/new/<str:username>/",

@@ -12,11 +12,6 @@ from .views import (
 
 urlpatterns = [
     # Page Views
-    path(
-        "perfil/semantic-citations/",
-        page_views.semantic_citations_view,
-        name="semantic_citations",
-    ),
     path("list/", page_views.citation_list, name="citation_list"),
     path("report/<int:pk>/", page_views.citation_detail, name="citation_detail"),
     path(
@@ -63,11 +58,6 @@ urlpatterns = [
         name="citation_ai_evaluate",
     ),
     # User Views
-    path(
-        "perfil/dblp-articulos/",
-        user_views.dblp_articles_view,
-        name="dblp_articles",
-    ),
     path("perfil/mis-reportes/", user_views.my_reports, name="my_reports"),
     path("perfil/mis-comentarios/", user_views.my_comments, name="my_comments"),
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
