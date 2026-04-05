@@ -1,0 +1,508 @@
+{
+  "paper_id": "s10664_011_9181_9",
+  "dataset_type": "exploratory",
+  "pdf_file": "s10664-011-9181-9.pdf",
+  "pdf_path": "/Users/jorge/Documents/TFG/TFG/tfg_project/citations/static/citations/PDFs-Reales/s10664-011-9181-9.pdf",
+  "dataset_entry": {
+    "id": "s10664_011_9181_9",
+    "dataset_type": "exploratory",
+    "pdf": "s10664-011-9181-9.pdf",
+    "expected_max_reference_index": null,
+    "notes": "",
+    "autodiscovered": true
+  },
+  "engine_requested": "papermage",
+  "engine_effective": "papermage",
+  "time_ms": 1942,
+  "base_reference_stats": {
+    "pages_total": 15,
+    "references_total": 2,
+    "dois_total": 0,
+    "references_numbered": false,
+    "references_header_found": true,
+    "citation_style": "non_numeric",
+    "max_reference_index": 2,
+    "bibliography_start_page": 13
+  },
+  "base_reference_count": 2,
+  "citation_context": {
+    "citation_style": "non_numeric",
+    "max_reference_index": 2,
+    "total_references_for_validation": 2
+  },
+  "process_manuscript": {
+    "summary": {
+      "paragraphs": 15,
+      "count": 26
+    },
+    "citation_style": "non_numeric",
+    "total_references": 2,
+    "max_reference_index": 2,
+    "results_total": 26,
+    "trace": {
+      "engines": [
+        {
+          "name": "papermage",
+          "available": true,
+          "attempted": true,
+          "ok": true,
+          "error": null,
+          "count": 15
+        }
+      ]
+    }
+  },
+  "reader_data_summary": {
+    "pages_total": 15,
+    "layer_keys": [
+      "bibliographies",
+      "paragraphs",
+      "rows",
+      "sections",
+      "tokens"
+    ],
+    "layer_item_counts": {
+      "tokens": 6819,
+      "rows": 716,
+      "paragraphs": 292,
+      "sections": 95,
+      "bibliographies": 5
+    }
+  },
+  "snippets_total": 26,
+  "final_extraction": {
+    "references": [
+      {
+        "id": "reference-entry-ref-unlabeled-1",
+        "ref_id": "ref-unlabeled-1",
+        "index": null,
+        "text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+        "text_candidate_raw": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+        "page": null,
+        "page_index": null,
+        "page_number": null,
+        "box": null,
+        "doi": null,
+        "structure_source": "raw_reference_fallback",
+        "local_row_count": 0,
+        "local_anchor_detected": false,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": false,
+          "reason": "raw_reference_fallback",
+          "intermediate_accepted": false,
+          "intermediate_reason": "fallback_without_rows_structure",
+          "final_classification": "fallback_needed",
+          "final_score": 0.0
+        },
+        "validation_intermediate": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": false,
+          "reason": "fallback_without_rows_structure"
+        },
+        "scores": {
+          "inside_bibliography_zone": false,
+          "bibliography_zone_match_detail": {
+            "inside_bibliography_zone": false,
+            "inside_bibliography_zone_reason": "not_evaluated_fallback",
+            "row_matches": []
+          },
+          "inside_expected_column": false,
+          "starts_with_anchor": false,
+          "expected_anchor_index": null,
+          "has_nested_anchor": false,
+          "header_noise_score": 0.0,
+          "crossref_match_score": 0.0,
+          "doi_match_score": 0.0,
+          "row_continuity_score": 0.0,
+          "token_cleanup_confidence": 0.0,
+          "cleanup_applied": false,
+          "selected_candidate_source": "raw_reference_fallback",
+          "final_score": 0.0,
+          "accepted": false,
+          "classification": "fallback_needed",
+          "reason": "raw_reference_fallback"
+        },
+        "final_decision": {
+          "inside_bibliography_zone": false,
+          "bibliography_zone_match_detail": {
+            "inside_bibliography_zone": false,
+            "inside_bibliography_zone_reason": "not_evaluated_fallback",
+            "row_matches": []
+          },
+          "inside_expected_column": false,
+          "starts_with_anchor": false,
+          "expected_anchor_index": null,
+          "has_nested_anchor": false,
+          "header_noise_score": 0.0,
+          "crossref_match_score": 0.0,
+          "doi_match_score": 0.0,
+          "row_continuity_score": 0.0,
+          "token_cleanup_confidence": 0.0,
+          "cleanup_applied": false,
+          "selected_candidate_source": "raw_reference_fallback",
+          "final_score": 0.0,
+          "accepted": false,
+          "classification": "fallback_needed",
+          "reason": "raw_reference_fallback"
+        },
+        "bibliography_zone_match_detail": {
+          "inside_bibliography_zone": false,
+          "inside_bibliography_zone_reason": "not_evaluated_fallback",
+          "row_matches": []
+        },
+        "crossref_match": {
+          "score": 0.0,
+          "doi_match_score": 0.0,
+          "match": null
+        },
+        "token_reconstruction": {
+          "raw_text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+          "token_text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+          "hybrid_text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+          "final_text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+          "selected_candidate_source": "fallback",
+          "cleanups_applied": [],
+          "candidate_scores": [],
+          "token_cleanup_confidence": 0.0,
+          "token_rows_used": 0,
+          "order_guard_reasons": [],
+          "backbone_source": "rows_raw",
+          "backbone_text": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+          "backbone_local_edits": [],
+          "local_token_edits": [],
+          "new_word_split_detected": false,
+          "lexical_degradation_detected": false,
+          "accepted_local_edit_count": 0,
+          "rejected_local_edit_count": 0,
+          "fine_cleanup_edits": [],
+          "fine_cleanup_rejected_edits": [],
+          "punctuation_normalization_applied": false,
+          "punctuation_anomalies_detected": []
+        },
+        "anomalies": {
+          "cut_reasons": [],
+          "nested_anchor_indices": [],
+          "tail_trim_applied": false,
+          "tail_trim_reason": null,
+          "tail_trim_removed_text": "",
+          "tail_trim_removed_rows_count": 0,
+          "tail_trim_scope": null
+        }
+      },
+      {
+        "id": "reference-entry-ref-unlabeled-2",
+        "ref_id": "ref-unlabeled-2",
+        "index": null,
+        "text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+        "text_candidate_raw": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+        "page": null,
+        "page_index": null,
+        "page_number": null,
+        "box": null,
+        "doi": null,
+        "structure_source": "raw_reference_fallback",
+        "local_row_count": 0,
+        "local_anchor_detected": false,
+        "reference_validation": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": false,
+          "reason": "raw_reference_fallback",
+          "intermediate_accepted": false,
+          "intermediate_reason": "fallback_without_rows_structure",
+          "final_classification": "fallback_needed",
+          "final_score": 0.0
+        },
+        "validation_intermediate": {
+          "match_score": 0.0,
+          "mixed_reference_score": 0.0,
+          "has_nested_anchor": false,
+          "accepted": false,
+          "reason": "fallback_without_rows_structure"
+        },
+        "scores": {
+          "inside_bibliography_zone": false,
+          "bibliography_zone_match_detail": {
+            "inside_bibliography_zone": false,
+            "inside_bibliography_zone_reason": "not_evaluated_fallback",
+            "row_matches": []
+          },
+          "inside_expected_column": false,
+          "starts_with_anchor": false,
+          "expected_anchor_index": null,
+          "has_nested_anchor": false,
+          "header_noise_score": 0.0,
+          "crossref_match_score": 0.0,
+          "doi_match_score": 0.0,
+          "row_continuity_score": 0.0,
+          "token_cleanup_confidence": 0.0,
+          "cleanup_applied": false,
+          "selected_candidate_source": "raw_reference_fallback",
+          "final_score": 0.0,
+          "accepted": false,
+          "classification": "fallback_needed",
+          "reason": "raw_reference_fallback"
+        },
+        "final_decision": {
+          "inside_bibliography_zone": false,
+          "bibliography_zone_match_detail": {
+            "inside_bibliography_zone": false,
+            "inside_bibliography_zone_reason": "not_evaluated_fallback",
+            "row_matches": []
+          },
+          "inside_expected_column": false,
+          "starts_with_anchor": false,
+          "expected_anchor_index": null,
+          "has_nested_anchor": false,
+          "header_noise_score": 0.0,
+          "crossref_match_score": 0.0,
+          "doi_match_score": 0.0,
+          "row_continuity_score": 0.0,
+          "token_cleanup_confidence": 0.0,
+          "cleanup_applied": false,
+          "selected_candidate_source": "raw_reference_fallback",
+          "final_score": 0.0,
+          "accepted": false,
+          "classification": "fallback_needed",
+          "reason": "raw_reference_fallback"
+        },
+        "bibliography_zone_match_detail": {
+          "inside_bibliography_zone": false,
+          "inside_bibliography_zone_reason": "not_evaluated_fallback",
+          "row_matches": []
+        },
+        "crossref_match": {
+          "score": 0.0,
+          "doi_match_score": 0.0,
+          "match": null
+        },
+        "token_reconstruction": {
+          "raw_text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+          "token_text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+          "hybrid_text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+          "final_text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+          "selected_candidate_source": "fallback",
+          "cleanups_applied": [],
+          "candidate_scores": [],
+          "token_cleanup_confidence": 0.0,
+          "token_rows_used": 0,
+          "order_guard_reasons": [],
+          "backbone_source": "rows_raw",
+          "backbone_text": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+          "backbone_local_edits": [],
+          "local_token_edits": [],
+          "new_word_split_detected": false,
+          "lexical_degradation_detected": false,
+          "accepted_local_edit_count": 0,
+          "rejected_local_edit_count": 0,
+          "fine_cleanup_edits": [],
+          "fine_cleanup_rejected_edits": [],
+          "punctuation_normalization_applied": false,
+          "punctuation_anomalies_detected": []
+        },
+        "anomalies": {
+          "cut_reasons": [],
+          "nested_anchor_indices": [],
+          "tail_trim_applied": false,
+          "tail_trim_reason": null,
+          "tail_trim_removed_text": "",
+          "tail_trim_removed_rows_count": 0,
+          "tail_trim_scope": null
+        }
+      }
+    ],
+    "references_total": 2,
+    "references_total_source": "reference_entries_final",
+    "final_reference_ids_serialized": [
+      "ref-unlabeled-1",
+      "ref-unlabeled-2"
+    ],
+    "citations": [],
+    "contexts": [],
+    "citation_style": "non_numeric",
+    "max_reference_index": 2,
+    "bibliography_start_page": 13,
+    "bibliography_start_page_index": 12,
+    "bibliography_start_page_number": 13,
+    "bibliography_segments": [
+      {
+        "page": 12,
+        "column_id": "left",
+        "box": [
+          0.10645287570840073,
+          0.447560730294742,
+          0.7871252019937642,
+          0.47863713742715525
+        ],
+        "source": "rows+sections+bibliography_layer",
+        "confidence": 0.82,
+        "row_count": 17,
+        "reference_density": 0.368,
+        "reference_density_mean": 0.4,
+        "reference_density_strong_ratio": 0.294,
+        "leading_anchor_indices": [],
+        "raw_text": "References Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. https://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. https://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26",
+        "row_ids": [
+          "row_673",
+          "row_674",
+          "row_675",
+          "row_676",
+          "row_677",
+          "row_678",
+          "row_679",
+          "row_680",
+          "row_681",
+          "row_682",
+          "row_683",
+          "row_684",
+          "row_685",
+          "row_686",
+          "row_687",
+          "row_688",
+          "row_689"
+        ],
+        "tail_trim_applied": false,
+        "tail_trim_reason": null,
+        "tail_trim_removed_text": "",
+        "tail_trim_removed_rows_count": 0,
+        "tail_trim_scope": "segment_tail_after_last_anchor"
+      },
+      {
+        "page": 13,
+        "column_id": "left",
+        "box": [
+          0.10645469649725743,
+          0.08890281651659857,
+          0.7871288435714763,
+          0.8372937001420118
+        ],
+        "source": "rows+bibliography_layer",
+        "confidence": 0.7,
+        "row_count": 18,
+        "reference_density": 0.201,
+        "reference_density_mean": 0.288,
+        "reference_density_strong_ratio": 0.0,
+        "leading_anchor_indices": [],
+        "raw_text": "Knutson CD, Krein JL, Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replicability in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engineering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, Ridolﬁ A, Vetterli M (2007) Experiences with reproducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communication between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at https://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+        "row_ids": [
+          "row_692",
+          "row_693",
+          "row_694",
+          "row_695",
+          "row_696",
+          "row_697",
+          "row_698",
+          "row_699",
+          "row_700",
+          "row_701",
+          "row_702",
+          "row_703",
+          "row_704",
+          "row_705",
+          "row_706",
+          "row_707",
+          "row_708",
+          "row_709"
+        ],
+        "tail_trim_applied": false,
+        "tail_trim_reason": null,
+        "tail_trim_removed_text": "",
+        "tail_trim_removed_rows_count": 0,
+        "tail_trim_scope": "segment_tail_after_last_anchor"
+      }
+    ],
+    "crossref_available": false,
+    "article_doi": "10.1007/s10664-011-9181-9",
+    "crossref_article_metadata": null,
+    "crossref_reference_candidates": [],
+    "crossref_reference_count": 0,
+    "global_alerts": {
+      "repeated_headers_detected": [
+        "assessment",
+        "availability",
+        "data source",
+        "description",
+        "empir software eng # # # #",
+        "parameters",
+        "persistence",
+        "raw dataset"
+      ],
+      "view_publication_stats_detected": false,
+      "body_text_mixed_in_bibliography": [
+        {
+          "page": 0,
+          "text": "Empir Software Eng (2012) 17:75–89 DOI 10.1007/s10664-011-9181-9",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "On the reproducibility of empirical software",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "engineering studies based on data retrieved",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "from development repositories",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "Jesús M. González-Barahona · Gregorio Robles",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "Published online: 18 October 2011 © The Author(s) 2011. This article is published with open access at Springerlink.com",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "Editors: Martin Shepperd and Tim Menzies",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "Abstract Among empirical software engineering studies, those based on data re-",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "trieved from development repositories (such as those of source code management,",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "issue tracking or communication systems) are specially suitable for reproduction.",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "However their reproducibility status can vary a lot, from easy to almost impossible",
+          "reason": "outside_bibliography_segments"
+        },
+        {
+          "page": 0,
+          "text": "to reproduce. This paper explores which elements can be considered to characterize",
+          "reason": "outside_bibliography_segments"
+        }
+      ],
+      "anchors_out_of_sequence": [],
+      "references_truncated": [],
+      "references_mixed": [],
+      "columns_crossed": [
+        "ref-unlabeled-1",
+        "ref-unlabeled-2"
+      ]
+    }
+  }
+}

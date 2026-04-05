@@ -1,0 +1,4498 @@
+{
+  "metadata": {
+    "file_name": "qt5bm130vv.pdf",
+    "article_doi": null,
+    "engine_used": "papermage",
+    "timestamp": "2026-04-05T17:12:43.194580+00:00",
+    "debug_mode": true,
+    "pipeline_version": "references-router-v1",
+    "page_convention_internal": "page_index_zero_based",
+    "page_convention_human": "page_number_one_based",
+    "bibliography_start_page": 57,
+    "bibliography_start_page_index": 56,
+    "bibliography_start_page_number": 57,
+    "references_total_detected": 0,
+    "references_total_debug": 0,
+    "references_total_serialized": 0,
+    "references_total_source": "reference_entries_final",
+    "final_reference_ids_serialized": [],
+    "total_rows_in_bibliography": 25,
+    "total_tokens_in_bibliography": 17929,
+    "crossref_available": false,
+    "crossref_reference_count": 0
+  },
+  "document_profile": {
+    "document_mode": "numeric_rich",
+    "bibliography_heading_detected": true,
+    "numbered_anchor_count": 22,
+    "author_year_pattern_score": 0.092,
+    "rows_available": 3117,
+    "tokens_available": 17929,
+    "layout_confidence": 1.0,
+    "bibliography_zone_confidence": 0.76,
+    "anchor_continuity": 0.412
+  },
+  "routing_debug": {
+    "numeric_score": 0.88,
+    "author_year_score": 0.222,
+    "selected_pipeline": "numeric_rich",
+    "selected_reason": "numbered_anchor_signal_strong",
+    "anchor_count": 22,
+    "anchor_continuity": 0.412,
+    "author_year_pattern_score": 0.092,
+    "layout_confidence": 1.0,
+    "bibliography_zone_confidence": 0.76,
+    "tail_reference_density": 0.031
+  },
+  "bibliography_zone_debug": {
+    "zone_confidence": 0.7,
+    "selected_heading": {
+      "page": 56,
+      "box": [
+        0.1209522977576788,
+        0.08324055114088541,
+        0.1522437158897721,
+        0.020448514651557864
+      ],
+      "text": "References",
+      "source": "sections",
+      "confidence": 0.92,
+      "column_id": "left"
+    },
+    "segment_count": 1,
+    "segments": [
+      {
+        "page": 56,
+        "column_id": "left",
+        "box": [
+          0.12095229775767866,
+          0.08324055114088541,
+          0.7581023046788384,
+          0.7645534704058727
+        ],
+        "source": "rows+sections",
+        "confidence": 0.7,
+        "row_count": 25,
+        "reference_density": 0.122,
+        "reference_density_mean": 0.174,
+        "reference_density_strong_ratio": 0.0,
+        "leading_anchor_indices": [],
+        "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90.",
+        "row_ids": [
+          "row_2939",
+          "row_2940",
+          "row_2941",
+          "row_2942",
+          "row_2943",
+          "row_2944",
+          "row_2945",
+          "row_2946",
+          "row_2947",
+          "row_2948",
+          "row_2949",
+          "row_2950",
+          "row_2951",
+          "row_2952",
+          "row_2953",
+          "row_2954",
+          "row_2955",
+          "row_2956",
+          "row_2957",
+          "row_2958",
+          "row_2959",
+          "row_2960",
+          "row_2961",
+          "row_2962",
+          "row_2963"
+        ],
+        "tail_trim_applied": false,
+        "tail_trim_reason": null,
+        "tail_trim_removed_text": "",
+        "tail_trim_removed_rows_count": 0,
+        "tail_trim_scope": "segment_tail_after_last_anchor"
+      }
+    ],
+    "reading_order_blocks": [
+      {
+        "flow_position": 0,
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "reading_unit_type": "segment_column_block",
+        "reading_units": [
+          {
+            "reading_unit_type": "continuation_window",
+            "row_count": 25,
+            "page_index": 56,
+            "page_number": 57,
+            "column_id": "left",
+            "first_anchor_index": null,
+            "last_anchor_index": null,
+            "anchor_count": 0,
+            "reference_density": 0.122,
+            "reference_density_mean": 0.174,
+            "reference_density_strong_ratio": 0.0,
+            "split_reason": "segment_end",
+            "box": {
+              "x0": 0.120952,
+              "y0": 0.083241,
+              "x1": 0.879055,
+              "y1": 0.847794
+            },
+            "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+          }
+        ],
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.083241,
+          "x1": 0.879055,
+          "y1": 0.847794
+        },
+        "row_count": 25,
+        "first_anchor_index": null,
+        "last_anchor_index": null,
+        "anchor_count": 0,
+        "anchor_continuity_status": "no_anchors",
+        "bibliography_density": 0.122,
+        "paragraph_bibliography_density": 0.15,
+        "section_transition_detected": false,
+        "section_transition_kind": "none",
+        "header_footer_noise_detected": false,
+        "continuity_positive_signals": [],
+        "continuity_negative_signals": [
+          {
+            "name": "anchorless_run_persists",
+            "weight": 0.07,
+            "details": {
+              "anchorless_run": 1
+            }
+          },
+          {
+            "name": "low_bibliography_density",
+            "weight": 0.18,
+            "details": {
+              "score": 0.122
+            }
+          },
+          {
+            "name": "paragraphs_not_bibliographic",
+            "weight": 0.16,
+            "details": {
+              "score": 0.15
+            }
+          },
+          {
+            "name": "no_local_anchor_windows",
+            "weight": 0.08
+          }
+        ],
+        "bibliography_continuity_score": -0.49,
+        "bibliography_continuity_confidence": 0.108,
+        "closure_evidence_score": 0.49,
+        "closure_blocked_by_positive_evidence": false,
+        "closure_requires_persistent_negative_evidence": true,
+        "closure_triggered_after_units": null,
+        "rejected_only_due_to_single_signal": false,
+        "negative_streak": 1,
+        "continuity_from_previous": false,
+        "accepted": true,
+        "reason": "bibliography_continuity_preserved",
+        "related_sections": [],
+        "related_paragraph_count": 21,
+        "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+      },
+      {
+        "flow_position": 1,
+        "page": 57,
+        "page_index": 57,
+        "page_number": 58,
+        "column_id": "left",
+        "reading_unit_type": "segment_column_block",
+        "reading_units": [
+          {
+            "reading_unit_type": "continuation_window",
+            "row_count": 25,
+            "page_index": 57,
+            "page_number": 58,
+            "column_id": "left",
+            "first_anchor_index": null,
+            "last_anchor_index": null,
+            "anchor_count": 0,
+            "reference_density": 0.122,
+            "reference_density_mean": 0.174,
+            "reference_density_strong_ratio": 0.0,
+            "split_reason": "segment_end",
+            "box": {
+              "x0": 0.120952,
+              "y0": 0.088277,
+              "x1": 0.879057,
+              "y1": 0.845566
+            },
+            "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+          }
+        ],
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.088277,
+          "x1": 0.879057,
+          "y1": 0.845566
+        },
+        "row_count": 25,
+        "first_anchor_index": null,
+        "last_anchor_index": null,
+        "anchor_count": 0,
+        "anchor_continuity_status": "no_anchors",
+        "bibliography_density": 0.122,
+        "paragraph_bibliography_density": 0.133,
+        "section_transition_detected": false,
+        "section_transition_kind": "none",
+        "header_footer_noise_detected": false,
+        "continuity_positive_signals": [
+          {
+            "name": "material_continuity_from_previous_unit",
+            "weight": 0.08
+          }
+        ],
+        "continuity_negative_signals": [
+          {
+            "name": "anchorless_run_persists",
+            "weight": 0.14,
+            "details": {
+              "anchorless_run": 2
+            }
+          },
+          {
+            "name": "low_bibliography_density",
+            "weight": 0.18,
+            "details": {
+              "score": 0.122
+            }
+          },
+          {
+            "name": "paragraphs_not_bibliographic",
+            "weight": 0.16,
+            "details": {
+              "score": 0.133
+            }
+          },
+          {
+            "name": "no_local_anchor_windows",
+            "weight": 0.08
+          }
+        ],
+        "bibliography_continuity_score": -0.48,
+        "bibliography_continuity_confidence": 0.116,
+        "closure_evidence_score": 0.48,
+        "closure_blocked_by_positive_evidence": false,
+        "closure_requires_persistent_negative_evidence": true,
+        "closure_triggered_after_units": 2,
+        "rejected_only_due_to_single_signal": false,
+        "negative_streak": 2,
+        "continuity_from_previous": true,
+        "accepted": false,
+        "reason": "persistent_negative_bibliography_evidence",
+        "related_sections": [],
+        "related_paragraph_count": 23,
+        "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+      }
+    ],
+    "column_reading_order": [
+      {
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "columns": [
+          "left"
+        ]
+      }
+    ],
+    "bibliography_end_candidates": [
+      {
+        "flow_position": 0,
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "reading_unit_type": "segment_column_block",
+        "reading_units": [
+          {
+            "reading_unit_type": "continuation_window",
+            "row_count": 25,
+            "page_index": 56,
+            "page_number": 57,
+            "column_id": "left",
+            "first_anchor_index": null,
+            "last_anchor_index": null,
+            "anchor_count": 0,
+            "reference_density": 0.122,
+            "reference_density_mean": 0.174,
+            "reference_density_strong_ratio": 0.0,
+            "split_reason": "segment_end",
+            "box": {
+              "x0": 0.120952,
+              "y0": 0.083241,
+              "x1": 0.879055,
+              "y1": 0.847794
+            },
+            "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+          }
+        ],
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.083241,
+          "x1": 0.879055,
+          "y1": 0.847794
+        },
+        "row_count": 25,
+        "first_anchor_index": null,
+        "last_anchor_index": null,
+        "anchor_count": 0,
+        "anchor_continuity_status": "no_anchors",
+        "bibliography_density": 0.122,
+        "paragraph_bibliography_density": 0.15,
+        "section_transition_detected": false,
+        "section_transition_kind": "none",
+        "header_footer_noise_detected": false,
+        "continuity_positive_signals": [],
+        "continuity_negative_signals": [
+          {
+            "name": "anchorless_run_persists",
+            "weight": 0.07,
+            "details": {
+              "anchorless_run": 1
+            }
+          },
+          {
+            "name": "low_bibliography_density",
+            "weight": 0.18,
+            "details": {
+              "score": 0.122
+            }
+          },
+          {
+            "name": "paragraphs_not_bibliographic",
+            "weight": 0.16,
+            "details": {
+              "score": 0.15
+            }
+          },
+          {
+            "name": "no_local_anchor_windows",
+            "weight": 0.08
+          }
+        ],
+        "bibliography_continuity_score": -0.49,
+        "bibliography_continuity_confidence": 0.108,
+        "closure_evidence_score": 0.49,
+        "closure_blocked_by_positive_evidence": false,
+        "closure_requires_persistent_negative_evidence": true,
+        "closure_triggered_after_units": null,
+        "rejected_only_due_to_single_signal": false,
+        "negative_streak": 1,
+        "continuity_from_previous": false,
+        "accepted": true,
+        "reason": "bibliography_continuity_preserved",
+        "related_sections": [],
+        "related_paragraph_count": 21,
+        "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+      },
+      {
+        "flow_position": 1,
+        "page": 57,
+        "page_index": 57,
+        "page_number": 58,
+        "column_id": "left",
+        "reading_unit_type": "segment_column_block",
+        "reading_units": [
+          {
+            "reading_unit_type": "continuation_window",
+            "row_count": 25,
+            "page_index": 57,
+            "page_number": 58,
+            "column_id": "left",
+            "first_anchor_index": null,
+            "last_anchor_index": null,
+            "anchor_count": 0,
+            "reference_density": 0.122,
+            "reference_density_mean": 0.174,
+            "reference_density_strong_ratio": 0.0,
+            "split_reason": "segment_end",
+            "box": {
+              "x0": 0.120952,
+              "y0": 0.088277,
+              "x1": 0.879057,
+              "y1": 0.845566
+            },
+            "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+          }
+        ],
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.088277,
+          "x1": 0.879057,
+          "y1": 0.845566
+        },
+        "row_count": 25,
+        "first_anchor_index": null,
+        "last_anchor_index": null,
+        "anchor_count": 0,
+        "anchor_continuity_status": "no_anchors",
+        "bibliography_density": 0.122,
+        "paragraph_bibliography_density": 0.133,
+        "section_transition_detected": false,
+        "section_transition_kind": "none",
+        "header_footer_noise_detected": false,
+        "continuity_positive_signals": [
+          {
+            "name": "material_continuity_from_previous_unit",
+            "weight": 0.08
+          }
+        ],
+        "continuity_negative_signals": [
+          {
+            "name": "anchorless_run_persists",
+            "weight": 0.14,
+            "details": {
+              "anchorless_run": 2
+            }
+          },
+          {
+            "name": "low_bibliography_density",
+            "weight": 0.18,
+            "details": {
+              "score": 0.122
+            }
+          },
+          {
+            "name": "paragraphs_not_bibliographic",
+            "weight": 0.16,
+            "details": {
+              "score": 0.133
+            }
+          },
+          {
+            "name": "no_local_anchor_windows",
+            "weight": 0.08
+          }
+        ],
+        "bibliography_continuity_score": -0.48,
+        "bibliography_continuity_confidence": 0.116,
+        "closure_evidence_score": 0.48,
+        "closure_blocked_by_positive_evidence": false,
+        "closure_requires_persistent_negative_evidence": true,
+        "closure_triggered_after_units": 2,
+        "rejected_only_due_to_single_signal": false,
+        "negative_streak": 2,
+        "continuity_from_previous": true,
+        "accepted": false,
+        "reason": "persistent_negative_bibliography_evidence",
+        "related_sections": [],
+        "related_paragraph_count": 23,
+        "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+      }
+    ],
+    "bibliography_end_reason": "persistent_negative_bibliography_evidence"
+  },
+  "stream_debug": {
+    "stream_units_total": 25,
+    "excluded_rows_total": 3092,
+    "excluded_rows": [
+      {
+        "id": "row_0",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.068441,
+          "x1": 0.26784,
+          "y1": 0.087446
+        },
+        "text": "UC Berkeley",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_1",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.092209,
+          "x1": 0.621388,
+          "y1": 0.108838
+        },
+        "text": "UC Berkeley Previously Published Works",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_2",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.131656,
+          "x1": 0.134834,
+          "y1": 0.14591
+        },
+        "text": "Title",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_3",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.150934,
+          "x1": 0.668013,
+          "y1": 0.164
+        },
+        "text": "Living in Fear: The Dynamics of Extortion in Mexico’s Drug War",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_4",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.181104,
+          "x1": 0.198455,
+          "y1": 0.195358
+        },
+        "text": "Permalink",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_5",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.200382,
+          "x1": 0.483614,
+          "y1": 0.213448
+        },
+        "text": "https://escholarship.org/uc/item/5bm130vv",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_6",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.230553,
+          "x1": 0.164427,
+          "y1": 0.244806
+        },
+        "text": "Journal",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_7",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.249831,
+          "x1": 0.415927,
+          "y1": 0.262897
+        },
+        "text": "Comparative Political Studies, 53(7)",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_8",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.280013,
+          "x1": 0.137374,
+          "y1": 0.294266
+        },
+        "text": "ISSN",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_9",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.299291,
+          "x1": 0.184666,
+          "y1": 0.312357
+        },
+        "text": "0010-4140",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_10",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.329461,
+          "x1": 0.173659,
+          "y1": 0.343715
+        },
+        "text": "Authors",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_11",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.348739,
+          "x1": 0.244186,
+          "y1": 0.361805
+        },
+        "text": "Magaloni, Beatriz",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_12",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.363943,
+          "x1": 0.234004,
+          "y1": 0.377009
+        },
+        "text": "Robles, Gustavo",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_13",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.379135,
+          "x1": 0.241303,
+          "y1": 0.392201
+        },
+        "text": "Matanock, Aila M",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_14",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.394327,
+          "x1": 0.130745,
+          "y1": 0.407393
+        },
+        "text": "et al.",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_15",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.424497,
+          "x1": 0.272154,
+          "y1": 0.438751
+        },
+        "text": "Publication Date",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_16",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.443775,
+          "x1": 0.191318,
+          "y1": 0.456841
+        },
+        "text": "2020-06-01",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_17",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.473957,
+          "x1": 0.125359,
+          "y1": 0.488211
+        },
+        "text": "DOI",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_18",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.493235,
+          "x1": 0.354615,
+          "y1": 0.506301
+        },
+        "text": "10.1177/0010414019879958",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_19",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.083994,
+          "y0": 0.523619,
+          "x1": 0.215858,
+          "y1": 0.536685
+        },
+        "text": "Peer reviewed",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_20",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.095753,
+          "y0": 0.939493,
+          "x1": 0.250586,
+          "y1": 0.952559
+        },
+        "text": "eScholarship.org",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_21",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.530087,
+          "y0": 0.939493,
+          "x1": 0.90424,
+          "y1": 0.952559
+        },
+        "text": "Powered by the California Digital Library",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_22",
+        "page": 0,
+        "page_index": 0,
+        "page_number": 1,
+        "column_id": "left",
+        "box": {
+          "x0": 0.693674,
+          "y0": 0.956123,
+          "x1": 0.904238,
+          "y1": 0.969188
+        },
+        "text": "University of California",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_23",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.180987,
+          "y0": 0.137358,
+          "x1": 0.81903,
+          "y1": 0.161901
+        },
+        "text": "Living in Fear: The Dynamics of Extortion in",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_24",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.364841,
+          "y0": 0.166943,
+          "x1": 0.635172,
+          "y1": 0.191486
+        },
+        "text": "Mexico’s Drug War",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_25",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.41135,
+          "y0": 0.215122,
+          "x1": 0.588645,
+          "y1": 0.232162
+        },
+        "text": "Beatriz Magaloni",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_26",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.419328,
+          "y0": 0.236423,
+          "x1": 0.580676,
+          "y1": 0.253463
+        },
+        "text": "Gustavo Robles",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_27",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.405622,
+          "y0": 0.257724,
+          "x1": 0.594388,
+          "y1": 0.274764
+        },
+        "text": "Aila M. Matanock",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_28",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.388998,
+          "y0": 0.279025,
+          "x1": 0.611003,
+          "y1": 0.296065
+        },
+        "text": "Alberto Diaz-Cayeros",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_29",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.428065,
+          "y0": 0.300324,
+          "x1": 0.571928,
+          "y1": 0.317365
+        },
+        "text": "Vidal Romero",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_30",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.273794,
+          "y0": 0.333636,
+          "x1": 0.726196,
+          "y1": 0.350677
+        },
+        "text": "Forthcoming, Comparative Political Studies",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_31",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.459681,
+          "y0": 0.389261,
+          "x1": 0.540316,
+          "y1": 0.402219
+        },
+        "text": "Abstract",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_32",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.197604,
+          "y0": 0.413288,
+          "x1": 0.829896,
+          "y1": 0.426246
+        },
+        "text": "Why do drug traﬃcking organizations sometimes prey on the communities in",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_33",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.429382,
+          "x1": 0.829893,
+          "y1": 0.44234
+        },
+        "text": "which they operate but sometimes provide assistance to these communities? What",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_34",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.445475,
+          "x1": 0.829882,
+          "y1": 0.458433
+        },
+        "text": "explains their strategies of extortion and cooptation toward civil society? Using",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_35",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.461569,
+          "x1": 0.829879,
+          "y1": 0.474527
+        },
+        "text": "new survey data from Mexico, including list experiments to elicit responses about",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_36",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.477662,
+          "x1": 0.829886,
+          "y1": 0.49062
+        },
+        "text": "potentially illegal behavior, this paper measures the prevalence of extortion and as-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_37",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.493757,
+          "x1": 0.829891,
+          "y1": 0.506715
+        },
+        "text": "sistance among drug traﬃcking organizations. In support of our theory, these data",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_38",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.509851,
+          "x1": 0.829884,
+          "y1": 0.522809
+        },
+        "text": "show that territorial contestation among rival organizations produces more extor-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_39",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.525944,
+          "x1": 0.829882,
+          "y1": 0.538902
+        },
+        "text": "tion, and, in contrast, DTOs provide more assistance when they have monopoly",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_40",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.542038,
+          "x1": 0.829877,
+          "y1": 0.554996
+        },
+        "text": "control over a turf. The paper uncovers other factors that also shape DTOs’ strate-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_41",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.558131,
+          "x1": 0.829895,
+          "y1": 0.571089
+        },
+        "text": "gies toward the population, including the degree of collaboration with the state,",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_42",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.574226,
+          "x1": 0.82989,
+          "y1": 0.587184
+        },
+        "text": "leadership stability and DTO organization, and the value and logistics of the local",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_43",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.170114,
+          "y0": 0.59032,
+          "x1": 0.324605,
+          "y1": 0.603278
+        },
+        "text": "criminal enterprise.",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_44",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.648767,
+          "x1": 0.13722,
+          "y1": 0.669215
+        },
+        "text": "1",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_45",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.169755,
+          "y0": 0.648767,
+          "x1": 0.348799,
+          "y1": 0.669215
+        },
+        "text": "Introduction",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_46",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.696263,
+          "x1": 0.879055,
+          "y1": 0.710464
+        },
+        "text": "Drug traﬃcking organizations (DTOs) have employed diﬀerent strategies toward the com-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_47",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.724661,
+          "x1": 0.879051,
+          "y1": 0.738862
+        },
+        "text": "munities in which they operate. Sometimes, these DTOs have exhibited “benign” rela-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_48",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.753059,
+          "x1": 0.879055,
+          "y1": 0.76726
+        },
+        "text": "tionships with these communities, providing them with assistance. For example, early in",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_49",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.781457,
+          "x1": 0.879055,
+          "y1": 0.795658
+        },
+        "text": "its existence, the Mexican drug cartel La Familia Michoacana provided loans and grants",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_50",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.809855,
+          "x1": 0.879043,
+          "y1": 0.824056
+        },
+        "text": "to individuals, businesses, and even churches within the communities where it operated.",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_51",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.838252,
+          "x1": 0.879039,
+          "y1": 0.852453
+        },
+        "text": "These activities were widely known and even publicized in local newspapers. The DTO",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_52",
+        "page": 1,
+        "page_index": 1,
+        "page_number": 2,
+        "column_id": "left",
+        "box": {
+          "x0": 0.495083,
+          "y0": 0.895925,
+          "x1": 0.504916,
+          "y1": 0.910125
+        },
+        "text": "1",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_53",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.088277,
+          "x1": 0.879055,
+          "y1": 0.102477
+        },
+        "text": "also allegedly targeted criminals from whom the community needed protection for “di-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_54",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.116675,
+          "x1": 0.879039,
+          "y1": 0.130875
+        },
+        "text": "vine justice.” In December 2010, when La Familia Michoacana lost its leader, hundreds in",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_55",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.145073,
+          "x1": 0.879047,
+          "y1": 0.159273
+        },
+        "text": "Michoac´an marched in support of the DTO with signs reading, “Long Live to La Familia",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_56",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.172132,
+          "x1": 0.244954,
+          "y1": 0.187671
+        },
+        "text": "Michoacana.” 1",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_57",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.15045,
+          "y0": 0.201869,
+          "x1": 0.879057,
+          "y1": 0.216069
+        },
+        "text": "Other times, the relationships between DTOs and their communities are predatory.",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_58",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.230267,
+          "x1": 0.879043,
+          "y1": 0.244467
+        },
+        "text": "For instance, after the killing of its leader, La Famila Michoacana fragmented, and other",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_59",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.258663,
+          "x1": 0.879047,
+          "y1": 0.272864
+        },
+        "text": "drug cartels such as Los Zetas, los Caballeros Templarios, and the Cartel Jalisco Nueva",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_60",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.287061,
+          "x1": 0.879053,
+          "y1": 0.301262
+        },
+        "text": "Generaci´on disputed their territory. As these groups battled for control, the population",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_61",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.315459,
+          "x1": 0.879047,
+          "y1": 0.32966
+        },
+        "text": "increasingly suﬀered from the ongoing violence - but also from extortion. These criminal",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_62",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.343857,
+          "x1": 0.879047,
+          "y1": 0.358058
+        },
+        "text": "groups would charge “protection” fees to individuals and businesses to the point that, in",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_63",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.372255,
+          "x1": 0.879052,
+          "y1": 0.386456
+        },
+        "text": "2013, Autodefesas – or self-defense groups formed by local entrepreneurs – took up arms",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_64",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.400652,
+          "x1": 0.597497,
+          "y1": 0.414853
+        },
+        "text": "against the criminal groups that were preying on them.",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_65",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.15045,
+          "y0": 0.42905,
+          "x1": 0.879057,
+          "y1": 0.443251
+        },
+        "text": "These examples are not anomalies: other criminal organizations in Mexico have been",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_66",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.457448,
+          "x1": 0.879039,
+          "y1": 0.471649
+        },
+        "text": "known for engaging in these strategies. For example, the former leader of the Sinaloa",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_67",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.485846,
+          "x1": 0.879057,
+          "y1": 0.500047
+        },
+        "text": "Cartel, Joaquin el “Chapo” Guzm´an, reportedly prohibited his forces from kidnapping",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_68",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.514244,
+          "x1": 0.879039,
+          "y1": 0.528445
+        },
+        "text": "people (a lucrative business for other DTOs); his organization also engaged in food dis-",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_69",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.542642,
+          "x1": 0.879043,
+          "y1": 0.556843
+        },
+        "text": "tribution, provided subsidies to local communities, built roads and churches, and passed",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_70",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.571039,
+          "x1": 0.879039,
+          "y1": 0.58524
+        },
+        "text": "out cash to win support – or silence – in the communities where the criminal group",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_71",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.599437,
+          "x1": 0.879057,
+          "y1": 0.613638
+        },
+        "text": "worked. Similarly, former Gulf Cartel boss Osiel Cardenas paid for annual toy giveaways",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_72",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.627835,
+          "x1": 0.879051,
+          "y1": 0.642036
+        },
+        "text": "in communities where the gang reigned and otherwise sought a good relationship with",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_73",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.654894,
+          "x1": 0.208583,
+          "y1": 0.670434
+        },
+        "text": "residents. 2",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_74",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.15045,
+          "y0": 0.684631,
+          "x1": 0.879053,
+          "y1": 0.698832
+        },
+        "text": "Los Zetas, one of Mexico’s largest criminal organizations, is also known for extorting",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_75",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.713029,
+          "x1": 0.879043,
+          "y1": 0.72723
+        },
+        "text": "communities and businesses, killing anyone who refuses to pay. In Coahuila, the group",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_76",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.741426,
+          "x1": 0.879047,
+          "y1": 0.755626
+        },
+        "text": "operated from inside the prison of Piedras Negras, where they would bring the bodies of",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_77",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.769824,
+          "x1": 0.879039,
+          "y1": 0.784024
+        },
+        "text": "their victims to incinerate them. Hundreds are thought to have perished there, including",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_78",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.798222,
+          "x1": 0.879043,
+          "y1": 0.812422
+        },
+        "text": "children and women. The prison also served as the criminals’ headquarters to store the",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      },
+      {
+        "id": "row_79",
+        "page": 2,
+        "page_index": 2,
+        "page_number": 3,
+        "column_id": "left",
+        "box": {
+          "x0": 0.143569,
+          "y0": 0.824179,
+          "x1": 0.571563,
+          "y1": 0.846663
+        },
+        "text": "1 From Jornada newspaper by Ferrer and Martinez (2013). 2",
+        "in_bibliography_zone": false,
+        "reason": "outside_bibliography_zone",
+        "included": false
+      }
+    ],
+    "anomaly_units": [],
+    "reading_order_preview": [
+      {
+        "id": "row_2939",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 0,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.083241,
+          "x1": 0.273196,
+          "y1": 0.103689
+        },
+        "text": "References"
+      },
+      {
+        "id": "row_2940",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 1,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.130737,
+          "x1": 0.879039,
+          "y1": 0.144937
+        },
+        "text": "AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report,"
+      },
+      {
+        "id": "row_2941",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 2,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.159135,
+          "x1": 0.340098,
+          "y1": 0.173335
+        },
+        "text": "Amnesty International."
+      },
+      {
+        "id": "row_2942",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 3,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.199366,
+          "x1": 0.299808,
+          "y1": 0.213566
+        },
+        "text": "Arias, E. D. (2017)."
+      },
+      {
+        "id": "row_2943",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 4,
+        "box": {
+          "x0": 0.316658,
+          "y0": 0.199366,
+          "x1": 0.879051,
+          "y1": 0.213566
+        },
+        "text": "Criminal enterprises and governance in Latin America and the"
+      },
+      {
+        "id": "row_2944",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 5,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.227764,
+          "x1": 0.48471,
+          "y1": 0.241964
+        },
+        "text": "Caribbean . Cambridge University Press."
+      },
+      {
+        "id": "row_2945",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 6,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.267996,
+          "x1": 0.287308,
+          "y1": 0.282196
+        },
+        "text": "Arjona, A. (2017)."
+      },
+      {
+        "id": "row_2946",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 7,
+        "box": {
+          "x0": 0.307291,
+          "y0": 0.267996,
+          "x1": 0.879051,
+          "y1": 0.282196
+        },
+        "text": "Civilian cooperation and non-cooperation with non-state armed"
+      },
+      {
+        "id": "row_2947",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 8,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.296394,
+          "x1": 0.879037,
+          "y1": 0.310594
+        },
+        "text": "groups: The centrality of obedience and resistance. Small Wars & Insurgencies , 28(4-"
+      },
+      {
+        "id": "row_2948",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 9,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.324791,
+          "x1": 0.237853,
+          "y1": 0.338991
+        },
+        "text": "5):755–778."
+      },
+      {
+        "id": "row_2949",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 10,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.365023,
+          "x1": 0.879051,
+          "y1": 0.379223
+        },
+        "text": "Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug"
+      },
+      {
+        "id": "row_2950",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 11,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.393421,
+          "x1": 0.738499,
+          "y1": 0.407621
+        },
+        "text": "strategies in the us-mexican context. Center for US-Mexican Studies ."
+      },
+      {
+        "id": "row_2951",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 12,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.433652,
+          "x1": 0.879041,
+          "y1": 0.447852
+        },
+        "text": "Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson"
+      },
+      {
+        "id": "row_2952",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 13,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.46205,
+          "x1": 0.412765,
+          "y1": 0.47625
+        },
+        "text": "Center Update of the Americas ."
+      },
+      {
+        "id": "row_2953",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 14,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.502281,
+          "x1": 0.879053,
+          "y1": 0.516481
+        },
+        "text": "Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic"
+      },
+      {
+        "id": "row_2954",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 15,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.530679,
+          "x1": 0.519001,
+          "y1": 0.544879
+        },
+        "text": "dimensions of crime , pages 13–68. Springer."
+      },
+      {
+        "id": "row_2955",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 16,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.570911,
+          "x1": 0.879055,
+          "y1": 0.585111
+        },
+        "text": "Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the"
+      },
+      {
+        "id": "row_2956",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 17,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.599309,
+          "x1": 0.688661,
+          "y1": 0.613509
+        },
+        "text": "club model. Journal of Public Economics , 10-11(92):1942–1967."
+      },
+      {
+        "id": "row_2957",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 18,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.63954,
+          "x1": 0.879055,
+          "y1": 0.65374
+        },
+        "text": "Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought?"
+      },
+      {
+        "id": "row_2958",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 19,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.667938,
+          "x1": 0.879041,
+          "y1": 0.682138
+        },
+        "text": "the economics of counterinsurgency in iraq. Journal of Political Economy , 119(4):766–"
+      },
+      {
+        "id": "row_2959",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 20,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.696336,
+          "x1": 0.175578,
+          "y1": 0.710536
+        },
+        "text": "819."
+      },
+      {
+        "id": "row_2960",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 21,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.736567,
+          "x1": 0.879047,
+          "y1": 0.750767
+        },
+        "text": "Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis ,"
+      },
+      {
+        "id": "row_2961",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 22,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.764965,
+          "x1": 0.245501,
+          "y1": 0.779165
+        },
+        "text": "20(1):47–77."
+      },
+      {
+        "id": "row_2962",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 23,
+        "box": {
+          "x0": 0.120952,
+          "y0": 0.805196,
+          "x1": 0.879047,
+          "y1": 0.819396
+        },
+        "text": "Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of"
+      },
+      {
+        "id": "row_2963",
+        "page": 56,
+        "page_index": 56,
+        "page_number": 57,
+        "column_id": "left",
+        "flow_position": 24,
+        "box": {
+          "x0": 0.140617,
+          "y0": 0.833594,
+          "x1": 0.741084,
+          "y1": 0.847794
+        },
+        "text": "mexican politicians. Journal of Politics in Latin America , 9(1):59–90."
+      }
+    ]
+  },
+  "coverage_audit": {
+    "detected_anchor_indices": [],
+    "expected_indices": [],
+    "serialized_indices": [],
+    "failed_indices": [],
+    "missing_indices": [],
+    "coverage_ratio": 0.0,
+    "extraction_status": "inconsistent"
+  },
+  "phases": {
+    "document_profile": {
+      "document_mode": "numeric_rich",
+      "bibliography_heading_detected": true,
+      "numbered_anchor_count": 22,
+      "author_year_pattern_score": 0.092,
+      "rows_available": 3117,
+      "tokens_available": 17929,
+      "layout_confidence": 1.0,
+      "bibliography_zone_confidence": 0.76,
+      "anchor_continuity": 0.412
+    },
+    "routing": {
+      "numeric_score": 0.88,
+      "author_year_score": 0.222,
+      "selected_pipeline": "numeric_rich",
+      "selected_reason": "numbered_anchor_signal_strong",
+      "anchor_count": 22,
+      "anchor_continuity": 0.412,
+      "author_year_pattern_score": 0.092,
+      "layout_confidence": 1.0,
+      "bibliography_zone_confidence": 0.76,
+      "tail_reference_density": 0.031
+    },
+    "bibliography_zone": {
+      "zone_confidence": 0.7,
+      "selected_heading": {
+        "page": 56,
+        "box": [
+          0.1209522977576788,
+          0.08324055114088541,
+          0.1522437158897721,
+          0.020448514651557864
+        ],
+        "text": "References",
+        "source": "sections",
+        "confidence": 0.92,
+        "column_id": "left"
+      },
+      "segment_count": 1,
+      "segments": [
+        {
+          "page": 56,
+          "column_id": "left",
+          "box": [
+            0.12095229775767866,
+            0.08324055114088541,
+            0.7581023046788384,
+            0.7645534704058727
+          ],
+          "source": "rows+sections",
+          "confidence": 0.7,
+          "row_count": 25,
+          "reference_density": 0.122,
+          "reference_density_mean": 0.174,
+          "reference_density_strong_ratio": 0.0,
+          "leading_anchor_indices": [],
+          "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90.",
+          "row_ids": [
+            "row_2939",
+            "row_2940",
+            "row_2941",
+            "row_2942",
+            "row_2943",
+            "row_2944",
+            "row_2945",
+            "row_2946",
+            "row_2947",
+            "row_2948",
+            "row_2949",
+            "row_2950",
+            "row_2951",
+            "row_2952",
+            "row_2953",
+            "row_2954",
+            "row_2955",
+            "row_2956",
+            "row_2957",
+            "row_2958",
+            "row_2959",
+            "row_2960",
+            "row_2961",
+            "row_2962",
+            "row_2963"
+          ],
+          "tail_trim_applied": false,
+          "tail_trim_reason": null,
+          "tail_trim_removed_text": "",
+          "tail_trim_removed_rows_count": 0,
+          "tail_trim_scope": "segment_tail_after_last_anchor"
+        }
+      ],
+      "reading_order_blocks": [
+        {
+          "flow_position": 0,
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "reading_unit_type": "segment_column_block",
+          "reading_units": [
+            {
+              "reading_unit_type": "continuation_window",
+              "row_count": 25,
+              "page_index": 56,
+              "page_number": 57,
+              "column_id": "left",
+              "first_anchor_index": null,
+              "last_anchor_index": null,
+              "anchor_count": 0,
+              "reference_density": 0.122,
+              "reference_density_mean": 0.174,
+              "reference_density_strong_ratio": 0.0,
+              "split_reason": "segment_end",
+              "box": {
+                "x0": 0.120952,
+                "y0": 0.083241,
+                "x1": 0.879055,
+                "y1": 0.847794
+              },
+              "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+            }
+          ],
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.083241,
+            "x1": 0.879055,
+            "y1": 0.847794
+          },
+          "row_count": 25,
+          "first_anchor_index": null,
+          "last_anchor_index": null,
+          "anchor_count": 0,
+          "anchor_continuity_status": "no_anchors",
+          "bibliography_density": 0.122,
+          "paragraph_bibliography_density": 0.15,
+          "section_transition_detected": false,
+          "section_transition_kind": "none",
+          "header_footer_noise_detected": false,
+          "continuity_positive_signals": [],
+          "continuity_negative_signals": [
+            {
+              "name": "anchorless_run_persists",
+              "weight": 0.07,
+              "details": {
+                "anchorless_run": 1
+              }
+            },
+            {
+              "name": "low_bibliography_density",
+              "weight": 0.18,
+              "details": {
+                "score": 0.122
+              }
+            },
+            {
+              "name": "paragraphs_not_bibliographic",
+              "weight": 0.16,
+              "details": {
+                "score": 0.15
+              }
+            },
+            {
+              "name": "no_local_anchor_windows",
+              "weight": 0.08
+            }
+          ],
+          "bibliography_continuity_score": -0.49,
+          "bibliography_continuity_confidence": 0.108,
+          "closure_evidence_score": 0.49,
+          "closure_blocked_by_positive_evidence": false,
+          "closure_requires_persistent_negative_evidence": true,
+          "closure_triggered_after_units": null,
+          "rejected_only_due_to_single_signal": false,
+          "negative_streak": 1,
+          "continuity_from_previous": false,
+          "accepted": true,
+          "reason": "bibliography_continuity_preserved",
+          "related_sections": [],
+          "related_paragraph_count": 21,
+          "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+        },
+        {
+          "flow_position": 1,
+          "page": 57,
+          "page_index": 57,
+          "page_number": 58,
+          "column_id": "left",
+          "reading_unit_type": "segment_column_block",
+          "reading_units": [
+            {
+              "reading_unit_type": "continuation_window",
+              "row_count": 25,
+              "page_index": 57,
+              "page_number": 58,
+              "column_id": "left",
+              "first_anchor_index": null,
+              "last_anchor_index": null,
+              "anchor_count": 0,
+              "reference_density": 0.122,
+              "reference_density_mean": 0.174,
+              "reference_density_strong_ratio": 0.0,
+              "split_reason": "segment_end",
+              "box": {
+                "x0": 0.120952,
+                "y0": 0.088277,
+                "x1": 0.879057,
+                "y1": 0.845566
+              },
+              "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+            }
+          ],
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.088277,
+            "x1": 0.879057,
+            "y1": 0.845566
+          },
+          "row_count": 25,
+          "first_anchor_index": null,
+          "last_anchor_index": null,
+          "anchor_count": 0,
+          "anchor_continuity_status": "no_anchors",
+          "bibliography_density": 0.122,
+          "paragraph_bibliography_density": 0.133,
+          "section_transition_detected": false,
+          "section_transition_kind": "none",
+          "header_footer_noise_detected": false,
+          "continuity_positive_signals": [
+            {
+              "name": "material_continuity_from_previous_unit",
+              "weight": 0.08
+            }
+          ],
+          "continuity_negative_signals": [
+            {
+              "name": "anchorless_run_persists",
+              "weight": 0.14,
+              "details": {
+                "anchorless_run": 2
+              }
+            },
+            {
+              "name": "low_bibliography_density",
+              "weight": 0.18,
+              "details": {
+                "score": 0.122
+              }
+            },
+            {
+              "name": "paragraphs_not_bibliographic",
+              "weight": 0.16,
+              "details": {
+                "score": 0.133
+              }
+            },
+            {
+              "name": "no_local_anchor_windows",
+              "weight": 0.08
+            }
+          ],
+          "bibliography_continuity_score": -0.48,
+          "bibliography_continuity_confidence": 0.116,
+          "closure_evidence_score": 0.48,
+          "closure_blocked_by_positive_evidence": false,
+          "closure_requires_persistent_negative_evidence": true,
+          "closure_triggered_after_units": 2,
+          "rejected_only_due_to_single_signal": false,
+          "negative_streak": 2,
+          "continuity_from_previous": true,
+          "accepted": false,
+          "reason": "persistent_negative_bibliography_evidence",
+          "related_sections": [],
+          "related_paragraph_count": 23,
+          "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+        }
+      ],
+      "column_reading_order": [
+        {
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "columns": [
+            "left"
+          ]
+        }
+      ],
+      "bibliography_end_candidates": [
+        {
+          "flow_position": 0,
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "reading_unit_type": "segment_column_block",
+          "reading_units": [
+            {
+              "reading_unit_type": "continuation_window",
+              "row_count": 25,
+              "page_index": 56,
+              "page_number": 57,
+              "column_id": "left",
+              "first_anchor_index": null,
+              "last_anchor_index": null,
+              "anchor_count": 0,
+              "reference_density": 0.122,
+              "reference_density_mean": 0.174,
+              "reference_density_strong_ratio": 0.0,
+              "split_reason": "segment_end",
+              "box": {
+                "x0": 0.120952,
+                "y0": 0.083241,
+                "x1": 0.879055,
+                "y1": 0.847794
+              },
+              "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+            }
+          ],
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.083241,
+            "x1": 0.879055,
+            "y1": 0.847794
+          },
+          "row_count": 25,
+          "first_anchor_index": null,
+          "last_anchor_index": null,
+          "anchor_count": 0,
+          "anchor_continuity_status": "no_anchors",
+          "bibliography_density": 0.122,
+          "paragraph_bibliography_density": 0.15,
+          "section_transition_detected": false,
+          "section_transition_kind": "none",
+          "header_footer_noise_detected": false,
+          "continuity_positive_signals": [],
+          "continuity_negative_signals": [
+            {
+              "name": "anchorless_run_persists",
+              "weight": 0.07,
+              "details": {
+                "anchorless_run": 1
+              }
+            },
+            {
+              "name": "low_bibliography_density",
+              "weight": 0.18,
+              "details": {
+                "score": 0.122
+              }
+            },
+            {
+              "name": "paragraphs_not_bibliographic",
+              "weight": 0.16,
+              "details": {
+                "score": 0.15
+              }
+            },
+            {
+              "name": "no_local_anchor_windows",
+              "weight": 0.08
+            }
+          ],
+          "bibliography_continuity_score": -0.49,
+          "bibliography_continuity_confidence": 0.108,
+          "closure_evidence_score": 0.49,
+          "closure_blocked_by_positive_evidence": false,
+          "closure_requires_persistent_negative_evidence": true,
+          "closure_triggered_after_units": null,
+          "rejected_only_due_to_single_signal": false,
+          "negative_streak": 1,
+          "continuity_from_previous": false,
+          "accepted": true,
+          "reason": "bibliography_continuity_preserved",
+          "related_sections": [],
+          "related_paragraph_count": 21,
+          "raw_text": "References AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report, Amnesty International. Arias, E. D. (2017). Criminal enterprises and governance in Latin America and the Caribbean. Cambridge University Press. Arjona, A. (2017). Civilian cooperation and non-cooperation with non-state armed groups: The centrality of obedience and resistance. Small Wars & Insurgencies, 28(4- 5):755–778. Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug strategies in the us-mexican context. Center for US-Mexican Studies. Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson Center Update of the Americas. Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic dimensions of crime, pages 13–68. Springer. Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the club model. Journal of Public Economics, 10-11(92):1942–1967. Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought? the economics of counterinsurgency in iraq. Journal of Political Economy, 119(4):766– 819. Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis, 20(1):47–77. Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of mexican politicians. Journal of Politics in Latin America, 9(1):59–90."
+        },
+        {
+          "flow_position": 1,
+          "page": 57,
+          "page_index": 57,
+          "page_number": 58,
+          "column_id": "left",
+          "reading_unit_type": "segment_column_block",
+          "reading_units": [
+            {
+              "reading_unit_type": "continuation_window",
+              "row_count": 25,
+              "page_index": 57,
+              "page_number": 58,
+              "column_id": "left",
+              "first_anchor_index": null,
+              "last_anchor_index": null,
+              "anchor_count": 0,
+              "reference_density": 0.122,
+              "reference_density_mean": 0.174,
+              "reference_density_strong_ratio": 0.0,
+              "split_reason": "segment_end",
+              "box": {
+                "x0": 0.120952,
+                "y0": 0.088277,
+                "x1": 0.879057,
+                "y1": 0.845566
+              },
+              "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+            }
+          ],
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.088277,
+            "x1": 0.879057,
+            "y1": 0.845566
+          },
+          "row_count": 25,
+          "first_anchor_index": null,
+          "last_anchor_index": null,
+          "anchor_count": 0,
+          "anchor_continuity_status": "no_anchors",
+          "bibliography_density": 0.122,
+          "paragraph_bibliography_density": 0.133,
+          "section_transition_detected": false,
+          "section_transition_kind": "none",
+          "header_footer_noise_detected": false,
+          "continuity_positive_signals": [
+            {
+              "name": "material_continuity_from_previous_unit",
+              "weight": 0.08
+            }
+          ],
+          "continuity_negative_signals": [
+            {
+              "name": "anchorless_run_persists",
+              "weight": 0.14,
+              "details": {
+                "anchorless_run": 2
+              }
+            },
+            {
+              "name": "low_bibliography_density",
+              "weight": 0.18,
+              "details": {
+                "score": 0.122
+              }
+            },
+            {
+              "name": "paragraphs_not_bibliographic",
+              "weight": 0.16,
+              "details": {
+                "score": 0.133
+              }
+            },
+            {
+              "name": "no_local_anchor_windows",
+              "weight": 0.08
+            }
+          ],
+          "bibliography_continuity_score": -0.48,
+          "bibliography_continuity_confidence": 0.116,
+          "closure_evidence_score": 0.48,
+          "closure_blocked_by_positive_evidence": false,
+          "closure_requires_persistent_negative_evidence": true,
+          "closure_triggered_after_units": 2,
+          "rejected_only_due_to_single_signal": false,
+          "negative_streak": 2,
+          "continuity_from_previous": true,
+          "accepted": false,
+          "reason": "persistent_negative_bibliography_evidence",
+          "related_sections": [],
+          "related_paragraph_count": 23,
+          "raw_text": "Bruck, T., Justino, P., Verwimp, P., and Tedesco, A. (2016). Measuring violent conﬂict in micro-level surveys. Policy Research Working Paper 7585, World Bank Group. Bullock, W., Imai, K., and Shapiro, J. N. (2011). Statistical analysis of endorsement experiments: Measuring support for militant groups in pakistan. Political Analysis, 19(4):363–384. Calder´on, G., Robles, G., D´ıaz-Cayeros, A., and Magaloni, B. (2015). The beheading of criminal organizations and the dynamics of violence in mexico. Journal of Conﬂict Resolution, 59(8):1455–1485. Castillo, J. C., Mejia, D., and Restrepo, P. (2013). Illegal drug markets and violence in mexico: The causes beyond calder´on. Universidad de los Andes typescript. Cedillo, J. A. (2017). El cereso de piedras negras, ”bunker” de los zetas. Proceso. CONAPO (2010). Indice de marginaci´on urbana. Technical report, Consejo Nacional de Poblaci´on. Corstange, D. (2009). Sensitive questions, truthful answers? modeling the list experiment with listit. Political Analysis, 17(1):45–63. Coscia, M. and Rios, V. (2012). Knowing Where and How Criminal Organizations Operate Using Web Content. CIKM’12. DEA (2015). National drug threat assessment. Technical report, Drug Enforcement Agency. Dell, M. (2015). Traﬃcking networks and the mexican drug war. The American Economic Review, 105(6):1738–1779. Dube, A., Dube, O., and Garc´ıa-Ponce, O. (2013). Cross-border spillover: Us gun laws and violence in mexico. American Political Science Review, 107(3):397–417."
+        }
+      ],
+      "bibliography_end_reason": "persistent_negative_bibliography_evidence"
+    },
+    "stream": {
+      "stream_units_total": 25,
+      "excluded_rows_total": 3092,
+      "excluded_rows": [
+        {
+          "id": "row_0",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.068441,
+            "x1": 0.26784,
+            "y1": 0.087446
+          },
+          "text": "UC Berkeley",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_1",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.092209,
+            "x1": 0.621388,
+            "y1": 0.108838
+          },
+          "text": "UC Berkeley Previously Published Works",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_2",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.131656,
+            "x1": 0.134834,
+            "y1": 0.14591
+          },
+          "text": "Title",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_3",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.150934,
+            "x1": 0.668013,
+            "y1": 0.164
+          },
+          "text": "Living in Fear: The Dynamics of Extortion in Mexico’s Drug War",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_4",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.181104,
+            "x1": 0.198455,
+            "y1": 0.195358
+          },
+          "text": "Permalink",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_5",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.200382,
+            "x1": 0.483614,
+            "y1": 0.213448
+          },
+          "text": "https://escholarship.org/uc/item/5bm130vv",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_6",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.230553,
+            "x1": 0.164427,
+            "y1": 0.244806
+          },
+          "text": "Journal",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_7",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.249831,
+            "x1": 0.415927,
+            "y1": 0.262897
+          },
+          "text": "Comparative Political Studies, 53(7)",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_8",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.280013,
+            "x1": 0.137374,
+            "y1": 0.294266
+          },
+          "text": "ISSN",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_9",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.299291,
+            "x1": 0.184666,
+            "y1": 0.312357
+          },
+          "text": "0010-4140",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_10",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.329461,
+            "x1": 0.173659,
+            "y1": 0.343715
+          },
+          "text": "Authors",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_11",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.348739,
+            "x1": 0.244186,
+            "y1": 0.361805
+          },
+          "text": "Magaloni, Beatriz",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_12",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.363943,
+            "x1": 0.234004,
+            "y1": 0.377009
+          },
+          "text": "Robles, Gustavo",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_13",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.379135,
+            "x1": 0.241303,
+            "y1": 0.392201
+          },
+          "text": "Matanock, Aila M",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_14",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.394327,
+            "x1": 0.130745,
+            "y1": 0.407393
+          },
+          "text": "et al.",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_15",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.424497,
+            "x1": 0.272154,
+            "y1": 0.438751
+          },
+          "text": "Publication Date",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_16",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.443775,
+            "x1": 0.191318,
+            "y1": 0.456841
+          },
+          "text": "2020-06-01",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_17",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.473957,
+            "x1": 0.125359,
+            "y1": 0.488211
+          },
+          "text": "DOI",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_18",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.493235,
+            "x1": 0.354615,
+            "y1": 0.506301
+          },
+          "text": "10.1177/0010414019879958",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_19",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.083994,
+            "y0": 0.523619,
+            "x1": 0.215858,
+            "y1": 0.536685
+          },
+          "text": "Peer reviewed",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_20",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.095753,
+            "y0": 0.939493,
+            "x1": 0.250586,
+            "y1": 0.952559
+          },
+          "text": "eScholarship.org",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_21",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.530087,
+            "y0": 0.939493,
+            "x1": 0.90424,
+            "y1": 0.952559
+          },
+          "text": "Powered by the California Digital Library",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_22",
+          "page": 0,
+          "page_index": 0,
+          "page_number": 1,
+          "column_id": "left",
+          "box": {
+            "x0": 0.693674,
+            "y0": 0.956123,
+            "x1": 0.904238,
+            "y1": 0.969188
+          },
+          "text": "University of California",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_23",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.180987,
+            "y0": 0.137358,
+            "x1": 0.81903,
+            "y1": 0.161901
+          },
+          "text": "Living in Fear: The Dynamics of Extortion in",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_24",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.364841,
+            "y0": 0.166943,
+            "x1": 0.635172,
+            "y1": 0.191486
+          },
+          "text": "Mexico’s Drug War",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_25",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.41135,
+            "y0": 0.215122,
+            "x1": 0.588645,
+            "y1": 0.232162
+          },
+          "text": "Beatriz Magaloni",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_26",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.419328,
+            "y0": 0.236423,
+            "x1": 0.580676,
+            "y1": 0.253463
+          },
+          "text": "Gustavo Robles",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_27",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.405622,
+            "y0": 0.257724,
+            "x1": 0.594388,
+            "y1": 0.274764
+          },
+          "text": "Aila M. Matanock",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_28",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.388998,
+            "y0": 0.279025,
+            "x1": 0.611003,
+            "y1": 0.296065
+          },
+          "text": "Alberto Diaz-Cayeros",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_29",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.428065,
+            "y0": 0.300324,
+            "x1": 0.571928,
+            "y1": 0.317365
+          },
+          "text": "Vidal Romero",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_30",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.273794,
+            "y0": 0.333636,
+            "x1": 0.726196,
+            "y1": 0.350677
+          },
+          "text": "Forthcoming, Comparative Political Studies",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_31",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.459681,
+            "y0": 0.389261,
+            "x1": 0.540316,
+            "y1": 0.402219
+          },
+          "text": "Abstract",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_32",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.197604,
+            "y0": 0.413288,
+            "x1": 0.829896,
+            "y1": 0.426246
+          },
+          "text": "Why do drug traﬃcking organizations sometimes prey on the communities in",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_33",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.429382,
+            "x1": 0.829893,
+            "y1": 0.44234
+          },
+          "text": "which they operate but sometimes provide assistance to these communities? What",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_34",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.445475,
+            "x1": 0.829882,
+            "y1": 0.458433
+          },
+          "text": "explains their strategies of extortion and cooptation toward civil society? Using",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_35",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.461569,
+            "x1": 0.829879,
+            "y1": 0.474527
+          },
+          "text": "new survey data from Mexico, including list experiments to elicit responses about",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_36",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.477662,
+            "x1": 0.829886,
+            "y1": 0.49062
+          },
+          "text": "potentially illegal behavior, this paper measures the prevalence of extortion and as-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_37",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.493757,
+            "x1": 0.829891,
+            "y1": 0.506715
+          },
+          "text": "sistance among drug traﬃcking organizations. In support of our theory, these data",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_38",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.509851,
+            "x1": 0.829884,
+            "y1": 0.522809
+          },
+          "text": "show that territorial contestation among rival organizations produces more extor-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_39",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.525944,
+            "x1": 0.829882,
+            "y1": 0.538902
+          },
+          "text": "tion, and, in contrast, DTOs provide more assistance when they have monopoly",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_40",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.542038,
+            "x1": 0.829877,
+            "y1": 0.554996
+          },
+          "text": "control over a turf. The paper uncovers other factors that also shape DTOs’ strate-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_41",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.558131,
+            "x1": 0.829895,
+            "y1": 0.571089
+          },
+          "text": "gies toward the population, including the degree of collaboration with the state,",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_42",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.574226,
+            "x1": 0.82989,
+            "y1": 0.587184
+          },
+          "text": "leadership stability and DTO organization, and the value and logistics of the local",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_43",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.170114,
+            "y0": 0.59032,
+            "x1": 0.324605,
+            "y1": 0.603278
+          },
+          "text": "criminal enterprise.",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_44",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.648767,
+            "x1": 0.13722,
+            "y1": 0.669215
+          },
+          "text": "1",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_45",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.169755,
+            "y0": 0.648767,
+            "x1": 0.348799,
+            "y1": 0.669215
+          },
+          "text": "Introduction",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_46",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.696263,
+            "x1": 0.879055,
+            "y1": 0.710464
+          },
+          "text": "Drug traﬃcking organizations (DTOs) have employed diﬀerent strategies toward the com-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_47",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.724661,
+            "x1": 0.879051,
+            "y1": 0.738862
+          },
+          "text": "munities in which they operate. Sometimes, these DTOs have exhibited “benign” rela-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_48",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.753059,
+            "x1": 0.879055,
+            "y1": 0.76726
+          },
+          "text": "tionships with these communities, providing them with assistance. For example, early in",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_49",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.781457,
+            "x1": 0.879055,
+            "y1": 0.795658
+          },
+          "text": "its existence, the Mexican drug cartel La Familia Michoacana provided loans and grants",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_50",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.809855,
+            "x1": 0.879043,
+            "y1": 0.824056
+          },
+          "text": "to individuals, businesses, and even churches within the communities where it operated.",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_51",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.838252,
+            "x1": 0.879039,
+            "y1": 0.852453
+          },
+          "text": "These activities were widely known and even publicized in local newspapers. The DTO",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_52",
+          "page": 1,
+          "page_index": 1,
+          "page_number": 2,
+          "column_id": "left",
+          "box": {
+            "x0": 0.495083,
+            "y0": 0.895925,
+            "x1": 0.504916,
+            "y1": 0.910125
+          },
+          "text": "1",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_53",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.088277,
+            "x1": 0.879055,
+            "y1": 0.102477
+          },
+          "text": "also allegedly targeted criminals from whom the community needed protection for “di-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_54",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.116675,
+            "x1": 0.879039,
+            "y1": 0.130875
+          },
+          "text": "vine justice.” In December 2010, when La Familia Michoacana lost its leader, hundreds in",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_55",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.145073,
+            "x1": 0.879047,
+            "y1": 0.159273
+          },
+          "text": "Michoac´an marched in support of the DTO with signs reading, “Long Live to La Familia",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_56",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.172132,
+            "x1": 0.244954,
+            "y1": 0.187671
+          },
+          "text": "Michoacana.” 1",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_57",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.15045,
+            "y0": 0.201869,
+            "x1": 0.879057,
+            "y1": 0.216069
+          },
+          "text": "Other times, the relationships between DTOs and their communities are predatory.",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_58",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.230267,
+            "x1": 0.879043,
+            "y1": 0.244467
+          },
+          "text": "For instance, after the killing of its leader, La Famila Michoacana fragmented, and other",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_59",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.258663,
+            "x1": 0.879047,
+            "y1": 0.272864
+          },
+          "text": "drug cartels such as Los Zetas, los Caballeros Templarios, and the Cartel Jalisco Nueva",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_60",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.287061,
+            "x1": 0.879053,
+            "y1": 0.301262
+          },
+          "text": "Generaci´on disputed their territory. As these groups battled for control, the population",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_61",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.315459,
+            "x1": 0.879047,
+            "y1": 0.32966
+          },
+          "text": "increasingly suﬀered from the ongoing violence - but also from extortion. These criminal",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_62",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.343857,
+            "x1": 0.879047,
+            "y1": 0.358058
+          },
+          "text": "groups would charge “protection” fees to individuals and businesses to the point that, in",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_63",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.372255,
+            "x1": 0.879052,
+            "y1": 0.386456
+          },
+          "text": "2013, Autodefesas – or self-defense groups formed by local entrepreneurs – took up arms",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_64",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.400652,
+            "x1": 0.597497,
+            "y1": 0.414853
+          },
+          "text": "against the criminal groups that were preying on them.",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_65",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.15045,
+            "y0": 0.42905,
+            "x1": 0.879057,
+            "y1": 0.443251
+          },
+          "text": "These examples are not anomalies: other criminal organizations in Mexico have been",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_66",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.457448,
+            "x1": 0.879039,
+            "y1": 0.471649
+          },
+          "text": "known for engaging in these strategies. For example, the former leader of the Sinaloa",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_67",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.485846,
+            "x1": 0.879057,
+            "y1": 0.500047
+          },
+          "text": "Cartel, Joaquin el “Chapo” Guzm´an, reportedly prohibited his forces from kidnapping",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_68",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.514244,
+            "x1": 0.879039,
+            "y1": 0.528445
+          },
+          "text": "people (a lucrative business for other DTOs); his organization also engaged in food dis-",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_69",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.542642,
+            "x1": 0.879043,
+            "y1": 0.556843
+          },
+          "text": "tribution, provided subsidies to local communities, built roads and churches, and passed",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_70",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.571039,
+            "x1": 0.879039,
+            "y1": 0.58524
+          },
+          "text": "out cash to win support – or silence – in the communities where the criminal group",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_71",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.599437,
+            "x1": 0.879057,
+            "y1": 0.613638
+          },
+          "text": "worked. Similarly, former Gulf Cartel boss Osiel Cardenas paid for annual toy giveaways",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_72",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.627835,
+            "x1": 0.879051,
+            "y1": 0.642036
+          },
+          "text": "in communities where the gang reigned and otherwise sought a good relationship with",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_73",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.654894,
+            "x1": 0.208583,
+            "y1": 0.670434
+          },
+          "text": "residents. 2",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_74",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.15045,
+            "y0": 0.684631,
+            "x1": 0.879053,
+            "y1": 0.698832
+          },
+          "text": "Los Zetas, one of Mexico’s largest criminal organizations, is also known for extorting",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_75",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.713029,
+            "x1": 0.879043,
+            "y1": 0.72723
+          },
+          "text": "communities and businesses, killing anyone who refuses to pay. In Coahuila, the group",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_76",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.741426,
+            "x1": 0.879047,
+            "y1": 0.755626
+          },
+          "text": "operated from inside the prison of Piedras Negras, where they would bring the bodies of",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_77",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.769824,
+            "x1": 0.879039,
+            "y1": 0.784024
+          },
+          "text": "their victims to incinerate them. Hundreds are thought to have perished there, including",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_78",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.798222,
+            "x1": 0.879043,
+            "y1": 0.812422
+          },
+          "text": "children and women. The prison also served as the criminals’ headquarters to store the",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        },
+        {
+          "id": "row_79",
+          "page": 2,
+          "page_index": 2,
+          "page_number": 3,
+          "column_id": "left",
+          "box": {
+            "x0": 0.143569,
+            "y0": 0.824179,
+            "x1": 0.571563,
+            "y1": 0.846663
+          },
+          "text": "1 From Jornada newspaper by Ferrer and Martinez (2013). 2",
+          "in_bibliography_zone": false,
+          "reason": "outside_bibliography_zone",
+          "included": false
+        }
+      ],
+      "anomaly_units": [],
+      "reading_order_preview": [
+        {
+          "id": "row_2939",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 0,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.083241,
+            "x1": 0.273196,
+            "y1": 0.103689
+          },
+          "text": "References"
+        },
+        {
+          "id": "row_2940",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 1,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.130737,
+            "x1": 0.879039,
+            "y1": 0.144937
+          },
+          "text": "AI (2017). Report 2016/2017: The state of the world’s human rights. Technical report,"
+        },
+        {
+          "id": "row_2941",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 2,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.159135,
+            "x1": 0.340098,
+            "y1": 0.173335
+          },
+          "text": "Amnesty International."
+        },
+        {
+          "id": "row_2942",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 3,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.199366,
+            "x1": 0.299808,
+            "y1": 0.213566
+          },
+          "text": "Arias, E. D. (2017)."
+        },
+        {
+          "id": "row_2943",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 4,
+          "box": {
+            "x0": 0.316658,
+            "y0": 0.199366,
+            "x1": 0.879051,
+            "y1": 0.213566
+          },
+          "text": "Criminal enterprises and governance in Latin America and the"
+        },
+        {
+          "id": "row_2944",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 5,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.227764,
+            "x1": 0.48471,
+            "y1": 0.241964
+          },
+          "text": "Caribbean . Cambridge University Press."
+        },
+        {
+          "id": "row_2945",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 6,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.267996,
+            "x1": 0.287308,
+            "y1": 0.282196
+          },
+          "text": "Arjona, A. (2017)."
+        },
+        {
+          "id": "row_2946",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 7,
+          "box": {
+            "x0": 0.307291,
+            "y0": 0.267996,
+            "x1": 0.879051,
+            "y1": 0.282196
+          },
+          "text": "Civilian cooperation and non-cooperation with non-state armed"
+        },
+        {
+          "id": "row_2947",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 8,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.296394,
+            "x1": 0.879037,
+            "y1": 0.310594
+          },
+          "text": "groups: The centrality of obedience and resistance. Small Wars & Insurgencies , 28(4-"
+        },
+        {
+          "id": "row_2948",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 9,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.324791,
+            "x1": 0.237853,
+            "y1": 0.338991
+          },
+          "text": "5):755–778."
+        },
+        {
+          "id": "row_2949",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 10,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.365023,
+            "x1": 0.879051,
+            "y1": 0.379223
+          },
+          "text": "Astorga, L. and Shirk, D. A. (2010). Drug traﬃcking organizations and counter-drug"
+        },
+        {
+          "id": "row_2950",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 11,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.393421,
+            "x1": 0.738499,
+            "y1": 0.407621
+          },
+          "text": "strategies in the us-mexican context. Center for US-Mexican Studies ."
+        },
+        {
+          "id": "row_2951",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 12,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.433652,
+            "x1": 0.879041,
+            "y1": 0.447852
+          },
+          "text": "Bagley, B. (2012). Drug traﬃcking and organized crime in the americas. Woodrow Wilson"
+        },
+        {
+          "id": "row_2952",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 13,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.46205,
+            "x1": 0.412765,
+            "y1": 0.47625
+          },
+          "text": "Center Update of the Americas ."
+        },
+        {
+          "id": "row_2953",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 14,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.502281,
+            "x1": 0.879053,
+            "y1": 0.516481
+          },
+          "text": "Becker, G. S. (1968). Crime and punishment: An economic approach. In The economic"
+        },
+        {
+          "id": "row_2954",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 15,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.530679,
+            "x1": 0.519001,
+            "y1": 0.544879
+          },
+          "text": "dimensions of crime , pages 13–68. Springer."
+        },
+        {
+          "id": "row_2955",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 16,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.570911,
+            "x1": 0.879055,
+            "y1": 0.585111
+          },
+          "text": "Berman, E. and Laitin, D. D. (2008). Religion, terrorism and public goods: Testing the"
+        },
+        {
+          "id": "row_2956",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 17,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.599309,
+            "x1": 0.688661,
+            "y1": 0.613509
+          },
+          "text": "club model. Journal of Public Economics , 10-11(92):1942–1967."
+        },
+        {
+          "id": "row_2957",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 18,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.63954,
+            "x1": 0.879055,
+            "y1": 0.65374
+          },
+          "text": "Berman, E., Shapiro, J. N., and Felter, J. H. (2011). Can hearts and minds be bought?"
+        },
+        {
+          "id": "row_2958",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 19,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.667938,
+            "x1": 0.879041,
+            "y1": 0.682138
+          },
+          "text": "the economics of counterinsurgency in iraq. Journal of Political Economy , 119(4):766–"
+        },
+        {
+          "id": "row_2959",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 20,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.696336,
+            "x1": 0.175578,
+            "y1": 0.710536
+          },
+          "text": "819."
+        },
+        {
+          "id": "row_2960",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 21,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.736567,
+            "x1": 0.879047,
+            "y1": 0.750767
+          },
+          "text": "Blair, G. and Imai, K. (2012). Statistical analysis of list experiments. Political Analysis ,"
+        },
+        {
+          "id": "row_2961",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 22,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.764965,
+            "x1": 0.245501,
+            "y1": 0.779165
+          },
+          "text": "20(1):47–77."
+        },
+        {
+          "id": "row_2962",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 23,
+          "box": {
+            "x0": 0.120952,
+            "y0": 0.805196,
+            "x1": 0.879047,
+            "y1": 0.819396
+          },
+          "text": "Blume, L. R. (2017). The old rules no longer apply: Explaining narco-assassinations of"
+        },
+        {
+          "id": "row_2963",
+          "page": 56,
+          "page_index": 56,
+          "page_number": 57,
+          "column_id": "left",
+          "flow_position": 24,
+          "box": {
+            "x0": 0.140617,
+            "y0": 0.833594,
+            "x1": 0.741084,
+            "y1": 0.847794
+          },
+          "text": "mexican politicians. Journal of Politics in Latin America , 9(1):59–90."
+        }
+      ]
+    },
+    "pipeline": {
+      "pipeline_mode": "numeric_rich",
+      "coverage_expectation": {
+        "detected_anchor_indices": [],
+        "expected_indices": [],
+        "max_index": 0,
+        "initial_missing_indices": [],
+        "duplicated_anchor_indices": [],
+        "anchor_sequence_confidence": 0.0
+      },
+      "coverage_audit": {
+        "detected_anchor_indices": [],
+        "expected_indices": [],
+        "serialized_indices": [],
+        "failed_indices": [],
+        "missing_indices": [],
+        "coverage_ratio": 0.0,
+        "extraction_status": "inconsistent"
+      },
+      "anchor_sequence_debug": {
+        "detected_anchor_indices": [],
+        "expected_indices": [],
+        "max_index": 0,
+        "initial_missing_indices": [],
+        "duplicated_anchor_indices": [],
+        "anchor_sequence_confidence": 0.0
+      }
+    }
+  },
+  "references": []
+}

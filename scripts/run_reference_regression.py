@@ -340,6 +340,14 @@ def _reference_has_crossref_match(reference: Dict[str, Any]) -> bool:
     return _safe_float(_reference_final_decision(reference).get("crossref_match_score")) >= 0.75
 
 
+def _coverage_value(mapping: Dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        value = mapping.get(key)
+        if value is not None:
+            return value
+    return None
+
+
 def _reference_has_cleanup(reference: Dict[str, Any]) -> bool:
     if bool(_reference_final_decision(reference).get("cleanup_applied")):
         return True
@@ -413,7 +421,43 @@ def _calculate_metrics(
         for item in (references_data.get("references") or [])
         if isinstance(item, dict)
     ]
+    coverage_audit = references_data.get("coverage_audit") or {}
     total = len(references)
+    successful_references = [
+        item for item in references if str(item.get("status") or "") != "failed"
+    ]
+    failed_references = [
+        item for item in references if str(item.get("status") or "") == "failed"
+    ]
+    document_mode = str(
+        references_data.get("document_mode")
+        or ((debug_payload or {}).get("document_profile") or {}).get("document_mode")
+        or ""
+    ).strip() or None
+    detected_anchor_indices = coverage_audit.get("detected_anchor_indices") or []
+    expected_indices = coverage_audit.get("expected_indices") or []
+    candidate_ids = coverage_audit.get("candidate_indices_or_ids") or []
+    serialized_indices = coverage_audit.get("serialized_indices") or []
+    serialized_candidate_ids = coverage_audit.get("serialized_candidate_ids") or []
+    failed_indices = coverage_audit.get("failed_indices") or []
+    failed_candidate_ids = coverage_audit.get("failed_candidate_ids") or []
+    missing_indices = coverage_audit.get("missing_indices") or []
+    coverage_ratio = _safe_float(coverage_audit.get("coverage_ratio"))
+    extraction_status = str(coverage_audit.get("extraction_status") or "").strip() or None
+    anchors_or_candidates_detected = (
+        len(detected_anchor_indices) if detected_anchor_indices else len(candidate_ids)
+    )
+    serialized_useful_total = (
+        len(serialized_indices)
+        if serialized_indices
+        else len(serialized_candidate_ids) if serialized_candidate_ids else len(successful_references)
+    )
+    failed_total = (
+        len(failed_indices)
+        if failed_indices
+        else len(failed_candidate_ids) if failed_candidate_ids else len(failed_references)
+    )
+    missing_total = len(missing_indices)
     expected_max = _safe_int(paper_entry.get("expected_max_reference_index"))
     max_detected = _safe_int(references_data.get("max_reference_index"))
     if max_detected is None:
@@ -490,11 +534,18 @@ def _calculate_metrics(
         "paper_id": str(paper_entry.get("id") or ""),
         "pdf_file": extraction_payload.get("pdf_file"),
         "pipeline_version": debug_metadata.get("pipeline_version"),
+        "document_mode": document_mode,
         "engine_requested": extraction_payload.get("engine_requested"),
         "engine_effective": extraction_payload.get("engine_effective"),
         "references_total": total,
         "references_total_serialized": total,
         "references_total_source": "final_extraction.references",
+        "anchors_or_candidates_detected": anchors_or_candidates_detected,
+        "references_serialized_success": serialized_useful_total,
+        "failed_references": failed_total,
+        "missing_references": missing_total,
+        "coverage_ratio": coverage_ratio,
+        "extraction_status": extraction_status,
         "expected_max_reference_index": expected_max,
         "max_reference_index_detected": max_detected,
         "last_reference_index_detected": last_index,
@@ -633,31 +684,21 @@ def _aggregate_metrics(paper_summaries: Sequence[Dict[str, Any]]) -> Dict[str, A
 
 def _build_summary_table_lines(paper_summaries: Sequence[Dict[str, Any]]) -> List[str]:
     lines = [
-        "| paper | expected | detected | last idx | rows_raw % | fallback % | inside bib % | doi % | engine | status | notes |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+        "| paper | mode | detected | ok | failed | missing | coverage | extraction | engine | status |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for item in paper_summaries:
         metrics = item.get("metrics") or {}
         lines.append(
-            "| {paper} | {expected} | {detected} | {last_idx} | {rows_raw:.2f} | {fallback:.2f} | {inside:.2f} | {doi:.2f} | {engine} | {status} | {notes} |".format(
+            "| {paper} | {mode} | {detected} | {ok} | {failed} | {missing} | {coverage:.3f} | {extraction} | {engine} | {status} |".format(
                 paper=metrics.get("paper_id") or "-",
-                expected=(
-                    metrics.get("expected_max_reference_index")
-                    if metrics.get("expected_max_reference_index") is not None
-                    else "-"
-                ),
-                detected=metrics.get("references_total_serialized") or 0,
-                last_idx=(
-                    metrics.get("last_reference_index_detected")
-                    if metrics.get("last_reference_index_detected") is not None
-                    else "-"
-                ),
-                rows_raw=_safe_float(metrics.get("pct_structure_source_rows_raw")),
-                fallback=_safe_float(
-                    metrics.get("pct_structure_source_raw_reference_fallback")
-                ),
-                inside=_safe_float(metrics.get("pct_references_inside_bibliography_zone")),
-                doi=_safe_float(metrics.get("pct_references_with_doi")),
+                mode=metrics.get("document_mode") or "-",
+                detected=metrics.get("anchors_or_candidates_detected") or 0,
+                ok=metrics.get("references_serialized_success") or 0,
+                failed=metrics.get("failed_references") or 0,
+                missing=metrics.get("missing_references") or 0,
+                coverage=_safe_float(metrics.get("coverage_ratio")),
+                extraction=metrics.get("extraction_status") or "-",
                 engine=(
                     "{requested}->{effective}".format(
                         requested=metrics.get("engine_requested") or "-",
@@ -665,7 +706,6 @@ def _build_summary_table_lines(paper_summaries: Sequence[Dict[str, Any]]) -> Lis
                     )
                 ),
                 status=metrics.get("status") or "FAIL",
-                notes=str(metrics.get("notes") or "").replace("|", "/"),
             )
         )
     return lines
@@ -899,23 +939,19 @@ def _run_regression(
         paper_summaries.append(paper_summary)
         grouped_summaries.setdefault(entry_dataset_type, []).append(paper_summary)
         print(
-            "[{status}] {paper_id} ({dataset_type}): detected={detected} expected={expected} engine={requested}->{effective} fallback={fallback:.2f}%".format(
+            "[{status}] {paper_id} ({dataset_type}): mode={mode} detected={detected} ok={ok} failed={failed} missing={missing} coverage={coverage:.3f} extraction={extraction} engine={requested}->{effective}".format(
                 status=paper_summary.get("status"),
                 paper_id=paper_id,
                 dataset_type=entry_dataset_type,
-                detected=(paper_summary.get("metrics") or {}).get("references_total_serialized") or 0,
-                expected=(
-                    (paper_summary.get("metrics") or {}).get("expected_max_reference_index")
-                    if (paper_summary.get("metrics") or {}).get("expected_max_reference_index") is not None
-                    else "-"
-                ),
+                mode=(paper_summary.get("metrics") or {}).get("document_mode") or "-",
+                detected=(paper_summary.get("metrics") or {}).get("anchors_or_candidates_detected") or 0,
+                ok=(paper_summary.get("metrics") or {}).get("references_serialized_success") or 0,
+                failed=(paper_summary.get("metrics") or {}).get("failed_references") or 0,
+                missing=(paper_summary.get("metrics") or {}).get("missing_references") or 0,
+                coverage=_safe_float((paper_summary.get("metrics") or {}).get("coverage_ratio")),
+                extraction=(paper_summary.get("metrics") or {}).get("extraction_status") or "-",
                 requested=(paper_summary.get("metrics") or {}).get("engine_requested") or "-",
                 effective=(paper_summary.get("metrics") or {}).get("engine_effective") or "-",
-                fallback=_safe_float(
-                    (paper_summary.get("metrics") or {}).get(
-                        "pct_structure_source_raw_reference_fallback"
-                    )
-                ),
             )
         )
 
