@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -16,9 +17,9 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = ROOT / "tfg_project"
 DATASET_DIR = ROOT / "tfg_project/citations/static/citations/PDFs-Reales"
-DEFAULT_DATASET_PATH = ROOT / "scripts/reference_regression_dataset.json"
 DEFAULT_OUTPUT_ROOT = ROOT / "tmp/reference_regression"
-DATASET_TYPE_VALUES = ("curated", "exploratory")
+DATASET_TYPE_VALUES = ("exploratory",)
+DATASET_SOURCE_LABEL = "directory_scan"
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -55,11 +56,6 @@ TAIL_NOISE_MARKERS = (
     "license",
     "funding:",
 )
-
-
-def _read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
-
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -110,34 +106,37 @@ def _contains_tail_noise(text: str) -> bool:
     return any(marker in normalized for marker in TAIL_NOISE_MARKERS)
 
 
-def _normalize_dataset_type(value: Any, *, fallback_expected: Any = None) -> str:
-    normalized = str(value or "").strip().lower()
-    if normalized in DATASET_TYPE_VALUES:
-        return normalized
-    return "curated" if fallback_expected is not None else "exploratory"
+def _derive_paper_id(pdf_name: str) -> str:
+    stem = Path(str(pdf_name or "")).stem.strip().lower()
+    normalized = re.sub(r"[^a-z0-9]+", "_", stem)
+    normalized = normalized.strip("_")
+    return normalized or "paper"
 
 
-def _load_dataset(dataset_path: Path) -> List[Dict[str, Any]]:
-    raw = _read_json(dataset_path)
-    if not isinstance(raw, list):
-        raise ValueError(f"El dataset debe ser una lista JSON: {dataset_path}")
-    dataset: List[Dict[str, Any]] = []
-    for idx, entry in enumerate(raw, start=1):
-        if not isinstance(entry, dict):
-            raise ValueError(f"Entrada {idx} invalida en {dataset_path}")
-        paper_id = str(entry.get("id") or "").strip()
-        pdf_name = str(entry.get("pdf") or "").strip()
-        if not paper_id or not pdf_name:
-            raise ValueError(
-                f"Entrada {idx} debe incluir 'id' y 'pdf' en {dataset_path}"
-            )
-        normalized_entry = dict(entry)
-        normalized_entry["dataset_type"] = _normalize_dataset_type(
-            entry.get("dataset_type"),
-            fallback_expected=entry.get("expected_max_reference_index"),
+def _discover_dataset_entries(dataset_dir: Path) -> List[Dict[str, Any]]:
+    pdf_paths = sorted(dataset_dir.glob("*.pdf"), key=lambda path: path.name.lower())
+    if not pdf_paths:
+        raise SystemExit(f"No se encontraron PDFs en {dataset_dir}")
+
+    seen_ids: Counter[str] = Counter()
+    entries: List[Dict[str, Any]] = []
+    for pdf_path in pdf_paths:
+        base_id = _derive_paper_id(pdf_path.name)
+        seen_ids[base_id] += 1
+        paper_id = (
+            base_id if seen_ids[base_id] == 1 else f"{base_id}_{seen_ids[base_id]}"
         )
-        dataset.append(normalized_entry)
-    return dataset
+        entries.append(
+            {
+                "id": paper_id,
+                "dataset_type": "exploratory",
+                "pdf": pdf_path.name,
+                "expected_max_reference_index": None,
+                "notes": "",
+                "autodiscovered": True,
+            }
+        )
+    return entries
 
 
 def _filter_dataset(
@@ -402,7 +401,8 @@ def _calculate_metrics(
     paper_entry: Dict[str, Any],
     extraction_payload: Dict[str, Any],
     debug_payload: Optional[Dict[str, Any]],
-    dataset_path: Path,
+    dataset_root: Path,
+    dataset_source: str,
     run_id: str,
     run_timestamp: str,
     git_revision: Optional[str],
@@ -484,7 +484,8 @@ def _calculate_metrics(
         "run_id": run_id,
         "timestamp": run_timestamp,
         "git_revision": git_revision,
-        "dataset_path": str(dataset_path),
+        "dataset_root": str(dataset_root),
+        "dataset_source": dataset_source,
         "dataset_type": str(paper_entry.get("dataset_type") or ""),
         "paper_id": str(paper_entry.get("id") or ""),
         "pdf_file": extraction_payload.get("pdf_file"),
@@ -538,7 +539,6 @@ def _calculate_metrics(
 
 
 def _determine_status(metrics: Dict[str, Any]) -> Dict[str, Any]:
-    dataset_type = str(metrics.get("dataset_type") or "exploratory")
     total = int(metrics.get("references_total_serialized") or 0)
     fallback_pct = _safe_float(metrics.get("pct_structure_source_raw_reference_fallback"))
     inside_pct = _safe_float(metrics.get("pct_references_inside_bibliography_zone"))
@@ -554,23 +554,19 @@ def _determine_status(metrics: Dict[str, Any]) -> Dict[str, Any]:
         fail_reasons.append("no_references_serialized")
     if not str(metrics.get("engine_effective") or "").strip():
         fail_reasons.append("engine_not_effective")
-
-    if dataset_type == "curated" and bool(metrics.get("reference_count_mismatch_detected")):
-        fail_reasons.append("reference_count_mismatch")
     if bool(metrics.get("appendix_contamination_detected")) and (
         inside_pct < 55.0 or tail_pct > 10.0
     ):
         fail_reasons.append("appendix_contamination")
-    if dataset_type == "exploratory":
-        if tail_pct > 25.0:
-            fail_reasons.append("tail_noise_high")
-        if bool(metrics.get("fallback_rate_extreme")) and inside_pct < 30.0:
-            fail_reasons.append("fallback_extreme_with_low_bibliography_alignment")
-        if total >= 5 and page_pct < 20.0:
-            fail_reasons.append("page_index_missing_extreme")
+    if tail_pct > 25.0:
+        fail_reasons.append("tail_noise_high")
+    if bool(metrics.get("fallback_rate_extreme")) and inside_pct < 30.0:
+        fail_reasons.append("fallback_extreme_with_low_bibliography_alignment")
+    if total >= 5 and page_pct < 20.0:
+        fail_reasons.append("page_index_missing_extreme")
 
     if not fail_reasons:
-        if dataset_type != "curated" and bool(metrics.get("reference_count_mismatch_detected")):
+        if bool(metrics.get("reference_count_mismatch_detected")):
             warn_reasons.append("reference_count_mismatch_detected")
         if bool(metrics.get("appendix_contamination_detected")):
             warn_reasons.append("appendix_contamination_detected")
@@ -582,12 +578,6 @@ def _determine_status(metrics: Dict[str, Any]) -> Dict[str, Any]:
             warn_reasons.append("page_index_coverage_low")
         if accepted_pct < 70.0 and total > 0:
             warn_reasons.append("accepted_rate_low")
-        if tail_pct > 25.0 and dataset_type == "curated":
-            warn_reasons.append("tail_noise_high")
-        if bool(metrics.get("fallback_rate_extreme")) and inside_pct < 30.0 and dataset_type == "curated":
-            warn_reasons.append("fallback_extreme_with_low_bibliography_alignment")
-        if total >= 5 and page_pct < 20.0 and dataset_type == "curated":
-            warn_reasons.append("page_index_missing_extreme")
         if tail_pct > 0.0 or bool(metrics.get("last_reference_tail_noise_detected")):
             warn_reasons.append("tail_noise_detected")
         if bool(metrics.get("references_numbered")) and local_anchor_pct < 70.0:
@@ -692,9 +682,10 @@ def _build_summary_markdown(
         "",
         f"- Run ID: `{run_summary.get('run_id')}`",
         f"- Timestamp: `{run_summary.get('timestamp')}`",
-        f"- Dataset: `{run_summary.get('dataset')}`",
+        f"- Dataset source: `{run_summary.get('dataset_source')}`",
         f"- Dataset root: `{run_summary.get('dataset_root')}`",
         f"- Dataset filter: `{run_summary.get('dataset_type_filter')}`",
+        f"- PDFs discovered/selected: `{run_summary.get('discovered_pdfs_total', 0)}` / `{run_summary.get('selected_pdfs_total', 0)}`",
         f"- Engine requested: `{run_summary.get('engine_requested')}`",
         f"- Git revision: `{run_summary.get('git_revision') or '-'}`",
         f"- Total papers: `{aggregate.get('total_papers', 0)}`",
@@ -731,7 +722,8 @@ def _build_error_metrics(
     paper_entry: Dict[str, Any],
     pdf_path: Path,
     engine: str,
-    dataset_path: Path,
+    dataset_root: Path,
+    dataset_source: str,
     run_id: str,
     run_timestamp: str,
     git_revision: Optional[str],
@@ -741,7 +733,8 @@ def _build_error_metrics(
         "run_id": run_id,
         "timestamp": run_timestamp,
         "git_revision": git_revision,
-        "dataset_path": str(dataset_path),
+        "dataset_root": str(dataset_root),
+        "dataset_source": dataset_source,
         "dataset_type": str(paper_entry.get("dataset_type") or ""),
         "paper_id": str(paper_entry.get("id") or ""),
         "pdf_file": pdf_path.name,
@@ -791,14 +784,13 @@ def _build_error_metrics(
 
 def _run_regression(
     *,
-    dataset_path: Path,
     selected_paper_ids: Sequence[str],
     dataset_type: str,
     limit: Optional[int],
     output_dir: Path,
     engine: str,
 ) -> Dict[str, Any]:
-    dataset = _load_dataset(dataset_path)
+    dataset = _discover_dataset_entries(DATASET_DIR)
     selected_entries = _filter_dataset(
         dataset,
         paper_ids=selected_paper_ids,
@@ -817,8 +809,7 @@ def _run_regression(
 
     paper_summaries: List[Dict[str, Any]] = []
     grouped_summaries: Dict[str, List[Dict[str, Any]]] = {
-        "curated": [],
-        "exploratory": [],
+        dataset_key: [] for dataset_key in DATASET_TYPE_VALUES
     }
     for entry in selected_entries:
         paper_id = str(entry.get("id") or "").strip()
@@ -837,7 +828,8 @@ def _run_regression(
                 paper_entry=entry,
                 extraction_payload=run_output["extraction"],
                 debug_payload=run_output["debug"],
-                dataset_path=dataset_path,
+                dataset_root=DATASET_DIR,
+                dataset_source=DATASET_SOURCE_LABEL,
                 run_id=run_id,
                 run_timestamp=run_timestamp,
                 git_revision=git_revision,
@@ -867,7 +859,8 @@ def _run_regression(
                 paper_entry=entry,
                 pdf_path=pdf_path,
                 engine=engine,
-                dataset_path=dataset_path,
+                dataset_root=DATASET_DIR,
+                dataset_source=DATASET_SOURCE_LABEL,
                 run_id=run_id,
                 run_timestamp=run_timestamp,
                 git_revision=git_revision,
@@ -934,13 +927,15 @@ def _run_regression(
     run_summary = {
         "run_id": run_id,
         "timestamp": run_timestamp,
-        "dataset": str(dataset_path),
+        "dataset_source": DATASET_SOURCE_LABEL,
         "dataset_root": str(DATASET_DIR),
         "dataset_type_filter": dataset_type,
         "selected_paper_ids": list(selected_paper_ids),
         "limit": limit,
         "engine_requested": engine,
         "git_revision": git_revision,
+        "discovered_pdfs_total": len(dataset),
+        "selected_pdfs_total": len(selected_entries),
         "total_papers": aggregate["total_papers"],
         "total_ok": aggregate["total_ok"],
         "total_warn": aggregate["total_warn"],
@@ -965,22 +960,16 @@ def _parse_args() -> argparse.Namespace:
         description="Runner de regresion para el extractor de referencias."
     )
     parser.add_argument(
-        "--dataset",
-        type=Path,
-        default=DEFAULT_DATASET_PATH,
-        help="Manifest JSON del dataset de regresion.",
-    )
-    parser.add_argument(
         "--dataset-type",
         default="all",
         choices=["all", *DATASET_TYPE_VALUES],
-        help="Ejecuta solo el subconjunto curated, exploratory o ambos.",
+        help="Filtra el subconjunto autodetectado; sin manifest, todos son exploratory.",
     )
     parser.add_argument(
         "--paper-id",
         action="append",
         default=[],
-        help="Ejecuta solo uno o varios paper_id del manifest.",
+        help="Ejecuta solo uno o varios paper_id autodetectados desde el nombre del PDF.",
     )
     parser.add_argument(
         "--engine",
@@ -1014,7 +1003,6 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     summary = _run_regression(
-        dataset_path=args.dataset,
         selected_paper_ids=args.paper_id,
         dataset_type=args.dataset_type,
         limit=args.limit,
