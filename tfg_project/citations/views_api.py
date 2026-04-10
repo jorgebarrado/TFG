@@ -360,6 +360,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             reference_debug_payload = None
             if isinstance(references_data_payload, dict):
                 reference_debug_payload = references_data_payload.pop("debug_payload", None)
+                data["reference_debug_steps"] = (
+                    references_data_payload.pop("reference_debug_steps", None) or []
+                )
                 structured_references = [
                     item
                     for item in (references_data_payload.get("references") or [])

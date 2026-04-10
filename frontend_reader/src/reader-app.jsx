@@ -1432,6 +1432,204 @@ function useReaderV2Overlay(
   ]);
 }
 
+// ── Reference Debug Overlay ──────────────────────────────────────────────────
+
+const REF_DEBUG_STEP_COLORS = Object.freeze({
+  assign_column_ids:                    { fill: "rgba(148,163,184,0.18)", stroke: "rgba(100,116,139,0.85)" },
+  detect_page_column_split:             { fill: "rgba(245,158,11,0.18)",  stroke: "rgba(217,119,6,0.90)"  },
+  detect_reference_heading_candidates: { fill: "rgba(167,139,250,0.22)", stroke: "rgba(124,58,237,0.88)" },
+  selected_heading:                     { fill: "rgba(124,58,237,0.28)",  stroke: "rgba(109,40,217,0.95)" },
+  bibliography_segments:                { fill: "rgba(56,189,248,0.20)",  stroke: "rgba(14,165,233,0.88)" },
+  rows_in_bibliography_zone:            { fill: "rgba(74,222,128,0.18)",  stroke: "rgba(34,197,94,0.85)"  },
+  reference_anchors:                    { fill: "rgba(251,146,60,0.22)",  stroke: "rgba(234,88,12,0.90)"  },
+  reference_block_rows:                 { fill: "rgba(244,114,182,0.18)", stroke: "rgba(219,39,119,0.85)" },
+  accepted_references:                  { fill: "rgba(52,211,153,0.22)",  stroke: "rgba(16,185,129,0.90)" },
+  rejected_references:                  { fill: "rgba(248,113,113,0.22)", stroke: "rgba(239,68,68,0.90)"  },
+});
+
+const REF_DEBUG_STEP_DEFAULT_COLOR = { fill: "rgba(99,102,241,0.18)", stroke: "rgba(79,70,229,0.85)" };
+
+function useRefDebugOverlay(
+  viewerRef,
+  readerV2Data,
+  refDebugSteps,
+  activeRefDebugKeys,
+  showRefDebug,
+  refDebugOpacity,
+) {
+  useEffect(() => {
+    const viewerEl = viewerRef?.current;
+    if (!viewerEl) return;
+
+    const OVERLAY_CLASS = "reader-ref-debug-overlay";
+
+    const removeOverlays = () => {
+      viewerEl.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((el) => el.remove());
+    };
+
+    const activeSteps = (refDebugSteps || []).filter(
+      (step) => activeRefDebugKeys.has(step.key)
+    );
+
+    if (!showRefDebug || activeSteps.length === 0) {
+      removeOverlays();
+      return;
+    }
+
+    const pagesSource = Array.isArray(readerV2Data?.pages) ? readerV2Data.pages : [];
+    const pageMetaByIndex = new Map();
+    pagesSource.forEach((page, index) => {
+      const rawPage = Number(page?.page);
+      const pageIndex = Number.isFinite(rawPage) ? rawPage : index;
+      pageMetaByIndex.set(pageIndex, {
+        width: Number(page?.width) || 0,
+        height: Number(page?.height) || 0,
+      });
+    });
+
+    const normalizeBox = (box, pageMeta) => {
+      if (!Array.isArray(box) || box.length < 4) return null;
+      let x = Number(box[0]), y = Number(box[1]);
+      let width = Number(box[2]), height = Number(box[3]);
+      if (![x, y, width, height].every((v) => Number.isFinite(v))) return null;
+      if (width <= 0 || height <= 0) return null;
+      const looksNormalized = x >= 0 && y >= 0 && x <= 1.05 && y <= 1.05 && width <= 1.05 && height <= 1.05;
+      if (!looksNormalized) {
+        const pw = Number(pageMeta?.width), ph = Number(pageMeta?.height);
+        if (!Number.isFinite(pw) || !Number.isFinite(ph) || pw <= 0 || ph <= 0) return null;
+        x /= pw; y /= ph; width /= pw; height /= ph;
+      }
+      const cx = Math.max(0, Math.min(1, x));
+      const cy = Math.max(0, Math.min(1, y));
+      const cw = Math.max(0, Math.min(1 - cx, width));
+      const ch = Math.max(0, Math.min(1 - cy, height));
+      if (cw <= 0 || ch <= 0) return null;
+      return { x: cx, y: cy, width: cw, height: ch };
+    };
+
+    // Build per-page render entries: { kind, box/x, color, stepKey, label }
+    const entriesByPage = new Map();
+
+    for (const step of activeSteps) {
+      const color = REF_DEBUG_STEP_COLORS[step.key] || REF_DEBUG_STEP_DEFAULT_COLOR;
+      const kind = step.kind || "boxes";
+
+      for (const item of (step.items || [])) {
+        const pageIndex = Number(item?.page);
+        if (!Number.isFinite(pageIndex) || pageIndex < 0) continue;
+        const pageMeta = pageMetaByIndex.get(pageIndex);
+        const list = entriesByPage.get(pageIndex) || [];
+
+        if (kind === "vertical_guides") {
+          const rawX = Number(item?.x);
+          if (!Number.isFinite(rawX)) continue;
+          list.push({ kind: "guide", x: rawX, color, stepKey: step.key, label: String(item?.label || "") });
+        } else {
+          const normalized = normalizeBox(item?.box, pageMeta);
+          if (!normalized) continue;
+          list.push({ kind: "box", ...normalized, color, stepKey: step.key, label: String(item?.label || "") });
+        }
+
+        entriesByPage.set(pageIndex, list);
+      }
+    }
+
+    let rafId = null;
+    const opacity = Math.max(0, Math.min(1, Number(refDebugOpacity) || 0.75));
+
+    const render = () => {
+      rafId = null;
+      const primaryPages = getPrimaryPdfPageElements(viewerEl);
+      const primaryPageSet = new Set(primaryPages.map((e) => e.pageEl));
+
+      viewerEl.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlayEl) => {
+        const hostPage = overlayEl.closest(".pdf-reader__page");
+        if (!hostPage || !primaryPageSet.has(hostPage)) overlayEl.remove();
+      });
+
+      primaryPages.forEach(({ pageIndex, pageEl }) => {
+        const pageEntries = pageIndex >= 0 ? (entriesByPage.get(pageIndex) || []) : [];
+        const existingOverlays = Array.from(pageEl.querySelectorAll(`.${OVERLAY_CLASS}`));
+        let overlay = existingOverlays.length ? existingOverlays[0] : null;
+        existingOverlays.slice(1).forEach((e) => e.remove());
+
+        if (!pageEntries.length) {
+          if (overlay) overlay.remove();
+          return;
+        }
+
+        if (!overlay) {
+          overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          overlay.classList.add(OVERLAY_CLASS);
+          overlay.setAttribute("viewBox", "0 0 1 1");
+          overlay.setAttribute("preserveAspectRatio", "none");
+          if (window.getComputedStyle(pageEl).position === "static") {
+            pageEl.style.position = "relative";
+          }
+          pageEl.appendChild(overlay);
+        }
+
+        const anchorRect = getPageOverlayAnchorRect(pageEl);
+        overlay.style.left = `${Math.max(0, anchorRect.left)}px`;
+        overlay.style.top = `${Math.max(0, anchorRect.top)}px`;
+        overlay.style.right = "auto";
+        overlay.style.bottom = "auto";
+        overlay.style.width = `${Math.max(0, anchorRect.width)}px`;
+        overlay.style.height = `${Math.max(0, anchorRect.height)}px`;
+        overlay.style.opacity = `${opacity}`;
+
+        while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
+
+        for (const entry of pageEntries) {
+          if (entry.kind === "guide") {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", `${entry.x}`);
+            line.setAttribute("y1", "0");
+            line.setAttribute("x2", `${entry.x}`);
+            line.setAttribute("y2", "1");
+            line.setAttribute("stroke", entry.color.stroke);
+            line.setAttribute("stroke-width", "0.002");
+            line.setAttribute("stroke-dasharray", "0.008 0.004");
+            line.setAttribute("vector-effect", "non-scaling-stroke");
+            if (entry.label) line.setAttribute("title", entry.label);
+            overlay.appendChild(line);
+          } else {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", `${entry.x}`);
+            rect.setAttribute("y", `${entry.y}`);
+            rect.setAttribute("width", `${entry.width}`);
+            rect.setAttribute("height", `${entry.height}`);
+            rect.setAttribute("fill", entry.color.fill);
+            rect.setAttribute("stroke", entry.color.stroke);
+            rect.setAttribute("stroke-width", "0.003");
+            rect.setAttribute("vector-effect", "non-scaling-stroke");
+            if (entry.label) rect.setAttribute("title", entry.label);
+            overlay.appendChild(rect);
+          }
+        }
+      });
+    };
+
+    const schedule = () => { if (rafId) return; rafId = window.requestAnimationFrame(render); };
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(viewerEl, { childList: true, subtree: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(viewerEl);
+    window.addEventListener("resize", schedule);
+    schedule();
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", schedule);
+      removeOverlays();
+    };
+  }, [viewerRef, readerV2Data, refDebugSteps, activeRefDebugKeys, showRefDebug, refDebugOpacity]);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 function useReferencesOverlay(
   viewerRef,
   {
@@ -1793,6 +1991,10 @@ function PdfViewer({
   hoveredCitationId,
   onReferenceOverlayHover,
   onReferenceOverlaySelect,
+  refDebugSteps,
+  activeRefDebugKeys,
+  showRefDebug,
+  refDebugOpacity,
 }) {
   useHighlightedSnippet(selectedMention, onHighlight, viewerRef);
   useReaderV2Overlay(
@@ -1817,6 +2019,14 @@ function PdfViewer({
     onHoverItem: onReferenceOverlayHover,
     onSelectItem: onReferenceOverlaySelect,
   });
+  useRefDebugOverlay(
+    viewerRef,
+    readerV2Data,
+    refDebugSteps,
+    activeRefDebugKeys,
+    showRefDebug,
+    refDebugOpacity,
+  );
 
   if (!pdfUrl) {
     return (
@@ -1915,6 +2125,10 @@ export default function ReaderApp({
   const [readerV2Layer, setReaderV2Layer] = useState("");
   const [hoveredItemId, setHoveredItemId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
+  const [refDebugSteps, setRefDebugSteps] = useState([]);
+  const [activeRefDebugKeys, setActiveRefDebugKeys] = useState(new Set());
+  const [showRefDebug, setShowRefDebug] = useState(false);
+  const [refDebugOpacity, setRefDebugOpacity] = useState(0.75);
   const [activeFile, setActiveFile] = useState(previewFile || null);
   const [dropActive, setDropActive] = useState(false);
 
@@ -3942,6 +4156,12 @@ export default function ReaderApp({
       setSelectedItemId(null);
       setShowReaderV2(Boolean(nextLayer));
       setReaderV2Opacity(1);
+      const nextDebugSteps = Array.isArray(payload?.reference_debug_steps)
+        ? payload.reference_debug_steps
+        : [];
+      setRefDebugSteps(nextDebugSteps);
+      setActiveRefDebugKeys(new Set());
+      setShowRefDebug(false);
       setActiveTab("references");
       const outcome = describeExtractionOutcome(result, nextLayer, nextItems);
       const enrichmentHint =
@@ -4380,6 +4600,70 @@ export default function ReaderApp({
         <div className="reader-muted">
           Paginas: {readerV2PagesTotal} | Capa activa: {readerV2ItemsTotal} | Total capas:{" "}
           {readerV2AllItemsTotal}
+        </div>
+      )}
+
+      {refDebugSteps.length > 0 && (
+        <div className="ref-debug-section">
+          <div className="ref-debug-header">
+            <span className="ref-debug-title">Reference Debug</span>
+            <label className="ref-debug-master-toggle">
+              <input
+                type="checkbox"
+                checked={showRefDebug}
+                onChange={(event) => setShowRefDebug(event.target.checked)}
+              />
+              Mostrar
+            </label>
+          </div>
+          <div className="ref-debug-steps">
+            {refDebugSteps.map((step) => {
+              const color = REF_DEBUG_STEP_COLORS[step.key] || REF_DEBUG_STEP_DEFAULT_COLOR;
+              const isActive = activeRefDebugKeys.has(step.key);
+              const itemCount = (step.items || []).length;
+              return (
+                <label
+                  key={step.key}
+                  className={`ref-debug-step${isActive ? " is-active" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(event) => {
+                      setActiveRefDebugKeys((prev) => {
+                        const next = new Set(prev);
+                        if (event.target.checked) next.add(step.key);
+                        else next.delete(step.key);
+                        return next;
+                      });
+                    }}
+                  />
+                  <span
+                    className="ref-debug-swatch"
+                    style={{ background: color.stroke }}
+                  />
+                  <span className="ref-debug-step-label">{step.label}</span>
+                  <span className="ref-debug-step-count">{itemCount}</span>
+                </label>
+              );
+            })}
+          </div>
+          {showRefDebug && activeRefDebugKeys.size > 0 && (
+            <>
+              <div className="reader-v2-opacity">
+                Opacidad debug: {Math.round(refDebugOpacity * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                className="reader-v2-slider"
+                value={refDebugOpacity}
+                onChange={(event) => setRefDebugOpacity(Number(event.target.value))}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
@@ -4906,6 +5190,10 @@ export default function ReaderApp({
             hoveredCitationId={hoveredCitationId}
             onReferenceOverlayHover={handleReferenceOverlayHover}
             onReferenceOverlaySelect={handleReferenceOverlaySelect}
+            refDebugSteps={refDebugSteps}
+            activeRefDebugKeys={activeRefDebugKeys}
+            showRefDebug={showRefDebug}
+            refDebugOpacity={refDebugOpacity}
           />
 
           {activeCitation && citationPopoverStyle && (

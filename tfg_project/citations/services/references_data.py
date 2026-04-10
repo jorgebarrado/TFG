@@ -3470,12 +3470,14 @@ def build_reference_rows_between_anchors(
     nested_anchor_indices: List[int] = []
     for position in range(start, min(end, len(ordered_rows))):
         row = ordered_rows[position]
+        row_box = _normalize_box(row.get("box"))
         text = str(row.get("text") or "").strip()
         if not text:
             row_decisions.append(
                 {
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
+                    "box": row_box,
                     "column_id": row.get("column_id"),
                     "text": text,
                     "included": False,
@@ -3495,6 +3497,7 @@ def build_reference_rows_between_anchors(
                 {
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
+                    "box": row_box,
                     "column_id": row.get("column_id"),
                     "text": text,
                     "included": False,
@@ -3509,6 +3512,7 @@ def build_reference_rows_between_anchors(
                 {
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
+                    "box": row_box,
                     "column_id": row.get("column_id"),
                     "text": text,
                     "included": False,
@@ -3522,6 +3526,7 @@ def build_reference_rows_between_anchors(
                 {
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
+                    "box": row_box,
                     "column_id": row.get("column_id"),
                     "text": text,
                     "included": False,
@@ -3543,6 +3548,7 @@ def build_reference_rows_between_anchors(
                 {
                     "row_id": str(row.get("id") or ""),
                     "page": row.get("page"),
+                    "box": row_box,
                     "column_id": row_column,
                     "text": text,
                     "included": False,
@@ -3567,6 +3573,7 @@ def build_reference_rows_between_anchors(
                     {
                         "row_id": str(row.get("id") or ""),
                         "page": row.get("page"),
+                        "box": row_box,
                         "column_id": row_column,
                         "text": text,
                         "included": False,
@@ -3595,6 +3602,7 @@ def build_reference_rows_between_anchors(
                                 {
                                     "row_id": str(row.get("id") or ""),
                                     "page": current_page,
+                                    "box": row_box,
                                     "column_id": row_column,
                                     "text": text,
                                     "included": False,
@@ -3616,6 +3624,7 @@ def build_reference_rows_between_anchors(
             {
                 "row_id": str(row.get("id") or ""),
                 "page": row.get("page"),
+                "box": row_box,
                 "column_id": row_column,
                 "text": text,
                 "included": True,
@@ -4233,6 +4242,286 @@ def _pick_context_paragraph(
     return None
 
 
+def _debug_normalize_box(raw: Any) -> Optional[List[float]]:
+    """Normaliza un box que puede venir como lista [x,y,w,h] o dict {x0,y0,x1,y1}."""
+    if isinstance(raw, (list, tuple)):
+        return _normalize_box(raw)
+    if isinstance(raw, dict):
+        return _box_from_corners(
+            float(raw.get("x0") or 0),
+            float(raw.get("y0") or 0),
+            float(raw.get("x1") or 0),
+            float(raw.get("y1") or 0),
+        )
+    return None
+
+
+def _build_reference_debug_steps(
+    *,
+    rows_with_columns: List[Dict[str, Any]],
+    page_splits: Dict[int, Optional[float]],
+    heading_candidates: List[Dict[str, Any]],
+    selected_heading: Optional[Dict[str, Any]],
+    bibliography_segments: List[Dict[str, Any]],
+    bibliography_rows_debug: List[Dict[str, Any]],
+    row_phase_details: List[Dict[str, Any]],
+    reference_entries: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Transforma datos intermedios del pipeline en reference_debug_steps normalizado.
+
+    Cada paso tiene: key, label, source, kind, items.
+    Ítems tipo 'boxes': {id, page, box, label, meta}
+    Ítems tipo 'vertical_guides': {page, x, label}
+    """
+    steps: List[Dict[str, Any]] = []
+
+    # ── 1. assign_column_ids ────────────────────────────────────────────────
+    col_items: List[Dict[str, Any]] = []
+    for i, row in enumerate(rows_with_columns):
+        box = _normalize_box(row.get("box"))
+        if box is None:
+            continue
+        column_id = str(row.get("column_id") or "left")
+        col_items.append({
+            "id": f"col-{i}",
+            "page": row.get("page"),
+            "box": box,
+            "label": f"[{column_id}] {str(row.get('text') or '')[:40]}",
+            "meta": {"column_id": column_id},
+        })
+    steps.append({
+        "key": "assign_column_ids",
+        "label": "Columnas asignadas",
+        "source": "_assign_column_ids",
+        "kind": "boxes",
+        "items": col_items,
+    })
+
+    # ── 2. detect_page_column_split ─────────────────────────────────────────
+    guide_items: List[Dict[str, Any]] = []
+    for page, split_x in sorted(page_splits.items()):
+        if split_x is None:
+            continue
+        guide_items.append({
+            "page": page,
+            "x": float(split_x),
+            "label": f"p.{page + 1} x={split_x:.3f}",
+        })
+    steps.append({
+        "key": "detect_page_column_split",
+        "label": "Split vertical por página",
+        "source": "_detect_page_column_split",
+        "kind": "vertical_guides",
+        "items": guide_items,
+    })
+
+    # ── 3. detect_reference_heading_candidates ──────────────────────────────
+    cand_items: List[Dict[str, Any]] = []
+    for i, cand in enumerate(heading_candidates):
+        box = _normalize_box(cand.get("box"))
+        if box is None:
+            continue
+        cand_items.append({
+            "id": f"hcand-{i}",
+            "page": cand.get("page"),
+            "box": box,
+            "label": str(cand.get("text") or ""),
+            "meta": {
+                "source": cand.get("source"),
+                "column_id": cand.get("column_id"),
+            },
+        })
+    steps.append({
+        "key": "detect_reference_heading_candidates",
+        "label": "Candidatos a heading",
+        "source": "_detect_reference_heading_candidates",
+        "kind": "boxes",
+        "items": cand_items,
+    })
+
+    # ── 4. selected_heading ─────────────────────────────────────────────────
+    sel_items: List[Dict[str, Any]] = []
+    if isinstance(selected_heading, dict):
+        box = _normalize_box(selected_heading.get("box"))
+        if box is not None:
+            sel_items.append({
+                "id": "selected-heading-0",
+                "page": selected_heading.get("page"),
+                "box": box,
+                "label": str(selected_heading.get("text") or ""),
+                "meta": {
+                    "source": selected_heading.get("source"),
+                    "column_id": selected_heading.get("column_id"),
+                },
+            })
+    steps.append({
+        "key": "selected_heading",
+        "label": "Heading seleccionado",
+        "source": "_build_bibliography_segments",
+        "kind": "boxes",
+        "items": sel_items,
+    })
+
+    # ── 5. bibliography_segments ────────────────────────────────────────────
+    seg_items: List[Dict[str, Any]] = []
+    for i, seg in enumerate(bibliography_segments):
+        box = _normalize_box(seg.get("box"))
+        if box is None:
+            continue
+        seg_items.append({
+            "id": f"seg-{i}",
+            "page": seg.get("page"),
+            "box": box,
+            "label": (
+                f"col={seg.get('column_id')} "
+                f"conf={float(seg.get('confidence') or 0.0):.2f}"
+            ),
+            "meta": {
+                "column_id": seg.get("column_id"),
+                "confidence": seg.get("confidence"),
+                "source": seg.get("source"),
+            },
+        })
+    steps.append({
+        "key": "bibliography_segments",
+        "label": "Segmentos de bibliografía",
+        "source": "_build_bibliography_segments",
+        "kind": "boxes",
+        "items": seg_items,
+    })
+
+    # ── 6. rows_in_bibliography_zone ────────────────────────────────────────
+    zone_items: List[Dict[str, Any]] = []
+    for i, row in enumerate(bibliography_rows_debug):
+        if not row.get("included"):
+            continue
+        box = _debug_normalize_box(row.get("box"))
+        if box is None:
+            continue
+        zone_items.append({
+            "id": f"brow-{i}",
+            "page": row.get("page"),
+            "box": box,
+            "label": str(row.get("text") or "")[:60],
+            "meta": {
+                "column_id": row.get("column_id"),
+                "anchor_index": row.get("anchor_index"),
+            },
+        })
+    steps.append({
+        "key": "rows_in_bibliography_zone",
+        "label": "Rows en bibliografía",
+        "source": "_collect_bibliography_rows_from_segments",
+        "kind": "boxes",
+        "items": zone_items,
+    })
+
+    # ── 7. reference_anchors ────────────────────────────────────────────────
+    anchor_items: List[Dict[str, Any]] = []
+    for i, row in enumerate(bibliography_rows_debug):
+        anchor_index = row.get("anchor_index")
+        if anchor_index is None or not row.get("included"):
+            continue
+        box = _debug_normalize_box(row.get("box"))
+        if box is None:
+            continue
+        anchor_items.append({
+            "id": f"anchor-{anchor_index}",
+            "page": row.get("page"),
+            "box": box,
+            "label": f"[{anchor_index}] {str(row.get('text') or '')[:40]}",
+            "meta": {
+                "anchor_index": anchor_index,
+                "column_id": row.get("column_id"),
+            },
+        })
+    steps.append({
+        "key": "reference_anchors",
+        "label": "Anchors de referencia",
+        "source": "detect_reference_anchors_from_rows",
+        "kind": "boxes",
+        "items": anchor_items,
+    })
+
+    # ── 8. reference_block_rows ─────────────────────────────────────────────
+    block_items: List[Dict[str, Any]] = []
+    for block in row_phase_details:
+        ref_idx = block.get("reference_index")
+        for decision in (block.get("row_decisions") or []):
+            if not decision.get("included"):
+                continue
+            box = _normalize_box(decision.get("box"))
+            if box is None:
+                continue
+            row_id = str(decision.get("row_id") or "")
+            block_items.append({
+                "id": f"blk-{ref_idx}-{row_id}",
+                "page": decision.get("page"),
+                "box": box,
+                "label": f"[{ref_idx}] {str(decision.get('text') or '')[:40]}",
+                "meta": {"reference_index": ref_idx, "row_id": row_id},
+            })
+    steps.append({
+        "key": "reference_block_rows",
+        "label": "Rows por referencia",
+        "source": "build_reference_rows_between_anchors",
+        "kind": "boxes",
+        "items": block_items,
+    })
+
+    # ── 9. accepted_references ──────────────────────────────────────────────
+    acc_items: List[Dict[str, Any]] = []
+    for entry in reference_entries:
+        final_decision = entry.get("final_decision") or {}
+        if not final_decision.get("accepted"):
+            continue
+        box = _normalize_box(entry.get("box"))
+        page = entry.get("page")
+        if box is None or page is None:
+            continue
+        acc_items.append({
+            "id": str(entry.get("ref_id") or f"acc-{entry.get('index')}"),
+            "page": page,
+            "box": box,
+            "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
+            "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
+        })
+    steps.append({
+        "key": "accepted_references",
+        "label": "Referencias aceptadas",
+        "source": "_build_reference_decision",
+        "kind": "boxes",
+        "items": acc_items,
+    })
+
+    # ── 10. rejected_references ─────────────────────────────────────────────
+    rej_items: List[Dict[str, Any]] = []
+    for entry in reference_entries:
+        final_decision = entry.get("final_decision") or {}
+        if final_decision.get("accepted") is True:
+            continue
+        box = _normalize_box(entry.get("box"))
+        page = entry.get("page")
+        if box is None or page is None:
+            continue
+        rej_items.append({
+            "id": str(entry.get("ref_id") or f"rej-{entry.get('index')}"),
+            "page": page,
+            "box": box,
+            "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
+            "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
+        })
+    steps.append({
+        "key": "rejected_references",
+        "label": "Referencias rechazadas",
+        "source": "_build_reference_decision",
+        "kind": "boxes",
+        "items": rej_items,
+    })
+
+    return steps
+
+
 def build_references_data(
     *,
     references: Sequence[Dict[str, Any]],
@@ -4588,6 +4877,17 @@ def build_references_data(
             }
         )
 
+    reference_debug_steps = _build_reference_debug_steps(
+        rows_with_columns=bibliography_phase.get("rows_with_columns") or [],
+        page_splits=bibliography_phase.get("page_splits") or {},
+        heading_candidates=bibliography_phase.get("heading_candidates") or [],
+        selected_heading=bibliography_phase.get("selected_heading"),
+        bibliography_segments=bibliography_segments,
+        bibliography_rows_debug=bibliography_rows_phase.get("debug_rows") or [],
+        row_phase_details=row_phase_details,
+        reference_entries=reference_entries,
+    )
+
     contexts_seen: set[Tuple[str, int, str]] = set()
     seen_mentions: set[Tuple[Any, ...]] = set()
     mention_text_key_max_len = 220
@@ -4912,6 +5212,7 @@ def build_references_data(
         "crossref_reference_count": int(crossref_context.get("crossref_reference_count") or 0),
         "global_alerts": global_alerts,
         "debug_payload": debug_payload,
+        "reference_debug_steps": reference_debug_steps,
     }
 
 
