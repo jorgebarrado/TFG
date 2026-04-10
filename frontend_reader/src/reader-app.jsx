@@ -2119,6 +2119,7 @@ export default function ReaderApp({
   const [debugReferenceDetection, setDebugReferenceDetection] = useState(false);
   const [extractEnrichment, setExtractEnrichment] = useState(null);
   const [extractionExportData, setExtractionExportData] = useState(null);
+  const [referenceDebugDownload, setReferenceDebugDownload] = useState(null);
   const [readerV2Data, setReaderV2Data] = useState(null);
   const [showReaderV2, setShowReaderV2] = useState(false);
   const [readerV2Opacity, setReaderV2Opacity] = useState(1);
@@ -2159,6 +2160,7 @@ export default function ReaderApp({
     });
     setExtractEnrichment(null);
     setExtractionExportData(null);
+    setReferenceDebugDownload(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -2212,6 +2214,7 @@ export default function ReaderApp({
       });
       setExtractEnrichment(null);
       setExtractionExportData(null);
+      setReferenceDebugDownload(null);
       setSelectedReferenceId("");
       setHoveredReferenceId("");
       setSelectedCitationId("");
@@ -2638,6 +2641,7 @@ export default function ReaderApp({
   const resolvedPdfUrl = previewUrl || data?.pdf_url || pdfUrl || "";
   const canExtract = !extractStatus.loading && Boolean(activeFile || resolvedPdfUrl);
   const canDownloadExtraction = Boolean(extractionExportData);
+  const canDownloadDebug = Boolean(referenceDebugDownload?.url);
   const readerV2LayerOptions = useMemo(
     () => getReaderV2LayerKeys(readerV2Data),
     [readerV2Data]
@@ -4021,6 +4025,19 @@ export default function ReaderApp({
     URL.revokeObjectURL(downloadUrl);
   };
 
+  const downloadReferenceDebugJson = (downloadInfo) => {
+    const downloadUrl = String(downloadInfo?.url || "").trim();
+    if (!downloadUrl) return;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    if (downloadInfo?.filename) {
+      link.download = downloadInfo.filename;
+    }
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const describeExtractionOutcome = (result, nextLayer, nextItems) => {
     const referencesCount = Math.max(
       Number(result?.references?.length || 0),
@@ -4075,6 +4092,7 @@ export default function ReaderApp({
 
   const handleExtract = async () => {
     setExtractEnrichment(null);
+    setReferenceDebugDownload(null);
     setExtractStatus({
       loading: true,
       error: "",
@@ -4131,13 +4149,31 @@ export default function ReaderApp({
         payload?.enrichment && typeof payload.enrichment === "object"
           ? payload.enrichment
           : null;
+      const referenceDebugMeta =
+        payload?.reference_debug && typeof payload.reference_debug === "object"
+          ? payload.reference_debug
+          : null;
       const referenceDebugPath = String(
-        payload?.reference_debug?.output_path || ""
+        referenceDebugMeta?.output_path || ""
+      ).trim();
+      const referenceDebugDownloadUrl = String(
+        referenceDebugMeta?.download_url || ""
+      ).trim();
+      const referenceDebugFilename = String(
+        referenceDebugMeta?.filename || ""
       ).trim();
       setSnippetsData(result.snippets);
       setReferencesData(result.references);
       setReferencesVisualData(result.referencesVisual);
       setExtractionExportData(buildExtractionExportData(payload, result, file));
+      setReferenceDebugDownload(
+        referenceDebugDownloadUrl
+          ? {
+              url: referenceDebugDownloadUrl,
+              filename: referenceDebugFilename || "reference_debug.json",
+            }
+          : null
+      );
       setExtractEnrichment(enrichmentPayload);
       setSelectedReferenceId("");
       setHoveredReferenceId("");
@@ -4415,6 +4451,7 @@ export default function ReaderApp({
     });
     setExtractEnrichment(null);
     setExtractionExportData(null);
+    setReferenceDebugDownload(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -4475,6 +4512,7 @@ export default function ReaderApp({
     });
     setExtractEnrichment(null);
     setExtractionExportData(null);
+    setReferenceDebugDownload(null);
     setSelectedReferenceId("");
     setHoveredReferenceId("");
     setSelectedCitationId("");
@@ -4747,6 +4785,14 @@ export default function ReaderApp({
           disabled={!canDownloadExtraction}
         >
           Descargar
+        </button>
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={() => downloadReferenceDebugJson(referenceDebugDownload)}
+          disabled={!canDownloadDebug}
+        >
+          Descargar depuracion
         </button>
       </div>
       <label className="reader-extract-debug-toggle">

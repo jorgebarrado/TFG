@@ -7,6 +7,7 @@
   const debugChk   = document.getElementById('extract-debug');
   const btnSubmit  = document.getElementById('extract-btn');
   const readerBtn  = document.getElementById('extract-reader-btn');
+  const debugDownloadBtn = document.getElementById('extract-debug-download-btn');
 
   const alertBox   = document.getElementById('extract-alert');
   const summaryBox = document.getElementById('extract-summary');
@@ -34,6 +35,22 @@
     summaryBox.textContent = '';
     resultsBox.innerHTML = '';
     tracePre.textContent = '';
+    if (debugDownloadBtn) {
+      debugDownloadBtn.dataset.downloadUrl = '';
+      debugDownloadBtn.dataset.filename = '';
+      debugDownloadBtn.disabled = true;
+      debugDownloadBtn.classList.add('d-none');
+    }
+  }
+
+  function enableDebugDownload(referenceDebug) {
+    if (!debugDownloadBtn) return;
+    const downloadUrl = String(referenceDebug?.download_url || '').trim();
+    const filename = String(referenceDebug?.filename || 'reference_debug.json').trim();
+    debugDownloadBtn.dataset.downloadUrl = downloadUrl;
+    debugDownloadBtn.dataset.filename = filename || 'reference_debug.json';
+    debugDownloadBtn.disabled = !downloadUrl;
+    debugDownloadBtn.classList.toggle('d-none', !downloadUrl);
   }
 
   function syncButton() {
@@ -305,6 +322,20 @@
   if (readerBtn) {
     readerBtn.addEventListener('click', openReaderPreview);
   }
+  if (debugDownloadBtn) {
+    debugDownloadBtn.addEventListener('click', () => {
+      const downloadUrl = String(debugDownloadBtn.dataset.downloadUrl || '').trim();
+      if (!downloadUrl) return;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      if (debugDownloadBtn.dataset.filename) {
+        link.download = debugDownloadBtn.dataset.filename;
+      }
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
   if (fileInput) {
     fileInput.addEventListener('change', () => {
       extractionResult = null;
@@ -374,6 +405,7 @@
       if (data.reference_debug?.output_path) {
         summaryBox.textContent = `${summaryBox.textContent} · debug: ${data.reference_debug.output_path}`;
       }
+      enableDebugDownload(data.reference_debug);
 
       if (data.trace) {
         tracePre.textContent = JSON.stringify(data.trace, null, 2);

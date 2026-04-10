@@ -127,6 +127,11 @@ urlpatterns = [
         name="api_extractor_engines",
     ),
     path(
+        "api/reference-debug-download/",
+        views_api.api_reference_debug_download,
+        name="api_reference_debug_download",
+    ),
+    path(
         "api/reader-data/<int:report_id>/",
         views_api.api_reader_data,
         name="api_reader_data",
