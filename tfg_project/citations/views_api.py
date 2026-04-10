@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 import os
-import time
 import tempfile
+import time
+from pathlib import Path
 from typing import Optional
+from urllib.parse import quote
 
 from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpRequest, JsonResponse
+from django.http import FileResponse, Http404, HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
@@ -30,6 +33,7 @@ from .services.pdf_citation_analyzer import (
 from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
 from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .services.references_data import (
+    REFERENCE_DEBUG_DIR,
     build_references_data,
     finalize_reference_detection_debug_payload,
     write_reference_detection_debug_json,
@@ -57,6 +61,29 @@ from citations.logging_utils import get_logger
 logger = get_logger("citations.api")
 context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
+
+
+@require_GET
+def api_reference_debug_download(request: HttpRequest):
+    raw_relative_path = str(request.GET.get("file") or "").strip()
+    if not raw_relative_path:
+        return JsonResponse(
+            {"ok": False, "error": "Missing reference debug file."}, status=400
+        )
+
+    debug_root = Path(REFERENCE_DEBUG_DIR).resolve()
+    try:
+        target_path = (debug_root / raw_relative_path).resolve()
+        target_path.relative_to(debug_root)
+    except Exception:
+        raise Http404("Reference debug file not found.")
+
+    if not target_path.is_file():
+        raise Http404("Reference debug file not found.")
+
+    response = FileResponse(open(target_path, "rb"), content_type="application/json")
+    response["Content-Disposition"] = f'attachment; filename="{target_path.name}"'
+    return response
 
 
 @csrf_exempt
@@ -509,6 +536,23 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     final_debug_payload,
                     source_filename=f.name,
                 )
+                debug_filename = None
+                debug_download_url = None
+                try:
+                    debug_path = Path(debug_output_path).resolve()
+                    debug_filename = debug_path.name
+                    debug_relative_path = debug_path.relative_to(
+                        Path(REFERENCE_DEBUG_DIR).resolve()
+                    ).as_posix()
+                    debug_download_url = (
+                        f"{reverse('api_reference_debug_download')}"
+                        f"?file={quote(debug_relative_path, safe='/')}"
+                    )
+                except Exception:
+                    logger.warning(
+                        "No se pudo construir la URL de descarga para %s",
+                        debug_output_path,
+                    )
                 data["reference_debug"] = {
                     "enabled": True,
                     "pipeline_version": (
@@ -517,6 +561,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                         else None
                     ),
                     "output_path": debug_output_path,
+                    "filename": debug_filename,
+                    "download_url": debug_download_url,
                 }
         else:
             data["cited_by"] = []

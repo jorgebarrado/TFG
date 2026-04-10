@@ -1,3 +1,5 @@
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialApp
@@ -527,6 +529,42 @@ class ContextLoggingTests(TestCase):
 
         # Verificar que el método info fue llamado
         mock_logger.info.assert_called_once()
+
+
+class ReferenceDebugDownloadTests(TestCase):
+    def test_download_reference_debug_serves_json_attachment(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            debug_root = Path(temp_dir)
+            target_dir = debug_root / "paper"
+            target_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_dir / "debug-123.json"
+            target_file.write_text('{"ok": true}', encoding="utf-8")
+
+            with patch("citations.views_api.REFERENCE_DEBUG_DIR", debug_root):
+                response = self.client.get(
+                    reverse("api_reference_debug_download"),
+                    {"file": "paper/debug-123.json"},
+                )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "application/json")
+            self.assertIn(
+                'attachment; filename="debug-123.json"',
+                response["Content-Disposition"],
+            )
+            self.assertEqual(b"".join(response.streaming_content), b'{"ok": true}')
+
+    def test_download_reference_debug_rejects_path_traversal(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            debug_root = Path(temp_dir)
+
+            with patch("citations.views_api.REFERENCE_DEBUG_DIR", debug_root):
+                response = self.client.get(
+                    reverse("api_reference_debug_download"),
+                    {"file": "../secret.json"},
+                )
+
+            self.assertEqual(response.status_code, 404)
 
 
 class MessageSystemTests(SocialAppTestCase):

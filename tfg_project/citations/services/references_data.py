@@ -21,8 +21,19 @@ DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE
 INLINE_CITATION_REGEX = re.compile(
     r"\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]"
 )
-NUMBERED_REFERENCE_LINE_RE = re.compile(r"^\s*\[\s*(\d+)\s*\]")
+BRACKETED_REFERENCE_LINE_RE = re.compile(r"^\s*\[\s*(\d+)\s*\]")
+NUMBERED_REFERENCE_LINE_RE = BRACKETED_REFERENCE_LINE_RE
 NUMBERED_ANCHOR_RE = re.compile(r"\[\s*(\d+)\s*\]")
+DOTTED_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*(\d{1,4})\.(.*)$")
+REFERENCE_AUTHORISH_LEAD_RE = re.compile(
+    r"^[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÿ'`\-]{1,}"
+    r"(?:\s+(?:[A-Z]{1,4}\.?|[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÿ'`\-]{1,})){0,2}"
+    r"(?:,|\.|\s+et\s+al\.?)"
+)
+DOTTED_ANCHOR_DOI_LIKE_RE = re.compile(
+    r"^(?:/|doi\b|https?://|www\.|\d{2,9}\s*/|\d{2,9}(?:[-._]\d+){2,})",
+    re.IGNORECASE,
+)
 HEADER_LIKE_REFERENCE_RE = re.compile(
     r"\b(?:wipsce|copyright|all rights reserved|acm isbn|proceedings)\b",
     re.IGNORECASE,
@@ -471,7 +482,12 @@ def _split_reference_row_on_anchors(
     row: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     text = str(row.get("text") or "").strip()
-    if not text or _is_reference_noise_text(text):
+    allow_noise_override = bool(
+        row.get("header_footer_noise_overridden")
+        or str(row.get("noise_override") or "").strip()
+        == "bibliography_continuation_context"
+    )
+    if not text or (_is_reference_noise_text(text) and not allow_noise_override):
         return []
 
     matches = list(NUMBERED_ANCHOR_RE.finditer(text))
@@ -488,7 +504,7 @@ def _split_reference_row_on_anchors(
     parts: List[Dict[str, Any]] = []
     for part_idx, (start_char, end_char) in enumerate(spans):
         segment_text = text[start_char:end_char].strip()
-        if not segment_text or _is_reference_noise_text(segment_text):
+        if not segment_text or (_is_reference_noise_text(segment_text) and not allow_noise_override):
             continue
         next_row = dict(row)
         next_row["id"] = f"{row.get('id') or 'row'}::seg-{part_idx}"
@@ -553,15 +569,104 @@ def _is_reference_heading_text(value: str) -> bool:
     return bool(REFERENCE_SECTION_HEADING_RE.match(str(value or "").strip()))
 
 
+def _has_bibliographic_lead_signal(text: str) -> bool:
+    normalized = re.sub(r"\s+", " ", str(text or "")).strip()
+    if len(normalized) < 16 or not normalized or not normalized[0].isalpha():
+        return False
+    if DOI_REGEX.match(normalized) or DOI_URL_REGEX.match(normalized):
+        return False
+
+    alpha_words = re.findall(r"[A-Za-zÀ-ÿ]{2,}", normalized[:96])
+    if len(alpha_words) < 3:
+        return False
+
+    head = normalized[:120]
+    if REFERENCE_AUTHORISH_LEAD_RE.match(head):
+        return True
+
+    comma_early = "," in head[:48]
+    year_present = bool(REFERENCE_YEAR_RE.search(normalized[:180]))
+    et_al_early = bool(re.search(r"\bet\s+al\.?\b", head, re.IGNORECASE))
+    return bool((comma_early and year_present) or et_al_early)
+
+
+def _match_reference_anchor_at_line_start(
+    text: str,
+    *,
+    include_rejected: bool = False,
+) -> Optional[Dict[str, Any]]:
+    value = str(text or "")
+
+    bracketed_match = BRACKETED_REFERENCE_LINE_RE.match(value)
+    if bracketed_match:
+        try:
+            index = int(bracketed_match.group(1))
+        except (TypeError, ValueError):
+            index = 0
+        if index > 0:
+            return {
+                "index": index,
+                "anchor_style": "bracketed",
+                "accepted": True,
+                "anchor_rejected_reason": None,
+            }
+
+    dotted_match = DOTTED_REFERENCE_CANDIDATE_RE.match(value)
+    if not dotted_match:
+        return None
+
+    try:
+        index = int(dotted_match.group(1))
+    except (TypeError, ValueError):
+        return None
+    if index <= 0:
+        return None
+
+    tail_raw = dotted_match.group(2) or ""
+    tail = tail_raw.lstrip()
+    has_spacing_after_dot = bool(tail_raw[:1].isspace())
+    rejected_reason: Optional[str] = None
+
+    if not tail:
+        rejected_reason = "weak_bibliographic_signal"
+    elif DOTTED_ANCHOR_DOI_LIKE_RE.match(tail):
+        rejected_reason = "doi_like"
+    elif not has_spacing_after_dot and not tail[0].isalpha():
+        rejected_reason = "missing_spacing"
+    elif not _has_bibliographic_lead_signal(tail):
+        rejected_reason = "weak_bibliographic_signal"
+
+    candidate = {
+        "index": index,
+        "anchor_style": "dotted",
+        "accepted": rejected_reason is None,
+        "anchor_rejected_reason": rejected_reason,
+    }
+    if candidate["accepted"] or include_rejected:
+        return candidate
+    return None
+
+
 def _extract_inline_anchor_numbers(text: str) -> List[int]:
     numbers: List[int] = []
+    seen: set[int] = set()
+    leading_anchor = _match_reference_anchor_at_line_start(text)
+    if leading_anchor and leading_anchor.get("accepted"):
+        try:
+            index = int(leading_anchor.get("index") or 0)
+        except (TypeError, ValueError):
+            index = 0
+        if index > 0:
+            numbers.append(index)
+            seen.add(index)
     for match in NUMBERED_ANCHOR_RE.finditer(text or ""):
         try:
             number = int(match.group(1))
         except (TypeError, ValueError):
             continue
-        if number > 0:
+        if number > 0 and number not in seen:
             numbers.append(number)
+            seen.add(number)
     return numbers
 
 
@@ -578,7 +683,7 @@ def _score_header_noise(text: str) -> float:
             REFERENCE_YEAR_RE.search(normalized)
             or _extract_doi(text or "")
             or len(normalized) >= 90
-            or NUMBERED_REFERENCE_LINE_RE.match(str(text or ""))
+            or bool(_match_reference_anchor_at_line_start(text))
         )
         if not has_reference_signals:
             return 0.74
@@ -824,7 +929,7 @@ def _is_header_footer_row(
         return True
     if _is_reference_noise_text(text):
         return True
-    if NUMBERED_REFERENCE_LINE_RE.match(text):
+    if _match_reference_anchor_at_line_start(text):
         return False
     y0 = _to_float(row.get("y0"))
     y1 = _to_float(row.get("y1"))
@@ -848,6 +953,149 @@ def _is_header_footer_row(
     if in_margin and key and key in repeated_keys:
         return True
     return False
+
+
+def _build_same_column_row_context(
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Dict[str, Any]]:
+    grouped_rows: Dict[Tuple[int, str], List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        page = row.get("page")
+        column_id = str(row.get("column_id") or "left")
+        if not isinstance(page, int):
+            continue
+        grouped_rows[(page, column_id)].append(row)
+
+    context_by_row_id: Dict[str, Dict[str, Any]] = {}
+    for (page, column_id), page_rows in grouped_rows.items():
+        ordered_rows = sorted(page_rows, key=_line_sort_key)
+        anchor_payloads: List[Optional[Dict[str, Any]]] = []
+        for row in ordered_rows:
+            anchor = _match_reference_anchor_at_line_start(str(row.get("text") or ""))
+            if anchor and anchor.get("accepted"):
+                anchor_payloads.append(
+                    {
+                        "index": int(anchor.get("index") or 0),
+                        "page": page,
+                        "column_id": column_id,
+                        "row": row,
+                    }
+                )
+            else:
+                anchor_payloads.append(None)
+
+        next_anchor = None
+        next_anchor_by_idx: List[Optional[Dict[str, Any]]] = [None] * len(ordered_rows)
+        for idx in range(len(ordered_rows) - 1, -1, -1):
+            next_anchor_by_idx[idx] = next_anchor
+            if anchor_payloads[idx] is not None:
+                next_anchor = anchor_payloads[idx]
+
+        previous_anchor = None
+        for idx, row in enumerate(ordered_rows):
+            row_id = str(row.get("id") or f"{page}:{column_id}:{idx}")
+            context_by_row_id[row_id] = {
+                "previous_row": ordered_rows[idx - 1] if idx > 0 else None,
+                "next_row": ordered_rows[idx + 1] if idx + 1 < len(ordered_rows) else None,
+                "current_anchor": previous_anchor,
+                "next_anchor": next_anchor_by_idx[idx],
+            }
+            if anchor_payloads[idx] is not None:
+                previous_anchor = anchor_payloads[idx]
+    return context_by_row_id
+
+
+def _strong_bibliography_continuation_row(
+    *,
+    row: Dict[str, Any],
+    previous_row: Optional[Dict[str, Any]],
+    current_anchor: Optional[Dict[str, Any]],
+    next_anchor: Optional[Dict[str, Any]],
+    in_bibliography_zone: bool,
+) -> Dict[str, Any]:
+    result = {"accepted": False, "reasons": []}
+    text = str(row.get("text") or "").strip()
+    if not in_bibliography_zone or not text:
+        return result
+
+    row_page = row.get("page")
+    row_column = str(row.get("column_id") or "left")
+    if not isinstance(row_page, int):
+        return result
+    if _match_reference_anchor_at_line_start(text):
+        return result
+    if _is_reference_heading_text(text) or _is_reference_header_like(text):
+        return result
+
+    current_index = int((current_anchor or {}).get("index") or 0)
+    next_index = int((next_anchor or {}).get("index") or 0)
+    current_page = (current_anchor or {}).get("page")
+    next_page = (next_anchor or {}).get("page")
+    current_column = str((current_anchor or {}).get("column_id") or "left")
+    next_column = str((next_anchor or {}).get("column_id") or "left")
+    if (
+        current_index <= 0
+        or next_index != current_index + 1
+        or row_page != current_page
+        or row_page != next_page
+        or row_column != current_column
+        or row_column != next_column
+    ):
+        return result
+
+    if not isinstance(previous_row, dict):
+        return result
+    previous_page = previous_row.get("page")
+    previous_column = str(previous_row.get("column_id") or "left")
+    if row_page != previous_page or row_column != previous_column:
+        return result
+
+    row_box = _normalize_box(row.get("box"))
+    previous_box = _normalize_box(previous_row.get("box"))
+    next_anchor_row = (next_anchor or {}).get("row") or next_anchor or {}
+    next_anchor_box = _normalize_box(next_anchor_row.get("box"))
+    if row_box is None or previous_box is None or next_anchor_box is None:
+        return result
+
+    row_y0 = float(row_box[1])
+    row_y1 = row_y0 + float(row_box[3])
+    previous_y1 = float(previous_box[1]) + float(previous_box[3])
+    next_anchor_y0 = float(next_anchor_box[1])
+    gap_from_previous = row_y0 - previous_y1
+    gap_to_next_anchor = next_anchor_y0 - row_y1
+    if gap_from_previous < -0.004 or gap_from_previous > 0.045:
+        return result
+    if gap_to_next_anchor < -0.004 or gap_to_next_anchor > 0.065:
+        return result
+
+    previous_x0 = float(previous_box[0])
+    previous_x1 = previous_x0 + float(previous_box[2])
+    row_x0 = float(row_box[0])
+    row_x1 = row_x0 + float(row_box[2])
+    if abs(row_x0 - previous_x0) > 0.08 or abs(row_x1 - previous_x1) > 0.06:
+        return result
+
+    if row_y0 <= 0.14 or row_y1 >= 0.88:
+        return result
+
+    alpha_words = re.findall(r"[A-Za-zÀ-ÿ]{2,}", text)
+    has_bibliographic_text = bool(
+        _extract_doi(text)
+        or REFERENCE_YEAR_RE.search(text)
+        or len(text) >= 72
+    )
+    if len(alpha_words) < 6 or not has_bibliographic_text:
+        return result
+
+    result["accepted"] = True
+    result["reasons"] = [
+        "same_column_between_anchors",
+        "vertical_continuity_ok",
+        "horizontal_alignment_ok",
+        "no_new_section_detected",
+        "bibliographic_text_ok",
+    ]
+    return result
 
 
 def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]:
@@ -1141,11 +1389,12 @@ def _build_bibliography_segments(
     for (page, column_id), page_rows in sorted(grouped_rows.items()):
         ordered_rows = sorted(page_rows, key=_line_sort_key)
         filtered_rows: List[Dict[str, Any]] = []
+        segment_top_source = None
         for row in ordered_rows:
             text = str(row.get("text") or "").strip()
             if not text:
                 continue
-            if _is_header_footer_row(row, artifact_info) and not NUMBERED_REFERENCE_LINE_RE.match(text):
+            if _is_header_footer_row(row, artifact_info) and not _match_reference_anchor_at_line_start(text):
                 continue
             if page == start_page and selected_heading is not None:
                 heading_page = int(selected_heading.get("page") or -1)
@@ -1157,11 +1406,17 @@ def _build_bibliography_segments(
                             continue
                     elif column_id != heading_column:
                         continue
-                    if float(row.get("y1") or 0.0) < heading_y:
-                        continue
+                    if column_id == heading_column:
+                        segment_top_source = "heading_bottom"
+                        if float(row.get("y1") or 0.0) < heading_y:
+                            continue
+                    elif segment_top_source is None:
+                        segment_top_source = "column_rows_min_y"
             filtered_rows.append(row)
         if not filtered_rows:
             continue
+        if segment_top_source is None:
+            segment_top_source = "column_rows_min_y"
         segment_box = _union_boxes(
             [row["box"] for row in filtered_rows if _normalize_box(row.get("box"))]
         )
@@ -1200,6 +1455,7 @@ def _build_bibliography_segments(
                 "row_count": len(filtered_rows),
                 "raw_text": _clean_reference_text(filtered_rows),
                 "row_ids": [str(row.get("id") or "") for row in filtered_rows],
+                "segment_top_source": segment_top_source,
             }
         )
 
@@ -1252,6 +1508,7 @@ def _collect_bibliography_rows_from_segments(
     bibliography_segments: Sequence[Dict[str, Any]],
 ) -> Dict[str, Any]:
     artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    row_context = _build_same_column_row_context(rows_with_columns)
     selected_rows: List[Dict[str, Any]] = []
     debug_rows: List[Dict[str, Any]] = []
     seen: set[Tuple[int, int, str]] = set()
@@ -1259,9 +1516,26 @@ def _collect_bibliography_rows_from_segments(
         text = str(row.get("text") or "").strip()
         page = row.get("page")
         box = _normalize_box(row.get("box"))
+        leading_anchor = _match_reference_anchor_at_line_start(
+            text,
+            include_rejected=True,
+        )
         anchor_numbers = _extract_inline_anchor_numbers(text)
         in_zone = _row_in_any_segment(row, bibliography_segments)
         header_footer = _is_header_footer_row(row, artifact_info)
+        override_payload = {"accepted": False, "reasons": []}
+        if header_footer and not anchor_numbers:
+            row_id = str(row.get("id") or "")
+            row_neighborhood = row_context.get(row_id) or {}
+            override_payload = _strong_bibliography_continuation_row(
+                row=row,
+                previous_row=row_neighborhood.get("previous_row"),
+                current_anchor=row_neighborhood.get("current_anchor"),
+                next_anchor=row_neighborhood.get("next_anchor"),
+                in_bibliography_zone=in_zone,
+            )
+            if override_payload.get("accepted"):
+                header_footer = False
         reason = "accepted"
         included = bool(in_zone and text and box is not None)
         if not in_zone:
@@ -1285,6 +1559,33 @@ def _collect_bibliography_rows_from_segments(
                 "text": text,
                 "column_id": row.get("column_id"),
                 "anchor_index": anchor_numbers[0] if anchor_numbers else None,
+                "anchor_style": (
+                    leading_anchor.get("anchor_style")
+                    if leading_anchor and leading_anchor.get("accepted")
+                    else None
+                ),
+                "anchor_candidate_index": (
+                    leading_anchor.get("index") if leading_anchor else None
+                ),
+                "anchor_candidate_style": (
+                    leading_anchor.get("anchor_style") if leading_anchor else None
+                ),
+                "anchor_rejected_reason": (
+                    leading_anchor.get("anchor_rejected_reason")
+                    if leading_anchor and not leading_anchor.get("accepted")
+                    else None
+                ),
+                "header_footer_noise_overridden": bool(
+                    override_payload.get("accepted")
+                ),
+                "noise_override": (
+                    "bibliography_continuation_context"
+                    if override_payload.get("accepted")
+                    else None
+                ),
+                "noise_override_reasons": list(
+                    override_payload.get("reasons") or []
+                ),
                 "in_bibliography_zone": in_zone,
                 "included": included,
                 "reason": reason,
@@ -1315,6 +1616,17 @@ def _collect_bibliography_rows_from_segments(
                 "height": float(box[3]),
                 "column_id": row.get("column_id") or "left",
                 "column_split_x": row.get("column_split_x"),
+                "header_footer_noise_overridden": bool(
+                    override_payload.get("accepted")
+                ),
+                "noise_override": (
+                    "bibliography_continuation_context"
+                    if override_payload.get("accepted")
+                    else None
+                ),
+                "noise_override_reasons": list(
+                    override_payload.get("reasons") or []
+                ),
             }
         )
 
@@ -2930,8 +3242,11 @@ def _build_reference_decision(
 ) -> Dict[str, Any]:
     first_row = rows[0] if rows else {}
     first_text = str(first_row.get("text") or "")
+    leading_anchor = _match_reference_anchor_at_line_start(first_text)
     starts_with_anchor = bool(
-        NUMBERED_REFERENCE_LINE_RE.match(first_text) and int(expected_index or 0) > 0
+        leading_anchor
+        and leading_anchor.get("accepted")
+        and int(leading_anchor.get("index") or 0) == int(expected_index or 0)
     )
     inside_bibliography_zone = bool(
         rows
@@ -3128,11 +3443,11 @@ def is_numbered_bibliography(lines: Sequence[Dict[str, Any]]) -> bool:
         return False
     numbers: List[int] = []
     for line in lines:
-        match = NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
-        if not match:
+        anchor = _match_reference_anchor_at_line_start(str(line.get("text") or ""))
+        if not anchor or not anchor.get("accepted"):
             continue
         try:
-            number = int(match.group(1))
+            number = int(anchor.get("index") or 0)
         except (TypeError, ValueError):
             continue
         if number > 0:
@@ -3245,11 +3560,11 @@ def detect_reference_anchors_from_rows(
     anchors: List[Dict[str, Any]] = []
     for position, row in enumerate(rows):
         text = str(row.get("text") or "")
-        match = NUMBERED_REFERENCE_LINE_RE.match(text)
-        if not match:
+        anchor = _match_reference_anchor_at_line_start(text)
+        if not anchor or not anchor.get("accepted"):
             continue
         try:
-            index = int(match.group(1))
+            index = int(anchor.get("index") or 0)
         except (TypeError, ValueError):
             continue
         if index <= 0:
@@ -3260,9 +3575,19 @@ def detect_reference_anchors_from_rows(
                 "page": row.get("page"),
                 "column_id": row.get("column_id"),
                 "position": int(row.get("flow_position", position)),
+                "anchor_style": anchor.get("anchor_style"),
                 "row": row,
                 "line": row,  # Compatibilidad con llamadas legacy.
             }
+        )
+    for idx, anchor in enumerate(anchors):
+        previous_index = int(anchors[idx - 1]["index"]) if idx > 0 else None
+        next_index = (
+            int(anchors[idx + 1]["index"]) if idx + 1 < len(anchors) else None
+        )
+        anchor["sequence_supported"] = bool(
+            previous_index == anchor["index"] - 1
+            or next_index == anchor["index"] + 1
         )
     return anchors
 
@@ -3316,11 +3641,11 @@ def _is_valid_reference_block(
     if not lines:
         return False
     first_line = str(lines[0].get("text") or "")
-    first_match = NUMBERED_REFERENCE_LINE_RE.match(first_line)
-    if not first_match:
+    first_anchor = _match_reference_anchor_at_line_start(first_line)
+    if not first_anchor or not first_anchor.get("accepted"):
         return False
     try:
-        first_index = int(first_match.group(1))
+        first_index = int(first_anchor.get("index") or 0)
     except (TypeError, ValueError):
         return False
     if first_index != expected_index:
@@ -3329,7 +3654,7 @@ def _is_valid_reference_block(
     extra_line_anchors = sum(
         1
         for line in lines[1:]
-        if NUMBERED_REFERENCE_LINE_RE.match(str(line.get("text") or ""))
+        if _match_reference_anchor_at_line_start(str(line.get("text") or ""))
     )
     if extra_line_anchors > 0:
         return False
@@ -3341,11 +3666,7 @@ def _is_valid_reference_block(
     if _is_reference_header_like(text):
         return False
 
-    anchor_mentions = [
-        int(match.group(1))
-        for match in NUMBERED_ANCHOR_RE.finditer(text)
-        if match.group(1).isdigit()
-    ]
+    anchor_mentions = _extract_inline_anchor_numbers(text)
     foreign_anchor_mentions = [
         value for value in anchor_mentions if value != expected_index
     ]
@@ -3367,11 +3688,7 @@ def _default_reference_validation(
             "accepted": False,
             "reason": "contains_header_footer_noise",
         }
-    anchor_mentions = [
-        int(match.group(1))
-        for match in NUMBERED_ANCHOR_RE.finditer(text)
-        if match.group(1).isdigit()
-    ]
+    anchor_mentions = _extract_inline_anchor_numbers(text)
     foreign_anchors = [value for value in anchor_mentions if value != expected_index]
     has_nested = len(foreign_anchors) > 0
     mixed_score = 0.72 if has_nested else 0.12
@@ -3487,6 +3804,7 @@ def build_reference_rows_between_anchors(
             continue
         is_anchor_row = position == start
         inline_anchor_numbers = _extract_inline_anchor_numbers(text)
+        noise_override_payload = {"accepted": False, "reasons": []}
         foreign_inline_anchors = [
             value for value in inline_anchor_numbers if value != expected_index
         ]
@@ -3506,7 +3824,7 @@ def build_reference_rows_between_anchors(
                 }
             )
             break
-        if not is_anchor_row and NUMBERED_REFERENCE_LINE_RE.match(text):
+        if not is_anchor_row and _match_reference_anchor_at_line_start(text):
             cut_reasons.append("next_anchor_row")
             row_decisions.append(
                 {
@@ -3522,19 +3840,28 @@ def build_reference_rows_between_anchors(
             )
             break
         if not is_anchor_row and _is_header_footer_row(row, artifact_info):
-            row_decisions.append(
-                {
-                    "row_id": str(row.get("id") or ""),
-                    "page": row.get("page"),
-                    "box": row_box,
-                    "column_id": row.get("column_id"),
-                    "text": text,
-                    "included": False,
-                    "reason": "header_footer_noise",
-                    "inline_anchor_numbers": inline_anchor_numbers,
-                }
+            previous_row = selected_rows[-1] if selected_rows else (current_anchor.get("row") or current_anchor)
+            noise_override_payload = _strong_bibliography_continuation_row(
+                row=row,
+                previous_row=previous_row,
+                current_anchor=current_anchor,
+                next_anchor=next_anchor,
+                in_bibliography_zone=True,
             )
-            continue
+            if not noise_override_payload.get("accepted"):
+                row_decisions.append(
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "page": row.get("page"),
+                        "box": row_box,
+                        "column_id": row.get("column_id"),
+                        "text": text,
+                        "included": False,
+                        "reason": "header_footer_noise",
+                        "inline_anchor_numbers": inline_anchor_numbers,
+                    }
+                )
+                continue
 
         row_column = row.get("column_id")
         if (
@@ -3630,6 +3957,17 @@ def build_reference_rows_between_anchors(
                 "included": True,
                 "reason": "selected",
                 "inline_anchor_numbers": inline_anchor_numbers,
+                "header_footer_noise_overridden": bool(
+                    noise_override_payload.get("accepted")
+                ),
+                "noise_override": (
+                    "bibliography_continuation_context"
+                    if noise_override_payload.get("accepted")
+                    else None
+                ),
+                "noise_override_reasons": list(
+                    noise_override_payload.get("reasons") or []
+                ),
             }
         )
         if len(selected_rows) >= 14:
@@ -3836,6 +4174,7 @@ def build_references_from_rows(
             "validation_intermediate": intermediate_validation,
             "column_id": anchor.get("column_id"),
             "anchor_position": start_position,
+            "anchor_style": anchor.get("anchor_style"),
             "scores": final_decision,
             "final_decision": final_decision,
             "crossref_match": crossref_match,
@@ -4380,6 +4719,7 @@ def _build_reference_debug_steps(
                 "column_id": seg.get("column_id"),
                 "confidence": seg.get("confidence"),
                 "source": seg.get("source"),
+                "segment_top_source": seg.get("segment_top_source"),
             },
         })
     steps.append({
@@ -4406,6 +4746,10 @@ def _build_reference_debug_steps(
             "meta": {
                 "column_id": row.get("column_id"),
                 "anchor_index": row.get("anchor_index"),
+                "anchor_style": row.get("anchor_style"),
+                "anchor_candidate_index": row.get("anchor_candidate_index"),
+                "anchor_candidate_style": row.get("anchor_candidate_style"),
+                "anchor_rejected_reason": row.get("anchor_rejected_reason"),
             },
         })
     steps.append({
@@ -4420,21 +4764,56 @@ def _build_reference_debug_steps(
     anchor_items: List[Dict[str, Any]] = []
     for i, row in enumerate(bibliography_rows_debug):
         anchor_index = row.get("anchor_index")
-        if anchor_index is None or not row.get("included"):
+        candidate_index = row.get("anchor_candidate_index")
+        candidate_style = row.get("anchor_candidate_style")
+        rejected_reason = row.get("anchor_rejected_reason")
+        if not row.get("included"):
             continue
         box = _debug_normalize_box(row.get("box"))
         if box is None:
             continue
-        anchor_items.append({
-            "id": f"anchor-{anchor_index}",
-            "page": row.get("page"),
-            "box": box,
-            "label": f"[{anchor_index}] {str(row.get('text') or '')[:40]}",
-            "meta": {
-                "anchor_index": anchor_index,
-                "column_id": row.get("column_id"),
-            },
-        })
+        if anchor_index is not None:
+            anchor_style = str(row.get("anchor_style") or "bracketed")
+            anchor_prefix = (
+                f"[{anchor_index}]"
+                if anchor_style == "bracketed"
+                else f"{anchor_index}."
+            )
+            anchor_items.append({
+                "id": f"anchor-{anchor_index}",
+                "page": row.get("page"),
+                "box": box,
+                "label": f"{anchor_prefix} {str(row.get('text') or '')[:40]}",
+                "meta": {
+                    "anchor_index": anchor_index,
+                    "anchor_style": anchor_style,
+                    "column_id": row.get("column_id"),
+                },
+            })
+            continue
+        candidate_text = str(row.get("text") or "")
+        show_rejected_candidate = bool(
+            rejected_reason == "doi_like"
+            or (rejected_reason == "weak_bibliographic_signal" and len(candidate_text) >= 24)
+        )
+        if (
+            candidate_style == "dotted"
+            and candidate_index is not None
+            and rejected_reason
+            and show_rejected_candidate
+        ):
+            anchor_items.append({
+                "id": f"anchor-rejected-{candidate_index}-{i}",
+                "page": row.get("page"),
+                "box": box,
+                "label": f"reject {candidate_index}. {candidate_text[:36]}",
+                "meta": {
+                    "anchor_candidate_index": candidate_index,
+                    "anchor_style": candidate_style,
+                    "anchor_rejected_reason": rejected_reason,
+                    "column_id": row.get("column_id"),
+                },
+            })
     steps.append({
         "key": "reference_anchors",
         "label": "Anchors de referencia",
