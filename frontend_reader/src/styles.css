@@ -727,6 +727,15 @@ body.reader-fullscreen .reader-main {
   z-index: 24;
 }
 
+.reader-ref-debug-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 23;
+}
+
 .reader-ref-overlay {
   position: absolute;
   inset: 0;
@@ -1048,6 +1057,87 @@ body.reader-fullscreen .reader-main {
 .reader-v2-item-meta {
   font-size: 0.67rem;
   color: var(--reader-muted);
+}
+
+/* ── Reference Debug panel ── */
+.ref-debug-section {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid rgba(37, 99, 235, 0.1);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.ref-debug-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ref-debug-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--reader-muted);
+}
+
+.ref-debug-master-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--reader-text);
+  cursor: pointer;
+}
+
+.ref-debug-master-toggle input { margin: 0; }
+
+.ref-debug-steps {
+  display: grid;
+  gap: 3px;
+}
+
+.ref-debug-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: var(--reader-text);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.ref-debug-step:hover { background: rgba(37, 99, 235, 0.06); }
+
+.ref-debug-step.is-active { background: rgba(37, 99, 235, 0.09); }
+
+.ref-debug-step input { margin: 0; flex-shrink: 0; }
+
+.ref-debug-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.ref-debug-step-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ref-debug-step-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 20px;
+  text-align: right;
 }
 
 /* ── Selects & inputs ── */
