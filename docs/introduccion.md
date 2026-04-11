@@ -36,6 +36,7 @@ Para navegar por el código y entender los subsistemas, consulta los siguientes 
 ### Nivel Bajo (Ingeniería e Implementación)
 *   [Referencia API](api_reference_completa.md): Documentación técnica de endpoints REST (inputs, outputs JSON).
 *   [Servicios de Extracción](servicios_extraccion.md): Lógica interna de `citations/services/` (PaperMage, Regex, Pipelines).
+*   [Extractor de Referencias y Runner de Regresión](extractor_referencias_y_regresion.md): Guía práctica de `references_data.py` y `run_reference_regression.py`, incluyendo usos reales, artefactos y limpieza.
 *   [Frontend Reader](frontend_reader.md): Arquitectura de la aplicación React y su integración con Django.
 *   [Dependencias y Limitaciones](dependencias_y_limitaciones.md): Fronteras del sistema (APIs externas, PDFs ilegibles, fallbacks).
 
