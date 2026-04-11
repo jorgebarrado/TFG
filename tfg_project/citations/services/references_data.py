@@ -25,6 +25,15 @@ BRACKETED_REFERENCE_LINE_RE = re.compile(r"^\s*\[\s*(\d+)\s*\]")
 NUMBERED_REFERENCE_LINE_RE = BRACKETED_REFERENCE_LINE_RE
 NUMBERED_ANCHOR_RE = re.compile(r"\[\s*(\d+)\s*\]")
 DOTTED_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*(\d{1,4})\.(.*)$")
+SUFFIX_PAREN_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*(\d{1,4})\)(.*)$")
+WRAPPED_PAREN_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*\(\s*(\d{1,4})\s*\)(.*)$")
+SPLITTABLE_PAREN_ANCHOR_RE = re.compile(r"\(\s*\d{1,4}\s*\)|\b\d{1,4}\)")
+NUMERIC_ANCHOR_STYLES = (
+    "bracketed",
+    "dotted",
+    "suffix_paren",
+    "wrapped_paren",
+)
 REFERENCE_AUTHORISH_LEAD_RE = re.compile(
     r"^[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÿ'`\-]{1,}"
     r"(?:\s+(?:[A-Z]{1,4}\.?|[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÿ'`\-]{1,})){0,2}"
@@ -511,16 +520,29 @@ def _split_reference_row_on_anchors(
     if not text or (_is_reference_noise_text(text) and not allow_noise_override):
         return []
 
-    matches = list(NUMBERED_ANCHOR_RE.finditer(text))
+    split_matches: List[Tuple[int, int]] = [
+        (match.start(), match.end()) for match in NUMBERED_ANCHOR_RE.finditer(text)
+    ]
+    for match in SPLITTABLE_PAREN_ANCHOR_RE.finditer(text):
+        candidate = _match_reference_anchor_at_line_start(text[match.start():])
+        if not candidate or not candidate.get("accepted"):
+            continue
+        candidate_style = str(candidate.get("anchor_style") or "")
+        if candidate_style not in {"suffix_paren", "wrapped_paren"}:
+            continue
+        if match.start() > 0 and not text[match.start() - 1].isspace():
+            continue
+        split_matches.append((match.start(), match.end()))
+    matches = sorted(set(split_matches))
     if not matches:
         return [dict(row)]
 
     spans: List[Tuple[int, int]] = []
-    if matches[0].start() > 0:
-        spans.append((0, matches[0].start()))
+    if matches[0][0] > 0:
+        spans.append((0, matches[0][0]))
     for idx, match in enumerate(matches):
-        next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
-        spans.append((match.start(), next_start))
+        next_start = matches[idx + 1][0] if idx + 1 < len(matches) else len(text)
+        spans.append((match[0], next_start))
 
     parts: List[Dict[str, Any]] = []
     for part_idx, (start_char, end_char) in enumerate(spans):
@@ -633,38 +655,74 @@ def _match_reference_anchor_at_line_start(
             }
 
     dotted_match = DOTTED_REFERENCE_CANDIDATE_RE.match(value)
-    if not dotted_match:
-        return None
+    if dotted_match:
+        try:
+            index = int(dotted_match.group(1))
+        except (TypeError, ValueError):
+            return None
+        if index <= 0:
+            return None
 
-    try:
-        index = int(dotted_match.group(1))
-    except (TypeError, ValueError):
-        return None
-    if index <= 0:
-        return None
+        tail_raw = dotted_match.group(2) or ""
+        tail = tail_raw.lstrip()
+        has_spacing_after_dot = bool(tail_raw[:1].isspace())
+        rejected_reason: Optional[str] = None
 
-    tail_raw = dotted_match.group(2) or ""
-    tail = tail_raw.lstrip()
-    has_spacing_after_dot = bool(tail_raw[:1].isspace())
-    rejected_reason: Optional[str] = None
+        if not tail:
+            rejected_reason = "weak_bibliographic_signal"
+        elif DOTTED_ANCHOR_DOI_LIKE_RE.match(tail):
+            rejected_reason = "doi_like"
+        elif not has_spacing_after_dot and not tail[0].isalpha():
+            rejected_reason = "missing_spacing"
+        elif not _has_bibliographic_lead_signal(tail):
+            rejected_reason = "weak_bibliographic_signal"
 
-    if not tail:
-        rejected_reason = "weak_bibliographic_signal"
-    elif DOTTED_ANCHOR_DOI_LIKE_RE.match(tail):
-        rejected_reason = "doi_like"
-    elif not has_spacing_after_dot and not tail[0].isalpha():
-        rejected_reason = "missing_spacing"
-    elif not _has_bibliographic_lead_signal(tail):
-        rejected_reason = "weak_bibliographic_signal"
+        candidate = {
+            "index": index,
+            "anchor_style": "dotted",
+            "accepted": rejected_reason is None,
+            "anchor_rejected_reason": rejected_reason,
+        }
+        if candidate["accepted"] or include_rejected:
+            return candidate
+    for candidate_pattern, candidate_style in (
+        (SUFFIX_PAREN_REFERENCE_CANDIDATE_RE, "suffix_paren"),
+        (WRAPPED_PAREN_REFERENCE_CANDIDATE_RE, "wrapped_paren"),
+    ):
+        candidate_match = candidate_pattern.match(value)
+        if not candidate_match:
+            continue
+        try:
+            candidate_index = int(candidate_match.group(1))
+        except (TypeError, ValueError):
+            return None
+        if candidate_index <= 0:
+            return None
 
-    candidate = {
-        "index": index,
-        "anchor_style": "dotted",
-        "accepted": rejected_reason is None,
-        "anchor_rejected_reason": rejected_reason,
-    }
-    if candidate["accepted"] or include_rejected:
-        return candidate
+        tail_raw = candidate_match.group(2) or ""
+        tail = tail_raw.lstrip()
+        has_spacing_after_marker = bool(tail_raw[:1].isspace())
+        candidate_rejected_reason: Optional[str] = None
+
+        if 1900 <= candidate_index <= 2099:
+            candidate_rejected_reason = "year_like"
+        elif not tail:
+            candidate_rejected_reason = "weak_bibliographic_signal"
+        elif DOTTED_ANCHOR_DOI_LIKE_RE.match(tail):
+            candidate_rejected_reason = "doi_like"
+        elif not has_spacing_after_marker and not tail[0].isalpha():
+            candidate_rejected_reason = "missing_spacing"
+        elif not _has_bibliographic_lead_signal(tail):
+            candidate_rejected_reason = "weak_bibliographic_signal"
+
+        candidate = {
+            "index": candidate_index,
+            "anchor_style": candidate_style,
+            "accepted": candidate_rejected_reason is None,
+            "anchor_rejected_reason": candidate_rejected_reason,
+        }
+        if candidate["accepted"] or include_rejected:
+            return candidate
     return None
 
 
@@ -3618,6 +3676,41 @@ def extract_numbered_anchors(lines: Sequence[Dict[str, Any]]) -> List[Dict[str, 
     return detect_reference_anchors_from_rows(lines)
 
 
+def _format_reference_anchor_prefix(index: Any, anchor_style: str) -> str:
+    try:
+        anchor_index = int(index)
+    except (TypeError, ValueError):
+        return str(index or "")
+    if anchor_style == "bracketed":
+        return f"[{anchor_index}]"
+    if anchor_style == "dotted":
+        return f"{anchor_index}."
+    if anchor_style == "suffix_paren":
+        return f"{anchor_index})"
+    if anchor_style == "wrapped_paren":
+        return f"({anchor_index})"
+    return str(anchor_index)
+
+
+def _dominant_anchor_style_from_counts(style_counts: Dict[str, int]) -> str:
+    ranked = [
+        (style, int(style_counts.get(style) or 0))
+        for style in NUMERIC_ANCHOR_STYLES
+        if int(style_counts.get(style) or 0) > 0
+    ]
+    if not ranked:
+        return "unknown"
+    if len(ranked) == 1:
+        return ranked[0][0]
+
+    ranked.sort(key=lambda item: (-item[1], NUMERIC_ANCHOR_STYLES.index(item[0])))
+    top_style, top_count = ranked[0]
+    second_count = ranked[1][1]
+    if top_count >= max(2, second_count + 1):
+        return top_style
+    return "unknown"
+
+
 def _clean_reference_text(lines: Sequence[Dict[str, Any]]) -> str:
     parts: List[str] = []
     for line in lines:
@@ -4796,12 +4889,8 @@ def _build_reference_debug_steps(
         if box is None:
             continue
         if anchor_index is not None:
-            anchor_style = str(row.get("anchor_style") or "bracketed")
-            anchor_prefix = (
-                f"[{anchor_index}]"
-                if anchor_style == "bracketed"
-                else f"{anchor_index}."
-            )
+            anchor_style = str(row.get("anchor_style") or "unknown")
+            anchor_prefix = _format_reference_anchor_prefix(anchor_index, anchor_style)
             anchor_items.append({
                 "id": f"anchor-{anchor_index}",
                 "page": row.get("page"),
@@ -4820,7 +4909,7 @@ def _build_reference_debug_steps(
             or (rejected_reason == "weak_bibliographic_signal" and len(candidate_text) >= 24)
         )
         if (
-            candidate_style == "dotted"
+            candidate_style in {"dotted", "suffix_paren", "wrapped_paren"}
             and candidate_index is not None
             and rejected_reason
             and show_rejected_candidate
@@ -4829,7 +4918,11 @@ def _build_reference_debug_steps(
                 "id": f"anchor-rejected-{candidate_index}-{i}",
                 "page": row.get("page"),
                 "box": box,
-                "label": f"reject {candidate_index}. {candidate_text[:36]}",
+                "label": (
+                    "reject "
+                    f"{_format_reference_anchor_prefix(candidate_index, str(candidate_style or 'unknown'))} "
+                    f"{candidate_text[:36]}"
+                ),
                 "meta": {
                     "anchor_candidate_index": candidate_index,
                     "anchor_style": candidate_style,
@@ -5012,14 +5105,20 @@ def _build_document_diagnostics(
     ]
     included_rows = [row for row in scoped_rows if row.get("included")]
     total_rows = len(scoped_rows)
-    bracketed_anchor_rows = sum(
-        1
-        for row in included_rows
-        if str(row.get("anchor_style") or "").strip() == "bracketed"
-    )
-    dotted_anchor_rows = sum(
-        1 for row in included_rows if str(row.get("anchor_style") or "").strip() == "dotted"
-    )
+    anchor_style_counts = {
+        style: sum(
+            1
+            for row in included_rows
+            if str(row.get("anchor_style") or "").strip() == style
+        )
+        for style in NUMERIC_ANCHOR_STYLES
+    }
+    bracketed_anchor_rows = anchor_style_counts["bracketed"]
+    dotted_anchor_rows = anchor_style_counts["dotted"]
+    suffix_paren_anchor_rows = anchor_style_counts["suffix_paren"]
+    wrapped_paren_anchor_rows = anchor_style_counts["wrapped_paren"]
+    numeric_anchor_rows = sum(anchor_style_counts.values())
+    anchor_style_detected = _dominant_anchor_style_from_counts(anchor_style_counts)
     author_year_signal_count = sum(
         1 for row in included_rows if _has_bibliographic_lead_signal(str(row.get("text") or ""))
     )
@@ -5037,12 +5136,12 @@ def _build_document_diagnostics(
             0.99,
             round(
                 0.62
-                + min(bracketed_anchor_rows + dotted_anchor_rows, 6) * 0.05
+                + min(numeric_anchor_rows, 6) * 0.05
                 + min(len(bibliography_segments), 4) * 0.04,
                 3,
             ),
         )
-    elif author_year_signal_count >= max(3, bracketed_anchor_rows + dotted_anchor_rows):
+    elif author_year_signal_count >= max(3, numeric_anchor_rows):
         reference_style_detected = "non_numeric"
         reference_style_confidence = min(
             0.95,
@@ -5061,8 +5160,7 @@ def _build_document_diagnostics(
             round(
                 0.18
                 + min(
-                    bracketed_anchor_rows
-                    + dotted_anchor_rows
+                    numeric_anchor_rows
                     + author_year_signal_count
                     + len(bibliography_segments),
                     8,
@@ -5074,9 +5172,12 @@ def _build_document_diagnostics(
     return {
         "reference_style_detected": reference_style_detected,
         "reference_style_confidence": reference_style_confidence,
+        "anchor_style_detected": anchor_style_detected,
         "reference_style_signals": {
             "bracketed_anchor_rows": int(bracketed_anchor_rows),
             "dotted_anchor_rows": int(dotted_anchor_rows),
+            "suffix_paren_anchor_rows": int(suffix_paren_anchor_rows),
+            "wrapped_paren_anchor_rows": int(wrapped_paren_anchor_rows),
             "author_year_signal_count": int(author_year_signal_count),
             "bibliography_density": bibliography_density,
             "rejected_dotted_anchor_candidates": int(rejected_dotted_anchor_candidates),
