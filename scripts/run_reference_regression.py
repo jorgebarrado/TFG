@@ -5,11 +5,12 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
@@ -49,6 +50,8 @@ except Exception:  # pragma: no cover - compat defensiva entre ramas
 
 
 SUPPORTED_RUNNER_ENGINES = tuple(sorted(set(ALLOWED_ENGINES) | {"auto"}))
+AUTO_RUN_DIR_PATTERN = re.compile(r"^\d{8}-\d{6}$")
+RUN_RETENTION_DAYS = 7
 TAIL_NOISE_MARKERS = (
     "cite this article",
     "how to cite",
@@ -130,6 +133,258 @@ def _coerce_dict(value: Any) -> Dict[str, Any]:
 
 def _coerce_list(value: Any) -> List[Any]:
     return value if isinstance(value, list) else []
+
+
+def _parse_iso_datetime(value: Any) -> Optional[datetime]:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    normalized = raw.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _path_is_within(base_dir: Path, candidate: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(base_dir.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _normalize_run_name(run_name: str) -> str:
+    raw = str(run_name or "").strip()
+    normalized = re.sub(r"[\\/]+", "_", raw)
+    normalized = re.sub(r"[^A-Za-z0-9._-]+", "_", normalized)
+    normalized = normalized.strip("._-")
+    if not normalized:
+        raise SystemExit("El valor de --run-name no genera un nombre de carpeta valido.")
+    return normalized
+
+
+def _is_auto_run_dir_name(name: str) -> bool:
+    return bool(AUTO_RUN_DIR_PATTERN.fullmatch(str(name or "").strip()))
+
+
+def _parse_auto_run_dir_timestamp(name: str) -> Optional[datetime]:
+    raw = str(name or "").strip()
+    if not _is_auto_run_dir_name(raw):
+        return None
+    try:
+        parsed = datetime.strptime(raw, "%Y%m%d-%H%M%S")
+    except ValueError:
+        return None
+    return parsed.replace(tzinfo=timezone.utc)
+
+
+def _read_summary_payload(summary_path: Path) -> Optional[Dict[str, Any]]:
+    if not summary_path.exists() or not summary_path.is_file():
+        return None
+    try:
+        payload = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _extract_run_metadata(run_dir: Path) -> Dict[str, Any]:
+    summary_path = run_dir / "summary.json"
+    payload = _read_summary_payload(summary_path)
+    metadata = _coerce_dict((payload or {}).get("metadata"))
+    legacy = payload or {}
+
+    run_kind = str(
+        metadata.get("run_kind")
+        or legacy.get("run_kind")
+        or (
+            "auto"
+            if _is_auto_run_dir_name(run_dir.name)
+            else "manual"
+        )
+    ).strip().lower()
+    if run_kind not in {"auto", "manual"}:
+        run_kind = "auto" if _is_auto_run_dir_name(run_dir.name) else "manual"
+
+    timestamp = _parse_iso_datetime(
+        metadata.get("timestamp") or legacy.get("timestamp")
+    )
+    if timestamp is None:
+        timestamp = _parse_auto_run_dir_timestamp(run_dir.name)
+    if timestamp is None:
+        fallback_stat_path = summary_path if summary_path.exists() else run_dir
+        try:
+            timestamp = datetime.fromtimestamp(
+                fallback_stat_path.stat().st_mtime,
+                tz=timezone.utc,
+            )
+        except OSError:
+            timestamp = None
+
+    git_revision = str(
+        metadata.get("git_revision") or legacy.get("git_revision") or ""
+    ).strip() or None
+
+    return {
+        "summary_path": summary_path,
+        "summary_ok": payload is not None,
+        "run_kind": run_kind,
+        "git_revision": git_revision,
+        "timestamp": timestamp,
+    }
+
+
+def _prepare_output_dir(
+    *,
+    output_dir: Path,
+    overwrite: bool,
+) -> None:
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True, exist_ok=True)
+        return
+
+    if not overwrite:
+        raise SystemExit(
+            f"El directorio de salida ya existe: {output_dir}. Usa --overwrite para reemplazarlo."
+        )
+
+    if not _path_is_within(ROOT, output_dir):
+        raise SystemExit(
+            f"Se rechazo --overwrite fuera del workspace: {output_dir}"
+        )
+
+    shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+
+def _collect_cleanup_reasons(
+    *,
+    mode: str,
+    metadata: Dict[str, Any],
+    current_git_revision: Optional[str],
+    keep_days: Optional[int],
+    now: datetime,
+) -> List[str]:
+    run_kind = str(metadata.get("run_kind") or "").strip().lower()
+    run_git_revision = str(metadata.get("git_revision") or "").strip() or None
+    timestamp = metadata.get("timestamp")
+    delete_reasons: List[str] = []
+
+    def _is_older_than(days: int) -> bool:
+        if not isinstance(timestamp, datetime):
+            return False
+        return (now - timestamp) > timedelta(days=days)
+
+    if mode == "default_auto":
+        if run_kind != "auto":
+            return []
+        if (
+            current_git_revision
+            and run_git_revision
+            and run_git_revision != current_git_revision
+        ):
+            delete_reasons.append("git_revision_mismatch")
+        if _is_older_than(RUN_RETENTION_DAYS):
+            delete_reasons.append("older_than_retention")
+        return delete_reasons
+
+    if mode == "all":
+        return ["explicit_cleanup_all"]
+
+    if mode == "keep_days":
+        if keep_days is None:
+            return []
+        if _is_older_than(keep_days):
+            delete_reasons.append(f"older_than_keep_days_{keep_days}")
+        return delete_reasons
+
+    if mode == "keep_current_revision":
+        if not current_git_revision:
+            return []
+        if run_git_revision:
+            if run_git_revision != current_git_revision:
+                delete_reasons.append("not_current_git_revision")
+        elif run_kind == "auto":
+            delete_reasons.append("missing_git_revision_for_auto_run")
+        return delete_reasons
+
+    return []
+
+
+def _cleanup_runs(
+    *,
+    runs_root: Path,
+    mode: str,
+    current_git_revision: Optional[str] = None,
+    keep_days: Optional[int] = None,
+    active_run_dir: Optional[Path] = None,
+) -> List[Dict[str, Any]]:
+    now = datetime.now(timezone.utc)
+    deleted_runs: List[Dict[str, Any]] = []
+
+    if not runs_root.exists():
+        return deleted_runs
+
+    active_run_resolved = active_run_dir.resolve() if active_run_dir else None
+    runs_root_resolved = runs_root.resolve()
+
+    for run_dir in sorted(runs_root.iterdir(), key=lambda path: path.name.lower()):
+        if not run_dir.is_dir():
+            continue
+        if active_run_resolved is not None and run_dir.resolve() == active_run_resolved:
+            continue
+        if not _path_is_within(runs_root_resolved, run_dir):
+            continue
+
+        metadata = _extract_run_metadata(run_dir)
+        delete_reasons = _collect_cleanup_reasons(
+            mode=mode,
+            metadata=metadata,
+            current_git_revision=current_git_revision,
+            keep_days=keep_days,
+            now=now,
+        )
+        if not delete_reasons:
+            continue
+
+        try:
+            shutil.rmtree(run_dir)
+        except OSError:
+            continue
+
+        timestamp = metadata.get("timestamp")
+        deleted_runs.append(
+            {
+                "run_dir": str(run_dir),
+                "run_kind": metadata.get("run_kind"),
+                "git_revision": metadata.get("git_revision"),
+                "timestamp": (
+                    timestamp.isoformat() if isinstance(timestamp, datetime) else None
+                ),
+                "reasons": delete_reasons,
+                "summary_ok": bool(metadata.get("summary_ok")),
+            }
+        )
+
+    return deleted_runs
+
+
+def _cleanup_obsolete_auto_runs(
+    *,
+    runs_root: Path,
+    current_git_revision: Optional[str],
+    active_run_dir: Path,
+) -> List[Dict[str, Any]]:
+    return _cleanup_runs(
+        runs_root=runs_root,
+        mode="default_auto",
+        current_git_revision=current_git_revision,
+        active_run_dir=active_run_dir,
+    )
 
 
 def _discover_dataset_entries(dataset_dir: Path) -> List[Dict[str, Any]]:
@@ -879,6 +1134,7 @@ def _build_summary_payload(
     *,
     run_id: str,
     run_timestamp: str,
+    run_kind: str,
     dataset_type: str,
     selected_paper_ids: Sequence[str],
     limit: Optional[int],
@@ -893,6 +1149,7 @@ def _build_summary_payload(
         "metadata": {
             "run_id": run_id,
             "timestamp": run_timestamp,
+            "run_kind": run_kind,
             "dataset_source": DATASET_SOURCE_LABEL,
             "dataset_root": str(DATASET_DIR),
             "dataset_type_filter": dataset_type,
@@ -956,6 +1213,7 @@ def _build_summary_markdown(
         "",
         f"- Run ID: `{metadata.get('run_id')}`",
         f"- Timestamp: `{metadata.get('timestamp')}`",
+        f"- Run kind: `{metadata.get('run_kind') or '-'}`",
         f"- Engine requested: `{metadata.get('engine_requested')}`",
         f"- Dataset filter: `{metadata.get('dataset_type_filter')}`",
         f"- PDFs discovered/selected: `{metadata.get('discovered_pdfs_total', 0)}` / `{metadata.get('selected_pdfs_total', 0)}`",
@@ -1047,6 +1305,7 @@ def _run_regression(
     limit: Optional[int],
     output_dir: Path,
     engine: str,
+    run_kind: str,
 ) -> Dict[str, Any]:
     dataset = _discover_dataset_entries(DATASET_DIR)
     selected_entries = _filter_dataset(
@@ -1194,6 +1453,7 @@ def _run_regression(
     run_summary = _build_summary_payload(
         run_id=run_id,
         run_timestamp=run_timestamp,
+        run_kind=run_kind,
         dataset_type=dataset_type,
         selected_paper_ids=selected_paper_ids,
         limit=limit,
@@ -1211,7 +1471,87 @@ def _run_regression(
             run_summary=run_summary,
         ),
     )
+    deleted_runs = _cleanup_obsolete_auto_runs(
+        runs_root=DEFAULT_OUTPUT_ROOT,
+        current_git_revision=git_revision,
+        active_run_dir=output_dir,
+    )
+    if deleted_runs:
+        print(
+            "Cleanup: se eliminaron {count} runs automaticos obsoletos.".format(
+                count=len(deleted_runs)
+            )
+        )
     return run_summary
+
+
+def _resolve_run_destination(args: argparse.Namespace) -> Dict[str, Any]:
+    if args.run_name:
+        run_id = _normalize_run_name(args.run_name)
+        output_dir = DEFAULT_OUTPUT_ROOT / run_id
+        run_kind = "manual"
+    elif args.output_dir is not None:
+        output_dir = args.output_dir
+        run_id = output_dir.name or datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        run_kind = "manual"
+    else:
+        run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        output_dir = DEFAULT_OUTPUT_ROOT / run_id
+        run_kind = "auto"
+
+    _prepare_output_dir(output_dir=output_dir, overwrite=bool(args.overwrite))
+    return {
+        "run_id": run_id,
+        "output_dir": output_dir,
+        "run_kind": run_kind,
+    }
+
+
+def _handle_explicit_cleanup(args: argparse.Namespace) -> Optional[int]:
+    current_git_revision = _current_git_revision()
+    cleanup_mode: Optional[str] = None
+    keep_days: Optional[int] = None
+
+    if args.cleanup_all:
+        cleanup_mode = "all"
+    elif args.cleanup_keep_days is not None:
+        if args.cleanup_keep_days < 0:
+            raise SystemExit("--cleanup-keep-days debe ser >= 0.")
+        cleanup_mode = "keep_days"
+        keep_days = int(args.cleanup_keep_days)
+    elif args.cleanup_keep_current_revision:
+        cleanup_mode = "keep_current_revision"
+
+    if cleanup_mode is None:
+        return None
+
+    deleted_runs = _cleanup_runs(
+        runs_root=DEFAULT_OUTPUT_ROOT,
+        mode=cleanup_mode,
+        current_git_revision=current_git_revision,
+        keep_days=keep_days,
+    )
+
+    print(
+        "Cleanup ejecutado en {root}".format(
+            root=DEFAULT_OUTPUT_ROOT,
+        )
+    )
+    print(f"Modo: {cleanup_mode}")
+    if cleanup_mode == "keep_days":
+        print(f"Dias a conservar: {keep_days}")
+    if cleanup_mode == "keep_current_revision":
+        print(f"Git revision actual: {current_git_revision or '-'}")
+    print(f"Runs eliminados: {len(deleted_runs)}")
+    for item in deleted_runs:
+        print(
+            "- {name} [{kind}] -> {reasons}".format(
+                name=Path(str(item.get("run_dir") or "")).name,
+                kind=item.get("run_kind") or "-",
+                reasons=", ".join(_coerce_list(item.get("reasons"))) or "-",
+            )
+        )
+    return 0
 
 
 def _parse_args() -> argparse.Namespace:
@@ -1242,22 +1582,51 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Limita el numero de papers procesados tras aplicar filtros.",
     )
-    parser.add_argument(
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument(
         "--output-dir",
         type=Path,
         default=None,
-        help="Directorio final de salida. Por defecto usa tmp/reference_regression/<run_id>/.",
+        help="Directorio final de salida. Se considera manual y solo se reemplaza con --overwrite.",
+    )
+    output_group.add_argument(
+        "--run-name",
+        default=None,
+        help="Nombre manual del run bajo tmp/reference_regression/. Solo se reemplaza con --overwrite.",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Permite reemplazar un directorio de salida manual existente.",
+    )
+    cleanup_group = parser.add_mutually_exclusive_group()
+    cleanup_group.add_argument(
+        "--cleanup-all",
+        action="store_true",
+        help="Limpia todos los runs en tmp/reference_regression y termina.",
+    )
+    cleanup_group.add_argument(
+        "--cleanup-keep-days",
+        type=int,
+        default=None,
+        help="Limpia todo excepto los runs de los ultimos N dias y termina.",
+    )
+    cleanup_group.add_argument(
+        "--cleanup-keep-current-revision",
+        action="store_true",
+        help="Limpia todo excepto los runs de la revision git actual y termina.",
     )
     return parser.parse_args()
 
 
 def main() -> int:
     args = _parse_args()
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    output_dir = (
-        args.output_dir if args.output_dir is not None else DEFAULT_OUTPUT_ROOT / run_id
-    )
-    output_dir.mkdir(parents=True, exist_ok=True)
+    cleanup_exit = _handle_explicit_cleanup(args)
+    if cleanup_exit is not None:
+        return cleanup_exit
+
+    destination = _resolve_run_destination(args)
+    output_dir = destination["output_dir"]
 
     summary = _run_regression(
         selected_paper_ids=args.paper_id,
@@ -1265,6 +1634,7 @@ def main() -> int:
         limit=args.limit,
         output_dir=output_dir,
         engine=args.engine,
+        run_kind=str(destination.get("run_kind") or "auto"),
     )
     print()
     print(f"Summary JSON: {output_dir / 'summary.json'}")

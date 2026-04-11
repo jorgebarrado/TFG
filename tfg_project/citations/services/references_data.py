@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -124,11 +124,32 @@ REFERENCE_PIPELINE_VERSION = "references-phased-v3"
 REFERENCE_DEBUG_DIR = (
     Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
 )
+REFERENCE_DIAGNOSTIC_TAIL_NOISE_MARKERS = (
+    "cite this article",
+    "how to cite",
+    "copyright",
+    "received:",
+    "accepted:",
+    "published online",
+    "correspondence:",
+    "license",
+    "funding:",
+)
+ROW_REJECTION_AUDIT_LIMIT = 120
+REFERENCE_FAILURE_AUDIT_LIMIT = 80
 
 
 def _to_float(value: Any) -> Optional[float]:
     try:
         number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number
+
+
+def _to_int(value: Any) -> Optional[int]:
+    try:
+        number = int(value)
     except (TypeError, ValueError):
         return None
     return number
@@ -4224,6 +4245,8 @@ def build_references_from_rows(
             row_debug_collector.append(
                 {
                     "reference_index": index,
+                    "current_anchor_index": index,
+                    "next_anchor_index": _to_int((next_anchor or {}).get("index")),
                     "row_decisions": block_result.get("row_decisions") or [],
                     "cut_reasons": block_result.get("cut_reasons") or [],
                     "nested_anchor_indices": block_result.get("nested_anchor_indices")
@@ -4901,6 +4924,960 @@ def _build_reference_debug_steps(
     return steps
 
 
+def _short_debug_text(value: Any, limit: int = 220) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 3)].rstrip() + "..."
+
+
+def _base_row_id(value: Any) -> str:
+    row_id = str(value or "").strip()
+    if "::seg-" in row_id:
+        row_id = row_id.split("::seg-", 1)[0]
+    return row_id
+
+
+def _unique_preserve_order(values: Sequence[Any]) -> List[Any]:
+    seen: set[Any] = set()
+    ordered: List[Any] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        ordered.append(value)
+    return ordered
+
+
+def _ordered_counter_dict(counter: Counter) -> Dict[str, int]:
+    return {
+        str(reason): int(count)
+        for reason, count in sorted(
+            counter.items(),
+            key=lambda item: (-int(item[1]), str(item[0])),
+        )
+    }
+
+
+def _anchor_window_from_context(context: Dict[str, Any]) -> Optional[List[int]]:
+    if not isinstance(context, dict):
+        return None
+    indices: List[int] = []
+    previous_anchor = context.get("current_anchor") or {}
+    next_anchor = context.get("next_anchor") or {}
+    previous_index = _to_int(previous_anchor.get("index"))
+    next_index = _to_int(next_anchor.get("index"))
+    if isinstance(previous_index, int) and previous_index > 0:
+        indices.append(previous_index)
+    if isinstance(next_index, int) and next_index > 0 and next_index not in indices:
+        indices.append(next_index)
+    return indices or None
+
+
+def _build_raw_row_metadata_map(raw_rows: Sequence[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    metadata_by_row_id: Dict[str, Dict[str, Any]] = {}
+    for item in raw_rows:
+        if not isinstance(item, dict):
+            continue
+        row_id = _base_row_id(item.get("id"))
+        if not row_id:
+            continue
+        payload: Dict[str, Any] = {}
+        if item.get("section_id") not in (None, ""):
+            payload["section_id"] = item.get("section_id")
+        elif isinstance(item.get("section"), dict) and item["section"].get("id") not in (None, ""):
+            payload["section_id"] = item["section"].get("id")
+        if item.get("paragraph_id") not in (None, ""):
+            payload["paragraph_id"] = item.get("paragraph_id")
+        elif isinstance(item.get("paragraph"), dict) and item["paragraph"].get("id") not in (None, ""):
+            payload["paragraph_id"] = item["paragraph"].get("id")
+        metadata_by_row_id[row_id] = payload
+    return metadata_by_row_id
+
+
+def _build_document_diagnostics(
+    *,
+    bibliography_rows_debug: Sequence[Dict[str, Any]],
+    bibliography_lines: Sequence[Dict[str, Any]],
+    bibliography_segments: Sequence[Dict[str, Any]],
+    selected_heading: Optional[Dict[str, Any]],
+    start_page: Optional[int],
+) -> Dict[str, Any]:
+    scoped_rows = [
+        row
+        for row in bibliography_rows_debug
+        if start_page is None
+        or _to_int(row.get("page")) is None
+        or int(row.get("page")) >= int(start_page)
+    ]
+    included_rows = [row for row in scoped_rows if row.get("included")]
+    total_rows = len(scoped_rows)
+    bracketed_anchor_rows = sum(
+        1
+        for row in included_rows
+        if str(row.get("anchor_style") or "").strip() == "bracketed"
+    )
+    dotted_anchor_rows = sum(
+        1 for row in included_rows if str(row.get("anchor_style") or "").strip() == "dotted"
+    )
+    author_year_signal_count = sum(
+        1 for row in included_rows if _has_bibliographic_lead_signal(str(row.get("text") or ""))
+    )
+    bibliography_density = round(len(included_rows) / total_rows, 3) if total_rows else 0.0
+    rejected_dotted_anchor_candidates = sum(
+        1
+        for row in scoped_rows
+        if str(row.get("anchor_candidate_style") or "").strip() == "dotted"
+        and row.get("anchor_rejected_reason")
+    )
+    detected_numeric = is_numbered_bibliography(bibliography_lines)
+    if detected_numeric:
+        reference_style_detected = "numeric"
+        reference_style_confidence = min(
+            0.99,
+            round(
+                0.62
+                + min(bracketed_anchor_rows + dotted_anchor_rows, 6) * 0.05
+                + min(len(bibliography_segments), 4) * 0.04,
+                3,
+            ),
+        )
+    elif author_year_signal_count >= max(3, bracketed_anchor_rows + dotted_anchor_rows):
+        reference_style_detected = "non_numeric"
+        reference_style_confidence = min(
+            0.95,
+            round(
+                0.42
+                + min(author_year_signal_count, 8) * 0.05
+                + (0.08 if selected_heading else 0.0)
+                + min(bibliography_density, 1.0) * 0.12,
+                3,
+            ),
+        )
+    else:
+        reference_style_detected = "weak_or_unknown"
+        reference_style_confidence = min(
+            0.65,
+            round(
+                0.18
+                + min(
+                    bracketed_anchor_rows
+                    + dotted_anchor_rows
+                    + author_year_signal_count
+                    + len(bibliography_segments),
+                    8,
+                )
+                * 0.04,
+                3,
+            ),
+        )
+    return {
+        "reference_style_detected": reference_style_detected,
+        "reference_style_confidence": reference_style_confidence,
+        "reference_style_signals": {
+            "bracketed_anchor_rows": int(bracketed_anchor_rows),
+            "dotted_anchor_rows": int(dotted_anchor_rows),
+            "author_year_signal_count": int(author_year_signal_count),
+            "bibliography_density": bibliography_density,
+            "rejected_dotted_anchor_candidates": int(rejected_dotted_anchor_candidates),
+            "bibliography_segment_count": int(len(bibliography_segments)),
+            "selected_heading_detected": bool(selected_heading),
+        },
+    }
+
+
+def _phase_diagnostic_payload(
+    *,
+    status: str,
+    reason: str,
+    evidence: Dict[str, Any],
+) -> Dict[str, Any]:
+    return {
+        "status": status,
+        "reason": reason,
+        "evidence": evidence,
+    }
+
+
+def _build_phase_diagnostics(
+    *,
+    bibliography_phase: Dict[str, Any],
+    bibliography_rows_phase: Dict[str, Any],
+    bibliography_lines: Sequence[Dict[str, Any]],
+    row_phase_details: Sequence[Dict[str, Any]],
+    reference_entries: Sequence[Dict[str, Any]],
+    document_diagnostics: Dict[str, Any],
+) -> Dict[str, Any]:
+    selected_heading = bibliography_phase.get("selected_heading")
+    heading_candidates = bibliography_phase.get("heading_candidates") or []
+    bibliography_segments = bibliography_phase.get("bibliography_segments") or []
+    debug_rows = bibliography_rows_phase.get("debug_rows") or []
+    start_page = _to_int(bibliography_phase.get("start_page"))
+    scoped_debug_rows = [
+        row
+        for row in debug_rows
+        if start_page is None
+        or _to_int(row.get("page")) is None
+        or int(row.get("page")) >= int(start_page)
+    ]
+    style_detected = str(document_diagnostics.get("reference_style_detected") or "weak_or_unknown")
+    detected_anchor_indices = _unique_preserve_order(
+        sorted(
+            {
+                int(anchor.get("index"))
+                for anchor in detect_reference_anchors_from_rows(bibliography_lines)
+                if _to_int(anchor.get("index")) not in (None, 0)
+            }
+        )
+    )
+    rejected_anchor_candidates = sum(
+        1 for row in scoped_debug_rows if row.get("anchor_rejected_reason")
+    )
+    included_rows = sum(1 for row in scoped_debug_rows if row.get("included"))
+    total_rows = len(scoped_debug_rows)
+    total_segment_rows = sum(int(segment.get("row_count") or 0) for segment in bibliography_segments)
+    block_count = len(row_phase_details)
+    selected_block_rows = sum(
+        1
+        for detail in row_phase_details
+        for decision in (detail.get("row_decisions") or [])
+        if decision.get("included")
+    )
+    dropped_block_rows = sum(
+        1
+        for detail in row_phase_details
+        for decision in (detail.get("row_decisions") or [])
+        if decision.get("included") is False
+    )
+    block_nested_anchor_count = sum(
+        1 for detail in row_phase_details if detail.get("nested_anchor_indices")
+    )
+    total_references = len(reference_entries)
+    accepted_references = sum(
+        1
+        for entry in reference_entries
+        if bool((entry.get("final_decision") or {}).get("accepted"))
+    )
+    fallback_references = sum(
+        1
+        for entry in reference_entries
+        if "fallback" in str(entry.get("structure_source") or "")
+    )
+    phase_diagnostics: Dict[str, Any] = {}
+
+    if isinstance(selected_heading, dict):
+        phase_diagnostics["selected_heading"] = _phase_diagnostic_payload(
+            status="ok",
+            reason="reference_heading_selected",
+            evidence={
+                "candidate_count": len(heading_candidates),
+                "selected_page": selected_heading.get("page"),
+                "selected_column_id": selected_heading.get("column_id"),
+                "selected_text": _short_debug_text(selected_heading.get("text"), limit=120),
+            },
+        )
+    elif heading_candidates:
+        phase_diagnostics["selected_heading"] = _phase_diagnostic_payload(
+            status="weak",
+            reason="heading_candidates_found_but_not_selected",
+            evidence={"candidate_count": len(heading_candidates)},
+        )
+    else:
+        phase_diagnostics["selected_heading"] = _phase_diagnostic_payload(
+            status="failed",
+            reason="no_reference_heading_detected",
+            evidence={"candidate_count": 0},
+        )
+
+    if not bibliography_segments:
+        segment_status = "failed"
+        segment_reason = "no_bibliography_segments_built"
+    elif len(bibliography_segments) == 1 or total_segment_rows < 3:
+        segment_status = "weak"
+        segment_reason = "bibliography_segments_sparse"
+    else:
+        segment_status = "ok"
+        segment_reason = "bibliography_segments_built"
+    phase_diagnostics["bibliography_segments"] = _phase_diagnostic_payload(
+        status=segment_status,
+        reason=segment_reason,
+        evidence={
+            "segment_count": len(bibliography_segments),
+            "total_segment_rows": total_segment_rows,
+            "pages": _unique_preserve_order(
+                sorted(
+                    {
+                        int(segment.get("page"))
+                        for segment in bibliography_segments
+                        if isinstance(segment.get("page"), int)
+                    }
+                )
+            ),
+            "start_page": bibliography_phase.get("start_page"),
+        },
+    )
+
+    rows_density = round(included_rows / total_rows, 3) if total_rows else 0.0
+    if included_rows == 0:
+        rows_status = "failed"
+        rows_reason = "no_rows_inside_bibliography_zone"
+    elif included_rows < 3:
+        rows_status = "weak"
+        rows_reason = "bibliography_zone_rows_sparse"
+    else:
+        rows_status = "ok"
+        rows_reason = "rows_collected_inside_bibliography_zone"
+    phase_diagnostics["rows_in_bibliography_zone"] = _phase_diagnostic_payload(
+        status=rows_status,
+        reason=rows_reason,
+        evidence={
+            "rows_considered": total_rows,
+            "rows_included": included_rows,
+            "rows_rejected": max(0, total_rows - included_rows),
+            "rows_density": rows_density,
+        },
+    )
+
+    if style_detected == "numeric":
+        if len(detected_anchor_indices) >= 2:
+            anchor_status = "ok"
+            anchor_reason = "numeric_reference_anchors_detected"
+        elif len(detected_anchor_indices) == 1:
+            anchor_status = "weak"
+            anchor_reason = "single_numeric_reference_anchor_detected"
+        else:
+            anchor_status = "failed"
+            anchor_reason = "no_stable_numeric_reference_anchors_detected"
+    elif len(detected_anchor_indices) >= 2:
+        anchor_status = "ok"
+        anchor_reason = "reference_anchors_detected"
+    else:
+        anchor_status = "weak"
+        anchor_reason = "document_looks_non_numeric_or_anchor_signal_weak"
+    phase_diagnostics["reference_anchors"] = _phase_diagnostic_payload(
+        status=anchor_status,
+        reason=anchor_reason,
+        evidence={
+            "detected_anchor_total": len(detected_anchor_indices),
+            "detected_anchor_indices": detected_anchor_indices[:40],
+            "rejected_anchor_candidates": rejected_anchor_candidates,
+            "reference_style_detected": style_detected,
+        },
+    )
+
+    if style_detected == "numeric" and block_count == 0:
+        block_status = "failed"
+        block_reason = "no_reference_blocks_built"
+    elif block_count == 0:
+        block_status = "weak"
+        block_reason = "reference_blocks_not_built"
+    elif dropped_block_rows > 0 or block_nested_anchor_count > 0:
+        block_status = "weak"
+        block_reason = "reference_block_rows_trimmed_or_split"
+    else:
+        block_status = "ok"
+        block_reason = "reference_blocks_built"
+    phase_diagnostics["reference_block_rows"] = _phase_diagnostic_payload(
+        status=block_status,
+        reason=block_reason,
+        evidence={
+            "reference_block_count": block_count,
+            "selected_block_rows": selected_block_rows,
+            "dropped_block_rows": dropped_block_rows,
+            "blocks_with_nested_anchor": block_nested_anchor_count,
+        },
+    )
+
+    if total_references == 0 or accepted_references == 0:
+        final_status = "failed"
+        final_reason = "no_references_accepted"
+    elif accepted_references < total_references or fallback_references > 0:
+        final_status = "weak"
+        final_reason = "references_partially_accepted_or_fallback_used"
+    else:
+        final_status = "ok"
+        final_reason = "references_accepted"
+    phase_diagnostics["final_decision"] = _phase_diagnostic_payload(
+        status=final_status,
+        reason=final_reason,
+        evidence={
+            "references_total": total_references,
+            "accepted_total": accepted_references,
+            "rejected_total": max(0, total_references - accepted_references),
+            "fallback_total": fallback_references,
+        },
+    )
+
+    ordered_phases = [
+        "selected_heading",
+        "bibliography_segments",
+        "rows_in_bibliography_zone",
+        "reference_anchors",
+        "reference_block_rows",
+        "final_decision",
+    ]
+    first_failure_phase = None
+    first_failure_reason = None
+    for phase_name in ordered_phases:
+        payload = phase_diagnostics.get(phase_name) or {}
+        if payload.get("status") == "failed":
+            first_failure_phase = phase_name
+            first_failure_reason = payload.get("reason")
+            break
+    if first_failure_phase is None:
+        for phase_name in ordered_phases:
+            payload = phase_diagnostics.get(phase_name) or {}
+            if payload.get("status") == "weak":
+                first_failure_phase = phase_name
+                first_failure_reason = payload.get("reason")
+                break
+    phase_diagnostics["first_failure_phase"] = first_failure_phase
+    phase_diagnostics["first_failure_reason"] = first_failure_reason
+    return phase_diagnostics
+
+
+def _build_row_rejection_audit(
+    *,
+    bibliography_rows_debug: Sequence[Dict[str, Any]],
+    row_phase_details: Sequence[Dict[str, Any]],
+    rows_with_columns: Sequence[Dict[str, Any]],
+    raw_row_metadata_map: Dict[str, Dict[str, Any]],
+    start_page: Optional[int],
+) -> Dict[str, Any]:
+    row_context = _build_same_column_row_context(rows_with_columns)
+    rejection_counter: Counter = Counter()
+    rejected_rows: List[Dict[str, Any]] = []
+
+    for row in bibliography_rows_debug:
+        if row.get("included"):
+            continue
+        row_page = _to_int(row.get("page"))
+        if isinstance(start_page, int) and isinstance(row_page, int) and row_page < start_page:
+            continue
+        row_id = str(row.get("id") or "")
+        base_row_id = _base_row_id(row_id)
+        context = row_context.get(base_row_id) or {}
+        raw_metadata = raw_row_metadata_map.get(base_row_id) or {}
+        reason = str(row.get("reason") or "rejected").strip() or "rejected"
+        rejection_counter[reason] += 1
+        rejected_rows.append(
+            {
+                "row_id": row_id,
+                "page": row.get("page"),
+                "column_id": row.get("column_id"),
+                "text": _short_debug_text(row.get("text")),
+                "rejected_reason": reason,
+                "phase": "rows_in_bibliography_zone",
+                "inside_bibliography_zone": bool(row.get("in_bibliography_zone")),
+                "neighbor_previous_row_id": (
+                    str((context.get("previous_row") or {}).get("id") or "") or None
+                ),
+                "neighbor_next_row_id": (
+                    str((context.get("next_row") or {}).get("id") or "") or None
+                ),
+                "between_anchor_indices": _anchor_window_from_context(context),
+                "section_id": raw_metadata.get("section_id"),
+                "paragraph_id": raw_metadata.get("paragraph_id"),
+            }
+        )
+
+    for detail in row_phase_details:
+        reference_index = _to_int(detail.get("reference_index"))
+        next_anchor_index = _to_int(detail.get("next_anchor_index"))
+        for decision in detail.get("row_decisions") or []:
+            if decision.get("included") is not False:
+                continue
+            row_id = str(decision.get("row_id") or "")
+            base_row_id = _base_row_id(row_id)
+            context = row_context.get(base_row_id) or {}
+            raw_metadata = raw_row_metadata_map.get(base_row_id) or {}
+            reason = str(decision.get("reason") or "rejected").strip() or "rejected"
+            rejection_counter[reason] += 1
+            anchor_window: List[int] = []
+            if isinstance(reference_index, int) and reference_index > 0:
+                anchor_window.append(reference_index)
+            if isinstance(next_anchor_index, int) and next_anchor_index > 0 and next_anchor_index not in anchor_window:
+                anchor_window.append(next_anchor_index)
+            if not anchor_window:
+                context_window = _anchor_window_from_context(context)
+                if context_window:
+                    anchor_window = context_window
+            rejected_rows.append(
+                {
+                    "row_id": row_id,
+                    "page": decision.get("page"),
+                    "column_id": decision.get("column_id"),
+                    "text": _short_debug_text(decision.get("text")),
+                    "rejected_reason": reason,
+                    "phase": "reference_block_rows",
+                    "inside_bibliography_zone": True,
+                    "neighbor_previous_row_id": (
+                        str((context.get("previous_row") or {}).get("id") or "") or None
+                    ),
+                    "neighbor_next_row_id": (
+                        str((context.get("next_row") or {}).get("id") or "") or None
+                    ),
+                    "between_anchor_indices": anchor_window or None,
+                    "section_id": raw_metadata.get("section_id"),
+                    "paragraph_id": raw_metadata.get("paragraph_id"),
+                }
+            )
+
+    return {
+        "total_rejected_rows": len(rejected_rows),
+        "counts_by_reason": _ordered_counter_dict(rejection_counter),
+        "relevant_rows": rejected_rows[:ROW_REJECTION_AUDIT_LIMIT],
+        "truncated": len(rejected_rows) > ROW_REJECTION_AUDIT_LIMIT,
+    }
+
+
+def _infer_reference_failure_stage(
+    *,
+    entry: Dict[str, Any],
+    detail: Dict[str, Any],
+    raw_row_ids: Sequence[str],
+    dropped_row_ids: Sequence[str],
+    cut_reasons: Sequence[str],
+    nested_anchor_indices: Sequence[int],
+) -> Tuple[str, str]:
+    final_decision = (
+        entry.get("final_decision") if isinstance(entry.get("final_decision"), dict) else {}
+    )
+    validation_intermediate = (
+        detail.get("validation_intermediate")
+        if isinstance(detail.get("validation_intermediate"), dict)
+        else (
+            entry.get("validation_intermediate")
+            if isinstance(entry.get("validation_intermediate"), dict)
+            else {}
+        )
+    )
+    structure_source = str(entry.get("structure_source") or "").strip()
+    if "fallback" in structure_source and not raw_row_ids:
+        return "fallback", str(final_decision.get("reason") or structure_source)
+    if not raw_row_ids:
+        return "reference_anchors", "no_rows_captured_for_reference_block"
+    if cut_reasons or nested_anchor_indices or dropped_row_ids:
+        return (
+            "reference_block_rows",
+            str(
+                (cut_reasons[0] if cut_reasons else None)
+                or ("nested_anchor_detected" if nested_anchor_indices else None)
+                or ("dropped_rows_detected" if dropped_row_ids else None)
+                or "reference_block_rows_trimmed"
+            ),
+        )
+    if validation_intermediate.get("accepted") is False and validation_intermediate.get("reason"):
+        return "reference_validation", str(validation_intermediate.get("reason"))
+    if final_decision.get("accepted") is False:
+        return "final_decision", str(final_decision.get("reason") or "rejected_in_final_decision")
+    if structure_source and not structure_source.startswith("rows_raw"):
+        return "final_decision", f"structure_source={structure_source}"
+    return "final_decision", "diagnostic_flags_present"
+
+
+def _build_reference_failure_audit(
+    *,
+    reference_entries: Sequence[Dict[str, Any]],
+    row_phase_details: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    details_by_index: Dict[int, Dict[str, Any]] = {}
+    for detail in row_phase_details:
+        reference_index = _to_int(detail.get("reference_index"))
+        if isinstance(reference_index, int) and reference_index > 0:
+            details_by_index[reference_index] = detail
+
+    problematic_references: List[Dict[str, Any]] = []
+    for entry in reference_entries:
+        reference_index = _to_int(entry.get("index"))
+        if not isinstance(reference_index, int) or reference_index <= 0:
+            continue
+        detail = details_by_index.get(reference_index) or {}
+        final_decision = (
+            entry.get("final_decision") if isinstance(entry.get("final_decision"), dict) else {}
+        )
+        accepted = bool(final_decision.get("accepted"))
+        structure_source = str(entry.get("structure_source") or "").strip()
+        row_decisions = detail.get("row_decisions") or []
+        raw_row_ids = _unique_preserve_order(
+            [
+                str(item.get("row_id") or "")
+                for item in row_decisions
+                if str(item.get("row_id") or "").strip()
+            ]
+        )
+        kept_row_ids = _unique_preserve_order(
+            [
+                str(item.get("row_id") or "")
+                for item in row_decisions
+                if item.get("included") and str(item.get("row_id") or "").strip()
+            ]
+        )
+        dropped_row_ids = _unique_preserve_order(
+            [
+                str(item.get("row_id") or "")
+                for item in row_decisions
+                if item.get("included") is False and str(item.get("row_id") or "").strip()
+            ]
+        )
+        cut_reasons = _unique_preserve_order(
+            [
+                str(reason).strip()
+                for reason in list(detail.get("cut_reasons") or [])
+                + list((entry.get("anomalies") or {}).get("cut_reasons") or [])
+                if str(reason).strip()
+            ]
+        )
+        nested_anchor_indices = sorted(
+            {
+                int(index)
+                for index in list(detail.get("nested_anchor_indices") or [])
+                + list((entry.get("anomalies") or {}).get("nested_anchor_indices") or [])
+                if _to_int(index) not in (None, 0)
+            }
+        )
+        next_anchor_index = _to_int(detail.get("next_anchor_index"))
+        missing_expected_continuations = bool(
+            any(
+                str(reason).startswith(("vertical_gap", "page_jump", "late_page_continuation"))
+                for reason in cut_reasons
+            )
+            or (
+                isinstance(next_anchor_index, int)
+                and next_anchor_index > 0
+                and next_anchor_index > reference_index + 1
+            )
+        )
+        problematic = bool(
+            not accepted
+            or "fallback" in structure_source
+            or dropped_row_ids
+            or cut_reasons
+            or nested_anchor_indices
+            or missing_expected_continuations
+        )
+        if not problematic:
+            continue
+        failure_stage, failure_reason = _infer_reference_failure_stage(
+            entry=entry,
+            detail=detail,
+            raw_row_ids=raw_row_ids,
+            dropped_row_ids=dropped_row_ids,
+            cut_reasons=cut_reasons,
+            nested_anchor_indices=nested_anchor_indices,
+        )
+        problematic_references.append(
+            {
+                "index": reference_index,
+                "status": "failed" if not accepted else "weak",
+                "structure_source": structure_source,
+                "accepted": accepted,
+                "failure_stage": failure_stage,
+                "failure_reason": failure_reason,
+                "raw_row_ids": raw_row_ids,
+                "kept_row_ids": kept_row_ids,
+                "dropped_row_ids": dropped_row_ids,
+                "cut_reasons": cut_reasons,
+                "nested_anchor_indices": nested_anchor_indices,
+                "missing_expected_continuations": missing_expected_continuations,
+            }
+        )
+
+    problematic_references.sort(
+        key=lambda item: (
+            0 if str(item.get("status")) == "failed" else 1,
+            int(item.get("index") or 0),
+        )
+    )
+    return {
+        "problematic_total": len(problematic_references),
+        "problematic_references": problematic_references[:REFERENCE_FAILURE_AUDIT_LIMIT],
+        "truncated": len(problematic_references) > REFERENCE_FAILURE_AUDIT_LIMIT,
+    }
+
+
+def _build_numeric_coverage_summary(
+    *,
+    metadata_by_index: Dict[int, Dict[str, Any]],
+    bibliography_lines: Sequence[Dict[str, Any]],
+    reference_entries: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    detected_anchor_indices_all = [
+        int(anchor.get("index"))
+        for anchor in detect_reference_anchors_from_rows(bibliography_lines)
+        if _to_int(anchor.get("index")) not in (None, 0)
+    ]
+    detected_anchor_indices = sorted(set(detected_anchor_indices_all))
+    serialized_indices_all = [
+        int(entry.get("index"))
+        for entry in reference_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    ]
+    serialized_indices = sorted(set(serialized_indices_all))
+    expected_indices = sorted(metadata_by_index.keys())
+    if not expected_indices:
+        expected_indices = sorted(set(detected_anchor_indices) | set(serialized_indices))
+    failed_indices = sorted(
+        {
+            int(entry.get("index"))
+            for entry in reference_entries
+            if _to_int(entry.get("index")) not in (None, 0)
+            and not bool((entry.get("final_decision") or {}).get("accepted"))
+        }
+    )
+    missing_indices = sorted(
+        index for index in expected_indices if index not in set(serialized_indices)
+    )
+    duplicate_indices = sorted(
+        {
+            index
+            for index, count in Counter(detected_anchor_indices_all).items()
+            if int(count) > 1
+        }
+        | {
+            index
+            for index, count in Counter(serialized_indices_all).items()
+            if int(count) > 1
+        }
+    )
+    return {
+        "expected_indices": expected_indices,
+        "detected_anchor_indices": detected_anchor_indices,
+        "serialized_indices": serialized_indices,
+        "failed_indices": failed_indices,
+        "missing_indices": missing_indices,
+        "duplicate_indices": duplicate_indices,
+        "expected_total": len(expected_indices),
+        "detected_anchor_total": len(detected_anchor_indices),
+        "serialized_total": len(serialized_indices),
+        "missing_total": len(missing_indices),
+        "duplicate_total": len(duplicate_indices),
+    }
+
+
+def _build_contamination_diagnostics(
+    *,
+    bibliography_phase: Dict[str, Any],
+    global_alerts: Dict[str, Any],
+    reference_entries: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    appendix_like_re = re.compile(
+        r"\b(?:appendix|appendices|supplement(?:ary)?|annex|acknowledg(?:e)?ments?)\b",
+        re.IGNORECASE,
+    )
+    candidate_noise_sections = bibliography_phase.get("candidate_noise_sections") or []
+    appendix_sections = [
+        section
+        for section in candidate_noise_sections
+        if appendix_like_re.search(str(section.get("text") or ""))
+    ]
+    start_page = _to_int(bibliography_phase.get("start_page"))
+    mixed_body_rows = [
+        row
+        for row in (global_alerts.get("body_text_mixed_in_bibliography") or [])
+        if start_page is None
+        or _to_int(row.get("page")) is None
+        or int(row.get("page")) >= int(start_page)
+    ]
+    appendix_mixed_rows = [
+        row for row in mixed_body_rows if appendix_like_re.search(str(row.get("text") or ""))
+    ]
+    tail_noise_samples: List[Dict[str, Any]] = []
+    for entry in reference_entries:
+        normalized_text = _normalize_text(str(entry.get("text") or ""))
+        if not normalized_text:
+            continue
+        matched_marker = None
+        for marker in REFERENCE_DIAGNOSTIC_TAIL_NOISE_MARKERS:
+            if marker in normalized_text:
+                matched_marker = marker
+                break
+        if not matched_marker:
+            continue
+        tail_noise_samples.append(
+            {
+                "index": entry.get("index"),
+                "marker": matched_marker,
+                "text": _short_debug_text(entry.get("text"), limit=180),
+            }
+        )
+    return {
+        "appendix_contamination_detected": bool(appendix_sections or appendix_mixed_rows),
+        "tail_noise_detected": bool(tail_noise_samples),
+        "appendix_like_sections_count": len(appendix_sections),
+        "mixed_body_rows_count": len(mixed_body_rows),
+        "tail_noise_reference_count": len(tail_noise_samples),
+        "appendix_samples": [
+            {
+                "page": section.get("page"),
+                "text": _short_debug_text(section.get("text"), limit=160),
+            }
+            for section in appendix_sections[:6]
+        ],
+        "body_text_samples": [
+            {
+                "page": row.get("page"),
+                "reason": row.get("reason"),
+                "text": _short_debug_text(row.get("text"), limit=160),
+            }
+            for row in mixed_body_rows[:6]
+        ],
+        "tail_noise_samples": tail_noise_samples[:6],
+    }
+
+
+def _build_start_page_column_decision(
+    *,
+    bibliography_phase: Dict[str, Any],
+    bibliography_segments: Sequence[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    start_page = _to_int(bibliography_phase.get("start_page"))
+    if not isinstance(start_page, int) or start_page < 0:
+        return None
+    rows_with_columns = bibliography_phase.get("rows_with_columns") or []
+    start_page_rows = [
+        row for row in rows_with_columns if _to_int(row.get("page")) == start_page
+    ]
+    selected_heading = (
+        bibliography_phase.get("selected_heading")
+        if isinstance(bibliography_phase.get("selected_heading"), dict)
+        else None
+    )
+    selected_heading_box = (
+        _normalize_box(selected_heading.get("box")) if isinstance(selected_heading, dict) else None
+    )
+    heading_page = _to_int((selected_heading or {}).get("page"))
+    heading_column_id = str((selected_heading or {}).get("column_id") or "left")
+    artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    grouped_rows: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in start_page_rows:
+        grouped_rows[str(row.get("column_id") or "left")].append(row)
+    anchors_on_start_page = detect_reference_anchors_from_rows(
+        build_bibliography_reading_flow(start_page_rows)
+    )
+    anchor_columns = {
+        str(anchor.get("column_id") or "left")
+        for anchor in anchors_on_start_page
+        if isinstance(anchor.get("page"), int) and int(anchor.get("page")) == start_page
+    }
+    accepted_segments = {
+        str(segment.get("column_id") or "left"): segment
+        for segment in bibliography_segments
+        if _to_int(segment.get("page")) == start_page
+    }
+    column_ids = sorted(set(grouped_rows.keys()) | set(accepted_segments.keys()))
+    column_decisions: List[Dict[str, Any]] = []
+    for column_id in column_ids:
+        column_rows = sorted(grouped_rows.get(column_id) or [], key=_line_sort_key)
+        accepted_segment = accepted_segments.get(column_id)
+        if accepted_segment is not None:
+            top_source = accepted_segment.get("segment_top_source")
+            top_y = None
+            if (
+                top_source == "heading_bottom"
+                and selected_heading_box is not None
+                and heading_page == start_page
+                and column_id == heading_column_id
+            ):
+                top_y = round(
+                    float(selected_heading_box[1]) + float(selected_heading_box[3]),
+                    4,
+                )
+            elif column_rows:
+                row_tops = [
+                    _to_float(row.get("y0"))
+                    for row in column_rows
+                    if _to_float(row.get("y0")) is not None
+                ]
+                if row_tops:
+                    top_y = round(min(row_tops), 4)
+            if top_y is None:
+                accepted_box = _normalize_box(accepted_segment.get("box"))
+                if accepted_box is not None:
+                    top_y = round(float(accepted_box[1]), 4)
+            if top_source == "heading_bottom":
+                reason = "accepted_using_selected_heading_boundary"
+            else:
+                reason = "accepted_using_column_rows_extent"
+            column_decisions.append(
+                {
+                    "page": start_page,
+                    "column_id": column_id,
+                    "accepted": True,
+                    "top_y": top_y,
+                    "top_source": top_source,
+                    "reason": reason,
+                }
+            )
+            continue
+
+        top_y = None
+        if (
+            selected_heading_box is not None
+            and heading_page == start_page
+            and column_id == heading_column_id
+        ):
+            top_y = round(
+                float(selected_heading_box[1]) + float(selected_heading_box[3]),
+                4,
+            )
+            top_source = "heading_bottom"
+        elif column_rows:
+            row_tops = [
+                _to_float(row.get("y0"))
+                for row in column_rows
+                if _to_float(row.get("y0")) is not None
+            ]
+            top_y = round(min(row_tops), 4) if row_tops else None
+            top_source = "column_rows_min_y"
+        else:
+            top_source = None
+
+        if column_id not in anchor_columns and anchor_columns:
+            reason = "column_without_anchor_on_start_page"
+        elif (
+            selected_heading is not None
+            and heading_page == start_page
+            and not anchor_columns
+            and column_id != heading_column_id
+        ):
+            reason = "column_excluded_by_selected_heading"
+        elif (
+            selected_heading_box is not None
+            and heading_page == start_page
+            and column_id == heading_column_id
+            and column_rows
+            and all(
+                (_to_float(row.get("y1")) or 0.0) < float(selected_heading_box[1])
+                for row in column_rows
+            )
+        ):
+            reason = "rows_above_selected_heading"
+        elif not column_rows:
+            reason = "column_without_rows"
+        else:
+            usable_rows = [
+                row
+                for row in column_rows
+                if not _is_header_footer_row(row, artifact_info)
+                or _match_reference_anchor_at_line_start(str(row.get("text") or ""))
+            ]
+            reason = (
+                "no_rows_after_noise_filter" if not usable_rows else "column_not_selected"
+            )
+        column_decisions.append(
+            {
+                "page": start_page,
+                "column_id": column_id,
+                "accepted": False,
+                "top_y": top_y,
+                "top_source": top_source,
+                "reason": reason,
+            }
+        )
+    return {"page": start_page, "columns": column_decisions}
+
+
 def build_references_data(
     *,
     references: Sequence[Dict[str, Any]],
@@ -5477,6 +6454,54 @@ def build_references_data(
 
     debug_payload = None
     if debug_reference_detection:
+        raw_rows_layer = layers.get("rows") if isinstance(layers.get("rows"), list) else []
+        raw_row_metadata_map = _build_raw_row_metadata_map(raw_rows_layer)
+        document_diagnostics = _build_document_diagnostics(
+            bibliography_rows_debug=bibliography_rows_phase.get("debug_rows") or [],
+            bibliography_lines=bibliography_lines,
+            bibliography_segments=bibliography_segments,
+            selected_heading=(
+                bibliography_phase.get("selected_heading")
+                if isinstance(bibliography_phase.get("selected_heading"), dict)
+                else None
+            ),
+            start_page=_to_int(bibliography_phase.get("start_page")),
+        )
+        phase_diagnostics = _build_phase_diagnostics(
+            bibliography_phase=bibliography_phase,
+            bibliography_rows_phase=bibliography_rows_phase,
+            bibliography_lines=bibliography_lines,
+            row_phase_details=row_phase_details,
+            reference_entries=reference_entries,
+            document_diagnostics=document_diagnostics,
+        )
+        row_rejection_audit = _build_row_rejection_audit(
+            bibliography_rows_debug=bibliography_rows_phase.get("debug_rows") or [],
+            row_phase_details=row_phase_details,
+            rows_with_columns=bibliography_phase.get("rows_with_columns") or [],
+            raw_row_metadata_map=raw_row_metadata_map,
+            start_page=_to_int(bibliography_phase.get("start_page")),
+        )
+        reference_failure_audit = _build_reference_failure_audit(
+            reference_entries=reference_entries,
+            row_phase_details=row_phase_details,
+        )
+        numeric_coverage_summary = None
+        if document_diagnostics.get("reference_style_detected") == "numeric":
+            numeric_coverage_summary = _build_numeric_coverage_summary(
+                metadata_by_index=metadata_by_index,
+                bibliography_lines=bibliography_lines,
+                reference_entries=reference_entries,
+            )
+        contamination_diagnostics = _build_contamination_diagnostics(
+            bibliography_phase=bibliography_phase,
+            global_alerts=global_alerts,
+            reference_entries=reference_entries,
+        )
+        start_page_column_decision = _build_start_page_column_decision(
+            bibliography_phase=bibliography_phase,
+            bibliography_segments=bibliography_segments,
+        )
         debug_payload = {
             "metadata": {
                 "file_name": str(source_filename or ""),
@@ -5571,7 +6596,15 @@ def build_references_data(
             },
             "references": [dict(entry) for entry in reference_entries],
             "alerts": global_alerts,
+            "document_diagnostics": document_diagnostics,
+            "phase_diagnostics": phase_diagnostics,
+            "row_rejection_audit": row_rejection_audit,
+            "reference_failure_audit": reference_failure_audit,
+            "contamination_diagnostics": contamination_diagnostics,
+            "start_page_column_decision": start_page_column_decision,
         }
+        if numeric_coverage_summary is not None:
+            debug_payload["numeric_coverage_summary"] = numeric_coverage_summary
 
     logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
 
