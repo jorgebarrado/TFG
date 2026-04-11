@@ -820,30 +820,123 @@ def _aggregate_metrics(paper_summaries: Sequence[Dict[str, Any]]) -> Dict[str, A
     }
 
 
-def _build_summary_table_lines(paper_summaries: Sequence[Dict[str, Any]]) -> List[str]:
-    lines = [
-        "| paper | mode | detected | ok | failed | missing | coverage | extraction | engine | status |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+def _derive_main_issues(metrics: Dict[str, Any]) -> List[str]:
+    issues: List[str] = []
+
+    for raw_reason in _coerce_list(metrics.get("status_reasons")):
+        reason = str(raw_reason or "").strip()
+        if reason and reason not in issues:
+            issues.append(reason)
+
+    important_signals = [
+        ("reference_count_mismatch_detected", bool(metrics.get("reference_count_mismatch_detected"))),
+        ("appendix_contamination_detected", bool(metrics.get("appendix_contamination_detected"))),
+        ("fallback_rate_high", bool(metrics.get("fallback_rate_high"))),
+        ("fallback_rate_extreme", bool(metrics.get("fallback_rate_extreme"))),
+        (
+            "tail_noise_detected",
+            _safe_float(metrics.get("pct_references_with_tail_noise")) > 0.0
+            or bool(metrics.get("last_reference_tail_noise_detected")),
+        ),
     ]
-    for item in paper_summaries:
-        metrics = item.get("metrics") or {}
+    for issue_name, is_present in important_signals:
+        if is_present and issue_name not in issues:
+            issues.append(issue_name)
+
+    return issues[:5]
+
+
+def _build_compact_paper_summary(paper_summary: Dict[str, Any]) -> Dict[str, Any]:
+    metrics = _coerce_dict(paper_summary.get("metrics"))
+    return {
+        "paper_id": str(
+            paper_summary.get("paper_id") or metrics.get("paper_id") or ""
+        ),
+        "pdf_file": str(paper_summary.get("pdf_file") or metrics.get("pdf_file") or ""),
+        "status": str(paper_summary.get("status") or metrics.get("status") or "FAIL"),
+        "document_mode": metrics.get("document_mode"),
+        "references_total": int(metrics.get("references_total") or 0),
+        "max_reference_index_detected": _safe_int(
+            metrics.get("max_reference_index_detected")
+        )
+        or 0,
+        "coverage_ratio": round(_safe_float(metrics.get("coverage_ratio")), 3),
+        "pct_rows_raw": round(
+            _safe_float(metrics.get("pct_structure_source_rows_raw")),
+            2,
+        ),
+        "pct_raw_fallback": round(
+            _safe_float(metrics.get("pct_structure_source_raw_reference_fallback")),
+            2,
+        ),
+        "pct_accepted": round(_safe_float(metrics.get("pct_accepted")), 2),
+        "main_issues": _derive_main_issues(metrics),
+        "artifacts": dict(paper_summary.get("artifacts") or {}),
+    }
+
+
+def _build_summary_payload(
+    *,
+    run_id: str,
+    run_timestamp: str,
+    dataset_type: str,
+    selected_paper_ids: Sequence[str],
+    limit: Optional[int],
+    engine: str,
+    git_revision: Optional[str],
+    discovered_pdfs_total: int,
+    selected_pdfs_total: int,
+    aggregate: Dict[str, Any],
+    paper_summaries: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    return {
+        "metadata": {
+            "run_id": run_id,
+            "timestamp": run_timestamp,
+            "dataset_source": DATASET_SOURCE_LABEL,
+            "dataset_root": str(DATASET_DIR),
+            "dataset_type_filter": dataset_type,
+            "selected_paper_ids": list(selected_paper_ids),
+            "limit": limit,
+            "engine_requested": engine,
+            "git_revision": git_revision,
+            "discovered_pdfs_total": discovered_pdfs_total,
+            "selected_pdfs_total": selected_pdfs_total,
+        },
+        "aggregate_metrics": aggregate,
+        "papers": [
+            _build_compact_paper_summary(item) for item in paper_summaries
+        ],
+    }
+
+
+def _format_ratio(value: Any) -> str:
+    return f"{_safe_float(value):.3f}"
+
+
+def _format_pct(value: Any) -> str:
+    return f"{_safe_float(value):.1f}%"
+
+
+def _build_summary_table_lines(compact_papers: Sequence[Dict[str, Any]]) -> List[str]:
+    lines = [
+        "| paper | status | mode | refs | max_idx | coverage | rows_raw | fallback | accepted | issues |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+    ]
+    for item in compact_papers:
+        issues = ", ".join(item.get("main_issues") or []) or "-"
         lines.append(
-            "| {paper} | {mode} | {detected} | {ok} | {failed} | {missing} | {coverage:.3f} | {extraction} | {engine} | {status} |".format(
-                paper=metrics.get("paper_id") or "-",
-                mode=metrics.get("document_mode") or "-",
-                detected=metrics.get("anchors_or_candidates_detected") or 0,
-                ok=metrics.get("references_serialized_success") or 0,
-                failed=metrics.get("failed_references") or 0,
-                missing=metrics.get("missing_references") or 0,
-                coverage=_safe_float(metrics.get("coverage_ratio")),
-                extraction=metrics.get("extraction_status") or "-",
-                engine=(
-                    "{requested}->{effective}".format(
-                        requested=metrics.get("engine_requested") or "-",
-                        effective=metrics.get("engine_effective") or "-",
-                    )
-                ),
-                status=metrics.get("status") or "FAIL",
+            "| {paper} | {status} | {mode} | {refs} | {max_idx} | {coverage} | {rows_raw} | {fallback} | {accepted} | {issues} |".format(
+                paper=item.get("paper_id") or "-",
+                status=item.get("status") or "FAIL",
+                mode=item.get("document_mode") or "-",
+                refs=item.get("references_total") or 0,
+                max_idx=item.get("max_reference_index_detected") or 0,
+                coverage=_format_ratio(item.get("coverage_ratio")),
+                rows_raw=_format_pct(item.get("pct_rows_raw")),
+                fallback=_format_pct(item.get("pct_raw_fallback")),
+                accepted=_format_pct(item.get("pct_accepted")),
+                issues=issues,
             )
         )
     return lines
@@ -852,46 +945,27 @@ def _build_summary_table_lines(paper_summaries: Sequence[Dict[str, Any]]) -> Lis
 def _build_summary_markdown(
     *,
     run_summary: Dict[str, Any],
-    grouped_summaries: Dict[str, List[Dict[str, Any]]],
 ) -> str:
-    aggregate = run_summary.get("aggregate_metrics") or {}
+    metadata = _coerce_dict(run_summary.get("metadata"))
+    aggregate = _coerce_dict(run_summary.get("aggregate_metrics"))
+    compact_papers = [
+        item for item in _coerce_list(run_summary.get("papers")) if isinstance(item, dict)
+    ]
     lines = [
         "# Reference Regression Summary",
         "",
-        f"- Run ID: `{run_summary.get('run_id')}`",
-        f"- Timestamp: `{run_summary.get('timestamp')}`",
-        f"- Dataset source: `{run_summary.get('dataset_source')}`",
-        f"- Dataset root: `{run_summary.get('dataset_root')}`",
-        f"- Dataset filter: `{run_summary.get('dataset_type_filter')}`",
-        f"- PDFs discovered/selected: `{run_summary.get('discovered_pdfs_total', 0)}` / `{run_summary.get('selected_pdfs_total', 0)}`",
-        f"- Engine requested: `{run_summary.get('engine_requested')}`",
-        f"- Git revision: `{run_summary.get('git_revision') or '-'}`",
+        f"- Run ID: `{metadata.get('run_id')}`",
+        f"- Timestamp: `{metadata.get('timestamp')}`",
+        f"- Engine requested: `{metadata.get('engine_requested')}`",
+        f"- Dataset filter: `{metadata.get('dataset_type_filter')}`",
+        f"- PDFs discovered/selected: `{metadata.get('discovered_pdfs_total', 0)}` / `{metadata.get('selected_pdfs_total', 0)}`",
+        f"- Git revision: `{metadata.get('git_revision') or '-'}`",
         f"- Total papers: `{aggregate.get('total_papers', 0)}`",
         f"- OK/WARN/FAIL: `{aggregate.get('total_ok', 0)}` / `{aggregate.get('total_warn', 0)}` / `{aggregate.get('total_fail', 0)}`",
+        f"- Avg rows_raw / fallback / accepted: `{_format_pct(aggregate.get('avg_pct_structure_source_rows_raw'))}` / `{_format_pct(aggregate.get('avg_pct_structure_source_raw_reference_fallback'))}` / `{_format_pct(aggregate.get('avg_pct_accepted'))}`",
         "",
     ]
-
-    group_aggregate = run_summary.get("aggregate_by_dataset_type") or {}
-    for dataset_type in DATASET_TYPE_VALUES:
-        group_metrics = group_aggregate.get(dataset_type) or {}
-        lines.extend(
-            [
-                f"- {dataset_type.title()}: `{group_metrics.get('total_papers', 0)}` papers | OK/WARN/FAIL `{group_metrics.get('total_ok', 0)}` / `{group_metrics.get('total_warn', 0)}` / `{group_metrics.get('total_fail', 0)}`",
-            ]
-        )
-
-    for dataset_type in DATASET_TYPE_VALUES:
-        paper_summaries = grouped_summaries.get(dataset_type) or []
-        if not paper_summaries:
-            continue
-        lines.extend(
-            [
-                "",
-                f"## {dataset_type.title()}",
-                "",
-            ]
-        )
-        lines.extend(_build_summary_table_lines(paper_summaries))
+    lines.extend(_build_summary_table_lines(compact_papers))
     return "\n".join(lines) + "\n"
 
 
@@ -992,9 +1066,6 @@ def _run_regression(
     git_revision = _current_git_revision()
 
     paper_summaries: List[Dict[str, Any]] = []
-    grouped_summaries: Dict[str, List[Dict[str, Any]]] = {
-        dataset_key: [] for dataset_key in DATASET_TYPE_VALUES
-    }
     for entry in selected_entries:
         paper_id = str(entry.get("id") or "").strip()
         entry_dataset_type = str(entry.get("dataset_type") or "exploratory")
@@ -1089,7 +1160,6 @@ def _run_regression(
             }
 
         paper_summaries.append(paper_summary)
-        grouped_summaries.setdefault(entry_dataset_type, []).append(paper_summary)
         print(
             "[{status}] {paper_id} ({dataset_type}): mode={mode} detected={detected} ok={ok} failed={failed} missing={missing} coverage={coverage:.3f} extraction={extraction} engine={requested}->{effective}".format(
                 status=paper_summary.get("status"),
@@ -1121,36 +1191,24 @@ def _run_regression(
         )
 
     aggregate = _aggregate_metrics(paper_summaries)
-    aggregate_by_dataset_type = {
-        dataset_key: _aggregate_metrics(grouped_summaries.get(dataset_key) or [])
-        for dataset_key in DATASET_TYPE_VALUES
-    }
-    run_summary = {
-        "run_id": run_id,
-        "timestamp": run_timestamp,
-        "dataset_source": DATASET_SOURCE_LABEL,
-        "dataset_root": str(DATASET_DIR),
-        "dataset_type_filter": dataset_type,
-        "selected_paper_ids": list(selected_paper_ids),
-        "limit": limit,
-        "engine_requested": engine,
-        "git_revision": git_revision,
-        "discovered_pdfs_total": len(dataset),
-        "selected_pdfs_total": len(selected_entries),
-        "total_papers": aggregate["total_papers"],
-        "total_ok": aggregate["total_ok"],
-        "total_warn": aggregate["total_warn"],
-        "total_fail": aggregate["total_fail"],
-        "aggregate_metrics": aggregate,
-        "aggregate_by_dataset_type": aggregate_by_dataset_type,
-        "papers": paper_summaries,
-    }
+    run_summary = _build_summary_payload(
+        run_id=run_id,
+        run_timestamp=run_timestamp,
+        dataset_type=dataset_type,
+        selected_paper_ids=selected_paper_ids,
+        limit=limit,
+        engine=engine,
+        git_revision=git_revision,
+        discovered_pdfs_total=len(dataset),
+        selected_pdfs_total=len(selected_entries),
+        aggregate=aggregate,
+        paper_summaries=paper_summaries,
+    )
     _write_json(output_dir / "summary.json", run_summary)
     _write_text(
         output_dir / "summary.md",
         _build_summary_markdown(
             run_summary=run_summary,
-            grouped_summaries=grouped_summaries,
         ),
     )
     return run_summary
@@ -1211,11 +1269,12 @@ def main() -> int:
     print()
     print(f"Summary JSON: {output_dir / 'summary.json'}")
     print(f"Summary MD:   {output_dir / 'summary.md'}")
+    aggregate = _coerce_dict(summary.get("aggregate_metrics"))
     print(
         "Totales -> OK: {ok}, WARN: {warn}, FAIL: {fail}".format(
-            ok=summary.get("total_ok", 0),
-            warn=summary.get("total_warn", 0),
-            fail=summary.get("total_fail", 0),
+            ok=aggregate.get("total_ok", 0),
+            warn=aggregate.get("total_warn", 0),
+            fail=aggregate.get("total_fail", 0),
         )
     )
     return 0
