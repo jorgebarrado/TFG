@@ -978,6 +978,67 @@ body.sidebar-open .sidebar-overlay {
 /* Hover sutil */
 .ce .ce-card:hover { box-shadow: 0 .25rem 1rem rgba(0,0,0,.08); }
 
+.extract-progress {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.95), rgba(248, 250, 252, 0.95));
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+.extract-progress-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.extract-progress-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.extract-progress-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.extract-progress-meta {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.extract-progress-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.extract-progress-track {
+  height: 0.6rem;
+  margin-top: 0.85rem;
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.extract-progress-track .progress-bar {
+  min-width: 0.85rem;
+  transition: width 0.45s ease;
+}
+
+.extract-progress.is-complete {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: linear-gradient(180deg, rgba(236, 253, 245, 0.96), rgba(248, 250, 252, 0.96));
+}
+
+.extract-progress.is-complete .extract-progress-value {
+  color: #047857;
+}
+
 
 /* Evita scroll horizontal en parrafos largos del contexto */
 .ce-paragraph {

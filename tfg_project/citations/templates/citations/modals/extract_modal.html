@@ -55,6 +55,29 @@
 
         <hr class="my-4">
 
+        <div id="extract-progress" class="extract-progress d-none" role="status" aria-live="polite">
+          <div class="extract-progress-head">
+            <div
+              id="extract-progress-spinner"
+              class="spinner-border spinner-border-sm text-primary extract-progress-spinner"
+              role="status"
+              aria-hidden="true"
+            ></div>
+            <div class="extract-progress-copy">
+              <div id="extract-progress-label" class="extract-progress-label">Preparando extraccion...</div>
+              <div id="extract-progress-meta" class="extract-progress-meta">Progreso aproximado</div>
+            </div>
+            <div id="extract-progress-value" class="extract-progress-value">0%</div>
+          </div>
+          <div class="progress extract-progress-track" aria-hidden="true">
+            <div
+              id="extract-progress-bar"
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              style="width: 0%;"
+            ></div>
+          </div>
+        </div>
+
         <div id="extract-alert" class="alert alert-danger d-none" role="alert"></div>
 
         <div id="extract-summary" class="mb-2 small text-muted d-none"></div>

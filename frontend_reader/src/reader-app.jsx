@@ -49,6 +49,24 @@ const READER_V2_LAYER_LABELS = Object.freeze({
   sections: "Sections",
 });
 
+function getApproxExtractProgressStep(value) {
+  if (value < 18) return 5;
+  if (value < 36) return 4;
+  if (value < 54) return 3;
+  if (value < 74) return 2;
+  if (value < 88) return 1;
+  return 0.4;
+}
+
+function getApproxExtractProgressLabel(value) {
+  if (value < 12) return "Preparando PDF...";
+  if (value < 28) return "Subiendo PDF y preparando extraccion...";
+  if (value < 46) return "Leyendo paginas del documento...";
+  if (value < 66) return "Detectando referencias y citas...";
+  if (value < 84) return "Relacionando resultados...";
+  return "Finalizando la extraccion...";
+}
+
 function getReaderV2LayerKeys(data) {
   const rawLayers = data?.layers;
   if (!rawLayers || typeof rawLayers !== "object") {
@@ -2113,6 +2131,10 @@ export default function ReaderApp({
     hint: "",
     tone: "idle",
   });
+  const [extractProgress, setExtractProgress] = useState({
+    value: 0,
+    label: "",
+  });
   const [articleDoiInput, setArticleDoiInput] = useState(
     String(reportOriginalDoi || "").trim()
   );
@@ -2142,6 +2164,43 @@ export default function ReaderApp({
   const inlineCitationsKeyRef = useRef("");
   const fileInputRef = useRef(null);
   const readerV2ItemRefs = useRef(new Map());
+  const extractProgressTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (!extractStatus.loading) {
+      if (extractProgressTimerRef.current) {
+        window.clearInterval(extractProgressTimerRef.current);
+        extractProgressTimerRef.current = null;
+      }
+      setExtractProgress({ value: 0, label: "" });
+      return;
+    }
+
+    setExtractProgress({
+      value: 6,
+      label: getApproxExtractProgressLabel(6),
+    });
+    extractProgressTimerRef.current = window.setInterval(() => {
+      setExtractProgress((current) => {
+        const nextValue = Math.min(
+          94,
+          Math.max(6, Number(current.value || 0)) +
+            getApproxExtractProgressStep(Number(current.value || 0))
+        );
+        return {
+          value: nextValue,
+          label: getApproxExtractProgressLabel(nextValue),
+        };
+      });
+    }, 450);
+
+    return () => {
+      if (extractProgressTimerRef.current) {
+        window.clearInterval(extractProgressTimerRef.current);
+        extractProgressTimerRef.current = null;
+      }
+    };
+  }, [extractStatus.loading]);
 
   useEffect(() => {
     if (!previewFile) {
@@ -4776,7 +4835,9 @@ export default function ReaderApp({
           onClick={handleExtract}
           disabled={!canExtract}
         >
-          {extractStatus.loading ? "Extrayendo..." : "Extraer"}
+          {extractStatus.loading
+            ? `Extrayendo... ${Math.round(extractProgress.value || 0)}%`
+            : "Extraer"}
         </button>
         <button
           type="button"
@@ -4803,6 +4864,32 @@ export default function ReaderApp({
         />
         <span>Guardar JSON de depuracion de referencias</span>
       </label>
+      {extractStatus.loading && (
+        <div className="reader-extract-progress" role="status" aria-live="polite">
+          <div className="reader-extract-progress-head">
+            <span className="reader-extract-progress-spinner" aria-hidden="true" />
+            <div className="reader-extract-progress-copy">
+              <div className="reader-extract-progress-label">
+                {extractProgress.label || "Preparando extraccion..."}
+              </div>
+              <div className="reader-extract-progress-meta">
+                Progreso aproximado
+              </div>
+            </div>
+            <div className="reader-extract-progress-value">
+              {Math.round(extractProgress.value || 0)}%
+            </div>
+          </div>
+          <div className="reader-extract-progress-track" aria-hidden="true">
+            <div
+              className="reader-extract-progress-fill"
+              style={{
+                width: `${Math.max(4, Math.round(extractProgress.value || 0))}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
       {(extractStatus.error || extractStatus.message || extractStatus.hint) && (
         <div
           className={
