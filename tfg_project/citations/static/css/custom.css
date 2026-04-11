@@ -707,7 +707,7 @@ body.sidebar-open .sidebar-overlay {
 
 .table-modern {
   border-radius: 1rem;
-  overflow: hidden;
+  overflow: auto;
   border: 1px solid rgba(226, 232, 240, 0.8);
   background: rgba(255,255,255,0.96);
   box-shadow: 0 18px 45px rgba(15,23,42,0.08);
@@ -722,6 +722,166 @@ body.sidebar-open .sidebar-overlay {
 
 .table-modern th, .table-modern td {
   vertical-align: middle;
+}
+
+/* ============================================
+   TABLA REDISENADA - citation_list.html
+   ============================================ */
+
+.table-redesign th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+
+.table-redesign td {
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.table-redesign tbody tr {
+  transition: background 0.15s;
+}
+
+.table-redesign tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+.report-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e293b;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.report-title:hover {
+  color: #3b82f6;
+}
+
+.report-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.report-meta a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.report-meta a:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.report-doi {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  font-family: monospace;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.report-doi:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.badge-error {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.badge-misinterpretation {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-not-said {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.badge-contextual {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.badge-area {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  display: inline-block;
+}
+
+.vote-net {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 45px;
+}
+
+.vote-positive { color: #16a34a; }
+.vote-negative { color: #dc2626; }
+.vote-zero { color: #9ca3af; }
+
+.date-relative {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.date-exact {
+  font-size: 0.65rem;
+  color: #c0c0c0;
+  display: block;
+}
+
+.btn-ver-new {
+  font-size: 0.75rem;
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.15s;
+  display: inline-block;
+}
+
+.btn-ver-new:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-save-new {
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-save-new:hover,
+.btn-save-new--active {
+  color: #f59e0b;
+  border-color: #f59e0b;
 }
 
 .filter-chip {

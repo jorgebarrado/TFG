@@ -11,8 +11,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
-from django.db.models.functions import ExtractYear
+from django.db.models import Count, IntegerField, Q, Sum, Value
+from django.db.models.functions import Coalesce, ExtractYear
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -357,7 +357,13 @@ def citation_list(request):
     """
     qs = (
         IncorrectCitation.objects.select_related("author")
-        .prefetch_related("votes")
+        .annotate(
+            net_votes=Coalesce(
+                Sum("votes__value"),
+                Value(0),
+                output_field=IntegerField(),
+            ),
+        )
         .order_by("-created_at")
     )
 
@@ -394,8 +400,24 @@ def citation_list(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    saved_citation_ids = set()
+    if request.user.is_authenticated:
+        page_ids = [citation.id for citation in page_obj.object_list]
+        if page_ids:
+            saved_citation_ids = set(
+                request.user.saved_citations.filter(citation_id__in=page_ids).values_list(
+                    "citation_id", flat=True
+                )
+            )
+
+    for citation in page_obj.object_list:
+        report_title = _extract_report_title(citation)
+        citation.report_title_display = report_title or f"Reporte #{citation.id}"
+        citation.is_saved = citation.id in saved_citation_ids
+
     context = {
         "citations": page_obj,
+        "reports_total": paginator.count,
         "areas": areas,
         "citation_types": citation_types,
         "years": years,
