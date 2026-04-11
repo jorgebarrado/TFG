@@ -13,6 +13,12 @@
   const summaryBox = document.getElementById('extract-summary');
   const resultsBox = document.getElementById('extract-results');
   const tracePre   = document.getElementById('extract-trace');
+  const progressBox = document.getElementById('extract-progress');
+  const progressBar = document.getElementById('extract-progress-bar');
+  const progressLabel = document.getElementById('extract-progress-label');
+  const progressMeta = document.getElementById('extract-progress-meta');
+  const progressValue = document.getElementById('extract-progress-value');
+  const progressSpinner = document.getElementById('extract-progress-spinner');
   const modalEl    = document.getElementById('extractModal');
 
   const ENDPOINT = '/citations/api/extract-citations/';
@@ -25,8 +31,97 @@
   if (!form) return; // por si la modal no está en esta vista
 
   let extractionResult = null;
+  let progressTimer = null;
+  let progressPercent = 0;
+
+  function getApproxProgressStep(value) {
+    if (value < 18) return 5;
+    if (value < 36) return 4;
+    if (value < 54) return 3;
+    if (value < 74) return 2;
+    if (value < 88) return 1;
+    return 0.4;
+  }
+
+  function getApproxProgressLabel(value) {
+    if (value < 12) return 'Preparando PDF...';
+    if (value < 28) return 'Subiendo PDF y preparando extraccion...';
+    if (value < 46) return 'Leyendo paginas del documento...';
+    if (value < 66) return 'Detectando referencias y citas...';
+    if (value < 84) return 'Relacionando resultados...';
+    return 'Finalizando la extraccion...';
+  }
+
+  function clearProgressTimer() {
+    if (progressTimer) {
+      window.clearInterval(progressTimer);
+      progressTimer = null;
+    }
+  }
+
+  function renderProgress(percent, label, meta, { complete = false } = {}) {
+    if (!progressBox || !progressBar || !progressLabel || !progressMeta || !progressValue) {
+      return;
+    }
+    const safePercent = Math.max(0, Math.min(100, Number(percent || 0)));
+    progressBox.classList.remove('d-none');
+    progressBox.classList.toggle('is-complete', complete);
+    progressLabel.textContent = label || 'Extraccion en curso...';
+    progressMeta.textContent = meta || 'Progreso aproximado';
+    progressValue.textContent = `${Math.round(safePercent)}%`;
+    progressBar.style.width = `${safePercent}%`;
+    progressBar.classList.toggle('progress-bar-striped', !complete);
+    progressBar.classList.toggle('progress-bar-animated', !complete);
+    progressBar.classList.toggle('bg-success', complete);
+    if (progressSpinner) {
+      progressSpinner.classList.toggle('d-none', complete);
+    }
+    if (btnSubmit && btnSubmit.disabled) {
+      btnSubmit.textContent = complete
+        ? 'Extraccion completada'
+        : `Extrayendo... ${Math.round(safePercent)}%`;
+    }
+  }
+
+  function resetProgress() {
+    clearProgressTimer();
+    progressPercent = 0;
+    if (!progressBox || !progressBar || !progressLabel || !progressMeta || !progressValue) {
+      return;
+    }
+    progressBox.classList.add('d-none');
+    progressBox.classList.remove('is-complete');
+    progressLabel.textContent = 'Preparando extraccion...';
+    progressMeta.textContent = 'Progreso aproximado';
+    progressValue.textContent = '0%';
+    progressBar.style.width = '0%';
+    progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
+    progressBar.classList.remove('bg-success');
+    if (progressSpinner) {
+      progressSpinner.classList.remove('d-none');
+    }
+  }
+
+  function startProgress() {
+    clearProgressTimer();
+    progressPercent = 6;
+    renderProgress(progressPercent, getApproxProgressLabel(progressPercent), 'Progreso aproximado');
+    progressTimer = window.setInterval(() => {
+      progressPercent = Math.min(94, progressPercent + getApproxProgressStep(progressPercent));
+      renderProgress(progressPercent, getApproxProgressLabel(progressPercent), 'Progreso aproximado');
+    }, 450);
+  }
+
+  function completeProgress() {
+    clearProgressTimer();
+    progressPercent = 100;
+    renderProgress(progressPercent, 'Extraccion completada.', 'Progreso aproximado', {
+      complete: true,
+    });
+  }
 
   function hideAllFeedback() {
+    resetProgress();
     alertBox.classList.add('d-none');
     summaryBox.classList.add('d-none');
     resultsBox.classList.add('d-none');
@@ -339,6 +434,7 @@
   if (fileInput) {
     fileInput.addEventListener('change', () => {
       extractionResult = null;
+      resetProgress();
     });
   }
   if (modalEl) {
@@ -375,7 +471,8 @@
 
     btnSubmit.disabled = true;
     const originalText = btnSubmit.textContent;
-    btnSubmit.textContent = 'Procesando…';
+    btnSubmit.textContent = 'Extrayendo... 0%';
+    startProgress();
 
     try {
       const fd = new FormData();
@@ -389,6 +486,7 @@
 
       // --- Manejo de error del servidor (ok:false) ---
       if (!data.ok) {
+        resetProgress();
         alertBox.textContent = data.error || 'No se pudo extraer citas con el motor seleccionado.';
         alertBox.classList.remove('d-none');
 
@@ -402,6 +500,7 @@
       // --- OK: pintar resumen, resultados y (si procede) la traza ---
       renderResults(data);
       extractionResult = buildExtractionResult(data);
+      completeProgress();
       if (data.reference_debug?.output_path) {
         summaryBox.textContent = `${summaryBox.textContent} · debug: ${data.reference_debug.output_path}`;
       }
@@ -414,6 +513,7 @@
 
       wireCardActions();
     } catch (e) {
+      resetProgress();
       alertBox.textContent = 'Error de red o de servidor al extraer citas.';
       alertBox.classList.remove('d-none');
     } finally {
