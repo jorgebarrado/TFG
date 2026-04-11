@@ -1325,6 +1325,68 @@ body.sidebar-open .sidebar-overlay {
     opacity: 0.35;
 }
 
+.citation-preview-modal .modal-dialog {
+    max-width: 1000px;
+}
+
+.citation-preview-modal .modal-content {
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.preview-icon-box {
+    width: 52px;
+    height: 52px;
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.preview-highlight-card {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+}
+
+.preview-card-title {
+    font-size: 1.1rem;
+}
+
+.preview-small-title {
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+}
+
+.preview-doi-card {
+    background-color: rgba(248, 250, 252, 1);
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.preview-doi-good {
+    background-color: rgba(25, 135, 84, 0.05);
+    border-color: rgba(25, 135, 84, 0.2) !important;
+}
+
+.preview-doi-bad {
+    background-color: rgba(220, 53, 69, 0.05);
+    border-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+.preview-warning-card {
+    background-color: rgba(255, 193, 7, 0.08);
+    border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.preview-reason-text {
+    font-size: 0.9rem;
+}
+
+.preview-actions-panel {
+    min-height: 100%;
+}
+
+.preview-note-text {
+    font-size: 0.8rem;
+}
+
 /* Sidebar en ajustes de cuenta (flujo normal) */
 .settings-sidebar {
   align-self: flex-start;
