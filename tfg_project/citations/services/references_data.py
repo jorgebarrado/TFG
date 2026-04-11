@@ -28,6 +28,12 @@ DOTTED_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*(\d{1,4})\.(.*)$")
 SUFFIX_PAREN_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*(\d{1,4})\)(.*)$")
 WRAPPED_PAREN_REFERENCE_CANDIDATE_RE = re.compile(r"^\s*\(\s*(\d{1,4})\s*\)(.*)$")
 SPLITTABLE_PAREN_ANCHOR_RE = re.compile(r"\(\s*\d{1,4}\s*\)|\b\d{1,4}\)")
+MARKER_ONLY_BRACKETED_REFERENCE_RE = re.compile(r"^\s*\[\s*(\d{1,4})\s*\]\s*$")
+MARKER_ONLY_DOTTED_REFERENCE_RE = re.compile(r"^\s*(\d{1,4})\.\s*$")
+MARKER_ONLY_SUFFIX_PAREN_REFERENCE_RE = re.compile(r"^\s*(\d{1,4})\)\s*$")
+MARKER_ONLY_WRAPPED_PAREN_REFERENCE_RE = re.compile(
+    r"^\s*\(\s*(\d{1,4})\s*\)\s*$"
+)
 NUMERIC_ANCHOR_STYLES = (
     "bracketed",
     "dotted",
@@ -129,7 +135,9 @@ REFERENCE_SECTION_HEADING_RE = re.compile(
 )
 REFERENCE_DEBUG_FILE_PREFIX = "debug-"
 REFERENCE_DEBUG_FILE_EXTENSION = ".json"
-REFERENCE_PIPELINE_VERSION = "references-phased-v3"
+REFERENCE_PIPELINE_VERSION = "references-phased-v4"
+NUMERIC_REFERENCE_PIPELINE_V2_NAME = "numeric_reference_pipeline_v2"
+NUMERIC_REFERENCE_PIPELINE_V2_RUN_MODE = "debug_only"
 REFERENCE_DEBUG_DIR = (
     Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
 )
@@ -4402,6 +4410,1782 @@ def build_references_from_rows(
     return parsed
 
 
+def _strip_numeric_anchor_prefix(text: str) -> str:
+    value = str(text or "")
+    bracketed_match = BRACKETED_REFERENCE_LINE_RE.match(value)
+    if bracketed_match:
+        return value[bracketed_match.end():].lstrip()
+    for candidate_pattern in (
+        DOTTED_REFERENCE_CANDIDATE_RE,
+        SUFFIX_PAREN_REFERENCE_CANDIDATE_RE,
+        WRAPPED_PAREN_REFERENCE_CANDIDATE_RE,
+    ):
+        candidate_match = candidate_pattern.match(value)
+        if candidate_match:
+            return str(candidate_match.group(2) or "").lstrip()
+    return value.strip()
+
+
+def _match_marker_only_numeric_anchor(text: str) -> Optional[Dict[str, Any]]:
+    value = str(text or "")
+    for pattern, style in (
+        (MARKER_ONLY_BRACKETED_REFERENCE_RE, "bracketed"),
+        (MARKER_ONLY_DOTTED_REFERENCE_RE, "dotted"),
+        (MARKER_ONLY_SUFFIX_PAREN_REFERENCE_RE, "suffix_paren"),
+        (MARKER_ONLY_WRAPPED_PAREN_REFERENCE_RE, "wrapped_paren"),
+    ):
+        match = pattern.match(value)
+        if not match:
+            continue
+        try:
+            index = int(match.group(1))
+        except (TypeError, ValueError):
+            return None
+        if index <= 0 or (style in {"suffix_paren", "wrapped_paren"} and 1900 <= index <= 2099):
+            return None
+        return {
+            "index": index,
+            "anchor_style": style,
+            "accepted": True,
+            "anchor_rejected_reason": None,
+        }
+    return None
+
+
+def _has_v2_bibliographic_body_signal(text: str) -> bool:
+    value = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not value:
+        return False
+    alpha_words = REFERENCE_WORD_RE.findall(value)
+    return bool(
+        _has_bibliographic_lead_signal(value)
+        or _extract_doi(value)
+        or REFERENCE_YEAR_RE.search(value)
+        or len(alpha_words) >= 6
+        or len(value) >= 72
+    )
+
+
+def _row_is_section_transition_v2(text: str) -> bool:
+    value = str(text or "").strip()
+    if not value:
+        return True
+    return bool(
+        _is_reference_heading_text(value)
+        or _is_reference_header_like(value)
+        or re.match(
+            r"^\s*(?:appendix|appendices|annex|supplement(?:ary)?|acknowledg(?:e)?ments?)\b",
+            value,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _reference_needs_continuation_v2(rows: Sequence[Dict[str, Any]]) -> bool:
+    text = _clean_reference_text(rows)
+    if not text:
+        return True
+    compact = text.strip()
+    if len(compact) < 64:
+        return True
+    if compact.endswith(("-", ":", ",", ";", "/", "(")):
+        return True
+    if re.search(
+        r"\b(?:and|for|from|of|the|through|with)\s*$",
+        compact,
+        flags=re.IGNORECASE,
+    ):
+        return True
+    quality = _reference_text_quality_metrics(compact)
+    return bool(
+        quality.get("broken_url_like")
+        or quality.get("trailing_after_doi")
+        or quality.get("fragment_after_pages")
+    )
+
+
+def _detect_numeric_anchor_candidates_v2(
+    ordered_rows: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    for position, row in enumerate(ordered_rows):
+        text = str(row.get("text") or "").strip()
+        if not text:
+            continue
+        next_row = ordered_rows[position + 1] if position + 1 < len(ordered_rows) else None
+        next_text = str((next_row or {}).get("text") or "").strip()
+        accepted_anchor = _match_reference_anchor_at_line_start(text)
+        anchor_candidate = _match_reference_anchor_at_line_start(
+            text,
+            include_rejected=True,
+        )
+        marker_only = _match_marker_only_numeric_anchor(text)
+        body_text = _strip_numeric_anchor_prefix(text)
+        weak_split_body = bool(
+            next_row
+            and row.get("page") == next_row.get("page")
+            and _has_v2_bibliographic_body_signal(next_text)
+        )
+        if accepted_anchor and accepted_anchor.get("accepted"):
+            confidence = 0.98 if accepted_anchor.get("anchor_style") == "bracketed" else 0.94
+            if not _has_v2_bibliographic_body_signal(body_text) and weak_split_body:
+                confidence = round(confidence - 0.08, 3)
+            candidates.append(
+                {
+                    "index": int(accepted_anchor.get("index") or 0),
+                    "anchor_style": accepted_anchor.get("anchor_style"),
+                    "confidence": confidence,
+                    "strength": "strong",
+                    "reason": (
+                        "accepted_anchor_with_split_body"
+                        if weak_split_body and not _has_v2_bibliographic_body_signal(body_text)
+                        else "accepted_anchor"
+                    ),
+                    "page": row.get("page"),
+                    "position": int(row.get("flow_position", position)),
+                    "row_id": str(row.get("id") or ""),
+                    "row": row,
+                    "body_inline": body_text,
+                    "body_in_next_row": bool(
+                        weak_split_body and not _has_v2_bibliographic_body_signal(body_text)
+                    ),
+                }
+            )
+            continue
+        if marker_only and weak_split_body:
+            candidates.append(
+                {
+                    "index": int(marker_only.get("index") or 0),
+                    "anchor_style": marker_only.get("anchor_style"),
+                    "confidence": 0.79,
+                    "strength": "weak",
+                    "reason": "marker_only_anchor_followed_by_body_row",
+                    "page": row.get("page"),
+                    "position": int(row.get("flow_position", position)),
+                    "row_id": str(row.get("id") or ""),
+                    "row": row,
+                    "body_inline": "",
+                    "body_in_next_row": True,
+                }
+            )
+            continue
+        if (
+            anchor_candidate
+            and not anchor_candidate.get("accepted")
+            and anchor_candidate.get("anchor_rejected_reason") == "weak_bibliographic_signal"
+            and weak_split_body
+        ):
+            candidates.append(
+                {
+                    "index": int(anchor_candidate.get("index") or 0),
+                    "anchor_style": anchor_candidate.get("anchor_style"),
+                    "confidence": 0.74,
+                    "strength": "weak",
+                    "reason": "recovered_split_anchor_from_following_row",
+                    "page": row.get("page"),
+                    "position": int(row.get("flow_position", position)),
+                    "row_id": str(row.get("id") or ""),
+                    "row": row,
+                    "body_inline": body_text,
+                    "body_in_next_row": True,
+                }
+            )
+    candidates.sort(
+        key=lambda item: (
+            int(item.get("position") or 0),
+            -float(item.get("confidence") or 0.0),
+        )
+    )
+    for idx, candidate in enumerate(candidates):
+        previous_index = _to_int(candidates[idx - 1].get("index")) if idx > 0 else None
+        next_index = (
+            _to_int(candidates[idx + 1].get("index"))
+            if idx + 1 < len(candidates)
+            else None
+        )
+        candidate["sequence_supported"] = bool(
+            previous_index == int(candidate.get("index") or 0) - 1
+            or next_index == int(candidate.get("index") or 0) + 1
+        )
+    return candidates
+
+
+def _group_rows_into_reading_bands_v2(
+    page_rows: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    bands: List[Dict[str, Any]] = []
+    for row in sorted(
+        page_rows,
+        key=lambda item: (
+            float(item.get("x0") or 0.0),
+            float(item.get("y0") or 0.0),
+            float(item.get("x1") or 0.0),
+        ),
+    ):
+        row_box = _normalize_box(row.get("box"))
+        if row_box is None:
+            continue
+        row_x0 = float(row.get("x0") or row_box[0])
+        row_x1 = float(row.get("x1") or (row_box[0] + row_box[2]))
+        best_band: Optional[Dict[str, Any]] = None
+        best_distance: Optional[float] = None
+        for band in bands:
+            band_x0 = float(band.get("x0_median") or 0.0)
+            band_x1 = float(band.get("x1_median") or 0.0)
+            overlap = max(0.0, min(row_x1, band_x1) - max(row_x0, band_x0))
+            union = max(row_x1, band_x1) - min(row_x0, band_x0)
+            overlap_ratio = overlap / union if union > 0 else 0.0
+            distance = abs(row_x0 - band_x0)
+            if overlap_ratio < 0.14 and distance > 0.12:
+                continue
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best_band = band
+        if best_band is None:
+            best_band = {
+                "rows": [],
+                "x0_values": [],
+                "x1_values": [],
+            }
+            bands.append(best_band)
+        best_band["rows"].append(row)
+        best_band["x0_values"].append(row_x0)
+        best_band["x1_values"].append(row_x1)
+        best_band["x0_median"] = _median(best_band["x0_values"])
+        best_band["x1_median"] = _median(best_band["x1_values"])
+
+    out: List[Dict[str, Any]] = []
+    for band_index, band in enumerate(
+        sorted(
+            bands,
+            key=lambda item: (
+                float(item.get("x0_median") or 0.0),
+                min(float(row.get("y0") or 0.0) for row in item.get("rows") or [{}]),
+            ),
+        )
+    ):
+        band_rows = sorted(band.get("rows") or [], key=_line_sort_key)
+        band_box = _union_boxes(
+            [row.get("box") for row in band_rows if _normalize_box(row.get("box"))]
+        )
+        if not band_rows or band_box is None:
+            continue
+        out.append(
+            {
+                "band_index": band_index,
+                "rows": band_rows,
+                "box": band_box,
+                "x0_median": round(float(band.get("x0_median") or band_box[0]), 4),
+                "x1_median": round(
+                    float(band.get("x1_median") or (band_box[0] + band_box[2])),
+                    4,
+                ),
+            }
+        )
+    return out
+
+
+def _build_numeric_bibliography_territory_v2(
+    *,
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    rows_with_columns = _assign_column_ids(rows)
+    page_splits = _collect_page_split_map(rows_with_columns)
+    heading_candidates = _detect_reference_heading_candidates(
+        rows_with_columns,
+        sections,
+        page_splits,
+    )
+    pre_reading_flow = build_bibliography_reading_flow(rows_with_columns)
+    pre_anchor_candidates = _detect_numeric_anchor_candidates_v2(pre_reading_flow)
+    max_page = max(
+        (int(row.get("page")) for row in rows_with_columns if isinstance(row.get("page"), int)),
+        default=-1,
+    )
+    tail_page_span = max(3, int((max_page + 1) * 0.35))
+    tail_start_page = max(0, max_page - tail_page_span + 1)
+    tail_heading_candidates = [
+        candidate
+        for candidate in heading_candidates
+        if int(candidate.get("page") or -1) >= tail_start_page
+    ]
+    tail_anchor_candidates = [
+        candidate
+        for candidate in pre_anchor_candidates
+        if int(candidate.get("page") or -1) >= tail_start_page
+    ]
+    tail_bibliography_pages = sorted(
+        {
+            int(item.get("page"))
+            for item in bibliography_items
+            if isinstance(item.get("page"), int) and int(item.get("page")) >= tail_start_page
+        }
+    )
+    start_page_candidates = [candidate["page"] for candidate in tail_heading_candidates]
+    start_page_candidates.extend(
+        candidate.get("page") for candidate in tail_anchor_candidates[:6]
+    )
+    if not start_page_candidates and tail_bibliography_pages:
+        start_page_candidates.append(tail_bibliography_pages[0])
+    if not start_page_candidates:
+        start_page_candidates.extend(candidate["page"] for candidate in heading_candidates)
+        start_page_candidates.extend(
+            candidate.get("page") for candidate in pre_anchor_candidates[:6]
+        )
+    valid_start_pages = [
+        int(page)
+        for page in start_page_candidates
+        if isinstance(page, int) and page >= 0
+    ]
+    start_page = min(valid_start_pages) if valid_start_pages else None
+    heading_pool = tail_heading_candidates or heading_candidates
+    selected_heading = None
+    if heading_pool:
+        selected_heading = min(
+            heading_pool,
+            key=lambda item: (
+                abs(int(item["page"]) - int(start_page or item["page"])),
+                item["box"][1],
+                item["box"][0],
+            ),
+        )
+        if start_page is None:
+            start_page = selected_heading["page"]
+
+    artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    anchor_row_ids = {
+        str(candidate.get("row_id") or "")
+        for candidate in pre_anchor_candidates
+        if str(candidate.get("row_id") or "").strip()
+    }
+    heading_bottom_by_page: Dict[int, float] = {}
+    if isinstance(selected_heading, dict):
+        heading_box = _normalize_box(selected_heading.get("box"))
+        heading_page = _to_int(selected_heading.get("page"))
+        if heading_box is not None and isinstance(heading_page, int):
+            heading_bottom_by_page[heading_page] = round(
+                float(heading_box[1]) + float(heading_box[3]),
+                4,
+            )
+
+    territory_rows: List[Dict[str, Any]] = []
+    territory_zones: List[Dict[str, Any]] = []
+    reading_units: List[Dict[str, Any]] = []
+    grouped_by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows_with_columns:
+        page = _to_int(row.get("page"))
+        text = str(row.get("text") or "").strip()
+        box = _normalize_box(row.get("box"))
+        if not isinstance(page, int) or start_page is None or page < start_page:
+            continue
+        if not text or box is None:
+            continue
+        if (
+            page in heading_bottom_by_page
+            and float(box[1]) + float(box[3]) < float(heading_bottom_by_page[page])
+            and str(row.get("id") or "") not in anchor_row_ids
+        ):
+            continue
+        if _is_header_footer_row(row, artifact_info) and str(row.get("id") or "") not in anchor_row_ids:
+            continue
+        grouped_by_page[page].append(row)
+
+    for page in sorted(grouped_by_page.keys()):
+        page_rows = grouped_by_page.get(page) or []
+        page_bands = _group_rows_into_reading_bands_v2(page_rows)
+        accepted_bands: List[Dict[str, Any]] = []
+        for band in page_bands:
+            band_rows = band.get("rows") or []
+            band_box = _normalize_box(band.get("box"))
+            if not band_rows or band_box is None:
+                continue
+            band_anchor_candidates = [
+                candidate
+                for candidate in pre_anchor_candidates
+                if str(candidate.get("row_id") or "") in {
+                    str(row.get("id") or "") for row in band_rows
+                }
+            ]
+            band_overlap = max(
+                (
+                    _overlap_ratio(item.get("box"), band_box)
+                    for item in bibliography_items
+                    if _to_int(item.get("page")) == page
+                    and _normalize_box(item.get("box")) is not None
+                ),
+                default=0.0,
+            )
+            bibliography_signal_rows = sum(
+                1
+                for row in band_rows
+                if _has_v2_bibliographic_body_signal(str(row.get("text") or ""))
+                or str(row.get("id") or "") in anchor_row_ids
+            )
+            bibliography_density = bibliography_signal_rows / max(len(band_rows), 1)
+            score = 0.0
+            if band_anchor_candidates:
+                score += 0.38
+            if band_overlap >= 0.18:
+                score += min(band_overlap, 0.24)
+            score += min(bibliography_density * 0.32, 0.32)
+            if page in heading_bottom_by_page:
+                score += 0.08
+            if len(band_rows) >= 3:
+                score += 0.08
+            accepted = bool(
+                score >= 0.28
+                or band_overlap >= 0.24
+                or (page == start_page and band_anchor_candidates)
+            )
+            reading_unit_id = f"v2-unit-{page}-{int(band.get('band_index') or 0)}"
+            accepted_bands.append(
+                {
+                    "id": reading_unit_id,
+                    "page": page,
+                    "band_index": int(band.get("band_index") or 0),
+                    "box": band_box,
+                    "rows": band_rows,
+                    "anchor_indices": sorted(
+                        {
+                            int(candidate.get("index"))
+                            for candidate in band_anchor_candidates
+                            if _to_int(candidate.get("index")) not in (None, 0)
+                        }
+                    ),
+                    "anchor_total": len(band_anchor_candidates),
+                    "bibliography_density": round(bibliography_density, 3),
+                    "layer_overlap": round(band_overlap, 3),
+                    "confidence": round(min(score, 0.98), 3),
+                    "accepted": accepted,
+                }
+            )
+        accepted_bands = [band for band in accepted_bands if band.get("accepted")]
+        accepted_bands.sort(
+            key=lambda band: (
+                0 if (page in heading_bottom_by_page and band.get("anchor_total")) else 1,
+                min(band.get("anchor_indices") or [10**9]),
+                float((_normalize_box(band.get("box")) or [0.0])[0]),
+            )
+        )
+        for order_index, band in enumerate(accepted_bands):
+            band_box = _normalize_box(band.get("box"))
+            if band_box is None:
+                continue
+            territory_zones.append(
+                {
+                    "id": band["id"],
+                    "page": page,
+                    "box": band_box,
+                    "confidence": band.get("confidence"),
+                    "anchor_indices": band.get("anchor_indices") or [],
+                    "anchor_total": band.get("anchor_total"),
+                    "bibliography_density": band.get("bibliography_density"),
+                    "layer_overlap": band.get("layer_overlap"),
+                    "source_signals": [
+                        part
+                        for part, enabled in (
+                            ("anchors", bool(band.get("anchor_total"))),
+                            ("bibliography_layer", float(band.get("layer_overlap") or 0.0) >= 0.18),
+                            ("heading", page in heading_bottom_by_page),
+                            (
+                                "bibliographic_density",
+                                float(band.get("bibliography_density") or 0.0) >= 0.45,
+                            ),
+                        )
+                        if enabled
+                    ],
+                    "row_ids": [str(row.get("id") or "") for row in band.get("rows") or []],
+                }
+            )
+            reading_units.append(
+                {
+                    "id": band["id"],
+                    "page": page,
+                    "order_on_page": order_index,
+                    "band_index": band.get("band_index"),
+                    "box": band_box,
+                    "anchor_indices": band.get("anchor_indices") or [],
+                    "bibliography_density": band.get("bibliography_density"),
+                    "confidence": band.get("confidence"),
+                    "row_ids": [str(row.get("id") or "") for row in band.get("rows") or []],
+                }
+            )
+            for row in band.get("rows") or []:
+                next_row = dict(row)
+                next_row["reading_unit_id"] = band["id"]
+                next_row["reading_unit_order_on_page"] = order_index
+                next_row["column_id_v2"] = f"band_{page}_{order_index}"
+                territory_rows.append(next_row)
+
+    territory_rows.sort(
+        key=lambda row: (
+            int(row.get("page") or 0),
+            int(row.get("reading_unit_order_on_page") or 0),
+            float(row.get("y0") or 0.0),
+            float(row.get("x0") or 0.0),
+        )
+    )
+    ordered_rows: List[Dict[str, Any]] = []
+    for flow_position, row in enumerate(territory_rows):
+        next_row = dict(row)
+        next_row["flow_position"] = flow_position
+        ordered_rows.append(next_row)
+
+    bibliography_anchor = None
+    if territory_zones:
+        first_zone = min(
+            territory_zones,
+            key=lambda item: (
+                int(item.get("page") or 0),
+                float((_normalize_box(item.get("box")) or [0.0, 0.0])[1]),
+                float((_normalize_box(item.get("box")) or [0.0])[0]),
+            ),
+        )
+        first_box = _normalize_box(first_zone.get("box"))
+        if first_box is not None:
+            bibliography_anchor = (int(first_zone.get("page") or 0), float(first_box[1]))
+
+    return {
+        "rows_with_columns": rows_with_columns,
+        "page_splits": page_splits,
+        "heading_candidates": heading_candidates,
+        "selected_heading": selected_heading,
+        "start_page": start_page,
+        "territory_zones": territory_zones,
+        "reading_units": reading_units,
+        "ordered_rows": ordered_rows,
+        "bibliography_anchor": bibliography_anchor,
+        "anchor_candidates_scan": pre_anchor_candidates,
+    }
+
+
+def _reconcile_numeric_anchor_candidates_v2(
+    *,
+    anchor_candidates: Sequence[Dict[str, Any]],
+    expected_indices: Sequence[int],
+) -> Dict[str, Any]:
+    candidates_by_index: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for candidate in anchor_candidates:
+        index = _to_int(candidate.get("index"))
+        if index is None or index <= 0:
+            continue
+        candidates_by_index[index].append(dict(candidate))
+    selected_anchors: List[Dict[str, Any]] = []
+    duplicate_indices: List[int] = []
+    reconciliation_actions: List[Dict[str, Any]] = []
+    for index in sorted(candidates_by_index.keys()):
+        ranked_candidates = sorted(
+            candidates_by_index[index],
+            key=lambda item: (
+                -float(item.get("confidence") or 0.0),
+                0 if str(item.get("strength") or "") == "strong" else 1,
+                int(item.get("position") or 0),
+            ),
+        )
+        selected = dict(ranked_candidates[0])
+        selected["resolution"] = "selected"
+        selected_anchors.append(selected)
+        if len(ranked_candidates) > 1:
+            duplicate_indices.append(index)
+            for duplicate in ranked_candidates[1:]:
+                reconciliation_actions.append(
+                    {
+                        "action": "drop_duplicate_anchor",
+                        "index": index,
+                        "row_id": duplicate.get("row_id"),
+                        "confidence": duplicate.get("confidence"),
+                        "reason": "lower_ranked_duplicate_anchor_candidate",
+                    }
+                )
+    selected_anchors.sort(
+        key=lambda item: (
+            int(item.get("index") or 0),
+            int(item.get("position") or 0),
+        )
+    )
+    selected_index_set = {
+        int(anchor.get("index"))
+        for anchor in selected_anchors
+        if _to_int(anchor.get("index")) not in (None, 0)
+    }
+    normalized_expected = sorted(
+        {
+            int(index)
+            for index in expected_indices
+            if isinstance(index, int) and int(index) > 0
+        }
+    )
+    missing_indices = [
+        index for index in normalized_expected if index not in selected_index_set
+    ]
+    inferred_anchors = [
+        {
+            "index": index,
+            "confidence": 0.0,
+            "strength": "inferred_missing",
+            "reason": "missing_from_detected_anchor_sequence",
+        }
+        for index in missing_indices
+    ]
+    reconciliation_actions.extend(
+        {
+            "action": "mark_missing_anchor",
+            "index": index,
+            "reason": "expected_index_not_detected_in_v2_anchor_sequence",
+        }
+        for index in missing_indices
+    )
+    anchor_sequence = [
+        {
+            "index": int(anchor.get("index") or 0),
+            "page": anchor.get("page"),
+            "position": anchor.get("position"),
+            "row_id": anchor.get("row_id"),
+            "anchor_style": anchor.get("anchor_style"),
+            "strength": anchor.get("strength"),
+            "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+            "body_in_next_row": bool(anchor.get("body_in_next_row")),
+            "sequence_supported": bool(anchor.get("sequence_supported")),
+            "reason": anchor.get("reason"),
+        }
+        for anchor in selected_anchors
+    ]
+    return {
+        "selected_anchors": selected_anchors,
+        "anchor_sequence": anchor_sequence,
+        "missing_indices": missing_indices,
+        "duplicate_indices": sorted(set(duplicate_indices)),
+        "inferred_anchors": inferred_anchors,
+        "reconciliation_actions": reconciliation_actions,
+    }
+
+
+def _compute_row_continuity_score_v2(rows: Sequence[Dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    if len(rows) == 1:
+        return 0.78
+    penalties = 0.0
+    previous = rows[0]
+    for row in rows[1:]:
+        previous_page = _to_int(previous.get("page"))
+        current_page = _to_int(row.get("page"))
+        if previous_page is None or current_page is None:
+            penalties += 0.16
+        elif current_page < previous_page:
+            penalties += 0.42
+        elif current_page == previous_page:
+            previous_y1 = _to_float(previous.get("y1"))
+            current_y0 = _to_float(row.get("y0"))
+            if previous_y1 is not None and current_y0 is not None:
+                gap = float(current_y0) - float(previous_y1)
+                if gap > 0.1:
+                    penalties += min(gap * 1.8, 0.18)
+        elif current_page - previous_page == 1:
+            penalties += 0.06
+            current_y0 = _to_float(row.get("y0"))
+            if current_y0 is not None and float(current_y0) > 0.52:
+                penalties += 0.08
+        else:
+            penalties += 0.26
+        if previous.get("reading_unit_id") != row.get("reading_unit_id"):
+            penalties += 0.08
+        previous = row
+    return round(max(0.0, min(1.0, 1.0 - penalties)), 3)
+
+
+def _score_same_reference_row_v2(
+    *,
+    row: Dict[str, Any],
+    previous_row: Dict[str, Any],
+    current_rows: Sequence[Dict[str, Any]],
+) -> float:
+    text = str(row.get("text") or "").strip()
+    if not text:
+        return -0.6
+    if _row_is_section_transition_v2(text):
+        return -0.5
+    score = 0.0
+    if _has_v2_bibliographic_body_signal(text):
+        score += 0.18
+    else:
+        score -= 0.04
+
+    previous_page = _to_int(previous_row.get("page"))
+    current_page = _to_int(row.get("page"))
+    previous_y1 = _to_float(previous_row.get("y1"))
+    current_y0 = _to_float(row.get("y0"))
+    if previous_page is not None and current_page is not None:
+        if current_page == previous_page:
+            if previous_y1 is not None and current_y0 is not None:
+                gap = float(current_y0) - float(previous_y1)
+                if gap <= 0.045:
+                    score += 0.24
+                elif gap <= 0.11:
+                    score += 0.14
+                elif gap <= 0.18 and _reference_needs_continuation_v2(current_rows):
+                    score += 0.05
+                else:
+                    score -= 0.12
+            row_x0 = _to_float(row.get("x0"))
+            previous_x0 = _to_float(previous_row.get("x0"))
+            if row_x0 is not None and previous_x0 is not None:
+                if abs(float(row_x0) - float(previous_x0)) <= 0.12:
+                    score += 0.08
+                elif row.get("reading_unit_id") != previous_row.get("reading_unit_id"):
+                    score += 0.04 if _reference_needs_continuation_v2(current_rows) else -0.04
+        elif current_page - previous_page == 1:
+            if current_y0 is not None and float(current_y0) <= 0.22:
+                score += 0.22
+            elif current_y0 is not None and float(current_y0) <= 0.4:
+                score += 0.12
+            else:
+                score -= 0.06
+            if _reference_needs_continuation_v2(current_rows):
+                score += 0.1
+        else:
+            score -= 0.4
+    if row.get("reading_unit_id") == previous_row.get("reading_unit_id"):
+        score += 0.04
+    return round(score, 3)
+
+
+def _score_stop_reference_row_v2(
+    *,
+    row: Dict[str, Any],
+    previous_row: Dict[str, Any],
+    current_rows: Sequence[Dict[str, Any]],
+    competing_anchor: Optional[Dict[str, Any]],
+) -> Tuple[float, str]:
+    text = str(row.get("text") or "").strip()
+    if competing_anchor and int(competing_anchor.get("index") or 0) > 0:
+        competing_index = int(competing_anchor.get("index") or 0)
+        return (
+            0.98 if str(competing_anchor.get("strength") or "") == "strong" else 0.86,
+            f"competing_anchor:{competing_index}",
+        )
+    if _row_is_section_transition_v2(text):
+        return 0.84, "section_transition"
+    if _is_header_footer_row(row, {"repeated_text_keys": set()}):
+        return 0.62, "header_footer_noise"
+    previous_page = _to_int(previous_row.get("page"))
+    current_page = _to_int(row.get("page"))
+    previous_y1 = _to_float(previous_row.get("y1"))
+    current_y0 = _to_float(row.get("y0"))
+    if (
+        previous_page is not None
+        and current_page is not None
+        and current_page == previous_page
+        and previous_y1 is not None
+        and current_y0 is not None
+    ):
+        gap = float(current_y0) - float(previous_y1)
+        if gap > 0.16 and not _reference_needs_continuation_v2(current_rows):
+            return min(0.74, round(0.48 + gap, 3)), "vertical_gap"
+    if (
+        previous_page is not None
+        and current_page is not None
+        and current_page - previous_page == 1
+        and current_y0 is not None
+        and float(current_y0) > 0.58
+        and not _reference_needs_continuation_v2(current_rows)
+    ):
+        return 0.72, "late_page_boundary"
+    return 0.18, "same_reference_more_likely"
+
+
+def _build_reference_rows_between_anchors_v2(
+    *,
+    ordered_rows: Sequence[Dict[str, Any]],
+    current_anchor: Dict[str, Any],
+    next_anchor: Optional[Dict[str, Any]],
+    anchor_candidates_by_position: Dict[int, Dict[str, Any]],
+    artifact_info: Dict[str, Any],
+) -> Dict[str, Any]:
+    start = _to_int(current_anchor.get("position"))
+    if start is None:
+        start = -1
+    if start < 0 or start >= len(ordered_rows):
+        return {
+            "rows": [],
+            "row_decisions": [],
+            "rows_discarded": [],
+            "cut_reasons": ["invalid_anchor_position"],
+            "closure_reason": "invalid_anchor_position",
+            "continuation_between_pages": False,
+            "issues": ["invalid_anchor_position"],
+            "body_start": None,
+            "body_end": None,
+        }
+    selected_rows: List[Dict[str, Any]] = []
+    row_decisions: List[Dict[str, Any]] = []
+    rows_discarded: List[Dict[str, Any]] = []
+    cut_reasons: List[str] = []
+    continuation_between_pages = False
+    closure_reason = "reading_flow_exhausted"
+    expected_index = int(current_anchor.get("index") or 0)
+    next_anchor_position = len(ordered_rows)
+    if isinstance(next_anchor, dict):
+        next_position = _to_int(next_anchor.get("position"))
+        if next_position is not None:
+            next_anchor_position = next_position
+    for position in range(start, len(ordered_rows)):
+        row = ordered_rows[position]
+        text = str(row.get("text") or "").strip()
+        if not text:
+            continue
+        is_anchor_row = position == start
+        competing_anchor = None
+        if not is_anchor_row:
+            candidate = anchor_candidates_by_position.get(position)
+            if candidate and int(candidate.get("index") or 0) != expected_index:
+                competing_anchor = candidate
+        if is_anchor_row:
+            selected_rows.append(row)
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": text,
+                    "included": True,
+                    "reason": "anchor_row",
+                    "same_reference_score": 1.0,
+                    "stop_score": 0.0,
+                }
+            )
+            continue
+        if position >= next_anchor_position and competing_anchor is not None:
+            closure_reason = "next_resolved_anchor"
+            cut_reasons.append("next_resolved_anchor")
+            rows_discarded.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": _short_debug_text(text),
+                    "reason": "next_resolved_anchor",
+                }
+            )
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": text,
+                    "included": False,
+                    "reason": "next_resolved_anchor",
+                }
+            )
+            break
+        previous_row = selected_rows[-1]
+        same_reference_score = _score_same_reference_row_v2(
+            row=row,
+            previous_row=previous_row,
+            current_rows=selected_rows,
+        )
+        stop_score, stop_reason = _score_stop_reference_row_v2(
+            row=row,
+            previous_row=previous_row,
+            current_rows=selected_rows,
+            competing_anchor=competing_anchor,
+        )
+        if _is_header_footer_row(row, artifact_info) and stop_reason == "same_reference_more_likely":
+            stop_score = max(stop_score, 0.62)
+            stop_reason = "header_footer_noise"
+        if stop_score > same_reference_score + 0.12:
+            closure_reason = stop_reason
+            cut_reasons.append(stop_reason)
+            rows_discarded.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": _short_debug_text(text),
+                    "reason": stop_reason,
+                }
+            )
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": text,
+                    "included": False,
+                    "reason": stop_reason,
+                    "same_reference_score": same_reference_score,
+                    "stop_score": stop_score,
+                }
+            )
+            break
+        if _to_int(previous_row.get("page")) != _to_int(row.get("page")):
+            continuation_between_pages = True
+        selected_rows.append(row)
+        row_decisions.append(
+            {
+                "row_id": str(row.get("id") or ""),
+                "page": row.get("page"),
+                "text": text,
+                "included": True,
+                "reason": (
+                    "page_continuation"
+                    if _to_int(previous_row.get("page")) != _to_int(row.get("page"))
+                    else "same_reference_growth"
+                ),
+                "same_reference_score": same_reference_score,
+                "stop_score": stop_score,
+            }
+        )
+        if len(selected_rows) >= 28:
+            closure_reason = "row_limit"
+            cut_reasons.append("row_limit")
+            break
+
+    issues: List[str] = []
+    if continuation_between_pages:
+        issues.append("page_continuation")
+    page_count = len(
+        {
+            _to_int(row.get("page"))
+            for row in selected_rows
+            if _to_int(row.get("page")) is not None
+        }
+    )
+    if page_count > 1:
+        issues.append("multi_page_reference")
+    if len(selected_rows) < 2:
+        issues.append("suspiciously_short_reference")
+    if len(selected_rows) >= 18:
+        issues.append("suspiciously_long_reference")
+    body_start = str((selected_rows[0] or {}).get("id") or "") if selected_rows else None
+    body_end = str((selected_rows[-1] or {}).get("id") or "") if selected_rows else None
+    return {
+        "rows": selected_rows,
+        "row_decisions": row_decisions,
+        "rows_discarded": rows_discarded,
+        "cut_reasons": cut_reasons,
+        "closure_reason": closure_reason,
+        "continuation_between_pages": continuation_between_pages,
+        "issues": issues,
+        "body_start": body_start,
+        "body_end": body_end,
+    }
+
+
+def _build_reference_decision_v2(
+    *,
+    expected_index: int,
+    rows: Sequence[Dict[str, Any]],
+    reference_text: str,
+    block_diagnostics: Dict[str, Any],
+    token_reconstruction: Dict[str, Any],
+    crossref_match: Dict[str, Any],
+    territory_zones: Sequence[Dict[str, Any]],
+    validation: Dict[str, Any],
+) -> Dict[str, Any]:
+    first_row = rows[0] if rows else {}
+    first_text = str(first_row.get("text") or "")
+    leading_anchor = _match_reference_anchor_at_line_start(first_text, include_rejected=True)
+    starts_with_anchor = bool(
+        leading_anchor
+        and int(leading_anchor.get("index") or 0) == int(expected_index or 0)
+    )
+    row_ids = {str(row.get("id") or "") for row in rows if str(row.get("id") or "").strip()}
+    territory_row_ids = {
+        str(row_id)
+        for zone in territory_zones
+        for row_id in (zone.get("row_ids") or [])
+        if str(row_id).strip()
+    }
+    inside_bibliography_zone = bool(row_ids and row_ids.issubset(territory_row_ids))
+    inside_expected_column = bool(rows)
+    has_nested_anchor = bool(
+        any(
+            candidate
+            for candidate in detect_reference_anchors_from_rows(rows[1:])
+            if int(candidate.get("index") or 0) != int(expected_index or 0)
+        )
+    )
+    header_noise_score = _score_header_noise(reference_text)
+    row_continuity_score = _compute_row_continuity_score_v2(rows)
+    token_cleanup_confidence = float(
+        token_reconstruction.get("token_cleanup_confidence") or 0.0
+    )
+    selected_candidate_source = str(
+        token_reconstruction.get("selected_candidate_source") or "rows_raw"
+    ).strip() or "rows_raw"
+    selected_candidate_quality = 0.0
+    for candidate_score in token_reconstruction.get("candidate_scores") or []:
+        if not isinstance(candidate_score, dict):
+            continue
+        if str(candidate_score.get("source") or "").strip() == selected_candidate_source:
+            selected_candidate_quality = float(candidate_score.get("quality_score") or 0.0)
+            break
+    cleanup_applied = bool(
+        token_reconstruction.get("cleanups_applied")
+        or selected_candidate_source in {"rows_tokens", "rows_hybrid"}
+    )
+    crossref_match_score = float(crossref_match.get("score") or 0.0)
+    doi_match_score = float(crossref_match.get("doi_match_score") or 0.0)
+    validation_reason = str(validation.get("reason") or "").strip() or None
+    validation_hard_failure = validation_reason in {
+        "contains_header_footer_noise",
+        "empty_local_text",
+        "mixed_rows_multiple_references",
+        "short_or_empty_reference",
+    }
+    continuation_between_pages = bool(block_diagnostics.get("continuation_between_pages"))
+    final_score = 0.0
+    final_score += 0.2 if inside_bibliography_zone else -0.3
+    final_score += 0.18 if starts_with_anchor else -0.22
+    final_score += 0.18 * row_continuity_score
+    final_score += 0.12 * crossref_match_score
+    final_score += 0.08 * doi_match_score
+    final_score += 0.08 * token_cleanup_confidence
+    final_score += 0.05 * selected_candidate_quality
+    final_score += 0.06 if continuation_between_pages else 0.0
+    final_score -= 0.28 * header_noise_score
+    if has_nested_anchor:
+        final_score -= 0.34
+    if validation_hard_failure:
+        final_score -= 0.12
+    final_score = round(max(0.0, min(1.0, final_score)), 3)
+
+    if header_noise_score >= 0.95:
+        classification = "rejected_noise"
+        accepted = False
+        reason = "header_noise_detected"
+    elif has_nested_anchor:
+        classification = "fallback_needed"
+        accepted = False
+        reason = "mixed_rows_multiple_references"
+    elif validation_hard_failure:
+        classification = "fallback_needed"
+        accepted = False
+        reason = validation_reason or "validation_failed"
+    elif final_score >= 0.66:
+        classification = (
+            "accepted_with_cleanup" if cleanup_applied else "accepted_structured"
+        )
+        accepted = True
+        reason = (
+            "continuous_growth_across_reading_territory"
+            if continuation_between_pages
+            else "rows_structure_consistent_v2"
+        )
+    elif final_score >= 0.5:
+        classification = "fallback_needed"
+        accepted = False
+        reason = "low_structural_score_v2"
+    else:
+        classification = "rejected_noise"
+        accepted = False
+        reason = "insufficient_reference_evidence_v2"
+    return {
+        "inside_bibliography_zone": inside_bibliography_zone,
+        "inside_expected_column": inside_expected_column,
+        "starts_with_anchor": starts_with_anchor,
+        "expected_anchor_index": expected_index,
+        "has_nested_anchor": has_nested_anchor,
+        "header_noise_score": round(header_noise_score, 3),
+        "crossref_match_score": round(crossref_match_score, 3),
+        "doi_match_score": round(doi_match_score, 3),
+        "row_continuity_score": round(row_continuity_score, 3),
+        "token_cleanup_confidence": round(token_cleanup_confidence, 3),
+        "selected_candidate_quality": round(selected_candidate_quality, 3),
+        "cleanup_applied": cleanup_applied,
+        "selected_candidate_source": selected_candidate_source,
+        "final_score": final_score,
+        "accepted": accepted,
+        "classification": classification,
+        "reason": reason,
+        "continuation_between_pages": continuation_between_pages,
+    }
+
+
+def _build_numeric_pipeline_metrics(
+    *,
+    expected_indices: Sequence[int],
+    reference_entries: Sequence[Dict[str, Any]],
+    detected_anchor_indices: Sequence[int],
+    duplicate_indices: Sequence[int],
+) -> Dict[str, Any]:
+    expected_total = len(expected_indices)
+    serialized_indices = sorted(
+        {
+            int(entry.get("index"))
+            for entry in reference_entries
+            if _to_int(entry.get("index")) not in (None, 0)
+            and str(entry.get("structure_source") or "").strip()
+            != "raw_reference_fallback"
+        }
+    )
+    missing_indices = [
+        int(index) for index in expected_indices if int(index) not in set(serialized_indices)
+    ]
+    references_total = len(reference_entries)
+    source_counter = Counter(
+        str(entry.get("structure_source") or "").strip() for entry in reference_entries
+    )
+    accepted_total = sum(
+        1
+        for entry in reference_entries
+        if bool((entry.get("final_decision") or {}).get("accepted"))
+    )
+    max_reference_index_detected = max(
+        list(detected_anchor_indices) + [int(index) for index in serialized_indices] + [0]
+    )
+    coverage_ratio = (
+        round(len(serialized_indices) / float(expected_total), 3)
+        if expected_total > 0
+        else 0.0
+    )
+    return {
+        "references_total": references_total,
+        "max_reference_index_detected": max_reference_index_detected,
+        "coverage_ratio": coverage_ratio,
+        "pct_structure_source_rows_raw": round(
+            (source_counter.get("rows_raw", 0) / float(references_total)) * 100.0,
+            2,
+        )
+        if references_total
+        else 0.0,
+        "pct_structure_source_raw_reference_fallback": round(
+            (source_counter.get("raw_reference_fallback", 0) / float(references_total))
+            * 100.0,
+            2,
+        )
+        if references_total
+        else 0.0,
+        "pct_accepted": round((accepted_total / float(references_total)) * 100.0, 2)
+        if references_total
+        else 0.0,
+        "missing_indices": missing_indices,
+        "duplicate_indices": sorted(
+            {int(index) for index in duplicate_indices if int(index) > 0}
+        ),
+        "expected_indices": [int(index) for index in expected_indices],
+        "serialized_indices": serialized_indices,
+        "detected_anchor_indices": sorted(
+            {int(index) for index in detected_anchor_indices if int(index) > 0}
+        ),
+    }
+
+
+def _reference_has_tail_noise_v2(reference: Dict[str, Any]) -> bool:
+    normalized_text = _normalize_text(str(reference.get("text") or ""))
+    if not normalized_text:
+        return False
+    return any(
+        marker in normalized_text for marker in REFERENCE_DIAGNOSTIC_TAIL_NOISE_MARKERS
+    )
+
+
+def _build_numeric_reference_comparison_v2(
+    *,
+    current_entries: Sequence[Dict[str, Any]],
+    experimental_entries: Sequence[Dict[str, Any]],
+    current_metrics: Dict[str, Any],
+    experimental_metrics: Dict[str, Any],
+) -> Dict[str, Any]:
+    current_by_index = {
+        int(entry.get("index")): entry
+        for entry in current_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    }
+    experimental_by_index = {
+        int(entry.get("index")): entry
+        for entry in experimental_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    }
+    regressions: List[Dict[str, Any]] = []
+    improvements: List[Dict[str, Any]] = []
+    all_indices = sorted(set(current_by_index.keys()) | set(experimental_by_index.keys()))
+    for index in all_indices:
+        current_entry = current_by_index.get(index) or {}
+        experimental_entry = experimental_by_index.get(index) or {}
+        current_decision = (
+            current_entry.get("final_decision")
+            if isinstance(current_entry.get("final_decision"), dict)
+            else {}
+        )
+        experimental_decision = (
+            experimental_entry.get("final_decision")
+            if isinstance(experimental_entry.get("final_decision"), dict)
+            else {}
+        )
+        current_pages = sorted(
+            {
+                int(row.get("page"))
+                for row in (current_entry.get("rows") or [])
+                if _to_int(row.get("page")) not in (None, -1)
+            }
+        )
+        experimental_pages = sorted(
+            {
+                int(row.get("page"))
+                for row in (experimental_entry.get("rows") or [])
+                if _to_int(row.get("page")) not in (None, -1)
+            }
+        )
+        current_fallback = (
+            str(current_entry.get("structure_source") or "").strip()
+            == "raw_reference_fallback"
+        )
+        experimental_fallback = (
+            str(experimental_entry.get("structure_source") or "").strip()
+            == "raw_reference_fallback"
+        )
+        current_tail_noise = _reference_has_tail_noise_v2(current_entry)
+        experimental_tail_noise = _reference_has_tail_noise_v2(experimental_entry)
+        current_mixed = bool(
+            (current_entry.get("reference_validation") or {}).get("has_nested_anchor")
+        )
+        experimental_mixed = bool(
+            (experimental_entry.get("reference_validation") or {}).get(
+                "has_nested_anchor"
+            )
+        )
+        if bool(current_decision.get("accepted")) and not bool(
+            experimental_decision.get("accepted")
+        ):
+            regressions.append(
+                {
+                    "index": index,
+                    "type": "accepted_reference_lost",
+                    "current_reason": current_decision.get("reason"),
+                    "experimental_reason": experimental_decision.get("reason"),
+                }
+            )
+        if not current_fallback and experimental_fallback:
+            regressions.append(
+                {
+                    "index": index,
+                    "type": "new_raw_fallback",
+                    "current_source": current_entry.get("structure_source"),
+                    "experimental_source": experimental_entry.get("structure_source"),
+                }
+            )
+        if len(current_pages) > 1 and len(experimental_pages) < len(current_pages):
+            regressions.append(
+                {
+                    "index": index,
+                    "type": "page_continuation_lost",
+                    "current_pages": current_pages,
+                    "experimental_pages": experimental_pages,
+                }
+            )
+        if not current_tail_noise and experimental_tail_noise:
+            regressions.append({"index": index, "type": "new_tail_noise"})
+        if not current_mixed and experimental_mixed:
+            regressions.append(
+                {"index": index, "type": "new_reference_contamination"}
+            )
+        if not bool(current_decision.get("accepted")) and bool(
+            experimental_decision.get("accepted")
+        ):
+            improvements.append(
+                {
+                    "index": index,
+                    "type": "accepted_reference_recovered",
+                    "current_reason": current_decision.get("reason"),
+                    "experimental_reason": experimental_decision.get("reason"),
+                }
+            )
+        if current_fallback and not experimental_fallback:
+            improvements.append(
+                {
+                    "index": index,
+                    "type": "fallback_removed",
+                    "current_source": current_entry.get("structure_source"),
+                    "experimental_source": experimental_entry.get("structure_source"),
+                }
+            )
+        if len(current_pages) < len(experimental_pages) and len(experimental_pages) > 1:
+            improvements.append(
+                {
+                    "index": index,
+                    "type": "page_continuation_recovered",
+                    "current_pages": current_pages,
+                    "experimental_pages": experimental_pages,
+                }
+            )
+        if current_tail_noise and not experimental_tail_noise:
+            improvements.append({"index": index, "type": "tail_noise_removed"})
+
+    metric_deltas = {}
+    for metric_name in (
+        "references_total",
+        "max_reference_index_detected",
+        "coverage_ratio",
+        "pct_structure_source_rows_raw",
+        "pct_structure_source_raw_reference_fallback",
+        "pct_accepted",
+    ):
+        current_value = current_metrics.get(metric_name)
+        experimental_value = experimental_metrics.get(metric_name)
+        if isinstance(current_value, (int, float)) and isinstance(
+            experimental_value,
+            (int, float),
+        ):
+            metric_deltas[metric_name] = round(
+                float(experimental_value) - float(current_value),
+                3,
+            )
+    status = "neutral"
+    if regressions:
+        status = "regression_detected"
+    elif improvements:
+        status = "improved_without_regression"
+    return {
+        "status": status,
+        "promotion_ready": bool(improvements) and not regressions,
+        "regressions": regressions[:80],
+        "improvements": improvements[:80],
+        "metric_deltas": metric_deltas,
+        "regression_total": len(regressions),
+        "improvement_total": len(improvements),
+    }
+
+
+def _build_experimental_reference_entries_v2(
+    *,
+    references: Sequence[Dict[str, Any]],
+    parsed_references: Dict[int, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    entries: List[Dict[str, Any]] = []
+    for fallback_idx, ref in enumerate(references, start=1):
+        if not isinstance(ref, dict):
+            continue
+        index = _entry_index(ref)
+        if index is None:
+            entries.append(
+                {
+                    "id": f"reference-entry-v2-unlabeled-{fallback_idx}",
+                    "ref_id": f"ref-v2-unlabeled-{fallback_idx}",
+                    "index": None,
+                    "text": str(ref.get("raw") or ref.get("text") or ""),
+                    "page": None,
+                    "box": None,
+                    "doi": _normalize_doi(ref.get("doi")) or None,
+                    "structure_source": "raw_reference_fallback",
+                    "local_row_count": 0,
+                    "local_anchor_detected": False,
+                    "reference_validation": {
+                        "match_score": 0.0,
+                        "mixed_reference_score": 0.0,
+                        "has_nested_anchor": False,
+                        "accepted": False,
+                        "reason": "fallback_without_rows_structure",
+                    },
+                    "validation_intermediate": {
+                        "match_score": 0.0,
+                        "mixed_reference_score": 0.0,
+                        "has_nested_anchor": False,
+                        "accepted": False,
+                        "reason": "fallback_without_rows_structure",
+                    },
+                    "scores": {
+                        "accepted": False,
+                        "classification": "fallback_needed",
+                        "reason": "fallback_without_rows_structure",
+                        "final_score": 0.0,
+                    },
+                    "final_decision": {
+                        "accepted": False,
+                        "classification": "fallback_needed",
+                        "reason": "fallback_without_rows_structure",
+                        "final_score": 0.0,
+                    },
+                    "crossref_match": {
+                        "score": 0.0,
+                        "doi_match_score": 0.0,
+                        "match": None,
+                    },
+                    "token_reconstruction": {
+                        "final_text": str(ref.get("raw") or ref.get("text") or "")
+                    },
+                    "anomalies": {"cut_reasons": [], "nested_anchor_indices": []},
+                    "rows": [],
+                }
+            )
+            continue
+        parsed = parsed_references.get(index)
+        if parsed is None:
+            fallback_text = str(ref.get("raw") or ref.get("text") or "")
+            entries.append(
+                {
+                    "id": f"reference-entry-v2-ref-{index}",
+                    "ref_id": f"ref-{index}",
+                    "index": index,
+                    "text": fallback_text,
+                    "page": None,
+                    "box": None,
+                    "doi": _normalize_doi(ref.get("doi")) or None,
+                    "structure_source": "raw_reference_fallback",
+                    "local_row_count": 0,
+                    "local_anchor_detected": False,
+                    "reference_validation": {
+                        "match_score": 0.0,
+                        "mixed_reference_score": 0.0,
+                        "has_nested_anchor": False,
+                        "accepted": False,
+                        "reason": "fallback_without_rows_structure",
+                    },
+                    "validation_intermediate": {
+                        "match_score": 0.0,
+                        "mixed_reference_score": 0.0,
+                        "has_nested_anchor": False,
+                        "accepted": False,
+                        "reason": "fallback_without_rows_structure",
+                    },
+                    "scores": {
+                        "accepted": False,
+                        "classification": "fallback_needed",
+                        "reason": "fallback_without_rows_structure",
+                        "final_score": 0.0,
+                    },
+                    "final_decision": {
+                        "accepted": False,
+                        "classification": "fallback_needed",
+                        "reason": "fallback_without_rows_structure",
+                        "final_score": 0.0,
+                    },
+                    "crossref_match": {
+                        "score": 0.0,
+                        "doi_match_score": 0.0,
+                        "match": None,
+                    },
+                    "token_reconstruction": {"final_text": fallback_text},
+                    "anomalies": {
+                        "cut_reasons": ["missing_anchor_after_v2_reconciliation"],
+                        "nested_anchor_indices": [],
+                    },
+                    "rows": [],
+                }
+            )
+            continue
+        entry = dict(parsed)
+        entry["id"] = f"reference-entry-v2-ref-{index}"
+        entry["ref_id"] = f"ref-{index}"
+        entries.append(entry)
+    return entries
+
+
+def _run_numeric_reference_pipeline_v2(
+    *,
+    references: Sequence[Dict[str, Any]],
+    metadata_by_index: Dict[int, Dict[str, Any]],
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+    token_items: Sequence[Dict[str, Any]],
+    current_reference_entries: Sequence[Dict[str, Any]],
+    current_numeric_metrics: Dict[str, Any],
+    crossref_context: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    expected_indices = sorted(
+        {
+            int(index)
+            for index in metadata_by_index.keys()
+            if isinstance(index, int) and int(index) > 0
+        }
+    )
+    if not expected_indices:
+        return None
+    territory_phase = _build_numeric_bibliography_territory_v2(
+        rows=rows,
+        sections=sections,
+        bibliography_items=bibliography_items,
+    )
+    ordered_rows = territory_phase.get("ordered_rows") or []
+    anchor_candidates = _detect_numeric_anchor_candidates_v2(ordered_rows)
+    anchor_reconciliation = _reconcile_numeric_anchor_candidates_v2(
+        anchor_candidates=anchor_candidates,
+        expected_indices=expected_indices,
+    )
+    selected_anchors = anchor_reconciliation.get("selected_anchors") or []
+    anchor_candidates_by_position = {
+        int(candidate.get("position")): candidate
+        for candidate in anchor_candidates
+        if _to_int(candidate.get("position")) is not None
+    }
+    tokens_by_page = _index_tokens_by_page(token_items or [])
+    artifact_info = _build_repeating_page_artifacts(ordered_rows)
+    parsed: Dict[int, Dict[str, Any]] = {}
+    reference_debug: List[Dict[str, Any]] = []
+
+    for anchor_index, anchor in enumerate(selected_anchors):
+        index = int(anchor.get("index") or 0)
+        next_anchor = (
+            selected_anchors[anchor_index + 1]
+            if anchor_index + 1 < len(selected_anchors)
+            else None
+        )
+        block_result = _build_reference_rows_between_anchors_v2(
+            ordered_rows=ordered_rows,
+            current_anchor=anchor,
+            next_anchor=next_anchor,
+            anchor_candidates_by_position=anchor_candidates_by_position,
+            artifact_info=artifact_info,
+        )
+        block_rows = block_result.get("rows") or []
+        if not block_rows:
+            reference_debug.append(
+                {
+                    "index": index,
+                    "anchor_detected": {
+                        "index": index,
+                        "style": anchor.get("anchor_style"),
+                        "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+                        "strength": anchor.get("strength"),
+                        "page": anchor.get("page"),
+                        "row_id": anchor.get("row_id"),
+                    },
+                    "body_start": block_result.get("body_start"),
+                    "body_end": block_result.get("body_end"),
+                    "rows_included": [],
+                    "rows_discarded": block_result.get("rows_discarded") or [],
+                    "continuation_between_pages": False,
+                    "closure_reason": block_result.get("closure_reason"),
+                    "issues": list(block_result.get("issues") or [])
+                    + ["empty_reference_after_growth"],
+                }
+            )
+            continue
+
+        token_reconstruction = _reconstruct_reference_text_from_rows_and_tokens(
+            block_rows,
+            tokens_by_page,
+        )
+        reference_doi_seed = (
+            _extract_doi(token_reconstruction.get("raw_text"))
+            or _extract_doi(token_reconstruction.get("hybrid_text"))
+            or _extract_doi(token_reconstruction.get("token_text"))
+            or ""
+        )
+        selected_candidate = _select_reference_text_candidate(
+            candidates=token_reconstruction.get("candidates") or [],
+            reference_doi=reference_doi_seed,
+            crossref_context=crossref_context,
+        )
+        selected_candidate_source = str(
+            selected_candidate.get("source")
+            or token_reconstruction.get("selected_candidate_source")
+            or "rows_raw"
+        ).strip() or "rows_raw"
+        token_reconstruction["selected_candidate_source"] = selected_candidate_source
+        token_reconstruction["candidate_scores"] = (
+            selected_candidate.get("candidate_scores") or []
+        )
+        token_reconstruction["order_similarity_to_rows"] = selected_candidate.get(
+            "order_similarity_to_rows"
+        )
+        token_reconstruction["order_guard_reasons"] = (
+            selected_candidate.get("order_guard_reasons") or []
+        )
+        token_reconstruction["backbone_source"] = selected_candidate.get(
+            "backbone_source"
+        ) or token_reconstruction.get("backbone_source")
+        token_reconstruction["backbone_text"] = str(
+            selected_candidate.get("backbone_text")
+            or token_reconstruction.get("backbone_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
+        token_reconstruction["final_text"] = str(
+            selected_candidate.get("text")
+            or token_reconstruction.get("hybrid_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
+        block_text = str(token_reconstruction.get("final_text") or "").strip()
+        validation = _build_reference_validation(
+            text=block_text,
+            expected_index=index,
+            metadata=metadata_by_index.get(index),
+            metadata_by_index=metadata_by_index,
+        )
+        crossref_match = _match_reference_against_crossref(
+            reference_text=block_text,
+            reference_doi=_extract_doi(block_text),
+            crossref_context=crossref_context,
+        )
+        final_decision = _build_reference_decision_v2(
+            expected_index=index,
+            rows=block_rows,
+            reference_text=block_text,
+            block_diagnostics=block_result,
+            token_reconstruction=token_reconstruction,
+            crossref_match=crossref_match,
+            territory_zones=territory_phase.get("territory_zones") or [],
+            validation=validation,
+        )
+        validation = _sync_reference_validation_with_final_decision(
+            validation,
+            final_decision,
+        )
+        parsed[index] = {
+            "text": block_text,
+            "text_raw": token_reconstruction.get("raw_text"),
+            "page": block_rows[0].get("page"),
+            "box": _union_boxes(
+                [row["box"] for row in block_rows if _normalize_box(row.get("box"))]
+            ),
+            "rows": block_rows,
+            "local_row_count": len(block_rows),
+            "local_anchor_detected": True,
+            "structure_source": (
+                selected_candidate_source
+                if selected_candidate_source.startswith("rows")
+                else "rows_raw"
+            ),
+            "reference_validation": validation,
+            "validation_intermediate": _coerce_reference_validation_payload(validation),
+            "column_id": block_rows[0].get("column_id_v2"),
+            "anchor_position": anchor.get("position"),
+            "anchor_style": anchor.get("anchor_style"),
+            "scores": final_decision,
+            "final_decision": final_decision,
+            "crossref_match": crossref_match,
+            "token_reconstruction": token_reconstruction,
+            "anomalies": {
+                "cut_reasons": list(block_result.get("cut_reasons") or []),
+                "nested_anchor_indices": [],
+            },
+        }
+        reference_debug.append(
+            {
+                "index": index,
+                "anchor_detected": {
+                    "index": index,
+                    "style": anchor.get("anchor_style"),
+                    "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+                    "strength": anchor.get("strength"),
+                    "page": anchor.get("page"),
+                    "row_id": anchor.get("row_id"),
+                    "body_in_next_row": bool(anchor.get("body_in_next_row")),
+                },
+                "body_start": block_result.get("body_start"),
+                "body_end": block_result.get("body_end"),
+                "rows_included": [
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "page": row.get("page"),
+                        "reading_unit_id": row.get("reading_unit_id"),
+                        "text": _short_debug_text(row.get("text")),
+                    }
+                    for row in block_rows
+                ],
+                "rows_discarded": block_result.get("rows_discarded") or [],
+                "continuation_between_pages": bool(
+                    block_result.get("continuation_between_pages")
+                ),
+                "closure_reason": block_result.get("closure_reason"),
+                "issues": block_result.get("issues") or [],
+                "accepted": bool(final_decision.get("accepted")),
+                "selected_candidate_source": selected_candidate_source,
+            }
+        )
+
+    experimental_entries = _build_experimental_reference_entries_v2(
+        references=references,
+        parsed_references=parsed,
+    )
+    experimental_metrics = _build_numeric_pipeline_metrics(
+        expected_indices=expected_indices,
+        reference_entries=experimental_entries,
+        detected_anchor_indices=[
+            int(candidate.get("index"))
+            for candidate in anchor_candidates
+            if _to_int(candidate.get("index")) not in (None, 0)
+        ],
+        duplicate_indices=anchor_reconciliation.get("duplicate_indices") or [],
+    )
+    comparison = _build_numeric_reference_comparison_v2(
+        current_entries=current_reference_entries,
+        experimental_entries=experimental_entries,
+        current_metrics=current_numeric_metrics,
+        experimental_metrics=experimental_metrics,
+    )
+    return {
+        "pipeline_name": NUMERIC_REFERENCE_PIPELINE_V2_NAME,
+        "run_mode": NUMERIC_REFERENCE_PIPELINE_V2_RUN_MODE,
+        "enabled": True,
+        "selected_as_default": False,
+        "phases": {
+            "territory": {
+                "start_page": territory_phase.get("start_page"),
+                "selected_heading": (
+                    {
+                        "page": territory_phase["selected_heading"].get("page"),
+                        "text": territory_phase["selected_heading"].get("text"),
+                        "column_id": territory_phase["selected_heading"].get(
+                            "column_id"
+                        ),
+                        "box": _serialize_box(
+                            territory_phase["selected_heading"].get("box")
+                        ),
+                    }
+                    if isinstance(territory_phase.get("selected_heading"), dict)
+                    else None
+                ),
+                "zones": [
+                    {
+                        "id": zone.get("id"),
+                        "page": zone.get("page"),
+                        "box": _serialize_box(zone.get("box")),
+                        "confidence": zone.get("confidence"),
+                        "source_signals": zone.get("source_signals") or [],
+                        "anchor_indices": zone.get("anchor_indices") or [],
+                    }
+                    for zone in territory_phase.get("territory_zones") or []
+                ],
+            },
+            "reading_order": {
+                "units": [
+                    {
+                        "id": unit.get("id"),
+                        "page": unit.get("page"),
+                        "order_on_page": unit.get("order_on_page"),
+                        "box": _serialize_box(unit.get("box")),
+                        "anchor_indices": unit.get("anchor_indices") or [],
+                        "bibliography_density": unit.get("bibliography_density"),
+                        "confidence": unit.get("confidence"),
+                    }
+                    for unit in territory_phase.get("reading_units") or []
+                ],
+            },
+            "anchors": {
+                "candidates": [
+                    {
+                        "index": candidate.get("index"),
+                        "page": candidate.get("page"),
+                        "position": candidate.get("position"),
+                        "row_id": candidate.get("row_id"),
+                        "style": candidate.get("anchor_style"),
+                        "strength": candidate.get("strength"),
+                        "confidence": round(float(candidate.get("confidence") or 0.0), 3),
+                        "reason": candidate.get("reason"),
+                        "body_in_next_row": bool(candidate.get("body_in_next_row")),
+                    }
+                    for candidate in anchor_candidates
+                ],
+                "sequence": anchor_reconciliation.get("anchor_sequence") or [],
+                "missing_indices": anchor_reconciliation.get("missing_indices") or [],
+                "duplicate_indices": anchor_reconciliation.get("duplicate_indices")
+                or [],
+                "inferred_anchors": anchor_reconciliation.get("inferred_anchors")
+                or [],
+            },
+            "reconciliation": {
+                "actions": anchor_reconciliation.get("reconciliation_actions") or [],
+            },
+        },
+        "reference_debug": reference_debug,
+        "references": experimental_entries,
+        "metrics": experimental_metrics,
+        "comparison_vs_current": comparison,
+    }
+
+
 def _build_references_from_lines_legacy(
     lines: Sequence[Dict[str, Any]],
 ) -> Dict[int, Dict[str, Any]]:
@@ -6594,6 +8378,40 @@ def build_references_data(
                 bibliography_lines=bibliography_lines,
                 reference_entries=reference_entries,
             )
+        current_numeric_metrics = None
+        experimental_numeric_pipeline_v2 = None
+        if references_numbered and metadata_by_index:
+            detected_anchor_indices_for_current = [
+                int(anchor.get("index"))
+                for anchor in detect_reference_anchors_from_rows(bibliography_lines)
+                if _to_int(anchor.get("index")) not in (None, 0)
+            ]
+            duplicate_indices_for_current = (
+                numeric_coverage_summary.get("duplicate_indices") or []
+                if isinstance(numeric_coverage_summary, dict)
+                else [
+                    index
+                    for index, count in Counter(detected_anchor_indices_for_current).items()
+                    if int(count) > 1
+                ]
+            )
+            current_numeric_metrics = _build_numeric_pipeline_metrics(
+                expected_indices=sorted(metadata_by_index.keys()),
+                reference_entries=reference_entries,
+                detected_anchor_indices=detected_anchor_indices_for_current,
+                duplicate_indices=duplicate_indices_for_current,
+            )
+            experimental_numeric_pipeline_v2 = _run_numeric_reference_pipeline_v2(
+                references=references,
+                metadata_by_index=metadata_by_index,
+                rows=row_items,
+                sections=section_items,
+                bibliography_items=bibliography_items,
+                token_items=token_items,
+                current_reference_entries=reference_entries,
+                current_numeric_metrics=current_numeric_metrics,
+                crossref_context=crossref_context,
+            )
         contamination_diagnostics = _build_contamination_diagnostics(
             bibliography_phase=bibliography_phase,
             global_alerts=global_alerts,
@@ -6706,6 +8524,12 @@ def build_references_data(
         }
         if numeric_coverage_summary is not None:
             debug_payload["numeric_coverage_summary"] = numeric_coverage_summary
+        if current_numeric_metrics is not None:
+            debug_payload["numeric_pipeline_current_metrics"] = current_numeric_metrics
+        if experimental_numeric_pipeline_v2 is not None:
+            debug_payload[
+                NUMERIC_REFERENCE_PIPELINE_V2_NAME
+            ] = experimental_numeric_pipeline_v2
 
     logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
 

@@ -122,6 +122,11 @@ urlpatterns = [
         name="api_extract_citations",
     ),
     path(
+        "api/detect-article-doi/",
+        views_api.api_detect_article_doi,
+        name="api_detect_article_doi",
+    ),
+    path(
         "api/extractor-engines/",
         views_api.api_extractor_engines,
         name="api_extractor_engines",

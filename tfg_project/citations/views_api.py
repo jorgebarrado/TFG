@@ -34,11 +34,12 @@ from .services.semantic_citation_pipeline import analyze_citations_for_original_
 from .services.papermage_extractor import ContextHit, extract_pdf_data
 from .services.references_data import (
     REFERENCE_DEBUG_DIR,
+    _prepare_crossref_context,
     build_references_data,
     finalize_reference_detection_debug_payload,
     write_reference_detection_debug_json,
 )
-from .services.doi_enrichment_service import enrich_extraction_with_doi
+from .services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
 from .models import IncorrectCitation
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
@@ -61,6 +62,79 @@ from citations.logging_utils import get_logger
 logger = get_logger("citations.api")
 context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
+
+
+def _build_article_info_payload(
+    *,
+    article_doi: str,
+    crossref_article_metadata: Optional[dict] = None,
+    enrichment: Optional[dict] = None,
+    cited_by: Optional[list] = None,
+    crossref_reference_count: Optional[int] = None,
+) -> Optional[dict]:
+    normalized_doi = normalize_doi(
+        (crossref_article_metadata or {}).get("doi") or article_doi
+    )
+    if not normalized_doi:
+        return None
+
+    metadata = (
+        crossref_article_metadata if isinstance(crossref_article_metadata, dict) else {}
+    )
+    enrichment_meta = enrichment if isinstance(enrichment, dict) else {}
+    cited_by_items = cited_by if isinstance(cited_by, list) else []
+    authors = [
+        str(author).strip()
+        for author in (metadata.get("authors") or [])
+        if str(author).strip()
+    ]
+    raw_sources_used = enrichment_meta.get("sources_used") or []
+    sources_used = [
+        str(source).strip() for source in raw_sources_used if str(source).strip()
+    ]
+    source = (
+        (sources_used[0] if sources_used else "")
+        or ("crossref" if metadata else "")
+        or "detected"
+    )
+    try:
+        year = int(metadata.get("year")) if metadata.get("year") else None
+    except (TypeError, ValueError):
+        year = None
+
+    try:
+        references_count = int(
+            metadata.get("reference_count")
+            or crossref_reference_count
+            or 0
+        )
+    except (TypeError, ValueError):
+        references_count = 0
+
+    try:
+        cited_by_count = int(
+            enrichment_meta.get("cited_by_count") or len(cited_by_items) or 0
+        )
+    except (TypeError, ValueError):
+        cited_by_count = len(cited_by_items)
+
+    title = str(metadata.get("title") or "").strip()
+    venue = str(metadata.get("venue") or "").strip()
+    resolved = bool(title or authors or year or venue or references_count or cited_by_count)
+
+    return {
+        "doi": normalized_doi,
+        "title": title or None,
+        "authors": authors,
+        "year": year,
+        "venue": venue or None,
+        "source": source,
+        "sources_used": sources_used,
+        "references_count": references_count,
+        "cited_by_count": cited_by_count,
+        "resolved": resolved,
+        "url": f"https://doi.org/{normalized_doi}",
+    }
 
 
 @require_GET
@@ -230,6 +304,60 @@ def get_citation_context(request: HttpRequest) -> JsonResponse:
 
 
 # ========= TU endpoint existente para subir manuscritos =========
+@csrf_exempt
+@require_POST
+def api_detect_article_doi(request: HttpRequest) -> JsonResponse:
+    f: UploadedFile | None = request.FILES.get("manuscript")
+    if not f:
+        return JsonResponse({"ok": False, "error": "No file uploaded"}, status=400)
+    if not str(f.name or "").lower().endswith(".pdf"):
+        return JsonResponse(
+            {"ok": False, "error": "Solo se admite deteccion sobre PDF."}, status=400
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        for chunk in f.chunks():
+            tmp.write(chunk)
+        temp_path = tmp.name
+
+    try:
+        reader_data = extract_pdf_data(temp_path)
+        layers = reader_data.get("layers", {}) if isinstance(reader_data, dict) else {}
+        row_items = layers.get("rows", []) if isinstance(layers, dict) else []
+        crossref_context = _prepare_crossref_context(
+            article_doi="",
+            row_items=row_items if isinstance(row_items, list) else [],
+            bibliography_start_page=None,
+        )
+        article_doi = str(crossref_context.get("article_doi") or "").strip()
+        article_info = _build_article_info_payload(
+            article_doi=article_doi,
+            crossref_article_metadata=crossref_context.get("crossref_article_metadata"),
+            crossref_reference_count=crossref_context.get("crossref_reference_count"),
+        )
+        return JsonResponse(
+            {
+                "ok": True,
+                "detected": bool(article_doi),
+                "article_doi": article_doi or None,
+                "article_info": article_info,
+                "crossref_available": bool(crossref_context.get("crossref_available")),
+            },
+            status=200,
+        )
+    except Exception as exc:
+        logger.warning("article doi detection failed file=%s error=%s", f.name, exc)
+        return JsonResponse(
+            {"ok": False, "error": "No se pudo detectar el DOI del articulo."},
+            status=500,
+        )
+    finally:
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+
+
 @csrf_exempt
 @require_POST
 def api_extract_citations(request: HttpRequest) -> JsonResponse:
@@ -517,6 +645,21 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     "sources_used": [],
                 }
             )
+            data["article_info"] = _build_article_info_payload(
+                article_doi=effective_article_doi,
+                crossref_article_metadata=(
+                    references_data_payload.get("crossref_article_metadata")
+                    if isinstance(references_data_payload, dict)
+                    else None
+                ),
+                enrichment=data.get("enrichment"),
+                cited_by=data.get("cited_by"),
+                crossref_reference_count=(
+                    references_data_payload.get("crossref_reference_count")
+                    if isinstance(references_data_payload, dict)
+                    else None
+                ),
+            )
             if isinstance(data.get("stats"), dict):
                 data["stats"]["dois_total"] = sum(
                     1
@@ -574,6 +717,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 "cited_by_count": 0,
                 "sources_used": [],
             }
+            data["article_info"] = _build_article_info_payload(article_doi=article_doi)
 
         status = 200 if data.get("ok", False) else 422
         return JsonResponse(data, status=status, safe=True)

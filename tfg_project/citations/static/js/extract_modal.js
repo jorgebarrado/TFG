@@ -200,7 +200,11 @@
       references_numbered: Boolean(baseStats.references_numbered),
     };
     const references = Array.isArray(data?.references) ? data.references : [];
-    return { snippets, stats, references };
+    const enrichment =
+      data?.enrichment && typeof data.enrichment === 'object' ? data.enrichment : null;
+    const articleInfo =
+      data?.article_info && typeof data.article_info === 'object' ? data.article_info : null;
+    return { snippets, stats, references, enrichment, articleInfo };
   }
 
   function buildEngineOptions(engines) {
@@ -401,6 +405,8 @@
       snippets: extractionResult?.snippets || [],
       references: extractionResult?.references || [],
       stats: extractionResult?.stats || null,
+      enrichment: extractionResult?.enrichment || null,
+      articleInfo: extractionResult?.articleInfo || null,
     };
     try {
       const payloadKey = await persistReaderPayload(file, payload);

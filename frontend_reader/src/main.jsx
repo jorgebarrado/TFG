@@ -8,6 +8,8 @@ let previewFile = null;
 let previewSnippets = [];
 let previewStats = null;
 let previewReferences = [];
+let previewEnrichment = null;
+let previewArticleInfo = null;
 const READER_PAYLOAD_DB = "citecheck-reader-payloads";
 const READER_PAYLOAD_STORE = "payloads";
 const READER_PAYLOAD_SESSION_KEY = "citecheck.reader.payload";
@@ -100,6 +102,14 @@ async function bootstrapStoredPayload() {
     previewReferences = Array.isArray(sessionPayload.references)
       ? sessionPayload.references
       : [];
+    previewEnrichment =
+      sessionPayload.enrichment && typeof sessionPayload.enrichment === "object"
+        ? sessionPayload.enrichment
+        : null;
+    previewArticleInfo =
+      sessionPayload.articleInfo && typeof sessionPayload.articleInfo === "object"
+        ? sessionPayload.articleInfo
+        : null;
   }
 
   try {
@@ -128,17 +138,29 @@ window.addEventListener("message", (event) => {
     if (
       Array.isArray(data.snippets) ||
       Array.isArray(data.references) ||
-      data.stats
+      data.stats ||
+      data.enrichment ||
+      data.articleInfo
     ) {
       previewSnippets = Array.isArray(data.snippets) ? data.snippets : [];
       previewStats = data.stats || null;
       previewReferences = Array.isArray(data.references) ? data.references : [];
+      previewEnrichment =
+        data.enrichment && typeof data.enrichment === "object"
+          ? data.enrichment
+          : null;
+      previewArticleInfo =
+        data.articleInfo && typeof data.articleInfo === "object"
+          ? data.articleInfo
+          : null;
       window.dispatchEvent(
         new CustomEvent("reader:data", {
           detail: {
             snippets: previewSnippets,
             stats: previewStats,
             references: previewReferences,
+            enrichment: previewEnrichment,
+            article_info: previewArticleInfo,
           },
         })
       );
@@ -189,6 +211,8 @@ function renderReaderApp() {
       previewSnippets={previewSnippets}
       previewStats={previewStats}
       previewReferences={previewReferences}
+      previewEnrichment={previewEnrichment}
+      previewArticleInfo={previewArticleInfo}
     />,
     mount
   );
