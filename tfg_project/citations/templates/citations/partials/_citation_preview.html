@@ -1,93 +1,122 @@
 ﻿{% load i18n custom_filters %}
 
-<div class="modal-header border-0 pb-0">
-  <div>
-    <p class="text-uppercase text-muted small mb-1">{% trans "Vista previa de reporte" %}</p>
-    <h2 class="h4 fw-bold mb-1">
-      {% trans "Reporte" %} #{{ citation.id }}
-    </h2>
-    <p class="mb-0 text-muted small">
-      {% if citation.author %}
-        {% url 'profile' citation.author.username as author_profile_url %}
-        {% blocktrans trimmed with username_link='<a href="'|add:author_profile_url|add:'">'|add:citation.author.username|add:'</a>'|safe created_at=citation.created_at|date:"d/m/Y H:i" %}
-          Reportado por {{ username_link }} el {{ created_at }}
-        {% endblocktrans %}
-      {% else %}
-        {% blocktrans with created_at=citation.created_at|date:"d/m/Y H:i" %}
-          Reportado por Anónimo el {{ created_at }}
-        {% endblocktrans %}
-      {% endif %}
-    </p>
+<div class="modal-header border-0 pb-0 align-items-start px-4 pt-4">
+  <div class="d-flex gap-3 w-100">
+    <div class="flex-shrink-0 rounded-3 d-flex align-items-center justify-content-center shadow-sm preview-icon-box">
+      <i class="bi bi-flag-fill fs-4"></i>
+    </div>
+    <div class="flex-grow-1">
+      <p class="text-uppercase fw-bold text-muted small mb-1 preview-small-title">
+        {% trans "Vista previa de reporte" %}
+      </p>
+      <h2 class="h4 fw-bold mb-1 text-dark">
+        {% trans "Reporte" %} #{{ citation.id }}
+      </h2>
+      <p class="mb-0 text-muted small">
+        {% if citation.author %}
+          {% url 'profile' citation.author.username as author_profile_url %}
+          {% blocktrans trimmed with username_link='<a href="'|add:author_profile_url|add:'" class="fw-semibold text-decoration-none text-primary">'|add:citation.author.username|add:'</a>'|safe created_at=citation.created_at|date:"d/m/Y H:i" %}
+            Reportado por {{ username_link }} el {{ created_at }}
+          {% endblocktrans %}
+        {% else %}
+          {% blocktrans with created_at=citation.created_at|date:"d/m/Y H:i" %}
+            Reportado por Anónimo el {{ created_at }}
+          {% endblocktrans %}
+        {% endif %}
+      </p>
+    </div>
+    <button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
   </div>
-
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
 </div>
 
-<div class="modal-body pt-3">
-  {% trans "Título no disponible" as fallback_title %}
-
+<div class="modal-body p-4 pt-4">
   <div class="row g-4">
-    <!-- Columna izquierda: info principal -->
     <div class="col-lg-8">
-      <div class="mb-3">
-        <p class="text-uppercase text-muted small mb-1">{% trans "Artículo original" %}</p>
-        <h3 class="h5 mb-1">
-          {{ citation.metadata_original.title|default:citation.doi_original|default:fallback_title }}
+      <div class="mb-4 p-3 rounded-3 shadow-sm preview-highlight-card">
+        <p class="text-uppercase fw-bold mb-2 small preview-small-title">
+          <i class="bi bi-journal-text me-1"></i>{% trans "Artículo original" %}
+        </p>
+        <h3 class="h6 fw-bold mb-3 lh-base text-dark preview-card-title">
+          {{ citation.metadata_original.title|default:citation.doi_original|default:"N/A" }}
         </h3>
-        <div class="d-flex flex-wrap gap-2 mb-2">
-          <span class="badge text-bg-info">{{ citation.get_publication_area_display }}</span>
-          <span class="badge text-bg-secondary">{{ citation.get_citation_type_display }}</span>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="badge-area py-1 px-2">
+            <i class="bi bi-cpu me-1"></i>{{ citation.get_publication_area_display }}
+          </span>
+          <span class="badge-type py-1 px-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>{{ citation.get_citation_type_display }}
+          </span>
         </div>
       </div>
 
-      <div class="mb-3">
-        <p class="text-muted small mb-1 text-uppercase">{% trans "Motivo / explicación" %}</p>
-        <p class="mb-0">
-          {{ citation.incorrect_reason|truncatechars:260 }}
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+          <div class="p-3 h-100 rounded-3 border shadow-sm preview-doi-card preview-doi-good">
+            <p class="text-uppercase fw-bold mb-2 small text-success preview-small-title">
+              <i class="bi bi-check-circle-fill me-1"></i>{% trans "DOI original" %}
+            </p>
+            {% if citation.doi_original %}
+              <a href="https://doi.org/{{ citation.doi_original }}" target="_blank" class="small text-decoration-none fw-medium text-success text-break">
+                {{ citation.doi_original }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.75rem;"></i>
+              </a>
+            {% else %}
+              <span class="small fw-medium text-success text-break">{% trans "N/A" %}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="p-3 h-100 rounded-3 border shadow-sm preview-doi-card preview-doi-bad">
+            <p class="text-uppercase fw-bold mb-2 small text-danger preview-small-title">
+              <i class="bi bi-x-circle-fill me-1"></i>{% trans "Cita incorrecta" %}
+            </p>
+            <span class="small fw-medium text-danger text-break">
+              {{ citation.doi_incorrect|default:"N/A" }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 mb-3 rounded-3 border shadow-sm preview-warning-card">
+        <p class="text-uppercase fw-bold mb-2 small text-warning-emphasis preview-small-title">
+          <i class="bi bi-chat-quote-fill me-1"></i>{% trans "Motivo / Explicación" %}
+        </p>
+        <p class="mb-0 small lh-base text-dark preview-reason-text">
+          {% if citation.incorrect_reason %}
+            {{ citation.incorrect_reason }}
+          {% else %}
+            {% trans "Sin descripción disponible" %}
+          {% endif %}
         </p>
       </div>
 
-      <div class="border rounded-3 p-3 bg-body-tertiary mb-2">
-        <p class="text-muted small mb-1 text-uppercase">{% trans "DOI original" %}</p>
-        <p class="mb-1 small">
-          {{ citation.doi_original|default:"N/A" }}
-        </p>
-
-        <p class="text-muted small mb-1 text-uppercase mt-3">{% trans "Cita incorrecta" %}</p>
-        <p class="mb-0 small">
-          {{ citation.doi_incorrect|default:"N/A" }}
-        </p>
-      </div>
-
-      <p class="text-muted small mb-0">
-        {% trans "Abre el detalle completo para ver metadatos, comentarios y el historial de actividad." %}
+      <p class="small text-muted mb-0 d-flex align-items-center gap-1 mt-3 preview-note-text">
+        <i class="bi bi-info-circle"></i>
+        {% trans "Abre el detalle completo para ver metadatos, comentarios e historial." %}
       </p>
     </div>
 
-    <!-- Columna derecha: acciones -->
     <div class="col-lg-4">
-      <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between">
-        <div class="mb-3">
-          <p class="text-muted small text-uppercase mb-2">{% trans "Acciones rápidas" %}</p>
+      <div class="p-4 rounded-4 border bg-body-tertiary d-flex flex-column h-100 shadow-sm preview-actions-panel">
+        <p class="text-muted fw-bold small text-uppercase mb-3 text-center preview-small-title">
+          <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>{% trans "Acciones rápidas" %}
+        </p>
 
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            {{ vote_buttons_html|safe }}
-            {{ save_button_html|safe }}
-          </div>
-
-          <p class="text-muted small mb-0">
-            {% trans "Puedes votar o guardar el reporte desde aquí o entrar al detalle para ver más contexto." %}
-          </p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {{ vote_buttons_html|safe }}
+          {{ save_button_html|safe }}
         </div>
 
-        <div class="d-flex flex-column gap-2 mt-3">
-          <a href="{% url 'citation_detail' citation.id %}"
-             class="btn btn-primary">
+        <p class="text-muted small text-center mb-0 mt-auto pb-3 border-bottom" style="font-size: 0.85rem;">
+          {% trans "Puedes interactuar con el reporte directamente desde aquí." %}
+        </p>
+
+        <div class="d-flex flex-column gap-2 mt-4">
+          <a href="{% url 'citation_detail' citation.id %}" class="btn btn-primary fw-semibold d-flex justify-content-center align-items-center gap-2 py-2 rounded-3 shadow-sm hover-lift">
+            <i class="bi bi-eye-fill"></i>
             {% trans "Ver reporte completo" %}
           </a>
-          <button type="button"
-                  class="btn btn-outline-secondary"
-                  data-bs-dismiss="modal">
+          <button type="button" class="btn btn-light border d-flex justify-content-center align-items-center gap-2 py-2 rounded-3 fw-medium text-dark shadow-sm hover-lift" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle text-secondary"></i>
             {% trans "Cerrar" %}
           </button>
         </div>

@@ -70,6 +70,8 @@ def vote_view(request):
         "upvotes": upvotes,
         "downvotes": downvotes,
         "user_vote": user_vote,
+        "net_votes": upvotes - downvotes,
+        "oob_vote_net": True,
     }
     return render(request, "citations/partials/_vote_buttons.html", context)
 

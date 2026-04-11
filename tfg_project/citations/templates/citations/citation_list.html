@@ -148,7 +148,9 @@
             </td>
 
             <td class="text-center">
-              <div class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
+              <div
+                id="vote-net-{{ c.id }}"
+                class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
                 <i class="bi bi-arrow-up-short"></i>
                 {% if c.net_votes > 0 %}+{% endif %}{{ c.net_votes|default:"0" }}
               </div>
@@ -161,7 +163,7 @@
 
             <td class="text-end">
               <div class="d-inline-flex align-items-center gap-2">
-                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved variant='table_redesign' %}
+                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved %}
                 <a href="{% url 'citation_detail' c.id %}"
                   class="btn-ver-new"
                   hx-get="{% url 'citation_preview' c.id %}"
@@ -281,6 +283,70 @@ $(function () {
           '<p class="text-danger">{% translate "No se pudo obtener informacion para este DOI." %}</p>'
         );
       });
+  });
+
+  const updateVoteNetBadge = (citationId, voteButtonsRoot) => {
+    if (!citationId || !voteButtonsRoot) return;
+    const voteNetEl = document.getElementById(`vote-net-${citationId}`);
+    if (!voteNetEl) return;
+
+    const upButton = Array.from(voteButtonsRoot.querySelectorAll('button')).find(
+      (btn) => btn.querySelector('.bi-arrow-up')
+    );
+    const downButton = Array.from(voteButtonsRoot.querySelectorAll('button')).find(
+      (btn) => btn.querySelector('.bi-arrow-down')
+    );
+
+    const parseCount = (buttonEl) => {
+      if (!buttonEl) return 0;
+      const text = (buttonEl.textContent || '').trim();
+      const matches = text.match(/\d+/g);
+      if (!matches || !matches.length) return 0;
+      return Number.parseInt(matches[matches.length - 1], 10) || 0;
+    };
+
+    const upvotes = parseCount(upButton);
+    const downvotes = parseCount(downButton);
+    const netVotes = upvotes - downvotes;
+
+    voteNetEl.classList.remove('vote-positive', 'vote-negative', 'vote-zero');
+    if (netVotes > 0) {
+      voteNetEl.classList.add('vote-positive');
+    } else if (netVotes < 0) {
+      voteNetEl.classList.add('vote-negative');
+    } else {
+      voteNetEl.classList.add('vote-zero');
+    }
+    voteNetEl.innerHTML = `<i class="bi bi-arrow-up-short"></i>${netVotes > 0 ? '+' : ''}${netVotes}`;
+  };
+
+  document.body.addEventListener('htmx:afterSwap', function (event) {
+    const target = event.detail && event.detail.target ? event.detail.target : null;
+    if (!target || !target.id) return;
+
+    if (target.id.startsWith('save-button-')) {
+      const citationId = target.id.replace('save-button-', '');
+      if (!citationId) return;
+
+      const syncedHtml = target.outerHTML;
+      document.querySelectorAll(`[id="save-button-${citationId}"]`).forEach((node) => {
+        if (node === target) return;
+        node.outerHTML = syncedHtml;
+      });
+      return;
+    }
+
+    if (target.id.startsWith('vote-buttons-')) {
+      const citationId = target.id.replace('vote-buttons-', '');
+      if (!citationId) return;
+
+      const syncedHtml = target.outerHTML;
+      document.querySelectorAll(`[id="vote-buttons-${citationId}"]`).forEach((node) => {
+        if (node === target) return;
+        node.outerHTML = syncedHtml;
+      });
+      updateVoteNetBadge(citationId, target);
+    }
   });
 });
 </script>
