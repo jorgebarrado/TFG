@@ -469,7 +469,7 @@ body.reader-fullscreen .reader-sidebar {
 /* ── Tabs ── */
 .reader-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 10px;
 }
@@ -1345,6 +1345,59 @@ body.reader-fullscreen .reader-main {
   color: var(--reader-muted);
 }
 
+.reader-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.reader-info-card {
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 6px;
+}
+
+.reader-info-card--wide {
+  grid-column: span 2;
+}
+
+.reader-info-label {
+  font-size: 0.68rem;
+  color: var(--reader-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.reader-info-title {
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--reader-text);
+  font-weight: 600;
+}
+
+.reader-info-value {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--reader-text);
+}
+
+.reader-info-value--doi {
+  word-break: break-word;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.reader-info-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* ── Zoom & page controls ── */
 .reader-zoom-display {
   min-width: 56px;
@@ -1487,6 +1540,9 @@ body.reader-fullscreen .reader-main {
   }
   .reader-viewer {
     height: 60vh;
+  }
+  .reader-info-card--wide {
+    grid-column: span 1;
   }
 }
 

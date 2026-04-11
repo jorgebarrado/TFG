@@ -35,6 +35,7 @@ const DOI_URL_REGEX = /https?:\/\/(?:dx\.)?doi\.org\/([^\s]+)/i;
 const BRACKET_REGEX = /\[\s*(\d+)\s*\]/;
 const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]/g;
 const EXTRACT_ENDPOINT = "/citations/api/extract-citations/";
+const DETECT_ARTICLE_DOI_ENDPOINT = "/citations/api/detect-article-doi/";
 const PREVIEW_EXTRACT_ENGINE = "papermage";
 
 const MAX_CITATION_RANGE = 50;
@@ -417,6 +418,38 @@ function normalizeReference(raw, index) {
     doi_source: raw.doi_source || (doi ? "regex" : null),
     confidence: Number(raw.confidence || (doi ? 1.0 : 0.5)),
     numbered: Boolean(raw.numbered),
+  };
+}
+
+function normalizeArticleInfo(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const doi = normalizeDoi(raw.doi || raw.article_doi || "");
+  if (!doi) return null;
+  const authors = Array.isArray(raw.authors)
+    ? raw.authors
+        .map((author) => String(author || "").trim())
+        .filter(Boolean)
+    : [];
+  const sourcesUsed = Array.isArray(raw.sources_used)
+    ? raw.sources_used
+        .map((source) => String(source || "").trim())
+        .filter(Boolean)
+    : [];
+  const year = Number(raw.year);
+  const referencesCount = Number(raw.references_count);
+  const citedByCount = Number(raw.cited_by_count);
+  return {
+    doi,
+    title: String(raw.title || "").trim(),
+    authors,
+    year: Number.isFinite(year) ? year : null,
+    venue: String(raw.venue || "").trim(),
+    source: String(raw.source || "").trim(),
+    sources_used: sourcesUsed,
+    references_count: Number.isFinite(referencesCount) ? referencesCount : 0,
+    cited_by_count: Number.isFinite(citedByCount) ? citedByCount : 0,
+    resolved: Boolean(raw.resolved || raw.title || authors.length || raw.venue),
+    url: String(raw.url || `https://doi.org/${doi}`).trim(),
   };
 }
 
@@ -2082,6 +2115,8 @@ export default function ReaderApp({
   previewSnippets = [],
   previewStats = null,
   previewReferences = [],
+  previewEnrichment = null,
+  previewArticleInfo = null,
 }) {
   const [loading, setLoading] = useState(Boolean(apiUrl));
   const [error, setError] = useState("");
@@ -2139,7 +2174,19 @@ export default function ReaderApp({
     String(reportOriginalDoi || "").trim()
   );
   const [debugReferenceDetection, setDebugReferenceDetection] = useState(false);
-  const [extractEnrichment, setExtractEnrichment] = useState(null);
+  const [extractEnrichment, setExtractEnrichment] = useState(
+    previewEnrichment && typeof previewEnrichment === "object"
+      ? previewEnrichment
+      : null
+  );
+  const [articleInfo, setArticleInfo] = useState(
+    normalizeArticleInfo(previewArticleInfo)
+  );
+  const [articleDoiLookup, setArticleDoiLookup] = useState({
+    loading: false,
+    message: "",
+    tone: "idle",
+  });
   const [extractionExportData, setExtractionExportData] = useState(null);
   const [referenceDebugDownload, setReferenceDebugDownload] = useState(null);
   const [readerV2Data, setReaderV2Data] = useState(null);
@@ -2165,6 +2212,7 @@ export default function ReaderApp({
   const fileInputRef = useRef(null);
   const readerV2ItemRefs = useRef(new Map());
   const extractProgressTimerRef = useRef(null);
+  const articleDoiRequestIdRef = useRef(0);
 
   useEffect(() => {
     if (!extractStatus.loading) {
@@ -2218,6 +2266,12 @@ export default function ReaderApp({
       bibliography_start_page: null,
     });
     setExtractEnrichment(null);
+    setArticleInfo(normalizeArticleInfo(previewArticleInfo));
+    setArticleDoiLookup({
+      loading: false,
+      message: "",
+      tone: "idle",
+    });
     setExtractionExportData(null);
     setReferenceDebugDownload(null);
     setSelectedReferenceId("");
@@ -2230,8 +2284,11 @@ export default function ReaderApp({
     setSelectedItemId(null);
     setShowReaderV2(false);
     setReaderV2Opacity(1);
+    if (previewArticleInfo?.doi) {
+      setArticleDoiInput(String(previewArticleInfo.doi));
+    }
     return () => URL.revokeObjectURL(objectUrl);
-  }, [previewFile]);
+  }, [previewFile, previewArticleInfo]);
 
   useEffect(() => {
     if (Array.isArray(previewSnippets)) {
@@ -2244,6 +2301,22 @@ export default function ReaderApp({
       setReferencesData(previewReferences);
     }
   }, [previewReferences]);
+
+  useEffect(() => {
+    setExtractEnrichment(
+      previewEnrichment && typeof previewEnrichment === "object"
+        ? previewEnrichment
+        : null
+    );
+  }, [previewEnrichment]);
+
+  useEffect(() => {
+    const nextArticleInfo = normalizeArticleInfo(previewArticleInfo);
+    setArticleInfo(nextArticleInfo);
+    if (nextArticleInfo?.doi) {
+      setArticleDoiInput(nextArticleInfo.doi);
+    }
+  }, [previewArticleInfo]);
 
   useEffect(() => {
     const normalized = String(reportOriginalDoi || "").trim();
@@ -2272,6 +2345,12 @@ export default function ReaderApp({
         bibliography_start_page: null,
       });
       setExtractEnrichment(null);
+      setArticleInfo(null);
+      setArticleDoiLookup({
+        loading: false,
+        message: "",
+        tone: "idle",
+      });
       setExtractionExportData(null);
       setReferenceDebugDownload(null);
       setSelectedReferenceId("");
@@ -2284,6 +2363,7 @@ export default function ReaderApp({
       setSelectedItemId(null);
       setShowReaderV2(false);
       setReaderV2Opacity(1);
+      setArticleDoiInput("");
       setPreviewUrl((current) => {
         if (current) {
           URL.revokeObjectURL(current);
@@ -2345,11 +2425,16 @@ export default function ReaderApp({
         event.detail?.enrichment && typeof event.detail.enrichment === "object"
           ? event.detail.enrichment
           : null;
+      const nextArticleInfo = normalizeArticleInfo(event.detail?.article_info);
       setSnippetsData(nextSnippets);
       setReferencesData(nextReferences);
       setReferencesVisualData(nextReferencesVisual);
       setStats(nextStats);
       setExtractEnrichment(nextEnrichment);
+      setArticleInfo(nextArticleInfo);
+      if (nextArticleInfo?.doi) {
+        setArticleDoiInput(nextArticleInfo.doi);
+      }
     };
     window.addEventListener("reader:data", handler);
     return () => window.removeEventListener("reader:data", handler);
@@ -2430,6 +2515,11 @@ export default function ReaderApp({
         ? data.enrichment
         : null
     );
+    const nextArticleInfo = normalizeArticleInfo(data.article_info);
+    setArticleInfo(nextArticleInfo);
+    if (nextArticleInfo?.doi) {
+      setArticleDoiInput(nextArticleInfo.doi);
+    }
   }, [data]);
 
   useEffect(() => {
@@ -2558,6 +2648,39 @@ export default function ReaderApp({
     const value = Number(effectiveStats.bibliography_start_page);
     return Number.isFinite(value) && value > 0 ? value : null;
   }, [effectiveStats.bibliography_start_page]);
+  const normalizedArticleDoiInput = useMemo(
+    () => normalizeDoi(articleDoiInput),
+    [articleDoiInput]
+  );
+  const effectiveArticleInfo = useMemo(() => {
+    const normalized = normalizeArticleInfo(articleInfo);
+    if (normalized) {
+      return normalized;
+    }
+    if (!normalizedArticleDoiInput) {
+      return null;
+    }
+    return {
+      doi: normalizedArticleDoiInput,
+      title: "",
+      authors: [],
+      year: null,
+      venue: "",
+      source: "",
+      sources_used: [],
+      references_count: 0,
+      cited_by_count: 0,
+      resolved: false,
+      url: `https://doi.org/${normalizedArticleDoiInput}`,
+    };
+  }, [articleInfo, normalizedArticleDoiInput]);
+  const hasArticleInfoTab = Boolean(effectiveArticleInfo?.doi);
+
+  useEffect(() => {
+    if (activeTab === "info" && !hasArticleInfoTab) {
+      setActiveTab("extract");
+    }
+  }, [activeTab, hasArticleInfoTab]);
 
   const referenceByDoi = useMemo(() => {
     const map = new Map();
@@ -4053,6 +4176,11 @@ export default function ReaderApp({
     const engine = String(
       statsForExport?.engine_used || payload?.engine_used || PREVIEW_EXTRACT_ENGINE
     ).trim();
+    const exportArticleInfo = normalizeArticleInfo(payload?.article_info);
+    const exportEnrichment =
+      payload?.enrichment && typeof payload.enrichment === "object"
+        ? payload.enrichment
+        : null;
     return {
       file_name: fileName,
       engine: engine || PREVIEW_EXTRACT_ENGINE,
@@ -4062,6 +4190,8 @@ export default function ReaderApp({
         ? bibliographyStartPage
         : null,
       stats: statsForExport,
+      article_info: exportArticleInfo,
+      enrichment: exportEnrichment,
       references: nestedReferences,
     };
   };
@@ -4208,6 +4338,10 @@ export default function ReaderApp({
         payload?.enrichment && typeof payload.enrichment === "object"
           ? payload.enrichment
           : null;
+      const nextArticleInfo = normalizeArticleInfo(payload?.article_info);
+      const payloadArticleDoi = normalizeDoi(
+        payload?.article_doi || nextArticleInfo?.doi || ""
+      );
       const referenceDebugMeta =
         payload?.reference_debug && typeof payload.reference_debug === "object"
           ? payload.reference_debug
@@ -4234,6 +4368,10 @@ export default function ReaderApp({
           : null
       );
       setExtractEnrichment(enrichmentPayload);
+      setArticleInfo(nextArticleInfo);
+      if (payloadArticleDoi) {
+        setArticleDoiInput(payloadArticleDoi);
+      }
       setSelectedReferenceId("");
       setHoveredReferenceId("");
       setSelectedCitationId("");
@@ -4278,6 +4416,15 @@ export default function ReaderApp({
         hint: [outcome.hint, enrichmentHint, debugHint].filter(Boolean).join(" "),
         tone: outcome.tone,
       });
+      if (payloadArticleDoi) {
+        setArticleDoiLookup({
+          loading: false,
+          message: nextArticleInfo?.resolved
+            ? "DOI del articulo confirmado y metadatos cargados."
+            : "DOI del articulo disponible para esta extraccion.",
+          tone: nextArticleInfo?.resolved ? "success" : "info",
+        });
+      }
     } catch (err) {
       setExtractStatus({
         loading: false,
@@ -4285,6 +4432,92 @@ export default function ReaderApp({
         message: "",
         hint: "Comprueba la conexion e intentalo de nuevo.",
         tone: "error",
+      });
+    }
+  };
+
+  const handleArticleDoiInputChange = (event) => {
+    const nextValue = event.target.value;
+    const normalized = normalizeDoi(nextValue);
+    setArticleDoiInput(nextValue);
+    setArticleInfo((current) => {
+      const currentInfo = normalizeArticleInfo(current);
+      if (currentInfo?.doi && currentInfo.doi === normalized) {
+        return currentInfo;
+      }
+      return null;
+    });
+    setArticleDoiLookup((current) =>
+      current.loading
+        ? current
+        : {
+            loading: false,
+            message: "",
+            tone: "idle",
+          }
+    );
+  };
+
+  const detectArticleDoiFromPdf = async (file) => {
+    if (!file) return;
+    const requestId = articleDoiRequestIdRef.current + 1;
+    articleDoiRequestIdRef.current = requestId;
+    setArticleDoiLookup({
+      loading: true,
+      message: "Buscando DOI del articulo en el PDF...",
+      tone: "info",
+    });
+
+    try {
+      const fd = new FormData();
+      fd.append("manuscript", file);
+      const res = await fetch(DETECT_ARTICLE_DOI_ENDPOINT, {
+        method: "POST",
+        body: fd,
+      });
+      const payload = await res.json().catch(() => null);
+      if (articleDoiRequestIdRef.current !== requestId) {
+        return;
+      }
+      if (!res.ok || !payload?.ok) {
+        setArticleDoiLookup({
+          loading: false,
+          message: "No se pudo detectar automaticamente el DOI del articulo.",
+          tone: "warning",
+        });
+        return;
+      }
+
+      const nextArticleInfo = normalizeArticleInfo(payload?.article_info);
+      const detectedDoi = normalizeDoi(
+        payload?.article_doi || nextArticleInfo?.doi || ""
+      );
+      setArticleInfo(nextArticleInfo);
+      if (detectedDoi) {
+        setArticleDoiInput(detectedDoi);
+        setArticleDoiLookup({
+          loading: false,
+          message: nextArticleInfo?.resolved
+            ? "DOI detectado automaticamente y metadatos listos."
+            : "DOI detectado automaticamente al cargar el PDF.",
+          tone: "success",
+        });
+        return;
+      }
+
+      setArticleDoiLookup({
+        loading: false,
+        message: "No se detecto DOI automaticamente en este PDF.",
+        tone: "warning",
+      });
+    } catch (error) {
+      if (articleDoiRequestIdRef.current !== requestId) {
+        return;
+      }
+      setArticleDoiLookup({
+        loading: false,
+        message: "No se pudo comprobar el DOI automaticamente.",
+        tone: "warning",
       });
     }
   };
@@ -4509,6 +4742,13 @@ export default function ReaderApp({
       bibliography_start_page: null,
     });
     setExtractEnrichment(null);
+    setArticleInfo(null);
+    setArticleDoiInput("");
+    setArticleDoiLookup({
+      loading: true,
+      message: "Buscando DOI del articulo en el PDF...",
+      tone: "info",
+    });
     setExtractionExportData(null);
     setReferenceDebugDownload(null);
     setSelectedReferenceId("");
@@ -4533,6 +4773,7 @@ export default function ReaderApp({
       hint: 'Pulsa "Extraer" para preparar Capas y Referencias.',
       tone: "idle",
     });
+    detectArticleDoiFromPdf(file);
   };
 
   const handlePdfChange = (event) => {
@@ -4550,6 +4791,7 @@ export default function ReaderApp({
   };
 
   const handleClearPdf = () => {
+    articleDoiRequestIdRef.current += 1;
     setActiveFile(null);
     setPreviewUrl((current) => {
       if (current) {
@@ -4570,6 +4812,13 @@ export default function ReaderApp({
       bibliography_start_page: null,
     });
     setExtractEnrichment(null);
+    setArticleInfo(null);
+    setArticleDoiInput(String(reportOriginalDoi || "").trim());
+    setArticleDoiLookup({
+      loading: false,
+      message: "",
+      tone: "idle",
+    });
     setExtractionExportData(null);
     setReferenceDebugDownload(null);
     setSelectedReferenceId("");
@@ -4813,13 +5062,30 @@ export default function ReaderApp({
           type="text"
           className="reader-engine-select"
           value={articleDoiInput}
-          onChange={(event) => setArticleDoiInput(event.target.value)}
+          onChange={handleArticleDoiInputChange}
           placeholder="10.xxxx/xxxxx"
         />
       </label>
       <div className="reader-muted">
         Opcional: anade el DOI del articulo para mejorar la precision de las referencias.
       </div>
+      {(articleDoiLookup.loading || articleDoiLookup.message) && (
+        <div
+          className={
+            articleDoiLookup.loading
+              ? "reader-panel-status"
+              : articleDoiLookup.tone === "warning"
+                ? "reader-panel-status is-warning"
+                : articleDoiLookup.tone === "success"
+                  ? "reader-panel-status is-success"
+                  : "reader-panel-status"
+          }
+        >
+          {articleDoiLookup.loading
+            ? "Buscando DOI del articulo en el PDF..."
+            : articleDoiLookup.message}
+        </div>
+      )}
       {extractEnrichment?.paper_resolved &&
         Number(extractEnrichment?.references_enriched) > 0 && (
           <div className="reader-muted">
@@ -4924,6 +5190,19 @@ export default function ReaderApp({
       >
         Extraer
       </button>
+      {hasArticleInfoTab && (
+        <button
+          type="button"
+          className={
+            activeTab === "info"
+              ? "reader-tab is-active"
+              : "reader-tab"
+          }
+          onClick={() => setActiveTab("info")}
+        >
+          Info
+        </button>
+      )}
       <button
         type="button"
         className={
@@ -5234,6 +5513,107 @@ export default function ReaderApp({
                   </div>
                 );
               })
+            )}
+          </div>
+        )}
+
+        {activeTab === "info" && hasArticleInfoTab && (
+          <div className="reader-card reader-panel">
+            {tabsBar}
+            <div className="reader-ref-header">
+              <div className="reader-card-title">Info del articulo</div>
+              <div className="reader-muted">
+                {effectiveArticleInfo?.resolved ? "DOI resuelto" : "DOI disponible"}
+              </div>
+            </div>
+            <div
+              className={
+                effectiveArticleInfo?.resolved
+                  ? "reader-panel-status is-success"
+                  : "reader-panel-status"
+              }
+            >
+              {effectiveArticleInfo?.resolved
+                ? "Metadatos del articulo cargados a partir del DOI."
+                : "Hay DOI del articulo, pero no se han recuperado mas metadatos todavia."}
+            </div>
+            <div className="reader-info-grid">
+              <div className="reader-info-card reader-info-card--wide">
+                <div className="reader-info-label">DOI</div>
+                <div className="reader-info-value reader-info-value--doi">
+                  {effectiveArticleInfo?.doi || "-"}
+                </div>
+                <div className="reader-info-actions">
+                  <a
+                    className="reader-action"
+                    href={effectiveArticleInfo?.url || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir DOI
+                  </a>
+                  <button
+                    type="button"
+                    className="reader-action"
+                    onClick={() => copyToClipboard(effectiveArticleInfo?.doi || "")}
+                  >
+                    Copiar DOI
+                  </button>
+                </div>
+              </div>
+              <div className="reader-info-card reader-info-card--wide">
+                <div className="reader-info-label">Titulo</div>
+                <div className="reader-info-title">
+                  {effectiveArticleInfo?.title || "Sin titulo resuelto"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Autores</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.authors?.length
+                    ? effectiveArticleInfo.authors.join(", ")
+                    : "Sin autores resueltos"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Venue</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.venue || "Sin venue resuelto"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Ano</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.year || "-"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Referencias DOI</div>
+                <div className="reader-info-value">
+                  {Number(effectiveArticleInfo?.references_count || 0)}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Citado por</div>
+                <div className="reader-info-value">
+                  {Number(effectiveArticleInfo?.cited_by_count || 0)}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Fuente principal</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.source || "doi"}
+                </div>
+              </div>
+            </div>
+            {effectiveArticleInfo?.sources_used?.length > 0 && (
+              <div className="reader-ref-metrics">
+                {effectiveArticleInfo.sources_used.map((source) => (
+                  <span className="reader-pill" key={source}>
+                    {source}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         )}
