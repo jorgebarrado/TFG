@@ -357,7 +357,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             try:
                 reader_data = extract_pdf_data(temp_path)
             except Exception as exc:
-                if engine == "papermage" or data.get("engine_used") == "papermage":
+                if engine == "papermage":
                     return JsonResponse(
                         {
                             "ok": False,

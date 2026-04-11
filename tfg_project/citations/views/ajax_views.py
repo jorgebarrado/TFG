@@ -93,7 +93,11 @@ def toggle_saved(request):
     else:
         is_saved = True
 
-    context = {"citation": citation, "is_saved": is_saved}
+    context = {
+        "citation": citation,
+        "is_saved": is_saved,
+        "variant": (request.POST.get("variant") or "").strip(),
+    }
     return render(request, "citations/partials/_save_button.html", context)
 
 

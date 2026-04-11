@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n custom_filters %}
+{% load i18n %}
 
 {% block title %}{% trans "Listado de reportes" %}{% endblock %}
 
@@ -13,16 +13,16 @@
           {% trans "Citas cuestionadas por la comunidad" %}
         </h1>
         <p class="text-muted mb-3">
-          {% trans "Navega los reportes enviados por otros autores y filtra por area, tipo de error o anio. El diseno sigue la home con tarjetas glass y gradientes suaves." %}
+          {% trans "Navega los reportes enviados por otros autores y filtra por área, tipo de error o año." %}
         </p>
         <div class="d-flex flex-wrap gap-2">
           <span class="stat-pill">
             <i class="fa-solid fa-flag-checkered text-primary"></i>
-            {{ citations|length }} {% trans "reportes" %}
+            {{ reports_total }} {% trans "reportes" %}
           </span>
           <span class="stat-pill">
             <i class="fa-solid fa-layer-group text-indigo-500"></i>
-            {{ areas|length }} {% trans "Areas" %}
+            {{ areas|length }} {% trans "Áreas" %}
           </span>
           <span class="stat-pill">
             <i class="fa-solid fa-bug text-amber-500"></i>
@@ -48,14 +48,14 @@
     </div>
     <form class="row g-3" method="get">
       <div class="col-lg-5">
-        <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, titulo o autor" %}</label>
+        <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, título o autor" %}</label>
         <input id="searchInput" type="text"
               class="form-control"
-              placeholder="{% trans 'Buscar DOI, titulo o autor' %}">
+              placeholder="{% trans 'Buscar DOI, título o autor' %}">
       </div>
 
       <div class="col-lg-3">
-        <label class="form-label small text-muted" for="areaFilter">{% trans "Area" %}</label>
+        <label class="form-label small text-muted" for="areaFilter">{% trans "Área" %}</label>
         <select id="areaFilter" class="form-select">
           <option value="">{% trans "Todas" %}</option>
           {% for code,label in areas %}
@@ -65,8 +65,8 @@
       </div>
 
       <div class="col-lg-2">
-        <label class="form-label small text-muted" for="ctypeFilter">{% trans "Tipo" %}</label>
-        <select id="ctypeFilter" class="form-select">
+        <label class="form-label small text-muted" for="typeFilter">{% trans "Tipo" %}</label>
+        <select id="typeFilter" class="form-select">
           <option value="">{% trans "Todos" %}</option>
           {% for code,label in citation_types %}
             <option value="{{ label }}">{{ label }}</option>
@@ -75,7 +75,7 @@
       </div>
 
       <div class="col-lg-2">
-        <label class="form-label small text-muted" for="yearFilter">{% trans "Anio" %}</label>
+        <label class="form-label small text-muted" for="yearFilter">{% trans "Año" %}</label>
         <select id="yearFilter" class="form-select">
           <option value=""
                   {% if not request.GET.year %}selected{% endif %}>
@@ -96,41 +96,74 @@
 
   {% if citations %}
   <div class="table-modern">
-    <table id="citationsTable"
-           class="table align-middle mb-0">
+    <table id="citationsTable" class="table align-middle mb-0 table-redesign">
       <thead>
         <tr>
-          <th>{% trans "Reportado por" %}</th>
-          <th>{% trans "DOI" %}</th>
-          <th>{% trans "Tipo de error" %}</th>
-          <th>{% trans "Area" %}</th>
-          <th>{% trans "ID" %}</th>
-          <th>{% trans "Fecha" %}</th>
-          <th>{% trans "Acciones" %}</th>
+          <th style="width: 40%;">{% trans "Reporte" %}</th>
+          <th style="width: 18%;">{% trans "Tipo de error" %}</th>
+          <th style="width: 12%; text-align: center;">{% trans "Votos" %}</th>
+          <th style="width: 15%;">{% trans "Fecha" %}</th>
+          <th style="width: 15%; text-align: right;">{% trans "Acciones" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for c in citations %}
-          <tr>
+          <tr
+            data-area="{{ c.get_publication_area_display }}"
+            data-type="{{ c.get_citation_type_display }}"
+            data-year="{{ c.created_at|date:'Y' }}"
+            data-search="{{ c.author.username|default:'' }} {{ c.doi_original|default:'' }} {{ c.doi_incorrect|default:'' }} {{ c.report_title_display|default:'' }}">
             <td>
-              {% if c.author %}
-                <a href="{% url 'profile' c.author.username %}" class="text-decoration-none">{{ c.author.username }}</a>
-              {% else %}
-                {% trans "Anonimo" %}{% endif %}</td>
-            <td>
-              <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
-                <code>{{ c.doi_original }}</code>
+              <a href="{% url 'citation_detail' c.id %}" class="report-title">
+                {{ c.report_title_display }}
+              </a>
+              <div class="report-meta">
+                {% trans "por" %}
+                {% if c.author %}
+                  <a href="{% url 'profile' c.author.username %}">{{ c.author.username }}</a>
+                {% else %}
+                  {% trans "Anónimo" %}
+                {% endif %}
+                · <span class="badge-area">{{ c.get_publication_area_display|default:"—" }}</span>
+              </div>
+              <a href="#" class="report-doi doi-link" data-doi="{{ c.doi_original }}" title="{{ c.doi_original }}">
+                {% if c.doi_original %}
+                  {{ c.doi_original|cut:"https://doi.org/" }}
+                {% else %}
+                  —
+                {% endif %}
               </a>
             </td>
-            <td>{{ c.get_citation_type_display }}</td>
-            <td>{{ c.get_publication_area_display }}</td>
-            <td data-order="{{ c.id }}">#{{ c.id }}</td>
-            <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="d-flex flex-wrap gap-2">
-                {% include 'citations/partials/_vote_buttons.html' with citation=c upvotes=c.votes.all|count_upvotes downvotes=c.votes.all|count_downvotes user_vote=c.votes.all|user_vote:request.user %}
-                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c|is_saved_by:request.user %}
+
+            <td>
+              {% if c.citation_type == "misinterpretation" %}
+                <span class="badge-error badge-misinterpretation">{{ c.get_citation_type_display }}</span>
+              {% elif c.citation_type == "contextual misattribution" %}
+                <span class="badge-error badge-contextual">{{ c.get_citation_type_display }}</span>
+              {% elif c.citation_type %}
+                <span class="badge-error badge-not-said">{{ c.get_citation_type_display }}</span>
+              {% else %}
+                <span class="badge-error badge-not-said">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              <div class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
+                <i class="bi bi-arrow-up-short"></i>
+                {% if c.net_votes > 0 %}+{% endif %}{{ c.net_votes|default:"0" }}
+              </div>
+            </td>
+
+            <td>
+              <span class="date-relative">{{ c.created_at|timesince }} {% trans "atrás" %}</span>
+              <span class="date-exact">{{ c.created_at|date:"d/m/Y" }}</span>
+            </td>
+
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-2">
+                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved variant='table_redesign' %}
                 <a href="{% url 'citation_detail' c.id %}"
-                  class="btn btn-sm btn-outline-primary"
+                  class="btn-ver-new"
                   hx-get="{% url 'citation_preview' c.id %}"
                   hx-target="#citationPreviewModalContent"
                   hx-swap="innerHTML"
@@ -138,6 +171,7 @@
                   data-bs-target="#citationPreviewModal">
                     {% trans "Ver" %}
                 </a>
+              </div>
             </td>
           </tr>
         {% endfor %}
@@ -147,7 +181,7 @@
 
   {% else %}
     <div class="alert alert-info text-center">
-        {% trans "No hay reportes aun." %}
+        {% trans "No hay reportes aún." %}
     </div>
   {% endif %}
 </div>
@@ -165,42 +199,79 @@ $(function () {
     en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
   };
   const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
+  const $tableEl = $('#citationsTable');
+  let table = null;
 
-  const table = $('#citationsTable').DataTable({
-    language: { url: languageMap[userLang] || languageMap.en },
-    order: [[4, 'desc']],
-    dom: 'lrtip',
-    pageLength: 10
-  });
+  const filterState = {
+    search: '',
+    area: '',
+    type: '',
+    year: '',
+  };
 
-  $('#searchInput').on('keyup', function () {
-    table.search(this.value).draw();
-  });
+  const matchesFilters = (row) => {
+    const searchText = (row.dataset.search || '').toLowerCase();
+    return (!filterState.search || searchText.includes(filterState.search))
+      && (!filterState.area || row.dataset.area === filterState.area)
+      && (!filterState.type || row.dataset.type === filterState.type)
+      && (!filterState.year || row.dataset.year === filterState.year);
+  };
 
-  $('#areaFilter').on('change', e => table.column(3).search(e.target.value).draw());
+  if ($tableEl.length && $.fn.DataTable) {
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+      if (settings.nTable !== $tableEl.get(0)) {
+        return true;
+      }
+      const row = settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+      return row ? matchesFilters(row) : true;
+    });
 
-  $('#ctypeFilter').on('change', e => {
-    const v = e.target.value ? '^' + e.target.value + '$' : '';
-    table.column(2).search(v, true, false).draw();
-  });
+    table = $tableEl.DataTable({
+      language: { url: languageMap[userLang] || languageMap.en },
+      order: [],
+      dom: 'lrtip',
+      pageLength: 10
+    });
+  }
 
-  $('#yearFilter').on('change', e => table.column(5).search(e.target.value).draw());
+  const applyFilters = () => {
+    filterState.search = ($('#searchInput').val() || '').toLowerCase().trim();
+    filterState.area = $('#areaFilter').val() || '';
+    filterState.type = $('#typeFilter').val() || '';
+    filterState.year = $('#yearFilter').val() || '';
+
+    if (table) {
+      table.draw();
+      return;
+    }
+
+    document.querySelectorAll('.table-redesign tbody tr').forEach((row) => {
+      row.style.display = matchesFilters(row) ? '' : 'none';
+    });
+  };
+
+  $('#searchInput').on('input', applyFilters);
+  $('#areaFilter, #typeFilter, #yearFilter').on('change', applyFilters);
+  applyFilters();
 
   $(document).on('click', '.doi-link', function (e) {
     e.preventDefault();
     const doi = $(this).data('doi');
     $('#doiMetadataContent').html('<p>{% trans "Cargando metadatos..." %}</p>');
-    new bootstrap.Modal('#doiModal').show();
+    const doiModalEl = document.getElementById('doiModal');
+    if (doiModalEl) {
+      new bootstrap.Modal(doiModalEl).show();
+    }
 
     $.get('/citations/get_all_metadata/', { doi })
       .done(function (data) {
         const html = `
-          <p><strong>{% trans "Titulo" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
+          <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
           <p><strong>{% trans "Autores" %}:</strong> ${
             data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'
           }</p>
           <p><strong>{% translate "Revista" %}:</strong> ${data['container-title']?.[0] || '{% translate "N/A" %}'}</p>
-          <p><strong>{% translate "Anio" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
+          <p><strong>{% translate "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
           <p><strong>DOI:</strong> <code>${doi}</code></p>
           <p><strong>{% translate "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>`;
         $('#doiMetadataContent').html(html);

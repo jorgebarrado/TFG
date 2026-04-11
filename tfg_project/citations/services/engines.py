@@ -87,16 +87,17 @@ def _attempt(
         if fn_with_positions:
             paragraphs_with_positions = fn_with_positions(pdf_path) or []
             paras = [item.get("text", "") for item in paragraphs_with_positions]
-        if not paras and fn:
+        if not any(p.strip() for p in paras) and fn:
             paras = fn(pdf_path) or []
-            if paras and not paragraphs_with_positions:
+            paragraphs_with_positions = []
+            if paras:
                 paragraphs_with_positions = [
                     {"page": None, "index": idx, "text": text}
                     for idx, text in enumerate(paras)
                 ]
-        att["ok"] = bool(paras)
+        att["ok"] = any(p.strip() for p in paras)
         att["count"] = len(paras)
-        if not paras:
+        if not att["ok"]:
             return [], [], att, f"{name} returned no paragraphs"
         return paras, paragraphs_with_positions, att, None
     except Exception as e:
@@ -148,7 +149,7 @@ def run_engine(
         paras, with_pos, att, err = _attempt(
             "generic",
             GENERIC_AVAILABLE,
-            generic_extract_paragraphs,
+            None,
             generic_extract_paragraphs_with_positions,
             pdf_path,
         )
@@ -186,7 +187,7 @@ def run_engine(
     paras, with_pos, att, err3 = _attempt(
         "generic",
         GENERIC_AVAILABLE,
-        generic_extract_paragraphs,
+        None,
         generic_extract_paragraphs_with_positions,
         pdf_path,
     )
