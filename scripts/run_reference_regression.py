@@ -924,6 +924,15 @@ def _calculate_metrics(
     experimental_numeric_comparison = _coerce_dict(
         experimental_numeric_pipeline_v2.get("comparison_vs_current")
     )
+    experimental_numeric_pipeline_v3 = _coerce_dict(
+        (debug_payload or {}).get("numeric_reference_pipeline_v3")
+    )
+    experimental_numeric_metrics_v3 = _coerce_dict(
+        experimental_numeric_pipeline_v3.get("metrics")
+    )
+    experimental_numeric_comparison_v3 = _coerce_dict(
+        experimental_numeric_pipeline_v3.get("comparison_vs_current")
+    )
 
     metrics = {
         "run_id": run_id,
@@ -1037,6 +1046,63 @@ def _calculate_metrics(
                 ),
                 "experimental_numeric_pipeline_v2_improvements_total": len(
                     _coerce_list(experimental_numeric_comparison.get("improvements"))
+                ),
+            }
+        )
+    if experimental_numeric_pipeline_v3:
+        metrics.update(
+            {
+                "experimental_numeric_pipeline_v3_enabled": bool(
+                    experimental_numeric_pipeline_v3.get("enabled")
+                ),
+                "experimental_numeric_pipeline_v3_run_mode": str(
+                    experimental_numeric_pipeline_v3.get("run_mode") or ""
+                )
+                or None,
+                "experimental_numeric_pipeline_v3_status": str(
+                    experimental_numeric_comparison_v3.get("status") or ""
+                )
+                or None,
+                "experimental_numeric_pipeline_v3_promotion_ready": bool(
+                    experimental_numeric_comparison_v3.get("promotion_ready")
+                ),
+                "experimental_numeric_pipeline_v3_references_total": _safe_int(
+                    experimental_numeric_metrics_v3.get("references_total")
+                ),
+                "experimental_numeric_pipeline_v3_coverage_ratio": _safe_float(
+                    experimental_numeric_metrics_v3.get("coverage_ratio")
+                ),
+                "experimental_numeric_pipeline_v3_pct_accepted": _safe_float(
+                    experimental_numeric_metrics_v3.get("pct_accepted")
+                ),
+                "experimental_numeric_pipeline_v3_fallback_total": _safe_int(
+                    experimental_numeric_metrics_v3.get("fallback_total")
+                ),
+                "experimental_numeric_pipeline_v3_references_truncated_total": _safe_int(
+                    experimental_numeric_metrics_v3.get("references_truncated_total")
+                ),
+                "experimental_numeric_pipeline_v3_continuation_between_pages_total": _safe_int(
+                    experimental_numeric_metrics_v3.get(
+                        "continuation_between_pages_total"
+                    )
+                ),
+                "experimental_numeric_pipeline_v3_contamination_total": _safe_int(
+                    experimental_numeric_metrics_v3.get("contamination_total")
+                ),
+                "experimental_numeric_pipeline_v3_geometry_complete_total": _safe_int(
+                    experimental_numeric_metrics_v3.get("geometry_complete_total")
+                ),
+                "experimental_numeric_pipeline_v3_missing_indices": _coerce_list(
+                    experimental_numeric_metrics_v3.get("missing_indices")
+                ),
+                "experimental_numeric_pipeline_v3_duplicate_indices": _coerce_list(
+                    experimental_numeric_metrics_v3.get("duplicate_indices")
+                ),
+                "experimental_numeric_pipeline_v3_regressions_total": len(
+                    _coerce_list(experimental_numeric_comparison_v3.get("regressions"))
+                ),
+                "experimental_numeric_pipeline_v3_improvements_total": len(
+                    _coerce_list(experimental_numeric_comparison_v3.get("improvements"))
                 ),
             }
         )
@@ -1199,6 +1265,19 @@ def _build_compact_paper_summary(paper_summary: Dict[str, Any]) -> Dict[str, Any
         ),
         "experimental_v2_improvements_total": int(
             metrics.get("experimental_numeric_pipeline_v2_improvements_total") or 0
+        ),
+        "experimental_v3_status": str(
+            metrics.get("experimental_numeric_pipeline_v3_status") or ""
+        )
+        or None,
+        "experimental_v3_promotion_ready": bool(
+            metrics.get("experimental_numeric_pipeline_v3_promotion_ready")
+        ),
+        "experimental_v3_regressions_total": int(
+            metrics.get("experimental_numeric_pipeline_v3_regressions_total") or 0
+        ),
+        "experimental_v3_improvements_total": int(
+            metrics.get("experimental_numeric_pipeline_v3_improvements_total") or 0
         ),
         "main_issues": _derive_main_issues(metrics),
         "artifacts": dict(paper_summary.get("artifacts") or {}),
