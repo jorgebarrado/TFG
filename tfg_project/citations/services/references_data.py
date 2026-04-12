@@ -138,6 +138,8 @@ REFERENCE_DEBUG_FILE_EXTENSION = ".json"
 REFERENCE_PIPELINE_VERSION = "references-phased-v4"
 NUMERIC_REFERENCE_PIPELINE_V2_NAME = "numeric_reference_pipeline_v2"
 NUMERIC_REFERENCE_PIPELINE_V2_RUN_MODE = "debug_only"
+NUMERIC_REFERENCE_PIPELINE_V3_NAME = "numeric_reference_pipeline_v3"
+NUMERIC_REFERENCE_PIPELINE_V3_RUN_MODE = "debug_only"
 REFERENCE_DEBUG_DIR = (
     Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
 )
@@ -4452,6 +4454,317 @@ def _match_marker_only_numeric_anchor(text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _row_geometry_edges(
+    row: Dict[str, Any],
+) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+    box = _normalize_box(row.get("box"))
+    x0 = _to_float(row.get("x0"))
+    y0 = _to_float(row.get("y0"))
+    x1 = _to_float(row.get("x1"))
+    y1 = _to_float(row.get("y1"))
+    if box is not None:
+        if x0 is None:
+            x0 = float(box[0])
+        if y0 is None:
+            y0 = float(box[1])
+        if x1 is None:
+            x1 = float(box[0]) + float(box[2])
+        if y1 is None:
+            y1 = float(box[1]) + float(box[3])
+    return x0, y0, x1, y1
+
+
+def _estimate_numeric_body_x0_reference_v3(
+    ordered_rows: Sequence[Dict[str, Any]],
+) -> Optional[float]:
+    x0_values: List[float] = []
+    for row in ordered_rows:
+        text = str(row.get("text") or "").strip()
+        if not text or _row_is_section_transition_v2(text):
+            continue
+        if not _has_v2_bibliographic_body_signal(_strip_numeric_anchor_prefix(text)):
+            continue
+        marker_only = _match_marker_only_numeric_anchor(text)
+        x0, _, x1, _ = _row_geometry_edges(row)
+        if x0 is None:
+            continue
+        if marker_only and x1 is not None and float(x1) - float(x0) <= 0.16:
+            continue
+        x0_values.append(float(x0))
+    if not x0_values:
+        return None
+    return float(_median(x0_values))
+
+
+def _build_marker_only_anchor_link_map_v3(
+    ordered_rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    body_x0_reference = _estimate_numeric_body_x0_reference_v3(ordered_rows)
+    marker_rows_total = 0
+    linked_rows: List[Dict[str, Any]] = []
+    link_failures: List[Dict[str, Any]] = []
+
+    for position, row in enumerate(ordered_rows):
+        text = str(row.get("text") or "").strip()
+        marker_only = _match_marker_only_numeric_anchor(text)
+        if not marker_only:
+            continue
+        marker_rows_total += 1
+        normalized_marker = re.sub(r"\s+", "", text)
+        if len(normalized_marker) > 9:
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": _to_int(marker_only.get("index")),
+                    "page": _to_int(row.get("page")),
+                    "reason": "marker_not_short_enough",
+                }
+            )
+            continue
+        if _has_v2_bibliographic_body_signal(_strip_numeric_anchor_prefix(text)):
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": _to_int(marker_only.get("index")),
+                    "page": _to_int(row.get("page")),
+                    "reason": "marker_row_has_inline_body",
+                }
+            )
+            continue
+        anchor_x0, anchor_y0, anchor_x1, anchor_y1 = _row_geometry_edges(row)
+        if None in (anchor_x0, anchor_y0, anchor_x1, anchor_y1):
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": _to_int(marker_only.get("index")),
+                    "page": _to_int(row.get("page")),
+                    "reason": "marker_row_missing_geometry",
+                }
+            )
+            continue
+
+        marker_width = float(anchor_x1) - float(anchor_x0)
+        if marker_width > 0.15:
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": _to_int(marker_only.get("index")),
+                    "page": _to_int(row.get("page")),
+                    "reason": "marker_row_too_wide",
+                }
+            )
+            continue
+        if body_x0_reference is not None:
+            if float(anchor_x0) >= float(body_x0_reference) - 0.05:
+                link_failures.append(
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "index": _to_int(marker_only.get("index")),
+                        "page": _to_int(row.get("page")),
+                        "reason": "marker_not_in_left_gutter_band",
+                    }
+                )
+                continue
+            if float(anchor_x1) >= float(body_x0_reference) - 0.008:
+                link_failures.append(
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "index": _to_int(marker_only.get("index")),
+                        "page": _to_int(row.get("page")),
+                        "reason": "marker_without_horizontal_gap_to_body_band",
+                    }
+                )
+                continue
+        elif float(anchor_x0) > 0.3:
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": _to_int(marker_only.get("index")),
+                    "page": _to_int(row.get("page")),
+                    "reason": "marker_not_in_left_half_without_body_band_reference",
+                }
+            )
+            continue
+
+        anchor_page = _to_int(row.get("page"))
+        anchor_index = _to_int(marker_only.get("index"))
+        if anchor_page is None or anchor_index is None or anchor_index <= 0:
+            continue
+        best_link: Optional[Dict[str, Any]] = None
+        scan_limit = min(len(ordered_rows), position + 10)
+        for body_position in range(position + 1, scan_limit):
+            candidate_row = ordered_rows[body_position]
+            if _to_int(candidate_row.get("page")) != anchor_page:
+                break
+            candidate_text = str(candidate_row.get("text") or "").strip()
+            if not candidate_text:
+                continue
+            if _row_is_section_transition_v2(candidate_text):
+                if body_position - position <= 2:
+                    continue
+                break
+            if _match_marker_only_numeric_anchor(candidate_text):
+                continue
+            candidate_anchor = _match_reference_anchor_at_line_start(
+                candidate_text,
+                include_rejected=True,
+            )
+            if candidate_anchor and candidate_anchor.get("accepted"):
+                candidate_index = _to_int(candidate_anchor.get("index"))
+                if candidate_index not in (None, anchor_index):
+                    break
+            if not _has_v2_bibliographic_body_signal(candidate_text):
+                continue
+            body_x0, body_y0, body_x1, body_y1 = _row_geometry_edges(candidate_row)
+            if None in (body_x0, body_y0, body_x1, body_y1):
+                continue
+            horizontal_gap = float(body_x0) - float(anchor_x1)
+            if horizontal_gap < 0.004:
+                continue
+            overlap = max(
+                0.0,
+                min(float(anchor_y1), float(body_y1))
+                - max(float(anchor_y0), float(body_y0)),
+            )
+            marker_height = max(float(anchor_y1) - float(anchor_y0), 1e-4)
+            body_height = max(float(body_y1) - float(body_y0), 1e-4)
+            overlap_ratio = overlap / max(min(marker_height, body_height), 1e-4)
+            delta_y = abs(float(body_y0) - float(anchor_y0))
+            vertical_gap = abs(float(body_y0) - float(anchor_y1))
+            right_band_alignment = bool(
+                horizontal_gap >= 0.012
+                and (
+                    overlap_ratio >= 0.2
+                    or delta_y <= 0.035
+                    or vertical_gap <= 0.03
+                )
+            )
+            immediate_fallback = bool(
+                body_position == position + 1
+                and horizontal_gap >= 0.006
+                and delta_y <= 0.09
+            )
+            if not right_band_alignment and not immediate_fallback:
+                continue
+
+            score = 0.24
+            reasons: List[str] = []
+            if right_band_alignment:
+                score += 0.23
+                reasons.append("same_page_right_band")
+            else:
+                score += 0.08
+                reasons.append("next_row_fallback_alignment")
+            if overlap_ratio >= 0.35:
+                score += 0.13
+                reasons.append("vertical_overlap_strong")
+            elif overlap_ratio >= 0.2:
+                score += 0.08
+                reasons.append("vertical_overlap")
+            elif delta_y <= 0.03:
+                score += 0.07
+                reasons.append("small_delta_y")
+            if body_position == position + 1:
+                score += 0.07
+                reasons.append("immediate_next_row")
+            if body_x0_reference is not None:
+                offset_from_body_band = abs(float(body_x0) - float(body_x0_reference))
+                if offset_from_body_band <= 0.09:
+                    score += 0.11
+                    reasons.append("aligned_with_body_band")
+                elif offset_from_body_band <= 0.16:
+                    score += 0.05
+                    reasons.append("near_body_band")
+                else:
+                    score -= 0.07
+                    reasons.append("off_body_band")
+            if row.get("reading_lane_id") and row.get("reading_lane_id") == candidate_row.get(
+                "reading_lane_id"
+            ):
+                score += 0.05
+                reasons.append("same_reading_lane")
+            if len(candidate_text) >= 72:
+                score += 0.03
+                reasons.append("long_body_row")
+            confidence = round(max(0.0, min(0.98, 0.38 + float(score))), 3)
+            link_payload = {
+                "anchor_position": position,
+                "anchor_row_id": str(row.get("id") or ""),
+                "anchor_page": anchor_page,
+                "index": anchor_index,
+                "body_start_position": body_position,
+                "body_start_row_id": str(candidate_row.get("id") or ""),
+                "body_start_page": _to_int(candidate_row.get("page")),
+                "body_start_x0": float(body_x0),
+                "marker_x1": float(anchor_x1),
+                "horizontal_gap": round(horizontal_gap, 4),
+                "vertical_overlap_ratio": round(overlap_ratio, 4),
+                "delta_y": round(delta_y, 4),
+                "score": round(float(score), 3),
+                "confidence": confidence,
+                "link_reason": ",".join(reasons),
+                "reasons": reasons,
+            }
+            if best_link is None or float(link_payload["score"]) > float(
+                best_link.get("score") or 0.0
+            ):
+                best_link = link_payload
+        if best_link is None:
+            link_failures.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "index": anchor_index,
+                    "page": anchor_page,
+                    "reason": "body_start_not_found_to_right",
+                }
+            )
+            continue
+        linked_rows.append(best_link)
+
+    marker_gaps = [
+        float(link.get("horizontal_gap"))
+        for link in linked_rows
+        if _to_float(link.get("horizontal_gap")) is not None
+    ]
+    body_x0_values = [
+        float(link.get("body_start_x0"))
+        for link in linked_rows
+        if _to_float(link.get("body_start_x0")) is not None
+    ]
+    layout_confirmed = False
+    layout_confirmation_reason = "insufficient_marker_links_for_layout"
+    if len(linked_rows) >= 2:
+        median_gap = _median(marker_gaps) if marker_gaps else 0.0
+        body_band_spread = (
+            float(max(body_x0_values) - min(body_x0_values))
+            if len(body_x0_values) >= 2
+            else 0.0
+        )
+        if median_gap >= 0.03 and body_band_spread <= 0.2:
+            layout_confirmed = True
+            layout_confirmation_reason = "repeated_marker_only_left_gutter_pattern"
+        elif median_gap < 0.03:
+            layout_confirmation_reason = "marker_body_gap_too_small"
+        else:
+            layout_confirmation_reason = "body_start_band_not_coherent"
+
+    linked_by_position = {
+        int(link.get("anchor_position")): link
+        for link in linked_rows
+        if _to_int(link.get("anchor_position")) is not None
+    }
+    return {
+        "layout_confirmed": layout_confirmed,
+        "layout_confirmation_reason": layout_confirmation_reason,
+        "body_x0_reference": body_x0_reference,
+        "marker_rows_total": marker_rows_total,
+        "linked_rows_total": len(linked_rows),
+        "linked_rows": linked_rows,
+        "linked_by_position": linked_by_position,
+        "link_failures": link_failures,
+    }
+
+
 def _has_v2_bibliographic_body_signal(text: str) -> bool:
     value = re.sub(r"\s+", " ", str(text or "")).strip()
     if not value:
@@ -6177,6 +6490,2627 @@ def _run_numeric_reference_pipeline_v2(
             },
             "reconciliation": {
                 "actions": anchor_reconciliation.get("reconciliation_actions") or [],
+            },
+        },
+        "reference_debug": reference_debug,
+        "references": experimental_entries,
+        "metrics": experimental_metrics,
+        "comparison_vs_current": comparison,
+    }
+
+
+def _serialize_row_geometry_v3(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    page = _to_int(row.get("page"))
+    box = _normalize_box(row.get("box"))
+    if not isinstance(page, int) or box is None:
+        return None
+    return {
+        "row_id": str(row.get("id") or ""),
+        "page": page,
+        "box": _serialize_box(box),
+    }
+
+
+def _coerce_geometry_box_v3(value: Any) -> Optional[List[float]]:
+    normalized = _normalize_box(value)
+    if normalized is not None:
+        return normalized
+    if isinstance(value, dict):
+        x0 = _to_float(value.get("x0"))
+        y0 = _to_float(value.get("y0"))
+        x1 = _to_float(value.get("x1"))
+        y1 = _to_float(value.get("y1"))
+        if None not in (x0, y0, x1, y1):
+            return _box_from_corners(
+                float(x0),
+                float(y0),
+                float(x1),
+                float(y1),
+            )
+    return None
+
+
+def _build_reference_geometry_payload_v3(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    geometry_source: str,
+) -> Dict[str, Any]:
+    row_ids = [
+        str(row.get("id") or "")
+        for row in rows
+        if str(row.get("id") or "").strip()
+    ]
+    row_boxes: List[Dict[str, Any]] = []
+    page_box_map: Dict[int, List[List[float]]] = defaultdict(list)
+    for row in rows:
+        serialized = _serialize_row_geometry_v3(row)
+        if serialized is None:
+            continue
+        row_boxes.append(serialized)
+        page = int(serialized["page"])
+        box = _coerce_geometry_box_v3(serialized["box"])
+        if box is not None:
+            page_box_map[page].append(box)
+    page_boxes: List[Dict[str, Any]] = []
+    for page in sorted(page_box_map.keys()):
+        union_box = _union_boxes(page_box_map[page])
+        if union_box is None:
+            continue
+        page_boxes.append({"page": int(page), "box": _serialize_box(union_box)})
+    union_box = _union_boxes(
+        [
+            _coerce_geometry_box_v3(item.get("box"))
+            for item in row_boxes
+            if _coerce_geometry_box_v3(item.get("box")) is not None
+        ]
+    )
+    pages_involved = sorted(
+        {
+            int(item.get("page"))
+            for item in row_boxes
+            if _to_int(item.get("page")) is not None
+        }
+    )
+    return {
+        "row_ids": row_ids,
+        "rows": [dict(row) for row in rows],
+        "row_boxes": row_boxes,
+        "page_boxes": page_boxes,
+        "union_box": _serialize_box(union_box),
+        "pages_involved": pages_involved,
+        "geometry_source": str(geometry_source or "rows_growth_v3"),
+    }
+
+
+def _detect_numeric_anchor_candidates_v3(
+    ordered_rows: Sequence[Dict[str, Any]],
+    *,
+    debug_collector: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    marker_layout = _build_marker_only_anchor_link_map_v3(ordered_rows)
+    marker_layout_confirmed = bool(marker_layout.get("layout_confirmed"))
+    marker_links_by_position = (
+        marker_layout.get("linked_by_position") or {}
+        if marker_layout_confirmed
+        else {}
+    )
+    if isinstance(debug_collector, dict):
+        debug_collector["marker_only_anchor_audit"] = {
+            "layout_confirmed": marker_layout_confirmed,
+            "layout_confirmation_reason": marker_layout.get("layout_confirmation_reason"),
+            "body_x0_reference": marker_layout.get("body_x0_reference"),
+            "marker_rows_total": int(marker_layout.get("marker_rows_total") or 0),
+            "linked_rows_total": int(marker_layout.get("linked_rows_total") or 0),
+            "linked_rows": marker_layout.get("linked_rows") or [],
+            "link_failures": marker_layout.get("link_failures") or [],
+        }
+
+    candidates: List[Dict[str, Any]] = []
+    for position, row in enumerate(ordered_rows):
+        text = str(row.get("text") or "").strip()
+        if not text:
+            continue
+        row_id = str(row.get("id") or "")
+        page = _to_int(row.get("page"))
+        next_row = (
+            ordered_rows[position + 1] if position + 1 < len(ordered_rows) else None
+        )
+        next_position = _to_int((next_row or {}).get("flow_position"))
+        if next_row is not None and next_position is None:
+            next_position = position + 1
+        next_row_id = str((next_row or {}).get("id") or "")
+        next_text = str((next_row or {}).get("text") or "").strip()
+        next_same_page = bool(
+            next_row is not None
+            and _to_int(next_row.get("page")) == page
+        )
+        body_inline = _strip_numeric_anchor_prefix(text)
+        body_inline_signal = _has_v2_bibliographic_body_signal(body_inline)
+        body_in_next_row_signal = bool(
+            next_same_page
+            and next_text
+            and _has_v2_bibliographic_body_signal(next_text)
+            and not _row_is_section_transition_v2(next_text)
+        )
+        accepted = _match_reference_anchor_at_line_start(text)
+        candidate = _match_reference_anchor_at_line_start(text, include_rejected=True)
+        marker_only = _match_marker_only_numeric_anchor(text)
+
+        selected: Optional[Dict[str, Any]] = None
+        if accepted and accepted.get("accepted"):
+            index = _to_int(accepted.get("index"))
+            if index is None or index <= 0:
+                continue
+            style = str(accepted.get("anchor_style") or "unknown")
+            strength = (
+                "strong"
+                if body_inline_signal
+                else ("medium" if body_in_next_row_signal else "weak")
+            )
+            confidence = {
+                "strong": 0.97,
+                "medium": 0.91,
+                "weak": 0.79,
+            }[strength]
+            if style == "bracketed":
+                confidence += 0.01
+            body_start_position = int(position)
+            body_start_row_id = row_id
+            layout_type = "inline_anchor_same_row"
+            anchor_to_body_link_reason = "inline_body_same_row"
+            if not body_inline_signal and body_in_next_row_signal:
+                body_start_position = int(
+                    next_position if next_position is not None else position + 1
+                )
+                body_start_row_id = next_row_id
+                layout_type = "inline_anchor_next_row"
+                anchor_to_body_link_reason = "inline_anchor_body_in_next_row"
+            selected = {
+                "index": int(index),
+                "style": style,
+                "anchor_style": style,
+                "confidence": round(min(confidence, 0.99), 3),
+                "strength": strength,
+                "row_id": row_id,
+                "anchor_row_id": row_id,
+                "body_start_row_id": body_start_row_id,
+                "row": row,
+                "page": page,
+                "position": int(row.get("flow_position", position)),
+                "body_start_position": body_start_position,
+                "anchor_type": "inline",
+                "layout_type": layout_type,
+                "anchor_to_body_link_reason": anchor_to_body_link_reason,
+                "used_marker_only_anchor": False,
+                "body_in_next_row": bool(
+                    body_in_next_row_signal and not body_inline_signal
+                ),
+                "reason": (
+                    "accepted_anchor_inline_body"
+                    if body_inline_signal
+                    else (
+                        "accepted_anchor_body_in_next_row"
+                        if body_in_next_row_signal
+                        else "accepted_anchor_without_body_signal"
+                    )
+                ),
+            }
+        elif marker_only and marker_links_by_position.get(position):
+            marker_link = marker_links_by_position.get(position) or {}
+            index = _to_int(marker_only.get("index"))
+            if index is None or index <= 0:
+                continue
+            linked_body_position = _to_int(marker_link.get("body_start_position"))
+            linked_body_row_id = str(marker_link.get("body_start_row_id") or "")
+            if (
+                linked_body_position is None
+                or linked_body_position <= position
+                or not linked_body_row_id
+            ):
+                continue
+            link_confidence = float(marker_link.get("confidence") or 0.79)
+            link_reason = str(marker_link.get("link_reason") or "").strip() or (
+                "same_page_right_band"
+            )
+            selected = {
+                "index": int(index),
+                "style": str(marker_only.get("anchor_style") or "unknown"),
+                "anchor_style": str(marker_only.get("anchor_style") or "unknown"),
+                "confidence": round(max(0.72, min(link_confidence, 0.96)), 3),
+                "strength": (
+                    "medium" if linked_body_position == position + 1 else "strong"
+                ),
+                "row_id": row_id,
+                "anchor_row_id": row_id,
+                "body_start_row_id": linked_body_row_id,
+                "row": row,
+                "page": page,
+                "position": int(row.get("flow_position", position)),
+                "body_start_position": int(linked_body_position),
+                "anchor_type": "marker_only",
+                "layout_type": "marker_only_left_gutter",
+                "anchor_to_body_link_reason": link_reason,
+                "used_marker_only_anchor": True,
+                "body_in_next_row": bool(linked_body_position == position + 1),
+                "reason": "marker_only_left_gutter_anchor_linked_to_body_start",
+            }
+        elif marker_only and body_in_next_row_signal:
+            index = _to_int(marker_only.get("index"))
+            if index is None or index <= 0:
+                continue
+            selected = {
+                "index": int(index),
+                "style": str(marker_only.get("anchor_style") or "unknown"),
+                "anchor_style": str(marker_only.get("anchor_style") or "unknown"),
+                "confidence": 0.75,
+                "strength": "weak",
+                "row_id": row_id,
+                "anchor_row_id": row_id,
+                "body_start_row_id": next_row_id,
+                "row": row,
+                "page": page,
+                "position": int(row.get("flow_position", position)),
+                "body_start_position": int(
+                    next_position if next_position is not None else position + 1
+                ),
+                "anchor_type": "marker_only",
+                "layout_type": "marker_only_next_row_fallback",
+                "anchor_to_body_link_reason": "fallback_next_row_body_signal",
+                "used_marker_only_anchor": True,
+                "body_in_next_row": True,
+                "reason": "marker_only_anchor_followed_by_body_row",
+            }
+        elif (
+            candidate
+            and not candidate.get("accepted")
+            and str(candidate.get("anchor_rejected_reason") or "")
+            == "weak_bibliographic_signal"
+            and body_in_next_row_signal
+        ):
+            index = _to_int(candidate.get("index"))
+            if index is None or index <= 0:
+                continue
+            selected = {
+                "index": int(index),
+                "style": str(candidate.get("anchor_style") or "unknown"),
+                "anchor_style": str(candidate.get("anchor_style") or "unknown"),
+                "confidence": 0.71,
+                "strength": "weak",
+                "row_id": row_id,
+                "anchor_row_id": row_id,
+                "body_start_row_id": next_row_id,
+                "row": row,
+                "page": page,
+                "position": int(row.get("flow_position", position)),
+                "body_start_position": int(
+                    next_position if next_position is not None else position + 1
+                ),
+                "anchor_type": "inline_recovered",
+                "layout_type": "recovered_split_anchor_next_row",
+                "anchor_to_body_link_reason": "recovered_from_following_body_row",
+                "used_marker_only_anchor": False,
+                "body_in_next_row": True,
+                "reason": "recovered_split_anchor_from_following_row",
+            }
+
+        if selected is None:
+            continue
+        candidates.append(selected)
+
+    candidates.sort(
+        key=lambda item: (
+            int(item.get("position") or 0),
+            -float(item.get("confidence") or 0.0),
+        )
+    )
+    for idx, candidate in enumerate(candidates):
+        previous_index = _to_int(candidates[idx - 1].get("index")) if idx > 0 else None
+        next_index = (
+            _to_int(candidates[idx + 1].get("index"))
+            if idx + 1 < len(candidates)
+            else None
+        )
+        candidate["sequence_supported"] = bool(
+            previous_index == int(candidate.get("index") or 0) - 1
+            or next_index == int(candidate.get("index") or 0) + 1
+        )
+    return candidates
+
+
+def _build_numeric_bibliography_territory_v3(
+    *,
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    return _build_numeric_bibliography_territory_layers_rows_v3(
+        rows=rows,
+        sections=sections,
+        bibliography_items=bibliography_items,
+    )
+
+
+def _build_numeric_bibliography_territory_layers_rows_v3(
+    *,
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    rows_with_columns = _assign_column_ids(rows)
+    page_splits = _collect_page_split_map(rows_with_columns)
+    heading_candidates = _detect_reference_heading_candidates(
+        rows_with_columns,
+        sections,
+        page_splits,
+    )
+    pre_flow = build_bibliography_reading_flow(rows_with_columns)
+    pre_anchor_scan = _detect_numeric_anchor_candidates_v3(pre_flow)
+
+    max_page = max(
+        (
+            int(row.get("page"))
+            for row in rows_with_columns
+            if isinstance(row.get("page"), int)
+        ),
+        default=-1,
+    )
+    tail_page_span = max(3, int((max_page + 1) * 0.35))
+    tail_start_page = max(0, max_page - tail_page_span + 1)
+    tail_heading_candidates = [
+        candidate
+        for candidate in heading_candidates
+        if int(candidate.get("page") or -1) >= tail_start_page
+    ]
+    tail_anchor_candidates = [
+        candidate
+        for candidate in pre_anchor_scan
+        if int(candidate.get("page") or -1) >= tail_start_page
+    ]
+    bibliography_layer_pages = sorted(
+        {
+            int(item.get("page"))
+            for item in bibliography_items
+            if isinstance(item.get("page"), int)
+        }
+    )
+    tail_bibliography_pages = [
+        page for page in bibliography_layer_pages if int(page) >= tail_start_page
+    ]
+
+    heading_counts_by_page: Counter[int] = Counter(
+        int(candidate.get("page"))
+        for candidate in tail_heading_candidates
+        if _to_int(candidate.get("page")) is not None
+    )
+    anchor_counts_by_page: Counter[int] = Counter(
+        int(candidate.get("page"))
+        for candidate in tail_anchor_candidates
+        if _to_int(candidate.get("page")) is not None
+    )
+    start_page_pool = sorted(
+        set(heading_counts_by_page.keys())
+        | set(anchor_counts_by_page.keys())
+        | set(tail_bibliography_pages)
+    )
+    if not start_page_pool:
+        start_page_pool = sorted(
+            {
+                int(candidate.get("page"))
+                for candidate in heading_candidates
+                if _to_int(candidate.get("page")) is not None
+            }
+            | {
+                int(candidate.get("page"))
+                for candidate in pre_anchor_scan
+                if _to_int(candidate.get("page")) is not None
+            }
+            | set(bibliography_layer_pages)
+        )
+    start_page_scores: List[Tuple[float, int]] = []
+    for candidate_page in start_page_pool:
+        score = 0.0
+        if candidate_page in tail_bibliography_pages:
+            score += 0.55
+        if heading_counts_by_page.get(candidate_page):
+            score += 0.22 + min(
+                0.08 * int(heading_counts_by_page.get(candidate_page) or 0),
+                0.16,
+            )
+        if anchor_counts_by_page.get(candidate_page):
+            score += min(0.1 * int(anchor_counts_by_page.get(candidate_page) or 0), 0.28)
+        if candidate_page + 1 in tail_bibliography_pages:
+            score += 0.08
+        if candidate_page - 1 in tail_bibliography_pages:
+            score += 0.04
+        start_page_scores.append((score, int(candidate_page)))
+    start_page_scores.sort(key=lambda item: (-float(item[0]), int(item[1])))
+    start_page = start_page_scores[0][1] if start_page_scores else None
+
+    selected_heading = None
+    heading_pool = tail_heading_candidates or heading_candidates
+    if heading_pool:
+        selected_heading = min(
+            heading_pool,
+            key=lambda item: (
+                abs(
+                    int(item.get("page") or 0)
+                    - int(start_page if start_page is not None else item.get("page") or 0)
+                ),
+                float((_normalize_box(item.get("box")) or [0.0, 0.0])[1]),
+                float((_normalize_box(item.get("box")) or [0.0])[0]),
+            ),
+        )
+        if start_page is None:
+            start_page = _to_int(selected_heading.get("page"))
+
+    heading_bottom_by_page: Dict[int, float] = {}
+    if isinstance(selected_heading, dict):
+        heading_page = _to_int(selected_heading.get("page"))
+        heading_box = _normalize_box(selected_heading.get("box"))
+        if isinstance(heading_page, int) and heading_box is not None:
+            heading_bottom_by_page[heading_page] = round(
+                float(heading_box[1]) + float(heading_box[3]),
+                4,
+            )
+
+    bibliography_layer_by_page: Dict[int, List[List[float]]] = defaultdict(list)
+    for item in bibliography_items:
+        page = _to_int(item.get("page"))
+        box = _normalize_box(item.get("box"))
+        if isinstance(page, int) and box is not None:
+            bibliography_layer_by_page[page].append(box)
+
+    anchor_candidate_by_row_id: Dict[str, Dict[str, Any]] = {}
+    for candidate in pre_anchor_scan:
+        row_id = str(candidate.get("row_id") or "").strip()
+        if not row_id:
+            continue
+        existing = anchor_candidate_by_row_id.get(row_id)
+        if (
+            existing is None
+            or float(candidate.get("confidence") or 0.0)
+            > float(existing.get("confidence") or 0.0)
+        ):
+            anchor_candidate_by_row_id[row_id] = candidate
+
+    noise_regions: List[Dict[str, Any]] = []
+    section_transition_pages: List[int] = []
+    for section in sections:
+        page = _to_int(section.get("page"))
+        text = str(section.get("text") or "").strip()
+        box = _normalize_box(section.get("box"))
+        if page is None or start_page is None or page < start_page or not text:
+            continue
+        is_transition = bool(
+            _row_is_section_transition_v2(text) and not _is_reference_heading_text(text)
+        )
+        noise_score = float(_score_header_noise(text))
+        if is_transition:
+            section_transition_pages.append(page)
+        if is_transition or noise_score >= 0.72:
+            noise_regions.append(
+                {
+                    "page": page,
+                    "text": _short_debug_text(text, limit=160),
+                    "box": _serialize_box(box),
+                    "noise_score": round(noise_score, 3),
+                    "reason": (
+                        "section_transition"
+                        if is_transition
+                        else "high_noise_section_signal"
+                    ),
+                }
+            )
+
+    max_anchor_page = max(
+        (
+            int(candidate.get("page"))
+            for candidate in pre_anchor_scan
+            if _to_int(candidate.get("page")) is not None
+            and int(candidate.get("page")) >= int(start_page or 0)
+        ),
+        default=int(start_page or 0),
+    )
+    max_layer_page = max(
+        [page for page in bibliography_layer_pages if page >= int(start_page or 0)]
+        or [int(start_page or 0)]
+    )
+    window_end_soft = max(int(start_page or 0), max_anchor_page, max_layer_page)
+    if section_transition_pages:
+        transition_candidates = [
+            page for page in section_transition_pages if page >= int(start_page or 0) + 1
+        ]
+        if transition_candidates:
+            window_end_soft = min(window_end_soft, min(transition_candidates))
+    window_page_limit = int(window_end_soft or 0) + 1
+
+    window_init_by_page: Dict[int, List[float]] = {}
+    for page in range(int(start_page or 0), int(window_end_soft or 0) + 1):
+        page_union = _union_boxes(bibliography_layer_by_page.get(page) or [])
+        if page_union is not None:
+            window_init_by_page[page] = page_union
+
+    artifact_info = _build_repeating_page_artifacts(rows_with_columns)
+    selected_by_row_id: Dict[str, Dict[str, Any]] = {}
+    rejected_candidates: List[Dict[str, Any]] = []
+    scored_rows: List[Dict[str, Any]] = []
+    rows_rejection_reasons_counter: Counter[str] = Counter()
+    for row in rows_with_columns:
+        page = _to_int(row.get("page"))
+        if start_page is None or page is None or page < start_page:
+            continue
+        text = str(row.get("text") or "").strip()
+        box = _normalize_box(row.get("box"))
+        if not text or box is None:
+            continue
+        row_id = str(row.get("id") or "")
+        anchor_candidate = anchor_candidate_by_row_id.get(row_id) or {}
+        has_anchor = bool(anchor_candidate)
+        has_bibliographic_body = _has_v2_bibliographic_body_signal(text)
+        doi_signal = bool(_extract_doi(text))
+        year_signal = bool(REFERENCE_YEAR_RE.search(text))
+        section_transition = bool(
+            _row_is_section_transition_v2(text) and not _is_reference_heading_text(text)
+        )
+        header_footer_noise = bool(_is_header_footer_row(row, artifact_info))
+        row_noise_score = float(_score_header_noise(text))
+        layer_overlap = max(
+            (
+                _overlap_ratio(layer_box, box)
+                for layer_box in (bibliography_layer_by_page.get(page) or [])
+            ),
+            default=0.0,
+        )
+        in_window_page_range = bool(page <= window_page_limit)
+        page_window_box = window_init_by_page.get(page)
+        in_window_geometry = True
+        if page_window_box is not None:
+            in_window_geometry = bool(
+                _contains_box(page_window_box, box)
+                or _overlap_ratio(page_window_box, box) >= 0.12
+            )
+        if page in heading_bottom_by_page and not has_anchor:
+            heading_bottom = float(heading_bottom_by_page[page])
+            if float(box[1]) + float(box[3]) < heading_bottom:
+                in_window_geometry = False
+        in_initial_window = bool(in_window_page_range and in_window_geometry)
+
+        row_score = 0.0
+        row_signals: List[str] = []
+        if has_anchor:
+            row_score += 0.48
+            row_signals.append("anchor_visible")
+        if has_bibliographic_body:
+            row_score += 0.26
+            row_signals.append("bibliographic_body")
+        if doi_signal:
+            row_score += 0.09
+            row_signals.append("doi_signal")
+        if year_signal:
+            row_score += 0.05
+            row_signals.append("year_signal")
+        if len(text) >= 72:
+            row_score += 0.04
+            row_signals.append("long_row")
+        if layer_overlap >= 0.12:
+            row_score += min(layer_overlap, 0.18)
+            row_signals.append("bibliography_layer_overlap")
+        if in_initial_window:
+            row_score += 0.05
+            row_signals.append("inside_window")
+        if not in_window_page_range:
+            row_score -= 0.24
+            row_signals.append("outside_soft_end_page")
+        if not in_window_geometry:
+            row_score -= 0.18
+            row_signals.append("outside_window_geometry")
+        if section_transition:
+            row_score -= 0.55
+            row_signals.append("section_transition")
+        if header_footer_noise and not has_anchor:
+            row_score -= 0.32
+            row_signals.append("header_footer_noise")
+        if row_noise_score >= 0.74 and not (doi_signal or year_signal):
+            row_score -= 0.2
+            row_signals.append("high_noise_score")
+
+        row_payload = dict(row)
+        row_payload["territory_score"] = round(float(row_score), 3)
+        row_payload["territory_signals"] = row_signals
+        row_payload["layer_overlap"] = round(float(layer_overlap), 3)
+        row_payload["in_initial_window"] = bool(in_initial_window)
+        row_payload["rescued_outside_initial_window"] = False
+        if has_anchor:
+            row_payload["anchor_index"] = _to_int(anchor_candidate.get("index"))
+            row_payload["anchor_style"] = (
+                anchor_candidate.get("anchor_style")
+                or anchor_candidate.get("style")
+            )
+
+        accept = False
+        rejection_reason = "low_bibliographic_score"
+        if section_transition and not has_anchor:
+            rejection_reason = "section_transition"
+        elif header_footer_noise and not has_anchor and not has_bibliographic_body:
+            rejection_reason = "header_footer_noise"
+        elif has_anchor and in_initial_window:
+            accept = True
+            rejection_reason = "accepted_anchor_in_window"
+        elif in_initial_window and row_score >= 0.22:
+            accept = True
+            rejection_reason = "accepted_scored_in_window"
+        elif has_anchor:
+            rejection_reason = "anchor_outside_initial_window"
+        elif row_score >= 0.52:
+            rejection_reason = "strong_bibliographic_signal_outside_window"
+
+        if accept:
+            selected_by_row_id[row_id] = row_payload
+            scored_rows.append(row_payload)
+            continue
+        rejected_candidates.append(
+            {
+                "row": row_payload,
+                "reason": rejection_reason,
+                "header_footer_noise": header_footer_noise,
+                "section_transition": section_transition,
+                "has_anchor": has_anchor,
+                "has_bibliographic_body": has_bibliographic_body,
+                "doi_signal": doi_signal,
+                "outside_initial_window": not bool(in_initial_window),
+            }
+        )
+
+    def _is_near_selected_row(candidate_row: Dict[str, Any]) -> bool:
+        candidate_page = _to_int(candidate_row.get("page"))
+        candidate_column = str(candidate_row.get("column_id") or "")
+        candidate_y0 = _to_float(candidate_row.get("y0"))
+        candidate_y1 = _to_float(candidate_row.get("y1"))
+        if candidate_page is None:
+            return False
+        for row in selected_by_row_id.values():
+            row_page = _to_int(row.get("page"))
+            row_column = str(row.get("column_id") or "")
+            if row_page is None:
+                continue
+            if candidate_column and row_column and candidate_column != row_column:
+                continue
+            if row_page == candidate_page:
+                row_y0 = _to_float(row.get("y0"))
+                row_y1 = _to_float(row.get("y1"))
+                if (
+                    candidate_y0 is not None
+                    and row_y1 is not None
+                    and abs(float(candidate_y0) - float(row_y1)) <= 0.085
+                ):
+                    return True
+                if (
+                    candidate_y1 is not None
+                    and row_y0 is not None
+                    and abs(float(candidate_y1) - float(row_y0)) <= 0.085
+                ):
+                    return True
+            if row_page == candidate_page - 1:
+                row_y1 = _to_float(row.get("y1"))
+                if (
+                    row_y1 is not None
+                    and candidate_y0 is not None
+                    and float(row_y1) >= 0.76
+                    and float(candidate_y0) <= 0.24
+                ):
+                    return True
+        return False
+
+    rescued_rows_outside_initial_window: List[Dict[str, Any]] = []
+    bibliography_rows_rejected: List[Dict[str, Any]] = []
+    for candidate in rejected_candidates:
+        row = dict(candidate.get("row") or {})
+        row_id = str(row.get("id") or "")
+        reason = str(candidate.get("reason") or "rejected")
+        rescue_reason = None
+        if bool(candidate.get("outside_initial_window")) and not bool(
+            candidate.get("section_transition")
+        ):
+            if reason == "anchor_outside_initial_window":
+                rescue_reason = "anchor_outside_initial_window"
+            elif (
+                bool(candidate.get("has_anchor"))
+                and float(row.get("territory_score") or 0.0) >= 0.12
+            ):
+                rescue_reason = "anchor_and_minimum_score_outside_window"
+            elif (
+                bool(candidate.get("has_bibliographic_body"))
+                and not bool(candidate.get("header_footer_noise"))
+                and _is_near_selected_row(row)
+            ):
+                rescue_reason = "continuity_with_selected_rows"
+            elif bool(candidate.get("doi_signal")) and _is_near_selected_row(row):
+                rescue_reason = "doi_row_continuity"
+        if rescue_reason:
+            row["rescued_outside_initial_window"] = True
+            row["rescue_reason"] = rescue_reason
+            selected_by_row_id[row_id] = row
+            scored_rows.append(row)
+            rescued_rows_outside_initial_window.append(
+                {
+                    "row_id": row_id,
+                    "page": row.get("page"),
+                    "reason": rescue_reason,
+                    "text": _short_debug_text(row.get("text"), limit=160),
+                }
+            )
+            continue
+        rows_rejection_reasons_counter[reason] += 1
+        bibliography_rows_rejected.append(
+            {
+                "row_id": row_id,
+                "page": row.get("page"),
+                "column_id": row.get("column_id"),
+                "box": _serialize_box(_normalize_box(row.get("box"))),
+                "reason": reason,
+                "signals": row.get("territory_signals") or [],
+                "score": row.get("territory_score"),
+                "in_initial_window": bool(row.get("in_initial_window")),
+                "text": _short_debug_text(row.get("text"), limit=180),
+            }
+        )
+
+    rows_by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for row in scored_rows:
+        page = _to_int(row.get("page"))
+        if isinstance(page, int):
+            rows_by_page[page].append(row)
+
+    territory_rows: List[Dict[str, Any]] = []
+    territory_zones: List[Dict[str, Any]] = []
+    reading_lanes: List[Dict[str, Any]] = []
+    lane_rows_map: Dict[Tuple[int, str], List[Dict[str, Any]]] = defaultdict(list)
+    for page in sorted(rows_by_page.keys()):
+        for row in rows_by_page.get(page) or []:
+            lane_rows_map[(page, str(row.get("column_id") or "left"))].append(row)
+
+    lane_order_map: Dict[Tuple[int, str], int] = {}
+    for page in sorted({key[0] for key in lane_rows_map.keys()}):
+        page_lane_keys = [key for key in lane_rows_map.keys() if key[0] == page]
+        page_lane_keys.sort(
+            key=lambda key: (
+                0 if key[1] == "left" else (1 if key[1] == "right" else 2),
+                _median(
+                    [
+                        float(row.get("x0") or 0.0)
+                        for row in lane_rows_map.get(key) or []
+                    ]
+                ),
+            )
+        )
+        for order_on_page, lane_key in enumerate(page_lane_keys):
+            lane_order_map[lane_key] = order_on_page
+
+    for lane_key in sorted(
+        lane_rows_map.keys(),
+        key=lambda key: (key[0], lane_order_map.get(key, 0)),
+    ):
+        page, column_id = lane_key
+        lane_rows = sorted(lane_rows_map.get(lane_key) or [], key=_line_sort_key)
+        lane_box = _union_boxes(
+            [
+                _normalize_box(row.get("box"))
+                for row in lane_rows
+                if _normalize_box(row.get("box")) is not None
+            ]
+        )
+        if lane_box is None:
+            continue
+        lane_order = lane_order_map.get(lane_key, 0)
+        lane_id = f"v3-lane-{page}-{lane_order}"
+        zone_id = f"v3-zone-{page}-{lane_order}"
+        lane_confidence = round(
+            _median([float(row.get("territory_score") or 0.0) for row in lane_rows]),
+            3,
+        )
+        lane_anchor_total = sum(
+            1
+            for row in lane_rows
+            if _to_int(row.get("anchor_index")) not in (None, 0)
+        )
+        reading_lanes.append(
+            {
+                "id": lane_id,
+                "page": page,
+                "column_id": column_id,
+                "order_on_page": lane_order,
+                "box": _serialize_box(lane_box),
+                "confidence": lane_confidence,
+                "anchor_total": lane_anchor_total,
+                "row_ids": [
+                    str(row.get("id") or "")
+                    for row in lane_rows
+                    if str(row.get("id") or "").strip()
+                ],
+            }
+        )
+        territory_zones.append(
+            {
+                "id": zone_id,
+                "page": page,
+                "column_id": column_id,
+                "box": _serialize_box(lane_box),
+                "confidence": lane_confidence,
+                "source_signals": [
+                    signal
+                    for signal, enabled in (
+                        ("anchors", lane_anchor_total > 0),
+                        ("bibliography_layer", bool(bibliography_layer_by_page.get(page))),
+                        (
+                            "rescued_rows",
+                            any(bool(row.get("rescued_outside_initial_window")) for row in lane_rows),
+                        ),
+                    )
+                    if enabled
+                ],
+                "row_ids": [
+                    str(row.get("id") or "")
+                    for row in lane_rows
+                    if str(row.get("id") or "").strip()
+                ],
+            }
+        )
+        for row in lane_rows:
+            next_row = dict(row)
+            next_row["reading_lane_id"] = lane_id
+            next_row["reading_lane_order_on_page"] = lane_order
+            next_row["territory_zone_id"] = zone_id
+            territory_rows.append(next_row)
+
+    territory_rows.sort(
+        key=lambda row: (
+            int(row.get("page") or 0),
+            int(row.get("reading_lane_order_on_page") or 0),
+            float(row.get("y0") or 0.0),
+            float(row.get("x0") or 0.0),
+        )
+    )
+    ordered_bibliography_rows: List[Dict[str, Any]] = []
+    for flow_position, row in enumerate(territory_rows):
+        next_row = dict(row)
+        next_row["flow_position"] = flow_position
+        ordered_bibliography_rows.append(next_row)
+
+    territory_union_box = _union_boxes(
+        [
+            _normalize_box(zone.get("box"))
+            for zone in territory_zones
+            if _normalize_box(zone.get("box")) is not None
+        ]
+    )
+    bibliography_window_init = {
+        "start_page": start_page,
+        "pages": [
+            {"page": page, "box": _serialize_box(box)}
+            for page, box in sorted(window_init_by_page.items(), key=lambda item: item[0])
+        ],
+    }
+    bibliography_territory = {
+        "bibliography_start_page": start_page,
+        "bibliography_window_init": bibliography_window_init,
+        "bibliography_window_end_soft": window_end_soft,
+        "bibliography_noise_regions": noise_regions,
+        "selected_heading": (
+            {
+                "page": _to_int(selected_heading.get("page")),
+                "text": str(selected_heading.get("text") or ""),
+                "box": _serialize_box(_normalize_box(selected_heading.get("box"))),
+                "source": selected_heading.get("source"),
+            }
+            if isinstance(selected_heading, dict)
+            else None
+        ),
+        "zone_count": len(territory_zones),
+        "row_count": len(ordered_bibliography_rows),
+        "union_box": _serialize_box(territory_union_box),
+        "confidence": round(
+            _median(
+                [float(zone.get("confidence") or 0.0) for zone in territory_zones]
+            ),
+            3,
+        )
+        if territory_zones
+        else 0.0,
+    }
+
+    bibliography_rows_selected = [
+        {
+            "row_id": str(row.get("id") or ""),
+            "page": row.get("page"),
+            "column_id": row.get("column_id"),
+            "box": _serialize_box(_normalize_box(row.get("box"))),
+            "score": row.get("territory_score"),
+            "signals": row.get("territory_signals") or [],
+            "in_initial_window": bool(row.get("in_initial_window")),
+            "rescued_outside_initial_window": bool(
+                row.get("rescued_outside_initial_window")
+            ),
+            "rescue_reason": row.get("rescue_reason"),
+            "anchor_index": row.get("anchor_index"),
+            "anchor_style": row.get("anchor_style"),
+            "text": _short_debug_text(row.get("text"), limit=180),
+        }
+        for row in ordered_bibliography_rows
+    ]
+    rows_rejection_reasons = dict(
+        sorted(rows_rejection_reasons_counter.items(), key=lambda item: item[0])
+    )
+
+    bibliography_anchor = None
+    if ordered_bibliography_rows:
+        first_row = ordered_bibliography_rows[0]
+        first_page = _to_int(first_row.get("page"))
+        first_y = _to_float(first_row.get("y0"))
+        if isinstance(first_page, int) and first_y is not None:
+            bibliography_anchor = (first_page, float(first_y))
+
+    return {
+        "rows_with_columns": rows_with_columns,
+        "page_splits": page_splits,
+        "heading_candidates": heading_candidates,
+        "selected_heading": selected_heading,
+        "start_page": start_page,
+        "bibliography_start_page": start_page,
+        "bibliography_anchor": bibliography_anchor,
+        "bibliography_window_init": bibliography_window_init,
+        "bibliography_window_end_soft": window_end_soft,
+        "bibliography_noise_regions": noise_regions,
+        "bibliography_rows_selected": bibliography_rows_selected,
+        "bibliography_rows_rejected": bibliography_rows_rejected,
+        "rows_rejection_reasons": rows_rejection_reasons,
+        "rescued_rows_outside_initial_window": rescued_rows_outside_initial_window,
+        "bibliography_territory": bibliography_territory,
+        "territory_rows": territory_rows,
+        "territory_zones": territory_zones,
+        "reading_lanes": reading_lanes,
+        "ordered_bibliography_rows": ordered_bibliography_rows,
+    }
+
+
+def _reconcile_numeric_anchor_candidates_v3(
+    *,
+    anchor_candidates: Sequence[Dict[str, Any]],
+    expected_indices: Sequence[int],
+) -> Dict[str, Any]:
+    normalized_expected = sorted(
+        {
+            int(index)
+            for index in expected_indices
+            if _to_int(index) is not None and int(index) > 0
+        }
+    )
+    candidates_by_index: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for candidate in anchor_candidates:
+        index = _to_int(candidate.get("index"))
+        if index is None or index <= 0:
+            continue
+        candidates_by_index[index].append(dict(candidate))
+
+    selected_detected: Dict[int, Dict[str, Any]] = {}
+    duplicate_indices: List[int] = []
+    reconciliation_actions: List[Dict[str, Any]] = []
+    for index in sorted(candidates_by_index.keys()):
+        ranked = sorted(
+            candidates_by_index[index],
+            key=lambda item: (
+                -float(item.get("confidence") or 0.0),
+                0 if str(item.get("strength") or "") == "strong" else 1,
+                int(item.get("position") or 0),
+            ),
+        )
+        best_candidate = dict(ranked[0])
+        if index in normalized_expected:
+            selected_detected[index] = best_candidate
+        else:
+            reconciliation_actions.append(
+                {
+                    "action": "ignore_unexpected_anchor",
+                    "index": index,
+                    "row_id": best_candidate.get("row_id"),
+                    "reason": "index_not_present_in_expected_sequence",
+                }
+            )
+        if len(ranked) > 1:
+            duplicate_indices.append(index)
+            for dropped in ranked[1:]:
+                reconciliation_actions.append(
+                    {
+                        "action": "drop_duplicate_anchor",
+                        "index": index,
+                        "row_id": dropped.get("row_id"),
+                        "confidence": dropped.get("confidence"),
+                        "reason": "lower_ranked_duplicate_anchor_candidate",
+                    }
+                )
+
+    selected_anchors = [selected_detected[index] for index in normalized_expected if index in selected_detected]
+    selected_anchors.sort(
+        key=lambda item: (
+            int(item.get("index") or 0),
+            int(item.get("position") or 0),
+        )
+    )
+    monotonic_anchors: List[Dict[str, Any]] = []
+    last_position: Optional[int] = None
+    for anchor in selected_anchors:
+        position = _to_int(anchor.get("position"))
+        if position is None:
+            continue
+        if last_position is not None and position <= last_position:
+            if float(anchor.get("confidence") or 0.0) < 0.86:
+                reconciliation_actions.append(
+                    {
+                        "action": "drop_non_monotonic_anchor",
+                        "index": anchor.get("index"),
+                        "row_id": anchor.get("row_id"),
+                        "reason": "non_monotonic_position_and_low_confidence",
+                    }
+                )
+                continue
+            reconciliation_actions.append(
+                {
+                    "action": "keep_non_monotonic_anchor",
+                    "index": anchor.get("index"),
+                    "row_id": anchor.get("row_id"),
+                    "reason": "non_monotonic_position_but_high_confidence",
+                }
+            )
+        monotonic_anchors.append(anchor)
+        last_position = position
+
+    selected_index_set = {
+        int(anchor.get("index"))
+        for anchor in monotonic_anchors
+        if _to_int(anchor.get("index")) not in (None, 0)
+    }
+    missing_indices = [
+        index for index in normalized_expected if index not in selected_index_set
+    ]
+    inferred_anchors = [
+        {
+            "index": index,
+            "confidence": 0.0,
+            "strength": "inferred_missing",
+            "reason": "expected_index_without_detected_anchor",
+        }
+        for index in missing_indices
+    ]
+    reconciliation_actions.extend(
+        {
+            "action": "mark_missing_anchor",
+            "index": index,
+            "reason": "expected_index_not_detected",
+        }
+        for index in missing_indices
+    )
+    selected_anchor_by_index = {
+        int(anchor.get("index")): anchor
+        for anchor in monotonic_anchors
+        if _to_int(anchor.get("index")) not in (None, 0)
+    }
+    anchor_sequence: List[Dict[str, Any]] = []
+    for index in normalized_expected:
+        anchor = selected_anchor_by_index.get(index)
+        if anchor is None:
+            anchor_sequence.append(
+                {
+                    "index": index,
+                    "status": "missing",
+                    "page": None,
+                    "position": None,
+                    "row_id": None,
+                    "anchor_row_id": None,
+                    "body_start_row_id": None,
+                    "body_start_position": None,
+                    "style": None,
+                    "anchor_style": None,
+                    "anchor_type": None,
+                    "layout_type": None,
+                    "strength": "inferred_missing",
+                    "confidence": 0.0,
+                    "used_marker_only_anchor": False,
+                    "anchor_to_body_link_reason": None,
+                    "body_in_next_row": False,
+                }
+            )
+            continue
+        anchor_sequence.append(
+            {
+                "index": index,
+                "status": "detected",
+                "page": anchor.get("page"),
+                "position": anchor.get("position"),
+                "row_id": anchor.get("row_id"),
+                "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                "body_start_row_id": anchor.get("body_start_row_id"),
+                "body_start_position": anchor.get("body_start_position"),
+                "style": anchor.get("style"),
+                "anchor_style": anchor.get("anchor_style") or anchor.get("style"),
+                "anchor_type": anchor.get("anchor_type"),
+                "layout_type": anchor.get("layout_type"),
+                "strength": anchor.get("strength"),
+                "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+                "used_marker_only_anchor": bool(anchor.get("used_marker_only_anchor")),
+                "anchor_to_body_link_reason": anchor.get("anchor_to_body_link_reason"),
+                "body_in_next_row": bool(anchor.get("body_in_next_row")),
+            }
+        )
+    return {
+        "selected_anchors": monotonic_anchors,
+        "anchor_sequence": anchor_sequence,
+        "missing_indices": missing_indices,
+        "duplicate_indices": sorted(
+            {
+                int(index)
+                for index in duplicate_indices
+                if _to_int(index) is not None and int(index) > 0
+            }
+        ),
+        "inferred_anchors": inferred_anchors,
+        "reconciliation_actions": reconciliation_actions,
+    }
+
+
+def _score_reference_row_hypotheses_v3(
+    *,
+    row: Dict[str, Any],
+    previous_row: Dict[str, Any],
+    current_rows: Sequence[Dict[str, Any]],
+    current_index: int,
+    competing_anchor: Optional[Dict[str, Any]],
+    territory_row_ids: set[str],
+) -> Dict[str, Any]:
+    text = str(row.get("text") or "").strip()
+    row_id = str(row.get("id") or "")
+    same_score = 0.26
+    next_score = 0.1
+    outside_score = 0.08
+    evidence: List[str] = []
+
+    if row_id and row_id not in territory_row_ids:
+        outside_score += 0.42
+        evidence.append("outside_territory_row")
+    if _row_is_section_transition_v2(text):
+        outside_score += 0.52
+        same_score -= 0.38
+        evidence.append("section_transition")
+    if _is_header_footer_row(row, {"repeated_text_keys": set()}):
+        outside_score += 0.35
+        same_score -= 0.2
+        evidence.append("header_footer_noise")
+    if _has_v2_bibliographic_body_signal(text):
+        same_score += 0.24
+        evidence.append("bibliographic_body")
+    else:
+        outside_score += 0.07
+    if competing_anchor and int(competing_anchor.get("index") or 0) > 0:
+        competing_strength = str(competing_anchor.get("strength") or "")
+        next_score += 0.82 if competing_strength == "strong" else 0.7
+        evidence.append(f"competing_anchor:{int(competing_anchor.get('index') or 0)}")
+    foreign_anchors = [
+        value
+        for value in _extract_inline_anchor_numbers(text)
+        if int(value) != int(current_index or 0)
+    ]
+    if foreign_anchors:
+        next_score += 0.52
+        evidence.append(f"foreign_inline_anchor:{foreign_anchors[0]}")
+    leading_anchor = _match_reference_anchor_at_line_start(text, include_rejected=True)
+    if (
+        leading_anchor
+        and leading_anchor.get("accepted")
+        and int(leading_anchor.get("index") or 0) != int(current_index or 0)
+    ):
+        next_score += 0.78
+        evidence.append("leading_foreign_anchor")
+
+    previous_page = _to_int(previous_row.get("page"))
+    current_page = _to_int(row.get("page"))
+    previous_y1 = _to_float(previous_row.get("y1"))
+    current_y0 = _to_float(row.get("y0"))
+    if previous_page is not None and current_page is not None:
+        if current_page == previous_page:
+            if previous_y1 is not None and current_y0 is not None:
+                gap = float(current_y0) - float(previous_y1)
+                if gap <= 0.05:
+                    same_score += 0.18
+                    evidence.append("tight_vertical_gap")
+                elif gap <= 0.12:
+                    same_score += 0.1
+                elif gap > 0.2:
+                    outside_score += 0.22
+                    evidence.append("large_vertical_gap")
+            current_x0 = _to_float(row.get("x0"))
+            previous_x0 = _to_float(previous_row.get("x0"))
+            if current_x0 is not None and previous_x0 is not None:
+                shift = abs(float(current_x0) - float(previous_x0))
+                if shift > 0.2:
+                    outside_score += 0.1
+                elif shift <= 0.1:
+                    same_score += 0.06
+        elif current_page - previous_page == 1:
+            needs_continuation = _reference_needs_continuation_v2(current_rows)
+            if current_y0 is not None and float(current_y0) <= 0.25 and needs_continuation:
+                same_score += 0.24
+                evidence.append("cross_page_continuation")
+            elif current_y0 is not None and float(current_y0) <= 0.35:
+                same_score += 0.12
+            else:
+                outside_score += 0.15
+        else:
+            outside_score += 0.3
+            evidence.append("page_jump")
+
+    if row.get("reading_lane_id") == previous_row.get("reading_lane_id"):
+        same_score += 0.08
+    else:
+        next_score += 0.05
+
+    return {
+        "same_reference": round(same_score, 3),
+        "next_reference": round(next_score, 3),
+        "outside_bibliography": round(outside_score, 3),
+        "evidence": evidence,
+    }
+
+
+def _grow_reference_rows_from_anchor_v3(
+    *,
+    ordered_rows: Sequence[Dict[str, Any]],
+    current_anchor: Dict[str, Any],
+    next_anchor: Optional[Dict[str, Any]],
+    anchor_candidates_by_position: Dict[int, Dict[str, Any]],
+    territory_row_ids: set[str],
+    artifact_info: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    start = _to_int(current_anchor.get("position"))
+    if start is None or start < 0 or start >= len(ordered_rows):
+        return {
+            "rows": [],
+            "row_decisions": [],
+            "rows_discarded": [],
+            "cut_reasons": ["invalid_anchor_position"],
+            "closure_reason": "invalid_anchor_position",
+            "boundary_start_reason": "invalid_anchor_position",
+            "boundary_end_reason": "invalid_anchor_position",
+            "continuation_between_pages": False,
+            "has_nested_anchor": False,
+            "nested_anchor_indices": [],
+            "issues": ["invalid_anchor_position"],
+            "anchor_row_id": None,
+            "body_start_row_id": None,
+            "body_start_position": None,
+            "anchor_type": str(current_anchor.get("anchor_type") or "unknown"),
+            "layout_type": str(current_anchor.get("layout_type") or "unknown"),
+            "used_marker_only_anchor": bool(current_anchor.get("used_marker_only_anchor")),
+            "anchor_to_body_link_reason": current_anchor.get("anchor_to_body_link_reason"),
+            "body_start": None,
+            "body_end": None,
+        }
+
+    artifact_info = (
+        artifact_info
+        if isinstance(artifact_info, dict)
+        else {"repeated_text_keys": set()}
+    )
+    anchor_row = ordered_rows[start]
+    anchor_row_id = str(
+        (anchor_row or {}).get("id") or current_anchor.get("anchor_row_id") or ""
+    )
+    anchor_type = str(current_anchor.get("anchor_type") or "inline")
+    layout_type = str(current_anchor.get("layout_type") or "inline_anchor_same_row")
+    used_marker_only_anchor = bool(
+        current_anchor.get("used_marker_only_anchor")
+        or anchor_type == "marker_only"
+        or layout_type == "marker_only_left_gutter"
+    )
+    anchor_to_body_link_reason = (
+        str(current_anchor.get("anchor_to_body_link_reason") or "").strip() or None
+    )
+    body_start_position = _to_int(current_anchor.get("body_start_position"))
+    if body_start_position is None or body_start_position < start:
+        body_start_position = start
+    if body_start_position >= len(ordered_rows):
+        body_start_position = start
+    body_start_row = ordered_rows[body_start_position]
+    body_start_row_id = str((body_start_row or {}).get("id") or anchor_row_id)
+    body_scan_start = start + 1
+    boundary_start_reason = "anchor_detected"
+    if body_start_position > start:
+        body_scan_start = body_start_position
+        boundary_start_reason = (
+            "marker_only_anchor_linked_body_start"
+            if used_marker_only_anchor
+            else "anchor_linked_body_start"
+        )
+    elif used_marker_only_anchor:
+        boundary_start_reason = "marker_only_anchor_without_body_link"
+
+    selected_rows: List[Dict[str, Any]] = [anchor_row]
+    row_decisions: List[Dict[str, Any]] = [
+        {
+            "row_id": anchor_row_id,
+            "page": anchor_row.get("page"),
+            "included": True,
+            "reason": (
+                "anchor_row_marker_only" if used_marker_only_anchor else "anchor_row"
+            ),
+            "same_reference_score": 1.0,
+            "next_reference_score": 0.0,
+            "outside_bibliography_score": 0.0,
+            "evidence": (
+                ["anchor_row", f"layout_type:{layout_type}"]
+                if used_marker_only_anchor
+                else ["anchor_row"]
+            ),
+        }
+    ]
+    rows_discarded: List[Dict[str, Any]] = []
+    cut_reasons: List[str] = []
+    continuation_between_pages = False
+    expected_index = int(current_anchor.get("index") or 0)
+    nested_anchor_indices: List[int] = []
+    next_anchor_position: Optional[int] = None
+    next_anchor_index: Optional[int] = None
+    next_anchor_body_start_position: Optional[int] = None
+    next_anchor_type = str((next_anchor or {}).get("anchor_type") or "")
+    next_anchor_layout_type = str((next_anchor or {}).get("layout_type") or "")
+    if isinstance(next_anchor, dict):
+        next_anchor_position = _to_int(next_anchor.get("position"))
+        next_anchor_index = _to_int(next_anchor.get("index"))
+        next_anchor_body_start_position = _to_int(next_anchor.get("body_start_position"))
+    has_resolved_next_anchor = bool(
+        next_anchor_position is not None and int(next_anchor_position) > start
+    )
+    scan_end = int(next_anchor_position) if has_resolved_next_anchor else len(ordered_rows)
+    closure_reason = (
+        "next_anchor_boundary_n_plus_1"
+        if has_resolved_next_anchor
+        else "reading_flow_exhausted_without_next_anchor"
+    )
+    if (
+        has_resolved_next_anchor
+        and next_anchor_body_start_position is not None
+        and int(next_anchor_body_start_position) > int(next_anchor_position)
+    ):
+        scan_end = min(int(next_anchor_body_start_position), len(ordered_rows))
+        closure_reason = "next_anchor_body_start_boundary_n_plus_1"
+    boundary_end_reason = closure_reason
+
+    if body_scan_start > start + 1:
+        for skipped_position in range(start + 1, min(body_scan_start, scan_end)):
+            skipped_row = ordered_rows[skipped_position]
+            skipped_text = str(skipped_row.get("text") or "").strip()
+            row_decisions.append(
+                {
+                    "row_id": str(skipped_row.get("id") or ""),
+                    "page": skipped_row.get("page"),
+                    "included": False,
+                    "reason": "before_linked_body_start_skipped",
+                    "same_reference_score": None,
+                    "next_reference_score": None,
+                    "outside_bibliography_score": None,
+                    "evidence": ["waiting_for_linked_body_start"],
+                }
+            )
+            if skipped_text:
+                rows_discarded.append(
+                    {
+                        "row_id": str(skipped_row.get("id") or ""),
+                        "page": skipped_row.get("page"),
+                        "text": _short_debug_text(skipped_text),
+                        "reason": "before_linked_body_start_skipped",
+                    }
+                )
+
+    loop_start = max(start + 1, body_scan_start)
+    for position in range(loop_start, scan_end):
+        row = ordered_rows[position]
+        text = str(row.get("text") or "").strip()
+        if not text:
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "included": False,
+                    "reason": "empty_text_skipped",
+                    "same_reference_score": None,
+                    "next_reference_score": None,
+                    "outside_bibliography_score": None,
+                    "evidence": [],
+                }
+            )
+            continue
+
+        row_id = str(row.get("id") or "")
+        competing_anchor = None
+        candidate = anchor_candidates_by_position.get(position)
+        if candidate and int(candidate.get("index") or 0) != expected_index:
+            competing_anchor = candidate
+            candidate_index = int(candidate.get("index") or 0)
+            is_expected_next_marker_row = bool(
+                has_resolved_next_anchor
+                and next_anchor_position is not None
+                and int(position) == int(next_anchor_position)
+                and next_anchor_index is not None
+                and int(candidate_index) == int(next_anchor_index)
+                and next_anchor_body_start_position is not None
+                and int(next_anchor_body_start_position) > int(next_anchor_position)
+                and (
+                    str(candidate.get("anchor_type") or "") == "marker_only"
+                    or str(candidate.get("layout_type") or "")
+                    == "marker_only_left_gutter"
+                    or next_anchor_type == "marker_only"
+                    or next_anchor_layout_type == "marker_only_left_gutter"
+                )
+            )
+            if is_expected_next_marker_row:
+                rows_discarded.append(
+                    {
+                        "row_id": row_id,
+                        "page": row.get("page"),
+                        "text": _short_debug_text(text),
+                        "reason": "next_anchor_marker_row_skipped_until_body_start",
+                    }
+                )
+                row_decisions.append(
+                    {
+                        "row_id": row_id,
+                        "page": row.get("page"),
+                        "included": False,
+                        "reason": "next_anchor_marker_row_skipped_until_body_start",
+                        "same_reference_score": None,
+                        "next_reference_score": None,
+                        "outside_bibliography_score": None,
+                        "evidence": ["next_anchor_marker_only_layout_boundary"],
+                    }
+                )
+                continue
+            nested_anchor_indices.append(candidate_index)
+
+        previous_row = selected_rows[-1]
+        scores = None
+        same_score = None
+        next_score = None
+        outside_score = None
+        stop_reason = None
+        is_section_transition = bool(
+            _row_is_section_transition_v2(text) and not _has_v2_bibliographic_body_signal(text)
+        )
+        has_bibliographic_body = bool(_has_v2_bibliographic_body_signal(text))
+        if competing_anchor is not None:
+            if has_resolved_next_anchor:
+                stop_reason = "unexpected_anchor_before_next_anchor"
+            else:
+                stop_reason = "next_anchor_detected_without_resolved_n_plus_1"
+        elif is_section_transition:
+            stop_reason = (
+                "section_transition_before_next_anchor"
+                if has_resolved_next_anchor
+                else "section_transition_after_anchor_without_next"
+            )
+        elif not has_resolved_next_anchor:
+            scores = _score_reference_row_hypotheses_v3(
+                row=row,
+                previous_row=previous_row,
+                current_rows=selected_rows,
+                current_index=expected_index,
+                competing_anchor=competing_anchor,
+                territory_row_ids=territory_row_ids,
+            )
+            same_score = float(scores.get("same_reference") or 0.0)
+            next_score = float(scores.get("next_reference") or 0.0)
+            outside_score = float(scores.get("outside_bibliography") or 0.0)
+            if outside_score >= same_score + 0.26 and outside_score >= next_score and not has_bibliographic_body:
+                stop_reason = "outside_bibliography_after_anchor_without_next"
+            else:
+                previous_page = _to_int(previous_row.get("page"))
+                current_page = _to_int(row.get("page"))
+                if (
+                    previous_page is not None
+                    and current_page is not None
+                    and current_page - previous_page > 1
+                ):
+                    stop_reason = "page_jump_after_anchor_without_next"
+                elif (
+                    previous_page is not None
+                    and current_page is not None
+                    and current_page - previous_page == 1
+                    and _to_float(row.get("y0")) is not None
+                    and float(_to_float(row.get("y0")) or 0.0) > 0.58
+                    and not _reference_needs_continuation_v2(selected_rows)
+                ):
+                    stop_reason = "late_page_continuation_without_next_anchor"
+
+        if stop_reason is not None:
+            closure_reason = stop_reason
+            boundary_end_reason = stop_reason
+            cut_reasons.append(boundary_end_reason)
+            rows_discarded.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "text": _short_debug_text(text),
+                    "reason": stop_reason,
+                }
+            )
+            row_decisions.append(
+                {
+                    "row_id": str(row.get("id") or ""),
+                    "page": row.get("page"),
+                    "included": False,
+                    "reason": stop_reason,
+                    "same_reference_score": (
+                        round(float(same_score), 3)
+                        if isinstance(same_score, (int, float))
+                        else None
+                    ),
+                    "next_reference_score": (
+                        round(float(next_score), 3)
+                        if isinstance(next_score, (int, float))
+                        else None
+                    ),
+                    "outside_bibliography_score": (
+                        round(float(outside_score), 3)
+                        if isinstance(outside_score, (int, float))
+                        else None
+                    ),
+                    "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+                }
+            )
+            break
+
+        if (
+            _is_header_footer_row(row, artifact_info)
+            and not has_bibliographic_body
+            and competing_anchor is None
+        ):
+            rows_discarded.append(
+                {
+                    "row_id": row_id,
+                    "page": row.get("page"),
+                    "text": _short_debug_text(text),
+                    "reason": "header_footer_noise_skipped",
+                }
+            )
+            row_decisions.append(
+                {
+                    "row_id": row_id,
+                    "page": row.get("page"),
+                    "included": False,
+                    "reason": "header_footer_noise_skipped",
+                    "same_reference_score": (
+                        round(float(same_score), 3)
+                        if isinstance(same_score, (int, float))
+                        else None
+                    ),
+                    "next_reference_score": (
+                        round(float(next_score), 3)
+                        if isinstance(next_score, (int, float))
+                        else None
+                    ),
+                    "outside_bibliography_score": (
+                        round(float(outside_score), 3)
+                        if isinstance(outside_score, (int, float))
+                        else None
+                    ),
+                    "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+                }
+            )
+            continue
+
+        if (
+            has_resolved_next_anchor
+            and row_id
+            and row_id not in territory_row_ids
+            and not has_bibliographic_body
+        ):
+            rows_discarded.append(
+                {
+                    "row_id": row_id,
+                    "page": row.get("page"),
+                    "text": _short_debug_text(text),
+                    "reason": "outside_territory_skipped_before_next_anchor",
+                }
+            )
+            row_decisions.append(
+                {
+                    "row_id": row_id,
+                    "page": row.get("page"),
+                    "included": False,
+                    "reason": "outside_territory_skipped_before_next_anchor",
+                    "same_reference_score": None,
+                    "next_reference_score": None,
+                    "outside_bibliography_score": None,
+                    "evidence": ["outside_territory_row"],
+                }
+            )
+            continue
+
+        if _to_int(previous_row.get("page")) != _to_int(row.get("page")):
+            continuation_between_pages = True
+        selected_rows.append(row)
+        row_decisions.append(
+            {
+                "row_id": str(row.get("id") or ""),
+                "page": row.get("page"),
+                "included": True,
+                "reason": (
+                    "page_continuation"
+                    if _to_int(previous_row.get("page")) != _to_int(row.get("page"))
+                    else "same_reference_growth"
+                ),
+                "same_reference_score": (
+                    round(float(same_score), 3)
+                    if isinstance(same_score, (int, float))
+                    else None
+                ),
+                "next_reference_score": (
+                    round(float(next_score), 3)
+                    if isinstance(next_score, (int, float))
+                    else None
+                ),
+                "outside_bibliography_score": (
+                    round(float(outside_score), 3)
+                    if isinstance(outside_score, (int, float))
+                    else None
+                ),
+                "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+            }
+        )
+        if len(selected_rows) >= 80:
+            closure_reason = "row_limit"
+            boundary_end_reason = "row_limit"
+            cut_reasons.append("row_limit")
+            break
+
+    has_nested_anchor = bool(
+        int(index) > 0 for index in nested_anchor_indices if _to_int(index) is not None
+    )
+    issues: List[str] = []
+    if continuation_between_pages:
+        issues.append("page_continuation")
+    if len(selected_rows) < 2:
+        issues.append("suspiciously_short_reference")
+    if len(selected_rows) >= 24:
+        issues.append("suspiciously_long_reference")
+    body_start = body_start_row_id if body_start_row_id else None
+    body_end = str((selected_rows[-1] or {}).get("id") or "") if selected_rows else None
+    return {
+        "rows": selected_rows,
+        "row_decisions": row_decisions,
+        "rows_discarded": rows_discarded,
+        "cut_reasons": cut_reasons,
+        "closure_reason": closure_reason,
+        "boundary_start_reason": boundary_start_reason,
+        "boundary_end_reason": boundary_end_reason,
+        "continuation_between_pages": continuation_between_pages,
+        "has_nested_anchor": has_nested_anchor,
+        "nested_anchor_indices": sorted(
+            {
+                int(index)
+                for index in nested_anchor_indices
+                if _to_int(index) is not None and int(index) > 0
+            }
+        ),
+        "issues": issues,
+        "anchor_row_id": anchor_row_id or None,
+        "body_start_row_id": body_start_row_id or None,
+        "body_start_position": body_start_position,
+        "anchor_type": anchor_type,
+        "layout_type": layout_type,
+        "used_marker_only_anchor": used_marker_only_anchor,
+        "anchor_to_body_link_reason": anchor_to_body_link_reason,
+        "body_start": body_start,
+        "body_end": body_end,
+    }
+
+
+def _build_experimental_reference_entries_v3(
+    *,
+    references: Sequence[Dict[str, Any]],
+    parsed_references: Dict[int, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    def _fallback_entry(
+        *,
+        index: Optional[int],
+        text: str,
+        doi: Optional[str],
+        reason: str,
+        cut_reasons: Optional[Sequence[str]] = None,
+    ) -> Dict[str, Any]:
+        if index is None:
+            entry_id = f"reference-entry-v3-unlabeled-{len(entries) + 1}"
+            ref_id = f"ref-v3-unlabeled-{len(entries) + 1}"
+        else:
+            entry_id = f"reference-entry-v3-ref-{index}"
+            ref_id = f"ref-{index}"
+        return {
+            "id": entry_id,
+            "ref_id": ref_id,
+            "index": index,
+            "text": text,
+            "page": None,
+            "box": None,
+            "rows": [],
+            "row_ids": [],
+            "row_boxes": [],
+            "page_boxes": [],
+            "union_box": None,
+            "pages_involved": [],
+            "anchor_row_id": None,
+            "body_start_row_id": None,
+            "layout_type": None,
+            "anchor_type": None,
+            "used_marker_only_anchor": False,
+            "anchor_to_body_link_reason": None,
+            "continuation_between_pages": False,
+            "boundary_start_reason": None,
+            "boundary_end_reason": reason,
+            "geometry_source": "raw_reference_fallback",
+            "doi": doi,
+            "structure_source": "raw_reference_fallback",
+            "local_row_count": 0,
+            "local_anchor_detected": False,
+            "reference_validation": {
+                "match_score": 0.0,
+                "mixed_reference_score": 0.0,
+                "has_nested_anchor": False,
+                "accepted": False,
+                "reason": reason,
+            },
+            "validation_intermediate": {
+                "match_score": 0.0,
+                "mixed_reference_score": 0.0,
+                "has_nested_anchor": False,
+                "accepted": False,
+                "reason": reason,
+            },
+            "scores": {
+                "accepted": False,
+                "classification": "fallback_needed",
+                "reason": reason,
+                "final_score": 0.0,
+            },
+            "final_decision": {
+                "accepted": False,
+                "classification": "fallback_needed",
+                "reason": reason,
+                "final_score": 0.0,
+            },
+            "crossref_match": {
+                "score": 0.0,
+                "doi_match_score": 0.0,
+                "match": None,
+            },
+            "token_reconstruction": {"final_text": text},
+            "anomalies": {
+                "cut_reasons": list(cut_reasons or []),
+                "nested_anchor_indices": [],
+            },
+        }
+
+    entries: List[Dict[str, Any]] = []
+    indexed_references: Dict[int, Dict[str, Any]] = {}
+    unindexed_references: List[Dict[str, Any]] = []
+    for ref in references:
+        if not isinstance(ref, dict):
+            continue
+        index = _entry_index(ref)
+        if index is None:
+            unindexed_references.append(ref)
+            continue
+        if index not in indexed_references:
+            indexed_references[index] = ref
+
+    parsed_indices = sorted(
+        {
+            int(index)
+            for index in parsed_references.keys()
+            if _to_int(index) not in (None, 0)
+        }
+    )
+    ordered_indices = sorted(set(parsed_indices) | set(indexed_references.keys()))
+
+    for index in ordered_indices:
+        seed_ref = indexed_references.get(index)
+        if seed_ref is None and unindexed_references:
+            seed_ref = unindexed_references.pop(0)
+        parsed = parsed_references.get(index)
+        if parsed is None:
+            fallback_text = str(
+                (seed_ref or {}).get("raw") or (seed_ref or {}).get("text") or ""
+            )
+            entries.append(
+                _fallback_entry(
+                    index=index,
+                    text=fallback_text,
+                    doi=_normalize_doi((seed_ref or {}).get("doi")) or None,
+                    reason="fallback_without_rows_structure",
+                    cut_reasons=["missing_anchor_after_v3_reconciliation"],
+                )
+            )
+            continue
+        entry = dict(parsed)
+        entry["index"] = index
+        if not _normalize_doi(entry.get("doi")) and _normalize_doi((seed_ref or {}).get("doi")):
+            entry["doi"] = _normalize_doi((seed_ref or {}).get("doi"))
+        entry["id"] = f"reference-entry-v3-ref-{index}"
+        entry["ref_id"] = f"ref-{index}"
+        entries.append(entry)
+
+    for ref in unindexed_references:
+        text = str(ref.get("raw") or ref.get("text") or "")
+        entries.append(
+            _fallback_entry(
+                index=None,
+                text=text,
+                doi=_normalize_doi(ref.get("doi")) or None,
+                reason="fallback_without_rows_structure",
+            )
+        )
+    return entries
+
+
+def _build_numeric_pipeline_metrics_v3(
+    *,
+    expected_indices: Sequence[int],
+    reference_entries: Sequence[Dict[str, Any]],
+    detected_anchor_indices: Sequence[int],
+    duplicate_indices: Sequence[int],
+) -> Dict[str, Any]:
+    expected_total = len(expected_indices)
+    serialized_indices = sorted(
+        {
+            int(entry.get("index"))
+            for entry in reference_entries
+            if _to_int(entry.get("index")) not in (None, 0)
+            and "fallback" not in str(entry.get("structure_source") or "")
+        }
+    )
+    references_total = len(reference_entries)
+    accepted_total = sum(
+        1
+        for entry in reference_entries
+        if bool((entry.get("final_decision") or {}).get("accepted"))
+    )
+    fallback_total = sum(
+        1
+        for entry in reference_entries
+        if "fallback" in str(entry.get("structure_source") or "")
+    )
+    continuation_total = sum(
+        1 for entry in reference_entries if bool(entry.get("continuation_between_pages"))
+    )
+    contamination_total = sum(
+        1
+        for entry in reference_entries
+        if bool((entry.get("reference_validation") or {}).get("has_nested_anchor"))
+    )
+    marker_only_anchor_total = sum(
+        1 for entry in reference_entries if str(entry.get("anchor_type") or "") == "marker_only"
+    )
+    marker_only_layout_total = sum(
+        1
+        for entry in reference_entries
+        if str(entry.get("layout_type") or "") == "marker_only_left_gutter"
+    )
+    marker_only_linked_total = sum(
+        1
+        for entry in reference_entries
+        if bool(entry.get("used_marker_only_anchor"))
+        and bool(str(entry.get("body_start_row_id") or "").strip())
+    )
+    rows_per_reference = [
+        len(entry.get("rows") or [])
+        for entry in reference_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    ]
+    truncated_total = sum(
+        1
+        for entry in reference_entries
+        if str(entry.get("text") or "").rstrip().endswith("-")
+        or len(str(entry.get("text") or "").strip()) < 40
+    )
+    geometry_complete_total = sum(
+        1
+        for entry in reference_entries
+        if (
+            _to_int(entry.get("index")) not in (None, 0)
+            and _coerce_geometry_box_v3(entry.get("union_box") or entry.get("box"))
+            is not None
+            and len(entry.get("page_boxes") or []) > 0
+        )
+    )
+    missing_indices = [
+        int(index)
+        for index in expected_indices
+        if int(index) not in set(serialized_indices)
+    ]
+    coverage_ratio = (
+        round(len(serialized_indices) / float(expected_total), 3)
+        if expected_total > 0
+        else 0.0
+    )
+    return {
+        "references_total": references_total,
+        "expected_indices": [int(index) for index in expected_indices],
+        "serialized_indices": serialized_indices,
+        "detected_anchor_indices": sorted(
+            {
+                int(index)
+                for index in detected_anchor_indices
+                if _to_int(index) not in (None, 0)
+            }
+        ),
+        "missing_indices": missing_indices,
+        "duplicate_indices": sorted(
+            {
+                int(index)
+                for index in duplicate_indices
+                if _to_int(index) not in (None, 0)
+            }
+        ),
+        "coverage_ratio": coverage_ratio,
+        "pct_accepted": round((accepted_total / float(references_total)) * 100.0, 2)
+        if references_total
+        else 0.0,
+        "fallback_total": fallback_total,
+        "references_truncated_total": truncated_total,
+        "continuation_between_pages_total": continuation_total,
+        "contamination_total": contamination_total,
+        "marker_only_anchor_total": marker_only_anchor_total,
+        "marker_only_layout_total": marker_only_layout_total,
+        "marker_only_linked_total": marker_only_linked_total,
+        "geometry_complete_total": geometry_complete_total,
+        "rows_per_reference_stats": {
+            "min": min(rows_per_reference) if rows_per_reference else 0,
+            "max": max(rows_per_reference) if rows_per_reference else 0,
+            "avg": round(
+                sum(rows_per_reference) / float(len(rows_per_reference)),
+                3,
+            )
+            if rows_per_reference
+            else 0.0,
+        },
+    }
+
+
+def _build_numeric_reference_comparison_v3(
+    *,
+    current_entries: Sequence[Dict[str, Any]],
+    experimental_entries: Sequence[Dict[str, Any]],
+    current_metrics: Dict[str, Any],
+    experimental_metrics: Dict[str, Any],
+) -> Dict[str, Any]:
+    def _entry_uses_fallback(entry: Dict[str, Any]) -> bool:
+        return "fallback" in str(entry.get("structure_source") or "")
+
+    def _entry_has_continuation(entry: Dict[str, Any]) -> bool:
+        return bool(entry.get("continuation_between_pages"))
+
+    def _entry_is_truncated(entry: Dict[str, Any]) -> bool:
+        text = str(entry.get("text") or "").strip()
+        return bool(text.endswith("-") or len(text) < 40)
+
+    def _entry_has_geometry(entry: Dict[str, Any]) -> bool:
+        box = _coerce_geometry_box_v3(entry.get("union_box") or entry.get("box"))
+        page_boxes = entry.get("page_boxes") or []
+        return bool(box is not None and len(page_boxes) > 0)
+
+    current_by_index = {
+        int(entry.get("index")): entry
+        for entry in current_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    }
+    experimental_by_index = {
+        int(entry.get("index")): entry
+        for entry in experimental_entries
+        if _to_int(entry.get("index")) not in (None, 0)
+    }
+    regressions: List[Dict[str, Any]] = []
+    improvements: List[Dict[str, Any]] = []
+    all_indices = sorted(set(current_by_index.keys()) | set(experimental_by_index.keys()))
+    for index in all_indices:
+        current_entry = current_by_index.get(index) or {}
+        experimental_entry = experimental_by_index.get(index) or {}
+        current_decision = (
+            current_entry.get("final_decision")
+            if isinstance(current_entry.get("final_decision"), dict)
+            else {}
+        )
+        experimental_decision = (
+            experimental_entry.get("final_decision")
+            if isinstance(experimental_entry.get("final_decision"), dict)
+            else {}
+        )
+        current_rows = len(current_entry.get("rows") or [])
+        experimental_rows = len(experimental_entry.get("rows") or [])
+        if bool(current_decision.get("accepted")) and not bool(
+            experimental_decision.get("accepted")
+        ):
+            regressions.append(
+                {
+                    "index": index,
+                    "type": "accepted_reference_lost",
+                    "current_reason": current_decision.get("reason"),
+                    "experimental_reason": experimental_decision.get("reason"),
+                }
+            )
+        if (not _entry_uses_fallback(current_entry)) and _entry_uses_fallback(
+            experimental_entry
+        ):
+            regressions.append({"index": index, "type": "new_raw_fallback"})
+        if _entry_has_continuation(current_entry) and not _entry_has_continuation(
+            experimental_entry
+        ):
+            regressions.append({"index": index, "type": "page_continuation_lost"})
+        if _entry_has_geometry(current_entry) and not _entry_has_geometry(
+            experimental_entry
+        ):
+            regressions.append({"index": index, "type": "geometry_lost"})
+        if (
+            not bool((current_entry.get("reference_validation") or {}).get("has_nested_anchor"))
+            and bool(
+                (experimental_entry.get("reference_validation") or {}).get(
+                    "has_nested_anchor"
+                )
+            )
+        ):
+            regressions.append({"index": index, "type": "new_reference_contamination"})
+        if current_rows >= 4 and experimental_rows <= max(1, current_rows // 2):
+            regressions.append({"index": index, "type": "rows_sharply_reduced"})
+        if _entry_is_truncated(experimental_entry) and not _entry_is_truncated(
+            current_entry
+        ):
+            regressions.append({"index": index, "type": "new_truncation"})
+
+        if not bool(current_decision.get("accepted")) and bool(
+            experimental_decision.get("accepted")
+        ):
+            improvements.append({"index": index, "type": "accepted_reference_recovered"})
+        if _entry_uses_fallback(current_entry) and not _entry_uses_fallback(
+            experimental_entry
+        ):
+            improvements.append({"index": index, "type": "fallback_removed"})
+        if not _entry_has_continuation(current_entry) and _entry_has_continuation(
+            experimental_entry
+        ):
+            improvements.append({"index": index, "type": "page_continuation_recovered"})
+        if not _entry_has_geometry(current_entry) and _entry_has_geometry(
+            experimental_entry
+        ):
+            improvements.append({"index": index, "type": "geometry_recovered"})
+        if _entry_is_truncated(current_entry) and not _entry_is_truncated(
+            experimental_entry
+        ):
+            improvements.append({"index": index, "type": "truncation_fixed"})
+        if bool((current_entry.get("reference_validation") or {}).get("has_nested_anchor")) and not bool(
+            (experimental_entry.get("reference_validation") or {}).get(
+                "has_nested_anchor"
+            )
+        ):
+            improvements.append({"index": index, "type": "contamination_removed"})
+
+    metric_deltas: Dict[str, Any] = {}
+    for metric_name in (
+        "coverage_ratio",
+        "pct_accepted",
+        "fallback_total",
+        "references_truncated_total",
+        "continuation_between_pages_total",
+        "contamination_total",
+        "geometry_complete_total",
+    ):
+        current_value = current_metrics.get(metric_name)
+        experimental_value = experimental_metrics.get(metric_name)
+        if isinstance(current_value, (int, float)) and isinstance(
+            experimental_value,
+            (int, float),
+        ):
+            metric_deltas[metric_name] = round(
+                float(experimental_value) - float(current_value),
+                3,
+            )
+
+    status = "neutral"
+    if regressions:
+        status = "regression_detected"
+    elif improvements:
+        status = "improved_without_regression"
+    return {
+        "status": status,
+        "promotion_ready": bool(improvements) and not regressions,
+        "regressions": regressions[:120],
+        "improvements": improvements[:120],
+        "metric_deltas": metric_deltas,
+        "regression_total": len(regressions),
+        "improvement_total": len(improvements),
+    }
+
+
+def _run_numeric_reference_pipeline_v3(
+    *,
+    references: Sequence[Dict[str, Any]],
+    metadata_by_index: Dict[int, Dict[str, Any]],
+    rows: Sequence[Dict[str, Any]],
+    sections: Sequence[Dict[str, Any]],
+    bibliography_items: Sequence[Dict[str, Any]],
+    token_items: Sequence[Dict[str, Any]],
+    current_reference_entries: Sequence[Dict[str, Any]],
+    current_numeric_metrics: Dict[str, Any],
+    crossref_context: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    expected_indices = sorted(
+        {
+            int(index)
+            for index in metadata_by_index.keys()
+            if isinstance(index, int) and int(index) > 0
+        }
+    )
+    if not expected_indices:
+        return None
+
+    territory_phase = _build_numeric_bibliography_territory_v3(
+        rows=rows,
+        sections=sections,
+        bibliography_items=bibliography_items,
+    )
+    ordered_rows = territory_phase.get("ordered_bibliography_rows") or []
+    anchor_detection_debug: Dict[str, Any] = {}
+    anchor_candidates = _detect_numeric_anchor_candidates_v3(
+        ordered_rows,
+        debug_collector=anchor_detection_debug,
+    )
+    anchor_reconciliation = _reconcile_numeric_anchor_candidates_v3(
+        anchor_candidates=anchor_candidates,
+        expected_indices=expected_indices,
+    )
+    selected_anchors = anchor_reconciliation.get("selected_anchors") or []
+    anchor_candidates_by_position: Dict[int, Dict[str, Any]] = {}
+    for candidate in anchor_candidates:
+        position = _to_int(candidate.get("position"))
+        if position is None:
+            continue
+        existing = anchor_candidates_by_position.get(position)
+        if (
+            existing is None
+            or float(candidate.get("confidence") or 0.0)
+            > float(existing.get("confidence") or 0.0)
+        ):
+            anchor_candidates_by_position[position] = candidate
+
+    territory_row_ids = {
+        str(row.get("id") or "")
+        for row in ordered_rows
+        if str(row.get("id") or "").strip()
+    }
+    artifact_info = _build_repeating_page_artifacts(
+        territory_phase.get("rows_with_columns") or ordered_rows
+    )
+    tokens_by_page = _index_tokens_by_page(token_items or [])
+    parsed: Dict[int, Dict[str, Any]] = {}
+    reference_debug: List[Dict[str, Any]] = []
+
+    for anchor_idx, anchor in enumerate(selected_anchors):
+        index = int(anchor.get("index") or 0)
+        next_anchor = (
+            selected_anchors[anchor_idx + 1]
+            if anchor_idx + 1 < len(selected_anchors)
+            else None
+        )
+        growth = _grow_reference_rows_from_anchor_v3(
+            ordered_rows=ordered_rows,
+            current_anchor=anchor,
+            next_anchor=next_anchor,
+            anchor_candidates_by_position=anchor_candidates_by_position,
+            territory_row_ids=territory_row_ids,
+            artifact_info=artifact_info,
+        )
+        block_rows = growth.get("rows") or []
+        if not block_rows:
+            reference_debug.append(
+                {
+                    "index": index,
+                    "anchor_detected": {
+                        "index": index,
+                        "style": anchor.get("style"),
+                        "anchor_style": anchor.get("anchor_style") or anchor.get("style"),
+                        "anchor_type": anchor.get("anchor_type"),
+                        "layout_type": anchor.get("layout_type"),
+                        "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+                        "strength": anchor.get("strength"),
+                        "page": anchor.get("page"),
+                        "row_id": anchor.get("row_id"),
+                        "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                        "body_start_row_id": anchor.get("body_start_row_id"),
+                        "body_start_position": anchor.get("body_start_position"),
+                        "body_in_next_row": bool(anchor.get("body_in_next_row")),
+                        "anchor_to_body_link_reason": anchor.get(
+                            "anchor_to_body_link_reason"
+                        ),
+                        "used_marker_only_anchor": bool(
+                            anchor.get("used_marker_only_anchor")
+                        ),
+                    },
+                    "used_marker_only_anchor": bool(anchor.get("used_marker_only_anchor")),
+                    "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                    "body_start_row_id": anchor.get("body_start_row_id"),
+                    "layout_type": anchor.get("layout_type"),
+                    "anchor_to_body_link_reason": anchor.get(
+                        "anchor_to_body_link_reason"
+                    ),
+                    "body_start": growth.get("body_start"),
+                    "body_end": growth.get("body_end"),
+                    "rows_included": [],
+                    "rows_discarded": growth.get("rows_discarded") or [],
+                    "continuation_between_pages": False,
+                    "closure_reason": growth.get("closure_reason"),
+                    "boundary_start_reason": growth.get("boundary_start_reason"),
+                    "boundary_end_reason": growth.get("boundary_end_reason"),
+                    "issues": list(growth.get("issues") or [])
+                    + ["empty_reference_after_growth"],
+                }
+            )
+            continue
+
+        token_reconstruction = _reconstruct_reference_text_from_rows_and_tokens(
+            block_rows,
+            tokens_by_page,
+        )
+        reference_doi_seed = (
+            _extract_doi(token_reconstruction.get("raw_text"))
+            or _extract_doi(token_reconstruction.get("hybrid_text"))
+            or _extract_doi(token_reconstruction.get("token_text"))
+            or ""
+        )
+        selected_candidate = _select_reference_text_candidate(
+            candidates=token_reconstruction.get("candidates") or [],
+            reference_doi=reference_doi_seed,
+            crossref_context=crossref_context,
+        )
+        selected_candidate_source = str(
+            selected_candidate.get("source")
+            or token_reconstruction.get("selected_candidate_source")
+            or "rows_raw"
+        ).strip() or "rows_raw"
+        token_reconstruction["selected_candidate_source"] = selected_candidate_source
+        token_reconstruction["candidate_scores"] = (
+            selected_candidate.get("candidate_scores") or []
+        )
+        token_reconstruction["order_similarity_to_rows"] = selected_candidate.get(
+            "order_similarity_to_rows"
+        )
+        token_reconstruction["order_guard_reasons"] = (
+            selected_candidate.get("order_guard_reasons") or []
+        )
+        token_reconstruction["backbone_source"] = selected_candidate.get(
+            "backbone_source"
+        ) or token_reconstruction.get("backbone_source")
+        token_reconstruction["backbone_text"] = str(
+            selected_candidate.get("backbone_text")
+            or token_reconstruction.get("backbone_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
+        token_reconstruction["final_text"] = str(
+            selected_candidate.get("text")
+            or token_reconstruction.get("hybrid_text")
+            or token_reconstruction.get("raw_text")
+            or ""
+        ).strip()
+        block_text = str(token_reconstruction.get("final_text") or "").strip()
+        validation = _build_reference_validation(
+            text=block_text,
+            expected_index=index,
+            metadata=metadata_by_index.get(index),
+            metadata_by_index=metadata_by_index,
+        )
+        crossref_match = _match_reference_against_crossref(
+            reference_text=block_text,
+            reference_doi=_extract_doi(block_text),
+            crossref_context=crossref_context,
+        )
+        final_decision = _build_reference_decision_v2(
+            expected_index=index,
+            rows=block_rows,
+            reference_text=block_text,
+            block_diagnostics=growth,
+            token_reconstruction=token_reconstruction,
+            crossref_match=crossref_match,
+            territory_zones=territory_phase.get("territory_zones") or [],
+            validation=validation,
+        )
+        validation = _sync_reference_validation_with_final_decision(
+            validation,
+            final_decision,
+        )
+        geometry_payload = _build_reference_geometry_payload_v3(
+            block_rows,
+            geometry_source="rows_growth_v3",
+        )
+        parsed[index] = {
+            "index": index,
+            "text": block_text,
+            "text_raw": token_reconstruction.get("raw_text"),
+            "page": _to_int((block_rows[0] or {}).get("page")),
+            "box": _coerce_geometry_box_v3(geometry_payload.get("union_box")),
+            "rows": block_rows,
+            "row_ids": geometry_payload.get("row_ids") or [],
+            "row_boxes": geometry_payload.get("row_boxes") or [],
+            "page_boxes": geometry_payload.get("page_boxes") or [],
+            "union_box": geometry_payload.get("union_box"),
+            "pages_involved": geometry_payload.get("pages_involved") or [],
+            "anchor_row_id": growth.get("anchor_row_id")
+            or anchor.get("anchor_row_id")
+            or anchor.get("row_id"),
+            "body_start_row_id": growth.get("body_start_row_id")
+            or anchor.get("body_start_row_id")
+            or anchor.get("row_id"),
+            "layout_type": growth.get("layout_type") or anchor.get("layout_type"),
+            "anchor_type": growth.get("anchor_type") or anchor.get("anchor_type"),
+            "used_marker_only_anchor": bool(
+                growth.get("used_marker_only_anchor")
+                or anchor.get("used_marker_only_anchor")
+            ),
+            "anchor_to_body_link_reason": growth.get("anchor_to_body_link_reason")
+            or anchor.get("anchor_to_body_link_reason"),
+            "continuation_between_pages": bool(
+                growth.get("continuation_between_pages")
+            ),
+            "boundary_start_reason": growth.get("boundary_start_reason"),
+            "boundary_end_reason": growth.get("boundary_end_reason"),
+            "geometry_source": geometry_payload.get("geometry_source"),
+            "local_row_count": len(block_rows),
+            "local_anchor_detected": True,
+            "structure_source": (
+                selected_candidate_source
+                if selected_candidate_source.startswith("rows")
+                else "rows_raw"
+            ),
+            "reference_validation": validation,
+            "validation_intermediate": _coerce_reference_validation_payload(validation),
+            "column_id": block_rows[0].get("column_id_v2")
+            or block_rows[0].get("column_id"),
+            "anchor_position": anchor.get("position"),
+            "anchor_style": anchor.get("anchor_style") or anchor.get("style"),
+            "scores": final_decision,
+            "final_decision": final_decision,
+            "crossref_match": crossref_match,
+            "token_reconstruction": token_reconstruction,
+            "anomalies": {
+                "cut_reasons": list(growth.get("cut_reasons") or []),
+                "nested_anchor_indices": list(growth.get("nested_anchor_indices") or []),
+            },
+        }
+        reference_debug.append(
+            {
+                "index": index,
+                "anchor_detected": {
+                    "index": index,
+                    "style": anchor.get("style"),
+                    "anchor_style": anchor.get("anchor_style") or anchor.get("style"),
+                    "anchor_type": anchor.get("anchor_type"),
+                    "layout_type": anchor.get("layout_type"),
+                    "confidence": round(float(anchor.get("confidence") or 0.0), 3),
+                    "strength": anchor.get("strength"),
+                    "page": anchor.get("page"),
+                    "row_id": anchor.get("row_id"),
+                    "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                    "body_start_row_id": anchor.get("body_start_row_id"),
+                    "body_start_position": anchor.get("body_start_position"),
+                    "position": anchor.get("position"),
+                    "body_in_next_row": bool(anchor.get("body_in_next_row")),
+                    "anchor_to_body_link_reason": anchor.get(
+                        "anchor_to_body_link_reason"
+                    ),
+                    "used_marker_only_anchor": bool(anchor.get("used_marker_only_anchor")),
+                },
+                "used_marker_only_anchor": bool(
+                    growth.get("used_marker_only_anchor")
+                    or anchor.get("used_marker_only_anchor")
+                ),
+                "anchor_row_id": growth.get("anchor_row_id")
+                or anchor.get("anchor_row_id")
+                or anchor.get("row_id"),
+                "body_start_row_id": growth.get("body_start_row_id")
+                or anchor.get("body_start_row_id")
+                or anchor.get("row_id"),
+                "layout_type": growth.get("layout_type") or anchor.get("layout_type"),
+                "anchor_to_body_link_reason": growth.get("anchor_to_body_link_reason")
+                or anchor.get("anchor_to_body_link_reason"),
+                "body_start": growth.get("body_start"),
+                "body_end": growth.get("body_end"),
+                "rows_included": [
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "page": row.get("page"),
+                        "reading_lane_id": row.get("reading_lane_id"),
+                        "text": _short_debug_text(row.get("text")),
+                    }
+                    for row in block_rows
+                ],
+                "rows_discarded": growth.get("rows_discarded") or [],
+                "continuation_between_pages": bool(
+                    growth.get("continuation_between_pages")
+                ),
+                "closure_reason": growth.get("closure_reason"),
+                "boundary_start_reason": growth.get("boundary_start_reason"),
+                "boundary_end_reason": growth.get("boundary_end_reason"),
+                "issues": growth.get("issues") or [],
+                "accepted": bool(final_decision.get("accepted")),
+                "selected_candidate_source": selected_candidate_source,
+            }
+        )
+
+    experimental_entries = _build_experimental_reference_entries_v3(
+        references=references,
+        parsed_references=parsed,
+    )
+    experimental_metrics = _build_numeric_pipeline_metrics_v3(
+        expected_indices=expected_indices,
+        reference_entries=experimental_entries,
+        detected_anchor_indices=[
+            int(candidate.get("index"))
+            for candidate in anchor_candidates
+            if _to_int(candidate.get("index")) not in (None, 0)
+        ],
+        duplicate_indices=anchor_reconciliation.get("duplicate_indices") or [],
+    )
+    comparison = _build_numeric_reference_comparison_v3(
+        current_entries=current_reference_entries,
+        experimental_entries=experimental_entries,
+        current_metrics=current_numeric_metrics,
+        experimental_metrics=experimental_metrics,
+    )
+    return {
+        "pipeline_name": NUMERIC_REFERENCE_PIPELINE_V3_NAME,
+        "run_mode": NUMERIC_REFERENCE_PIPELINE_V3_RUN_MODE,
+        "enabled": True,
+        "selected_as_default": False,
+        "phases": {
+            "phase_0_crossref_validation": {
+                "article_doi": crossref_context.get("article_doi"),
+                "crossref_available": bool(crossref_context.get("crossref_available")),
+                "crossref_reference_count": int(
+                    crossref_context.get("crossref_reference_count") or 0
+                ),
+                "crossref_reference_candidates_total": len(
+                    crossref_context.get("crossref_reference_candidates") or []
+                ),
+            },
+            "phase_1_bibliography_territory": {
+                "bibliography_start_page": territory_phase.get("bibliography_start_page"),
+                "bibliography_window_init": territory_phase.get("bibliography_window_init"),
+                "bibliography_window_end_soft": territory_phase.get("bibliography_window_end_soft"),
+                "bibliography_noise_regions": territory_phase.get("bibliography_noise_regions") or [],
+                "bibliography_territory": territory_phase.get("bibliography_territory"),
+                "territory_zones": territory_phase.get("territory_zones") or [],
+            },
+            "phase_2_bibliography_rows_selection": {
+                "bibliography_rows_selected": territory_phase.get("bibliography_rows_selected") or [],
+                "bibliography_rows_rejected": territory_phase.get("bibliography_rows_rejected") or [],
+                "rows_rejection_reasons": territory_phase.get("rows_rejection_reasons") or {},
+                "rescued_rows_outside_initial_window": territory_phase.get("rescued_rows_outside_initial_window") or [],
+            },
+            "phase_3_reading_order_rows": {
+                "reading_lanes": territory_phase.get("reading_lanes") or [],
+                "ordered_bibliography_rows": [
+                    {
+                        "row_id": str(row.get("id") or ""),
+                        "page": row.get("page"),
+                        "flow_position": row.get("flow_position"),
+                        "reading_lane_id": row.get("reading_lane_id"),
+                        "box": _serialize_box(_normalize_box(row.get("box"))),
+                        "text": _short_debug_text(row.get("text"), limit=140),
+                    }
+                    for row in ordered_rows
+                ],
+            },
+            "phase_4_numeric_anchors": {
+                "candidates": [
+                    {
+                        "index": candidate.get("index"),
+                        "anchor_style": candidate.get("anchor_style") or candidate.get("style"),
+                        "style": candidate.get("style"),
+                        "anchor_type": candidate.get("anchor_type"),
+                        "layout_type": candidate.get("layout_type"),
+                        "confidence": round(float(candidate.get("confidence") or 0.0), 3),
+                        "strength": candidate.get("strength"),
+                        "row_id": candidate.get("row_id"),
+                        "anchor_row_id": candidate.get("anchor_row_id")
+                        or candidate.get("row_id"),
+                        "body_start_row_id": candidate.get("body_start_row_id"),
+                        "body_start_position": candidate.get("body_start_position"),
+                        "position": candidate.get("position"),
+                        "page": candidate.get("page"),
+                        "body_in_next_row": bool(candidate.get("body_in_next_row")),
+                        "anchor_to_body_link_reason": candidate.get(
+                            "anchor_to_body_link_reason"
+                        ),
+                        "used_marker_only_anchor": bool(
+                            candidate.get("used_marker_only_anchor")
+                        ),
+                        "reason": candidate.get("reason"),
+                        "sequence_supported": bool(candidate.get("sequence_supported")),
+                    }
+                    for candidate in anchor_candidates
+                ],
+                "marker_only_anchor_audit": (
+                    anchor_detection_debug.get("marker_only_anchor_audit") or {}
+                ),
+                "anchor_sequence": anchor_reconciliation.get("anchor_sequence") or [],
+                "missing_indices": anchor_reconciliation.get("missing_indices") or [],
+                "duplicate_indices": anchor_reconciliation.get("duplicate_indices") or [],
+                "inferred_anchors": anchor_reconciliation.get("inferred_anchors") or [],
+                "actions": anchor_reconciliation.get("reconciliation_actions") or [],
+            },
+            "phase_5_reference_segmentation": {
+                "references": reference_debug,
+            },
+            "phase_6_token_refinement": {
+                "references": [
+                    {
+                        "index": entry.get("index"),
+                        "selected_candidate_source": (
+                            (entry.get("token_reconstruction") or {}).get("selected_candidate_source")
+                        ),
+                        "cleanups_applied": (
+                            (entry.get("token_reconstruction") or {}).get("cleanups_applied")
+                            or []
+                        ),
+                        "accepted_local_edit_count": int(
+                            ((entry.get("token_reconstruction") or {}).get("accepted_local_edit_count") or 0)
+                        ),
+                        "rejected_local_edit_count": int(
+                            ((entry.get("token_reconstruction") or {}).get("rejected_local_edit_count") or 0)
+                        ),
+                    }
+                    for entry in experimental_entries
+                    if _to_int(entry.get("index")) not in (None, 0)
+                ]
+            },
+            "phase_7_aux_validation": {
+                "comparison_vs_current_status": comparison.get("status"),
+                "comparison_vs_current": comparison,
+                "current_metrics": current_numeric_metrics,
+                "experimental_metrics": experimental_metrics,
+            },
+            "geometry": {
+                "references": [
+                    {
+                        "index": entry.get("index"),
+                        "anchor_row_id": entry.get("anchor_row_id"),
+                        "body_start_row_id": entry.get("body_start_row_id"),
+                        "layout_type": entry.get("layout_type"),
+                        "anchor_type": entry.get("anchor_type"),
+                        "used_marker_only_anchor": bool(
+                            entry.get("used_marker_only_anchor")
+                        ),
+                        "anchor_to_body_link_reason": entry.get(
+                            "anchor_to_body_link_reason"
+                        ),
+                        "row_ids": entry.get("row_ids") or [],
+                        "rows": entry.get("rows") or [],
+                        "row_boxes": entry.get("row_boxes") or [],
+                        "page_boxes": entry.get("page_boxes") or [],
+                        "union_box": entry.get("union_box"),
+                        "pages_involved": entry.get("pages_involved") or [],
+                        "continuation_between_pages": bool(
+                            entry.get("continuation_between_pages")
+                        ),
+                        "boundary_start_reason": entry.get("boundary_start_reason"),
+                        "boundary_end_reason": entry.get("boundary_end_reason"),
+                        "geometry_source": entry.get("geometry_source"),
+                    }
+                    for entry in experimental_entries
+                    if _to_int(entry.get("index")) not in (None, 0)
+                ]
             },
         },
         "reference_debug": reference_debug,
@@ -8379,7 +11313,9 @@ def build_references_data(
                 reference_entries=reference_entries,
             )
         current_numeric_metrics = None
+        current_numeric_metrics_v3 = None
         experimental_numeric_pipeline_v2 = None
+        experimental_numeric_pipeline_v3 = None
         if references_numbered and metadata_by_index:
             detected_anchor_indices_for_current = [
                 int(anchor.get("index"))
@@ -8401,6 +11337,12 @@ def build_references_data(
                 detected_anchor_indices=detected_anchor_indices_for_current,
                 duplicate_indices=duplicate_indices_for_current,
             )
+            current_numeric_metrics_v3 = _build_numeric_pipeline_metrics_v3(
+                expected_indices=sorted(metadata_by_index.keys()),
+                reference_entries=reference_entries,
+                detected_anchor_indices=detected_anchor_indices_for_current,
+                duplicate_indices=duplicate_indices_for_current,
+            )
             experimental_numeric_pipeline_v2 = _run_numeric_reference_pipeline_v2(
                 references=references,
                 metadata_by_index=metadata_by_index,
@@ -8410,6 +11352,17 @@ def build_references_data(
                 token_items=token_items,
                 current_reference_entries=reference_entries,
                 current_numeric_metrics=current_numeric_metrics,
+                crossref_context=crossref_context,
+            )
+            experimental_numeric_pipeline_v3 = _run_numeric_reference_pipeline_v3(
+                references=references,
+                metadata_by_index=metadata_by_index,
+                rows=row_items,
+                sections=section_items,
+                bibliography_items=bibliography_items,
+                token_items=token_items,
+                current_reference_entries=reference_entries,
+                current_numeric_metrics=(current_numeric_metrics_v3 or {}),
                 crossref_context=crossref_context,
             )
         contamination_diagnostics = _build_contamination_diagnostics(
@@ -8526,10 +11479,16 @@ def build_references_data(
             debug_payload["numeric_coverage_summary"] = numeric_coverage_summary
         if current_numeric_metrics is not None:
             debug_payload["numeric_pipeline_current_metrics"] = current_numeric_metrics
+        if current_numeric_metrics_v3 is not None:
+            debug_payload["numeric_pipeline_current_metrics_v3"] = current_numeric_metrics_v3
         if experimental_numeric_pipeline_v2 is not None:
             debug_payload[
                 NUMERIC_REFERENCE_PIPELINE_V2_NAME
             ] = experimental_numeric_pipeline_v2
+        if experimental_numeric_pipeline_v3 is not None:
+            debug_payload[
+                NUMERIC_REFERENCE_PIPELINE_V3_NAME
+            ] = experimental_numeric_pipeline_v3
 
     logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
 
@@ -8616,6 +11575,12 @@ def finalize_reference_detection_debug_payload(
                 "index": entry.get("index"),
                 "source": entry.get("structure_source"),
                 "structure_source": entry.get("structure_source"),
+                "anchor_row_id": entry.get("anchor_row_id"),
+                "body_start_row_id": entry.get("body_start_row_id"),
+                "layout_type": entry.get("layout_type"),
+                "anchor_type": entry.get("anchor_type"),
+                "used_marker_only_anchor": bool(entry.get("used_marker_only_anchor")),
+                "anchor_to_body_link_reason": entry.get("anchor_to_body_link_reason"),
                 "candidate_text_raw": entry.get("text_candidate_raw") or entry.get("text"),
                 "token_candidate_text": token_info.get("token_text"),
                 "hybrid_candidate_text": token_info.get("hybrid_text"),

@@ -4,6 +4,7 @@ import os
 import re
 import tempfile
 import uuid
+from collections import defaultdict
 from urllib.parse import unquote, urlparse
 
 from django.conf import settings
@@ -68,6 +69,35 @@ def _reader_vite_dev_server() -> str:
 
 def _can_edit_report(user, citation) -> bool:
     return user.is_authenticated and (user == citation.author or user.is_superuser)
+
+
+def _build_comment_threads(comments):
+    """
+    Build a nested comment tree in-memory.
+
+    Adds helper attrs to each comment instance:
+    - thread_children: list of direct replies
+    - thread_reply_count: total number of descendants
+    """
+    grouped = defaultdict(list)
+    for comment in comments:
+        comment.thread_children = []
+        comment.thread_reply_count = 0
+        grouped[comment.parent_id].append(comment)
+
+    def attach(node):
+        children = grouped.get(node.id, [])
+        node.thread_children = children
+        total_descendants = 0
+        for child in children:
+            total_descendants += 1 + attach(child)
+        node.thread_reply_count = total_descendants
+        return total_descendants
+
+    roots = grouped.get(None, [])
+    for root in roots:
+        attach(root)
+    return roots
 
 
 EDITABLE_REPORT_FIELDS = (
@@ -462,11 +492,12 @@ def citation_detail(request, pk):
         pk=pk,
     )
 
-    comments = (
+    comments_qs = (
         Comment.objects.filter(citation=citation)
-        .select_related("author", "parent")
+        .select_related("author", "parent", "parent__author")
         .order_by("created_at")
     )
+    comments = _build_comment_threads(list(comments_qs))
 
     # otros reportes de la misma orea (excluyendo el actual)
     other_area_reports = (
@@ -501,10 +532,17 @@ def citation_detail(request, pk):
             comment.save()
 
             if is_hx_request:
+                updated_comments = _build_comment_threads(
+                    list(
+                        Comment.objects.filter(citation=citation)
+                        .select_related("author", "parent", "parent__author")
+                        .order_by("created_at")
+                    )
+                )
                 response = render(
                     request,
-                    "citations/partials/_comment.html",
-                    {"comment": comment},
+                    "citations/partials/_comment_list.html",
+                    {"comments": updated_comments},
                 )
                 response["HX-Trigger"] = "comment-added"
                 return response
