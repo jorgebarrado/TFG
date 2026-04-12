@@ -1,7 +1,7 @@
 {% load i18n %}
-<div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}">
+<div class="mb-3 border p-3 rounded bg-light ms-{% if comment.parent %}4{% else %}0{% endif %}" data-comment-id="{{ comment.id }}">
     {% if comment.author %}
-        <a href="{% url 'profile' comment.author.username %}" class="fw-semibold text-decoration-none">{{ comment.author.username }}</a>
+        <a href="{% url 'profile' comment.author.username %}" class="fw-semibold text-decoration-none"><strong>{{ comment.author.username }}</strong></a>
     {% else %}
         <strong>{% trans "Anonymous" %}</strong>
     {% endif %}
@@ -9,13 +9,13 @@
 
     {% if comment.parent %}
         <div class="text-muted small mb-1">
-            💬 {% trans "Respondiendo a:" %}
+            {% trans "Respondiendo a:" %}
             {% if comment.parent.author %}
                 <a href="{% url 'profile' comment.parent.author.username %}" class="fw-semibold text-decoration-none">{{ comment.parent.author.username }}</a>
             {% else %}
                 <strong>{% trans "Anonymous" %}</strong>
             {% endif %}:
-            “{{ comment.parent.content|truncatechars:50 }}”
+            "{{ comment.parent.content|truncatechars:60 }}"
         </div>
     {% endif %}
 
@@ -31,4 +31,33 @@
         </button>
         {% endif %}
     </div>
+
+    {% if comment.thread_children %}
+        {% if not comment.parent %}
+            {% blocktrans count replies=comment.thread_reply_count asvar replies_label %}{{ replies }} respuesta{% plural %}{{ replies }} respuestas{% endblocktrans %}
+            <div class="mt-1">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-link p-0 comment-replies-toggle"
+                    data-target="comment-replies-{{ comment.id }}"
+                    data-collapsed-label="{{ replies_label|escape }}"
+                    data-expanded-label="{% trans 'Ocultar respuestas' %}"
+                    aria-expanded="false">
+                    {{ replies_label }}
+                </button>
+            </div>
+
+            <div id="comment-replies-{{ comment.id }}" class="d-none mt-2">
+                {% for child in comment.thread_children %}
+                    {% include 'citations/partials/_comment.html' with comment=child %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="mt-2">
+                {% for child in comment.thread_children %}
+                    {% include 'citations/partials/_comment.html' with comment=child %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
 </div>
