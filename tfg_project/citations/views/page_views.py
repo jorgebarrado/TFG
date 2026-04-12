@@ -1018,40 +1018,6 @@ def citation_extract_contexts(request, pk):
             pass
 
 
-def semantic_citations_view(request):
-    """
-    Muestra las citas de un art??culo obtenidas de Semantic Scholar.
-    """
-    doi = request.GET.get("doi")
-    if not doi:
-        return redirect("account_settings")
-
-    citation_count, citations, source = get_citations_with_fallback(doi)
-    citing_dois = [c.get("doi") for c in citations if c.get("doi")]
-    registered_citations = IncorrectCitation.objects.filter(
-        doi_original=doi, doi_incorrect__in=citing_dois
-    ).values("doi_incorrect", "id")
-    registered_map = {
-        item["doi_incorrect"]: item["id"] for item in registered_citations
-    }
-
-    for c in citations:
-        citing_doi = c.get("doi")
-        if citing_doi and citing_doi in registered_map:
-            c["is_registered"] = True
-            c["report_id"] = registered_map[citing_doi]
-        else:
-            c["is_registered"] = False
-
-    context = {
-        "doi": doi,
-        "citation_count": citation_count,
-        "citations": citations,
-        "source": source,
-    }
-    return render(request, "citations/semantic_citations.html", context)
-
-
 def citation_reader(request, report_id: int):
     citation = get_object_or_404(IncorrectCitation, pk=report_id)
     uploaded_pdf_path = _get_uploaded_pdf_path(citation)

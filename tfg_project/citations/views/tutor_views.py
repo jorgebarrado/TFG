@@ -112,9 +112,9 @@ def citation_review_citers(request, paper_id: int):
                 paper["doi"], limit=limit, offset=offset
             )
         except (ValueError, SemanticScholarError) as exc:
-            error_message = str(exc)
+            error_message = f"Error al consultar Semantic Scholar: {exc}"
     else:
-        error_message = "Este articulo no tiene DOI, asi que no se puede revisar."
+        error_message = "Este artículo no tiene DOI. No se pueden buscar artículos citantes en Semantic Scholar sin un DOI."
 
     registered_map = {}
     if paper.get("doi"):

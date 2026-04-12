@@ -1,6 +1,5 @@
 """Views related to user profiles and personalized content."""
 
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -18,7 +17,6 @@ from ..models import (
     UserProfile,
     Vote,
 )
-from ..utils import check_doi_has_citations, get_articles_from_dblp
 
 User = get_user_model()
 
@@ -154,45 +152,6 @@ def my_saved(request):
         .order_by("-created_at")
     )
     return render(request, "citations/my_saved.html", {"saved": saved})
-
-
-@login_required
-def dblp_articles_view(request):
-    """
-    Muestra los artículos de un usuario obtenidos de DBLP.
-    """
-    user = request.user
-    profile = UserProfile.objects.get(user=user)
-    all_articles = get_articles_from_dblp(profile.dblp_url) if profile.dblp_url else []
-
-    tipo = request.GET.get("tipo", "").strip()
-    busqueda = request.GET.get("q", "").strip().lower()
-    tipos_disponibles = sorted(set(a["type"] for a in all_articles))
-
-    articles = all_articles
-    if tipo:
-        articles = [a for a in articles if a["type"] == tipo]
-    if busqueda:
-        articles = [a for a in articles if busqueda in a["title"].lower()]
-
-    paginator = Paginator(articles, 10)
-    page_number = request.GET.get("page")
-    page = paginator.get_page(page_number)
-
-    for article in page:
-        if article.get("doi"):
-            article["has_citations"] = check_doi_has_citations(article["doi"])
-        else:
-            article["has_citations"] = False
-
-    context = {
-        "articles": page,
-        "dblp_url": profile.dblp_url,
-        "tipo_actual": tipo,
-        "tipos_disponibles": tipos_disponibles,
-        "busqueda": busqueda,
-    }
-    return render(request, "citations/dblp_articles.html", context)
 
 
 @login_required
