@@ -1625,6 +1625,22 @@ def _run_regression(
             run_summary=run_summary,
         ),
     )
+    # config.json: subset mínimo del metadata para identificar el run sin leer el summary completo
+    _write_json(
+        output_dir / "config.json",
+        {
+            "run_id": run_id,
+            "timestamp": run_timestamp,
+            "git_revision": git_revision,
+            "engine_requested": engine,
+            "dataset_source": DATASET_SOURCE_LABEL,
+            "dataset_type_filter": dataset_type,
+            "selected_paper_ids": list(selected_paper_ids),
+            "discovered_pdfs_total": len(dataset),
+            "selected_pdfs_total": len(selected_entries),
+            "run_kind": run_kind,
+        },
+    )
     deleted_runs = _cleanup_obsolete_auto_runs(
         runs_root=DEFAULT_OUTPUT_ROOT,
         current_git_revision=git_revision,
