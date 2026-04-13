@@ -186,6 +186,12 @@ LOG_CITATIONS_LEVEL = os.getenv("LOG_CITATIONS_LEVEL", "INFO")
 LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
+# === GROBID (experimental) ===
+# Instancia local de GROBID para pruebas. No afecta al flujo principal.
+# Ver: docs/grobid_experiment.md
+GROBID_BASE_URL = os.getenv("GROBID_BASE_URL", "http://localhost:8070")
+GROBID_TIMEOUT = int(os.getenv("GROBID_TIMEOUT", "120"))
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

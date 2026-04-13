@@ -22,3 +22,10 @@ node_modules/
 .pip-cache/
 .claude
 /design-system
+
+# --- ARTEFACTOS DE DEBUG Y REGRESIÓN (nunca deben ir a git) ---
+tmp/reference_regression/
+tmp/reference_debug/
+tmp/grobid_debug/
+tmp/reference_anchor_baseline_*/
+*.zip
