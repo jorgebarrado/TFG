@@ -9,8 +9,13 @@ No modifica ni reemplaza ningún extractor existente. No afecta al flujo princip
 ## Qué hace esta integración
 
 1. Envía un PDF a una instancia local de GROBID.
-2. Recibe el TEI XML resultante.
-3. Parsea el XML a una estructura Python/JSON sencilla (metadatos, secciones, referencias, citas inline).
+2. Llama al endpoint seleccionado:
+   - `/api/processFulltextDocument` (`--mode fulltext`)
+   - `/api/processReferences` (`--mode references`)
+   - ambos (`--mode both`)
+3. Parsea el XML a una estructura Python/JSON sencilla.
+   - `fulltext`: metadatos, secciones, referencias, citas inline.
+   - `references`: estructura centrada en bibliografía (referencias + campos detectados).
 4. Guarda los artefactos crudos y parseados para inspección manual.
 5. Opcionalmente ejecuta el extractor actual del proyecto sobre el mismo PDF y genera una comparación numérica básica.
 
@@ -68,12 +73,25 @@ O pasar `--grobid-url` directamente al comando.
 Desde `tfg_project/`:
 
 ```bash
-# Prueba básica sobre un PDF
-python manage.py debug_grobid --pdf ../tfg_project/citations/static/citations/PDFs-Reales/tu_paper.pdf
+# Prueba básica (default: fulltext)
+python manage.py debug_grobid \
+    --pdf ../tfg_project/citations/static/citations/PDFs-Reales/tu_paper.pdf \
+    --mode fulltext
+
+# Probar endpoint específico de bibliografía
+python manage.py debug_grobid \
+    --pdf ../tfg_project/citations/static/citations/PDFs-Reales/tu_paper.pdf \
+    --mode references
+
+# Ejecutar ambos endpoints en el mismo run
+python manage.py debug_grobid \
+    --pdf ../tfg_project/citations/static/citations/PDFs-Reales/tu_paper.pdf \
+    --mode both
 
 # Con comparación frente al extractor actual
 python manage.py debug_grobid \
     --pdf ../tfg_project/citations/static/citations/PDFs-Reales/tu_paper.pdf \
+    --mode both \
     --compare-current
 
 # Especificando el motor de extracción actual para la comparación
@@ -87,7 +105,34 @@ python manage.py debug_grobid \
     --pdf /ruta/absoluta/paper.pdf \
     --grobid-url http://localhost:8070 \
     --timeout 180
+
+# Ajustar warmup-retry para HuggingFace Space dormido
+python manage.py debug_grobid \
+    --pdf /ruta/absoluta/paper.pdf \
+    --grobid-url https://kermitt2-grobid.hf.space \
+    --warmup-retries 6 \
+    --warmup-wait 10
+
+# Desactivar warmup-retry explícitamente
+python manage.py debug_grobid \
+    --pdf /ruta/absoluta/paper.pdf \
+    --grobid-url https://kermitt2-grobid.hf.space \
+    --no-warmup-retry
 ```
+
+### Modos del experimento
+
+- `--mode fulltext`
+  - Llama a `/api/processFulltextDocument`.
+  - Útil cuando quieres evaluar extracción global del paper (metadatos, secciones, citas inline y bibliografía).
+- `--mode references`
+  - Llama a `/api/processReferences`.
+  - Útil cuando el foco principal es la bibliografía.
+  - El parseado se centra en referencias y campos bibliográficos detectados (`authors`, `title`, `doi`, `year`, `venue`, y `raw_citation` cuando exista).
+- `--mode both`
+  - Ejecuta ambos endpoints en el mismo run.
+  - Genera artefactos separados por prefijo para no mezclar resultados.
+  - El `summary.txt` incluye comparación rápida de conteos para decidir qué endpoint es más útil para bibliografía.
 
 ---
 
@@ -95,13 +140,19 @@ python manage.py debug_grobid \
 
 ### HuggingFace Space dormido (`huggingface_space_warming_up`)
 
-Cuando se usa `--grobid-url https://kermitt2-grobid.hf.space` y el Space está inactivo (se duerme tras ~15 min sin uso), tanto `/api/isalive` como `/api/processFulltextDocument` **devuelven HTTP 200 con una página HTML** en lugar de la respuesta esperada.
+Cuando se usa `--grobid-url https://kermitt2-grobid.hf.space` y el Space está inactivo (se duerme tras ~15 min sin uso), `/api/isalive` y los endpoints de extracción pueden devolver **HTTP 200 con una página HTML** en lugar de TEI.
 
-Esto se detecta como `error_type: huggingface_space_warming_up` y produce:
+Para este caso, `debug_grobid` aplica ahora un **warmup-retry automático y acotado**:
+- Solo se activa para URL `hf.space`/Hugging Face + respuesta HTML en `/api/isalive`
+- Defaults: `--warmup-retries 6`, `--warmup-wait 10`
+- Solo continúa a los endpoints de extracción cuando `/api/isalive` devuelve `true`
+- Si no llega a `true`, termina con fallo honesto (`huggingface_space_warming_up_timeout`)
+
+En fallo produce:
 - `error.json` con el tipo clasificado y preview del HTML recibido
 - `response_body.txt` con el body completo para inspección
 - `availability_check.json` con el resultado del check de `/api/isalive`
-- **NO** se generan `tei.xml` ni `parsed.json` (no hubo TEI real)
+- **NO** se generan artefactos de éxito (`tei.xml`/`parsed.json` o sus versiones prefijadas por modo)
 
 Lo más importante: el extractor actual del proyecto **sí funciona con normalidad** durante este fallo (GROBID es una capa de comparación, no parte del flujo principal).
 
@@ -116,18 +167,28 @@ Cada ejecución crea un subdirectorio en `tmp/grobid_debug/` con el formato `YYY
 ```
 tmp/grobid_debug/
 └── 20260412-153012_mi_paper/
-    ├── availability_check.json  # Resultado del check /api/isalive
-    ├── summary.txt              # Resumen legible en texto plano
+    ├── availability_check.json         # Resultado del check /api/isalive
+    ├── summary.txt                     # Resumen legible en texto plano
+    ├── current.json                    # Extractor actual (solo con --compare-current)
     │
-    │   # Solo cuando GROBID respondió con TEI válido:
-    ├── tei.xml                  # TEI XML crudo de GROBID
-    ├── parsed.json              # Estructura Python/JSON parseada
-    ├── current.json             # Extractor actual (solo con --compare-current)
-    └── comparison.json          # Comparación numérica (solo con --compare-current)
+    │   # mode=fulltext (o mode=references):
+    ├── tei.xml
+    ├── parsed.json
+    ├── comparison.json                 # si --compare-current
+    ├── error.json                      # si falla
+    ├── response_body.txt               # si falla con body disponible
     │
-    │   # Solo cuando GROBID falló:
-    ├── response_body.txt        # Body completo recibido (HTML u otro)
-    └── error.json               # Tipo de error, URL, Content-Type, preview
+    │   # mode=both (artefactos separados por prefijo):
+    ├── fulltext_tei.xml
+    ├── fulltext_parsed.json
+    ├── fulltext_error.json
+    ├── fulltext_response_body.txt
+    ├── references_tei.xml
+    ├── references_parsed.json
+    ├── references_error.json
+    ├── references_response_body.txt
+    ├── comparison_fulltext.json        # si --compare-current y fulltext OK
+    └── comparison_references.json      # si --compare-current y references OK
 ```
 
 ### Tipos de error (`error_type` en `error.json`)
@@ -135,6 +196,7 @@ tmp/grobid_debug/
 | error_type | Causa |
 |---|---|
 | `huggingface_space_warming_up` | HF Space dormido, devolvió HTML |
+| `huggingface_space_warming_up_timeout` | Warmup-retry agotado, `/api/isalive` nunca devolvió `true` |
 | `non_tei_html_response` | Otro origen devolvió HTML (proxy, landing page) |
 | `non_tei_response` | Respuesta sin `<TEI>` pero no HTML |
 | `invalid_response` | Respuesta inválida genérica |
@@ -149,11 +211,13 @@ El `tei.xml` real empieza siempre así:
 <?xml version="1.0" encoding="UTF-8"?>
 <TEI xmlns="http://www.tei-c.org/ns/1.0" ...>
 ```
-Si `response_body.txt` empieza por `<!DOCTYPE html` o `<html`, la URL no era un endpoint de GROBID activo.
+Si `response_body.txt` (o `fulltext_response_body.txt` / `references_response_body.txt` en `--mode both`) empieza por `<!DOCTYPE html` o `<html`, la URL no era un endpoint de GROBID activo.
 
 ---
 
-### Estructura de `parsed.json`
+### Estructura de parseo por modo
+
+`--mode fulltext` guarda `parsed.json` (o `fulltext_parsed.json` en `both`):
 
 ```json
 {
@@ -186,7 +250,29 @@ Si `response_body.txt` empieza por `<!DOCTYPE html` o `<html`, la URL no era un 
 }
 ```
 
-### Estructura de `comparison.json`
+`--mode references` guarda `parsed.json` (o `references_parsed.json` en `both`) con foco en bibliografía:
+
+```json
+{
+  "mode": "references",
+  "references": [
+    {
+      "id": "b0",
+      "title": "Título de la referencia",
+      "authors": ["Smith, John"],
+      "doi": "10.1234/example",
+      "year": 2020,
+      "venue": "Journal Name",
+      "raw_citation": "Smith J. ...",
+      "identifiers": {}
+    }
+  ],
+  "reference_count": 35,
+  "_warnings": []
+}
+```
+
+### Estructura de `comparison*.json`
 
 ```json
 {
@@ -222,15 +308,18 @@ Si `response_body.txt` empieza por `<!DOCTYPE html` o `<html`, la URL no era un 
 
 1. **Contexto de citas inline**: El parser extrae el texto del anchor de cada cita (`[1]`, `(Smith, 2020)`, etc.) pero no el fragmento de texto circundante, porque `xml.etree.ElementTree` no expone el elemento padre. Para obtener contexto completo habría que usar `lxml`.
 
-2. **HuggingFace Space poco fiable**: El Space público de GROBID se duerme tras ~15 min de inactividad y devuelve HTML con HTTP 200, lo que se detecta como `huggingface_space_warming_up`. Para uso estable usar Docker local.
+2. **Diferencias entre endpoints**: `processReferences` está optimizado para bibliografía y no debe esperarse que aporte metadatos globales del paper ni citas inline como `processFulltextDocument`.
 
-3. **Rendimiento**: GROBID puede tardar 10-60 segundos por PDF dependiendo del tamaño y del hardware. El timeout por defecto es 120 segundos.
+3. **HuggingFace Space poco fiable**: El Space público de GROBID se duerme tras ~15 min de inactividad y devuelve HTML con HTTP 200, lo que se detecta como `huggingface_space_warming_up`. Para uso estable usar Docker local.
+   Ahora existe warmup-retry automático en `debug_grobid`, pero no garantiza éxito si el Space no llega a exponer la API real.
 
-4. **grobid-client-python instalado pero no usado**: El proyecto tiene `grobid-client-python==0.0.5` en requirements.txt, pero se usa `requests` directamente para mayor control y transparencia.
+4. **Rendimiento**: GROBID puede tardar 10-60 segundos por PDF dependiendo del tamaño y del hardware. El timeout por defecto es 120 segundos.
 
-5. **Comparación de autores no normalizada**: La comparación entre GROBID y el extractor actual se basa principalmente en DOIs. La comparación por texto de referencia no se implementa aquí para evitar complejidad innecesaria.
+5. **grobid-client-python instalado pero no usado**: El proyecto tiene `grobid-client-python==0.0.5` en requirements.txt, pero se usa `requests` directamente para mayor control y transparencia.
 
-6. **Solo procesa un PDF a la vez**: Para procesar varios PDFs en batch, lanzar el comando varias veces o adaptar el extractor.
+6. **Comparación de autores no normalizada**: La comparación entre GROBID y el extractor actual se basa principalmente en DOIs. La comparación por texto de referencia no se implementa aquí para evitar complejidad innecesaria.
+
+7. **Solo procesa un PDF a la vez**: Para procesar varios PDFs en batch, lanzar el comando varias veces o adaptar el extractor.
 
 ---
 
