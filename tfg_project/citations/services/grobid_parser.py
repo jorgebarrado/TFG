@@ -195,6 +195,69 @@ def _extract_inline_citations(body: ET.Element) -> List[Dict[str, Any]]:
     return citations
 
 
+def _parse_tei_root(tei_xml: str) -> ET.Element:
+    """Parsea el XML y valida que la raíz sea <TEI>."""
+    try:
+        root = ET.fromstring(tei_xml)
+    except ET.ParseError as exc:
+        logger.error("Error parseando TEI XML de GROBID: %s", exc)
+        raise GrobidParseError(f"El input no es XML válido: {exc}") from exc
+
+    root_tag = root.tag
+    if "TEI" not in root_tag:
+        preview = tei_xml[:200]
+        raise GrobidParseError(
+            f"El documento XML no tiene <TEI> como raíz (raíz encontrada: {root_tag!r}). "
+            f"Preview: {preview!r}"
+        )
+    return root
+
+
+def _extract_references(root: ET.Element, *, include_raw_citation: bool = False) -> List[Dict[str, Any]]:
+    """
+    Extrae referencias desde listBibl.
+    Soporta biblStruct (habitual) y bibl (fallback mínimo).
+    """
+    references: List[Dict[str, Any]] = []
+    list_bibl = root.find(f".//{_tag('listBibl')}")
+    if list_bibl is None:
+        return references
+
+    for bs in list_bibl.findall(f"{_tag('biblStruct')}"):
+        ref = _parse_bibstruct(bs)
+        if include_raw_citation:
+            raw_note = bs.find(f".//{_tag('note')}[@type='raw_reference']")
+            if raw_note is None:
+                raw_note = bs.find(f".//{_tag('note')}[@type='raw']")
+            if raw_note is None:
+                raw_note = bs.find(f".//{_tag('note')}")
+            raw_citation = _text(raw_note)
+            if raw_citation:
+                ref["raw_citation"] = raw_citation
+        references.append(ref)
+
+    for bibl in list_bibl.findall(f"{_tag('bibl')}"):
+        raw_citation = _text(bibl)
+        if not raw_citation:
+            continue
+        ref_id = bibl.get(f"{{{XML_NS}}}id") or bibl.get("{http://www.w3.org/XML/1998/namespace}id") or ""
+        ref: Dict[str, Any] = {
+            "id": ref_id,
+            "title": "",
+            "authors": [],
+            "doi": None,
+            "year": None,
+            "venue": "",
+            "pages": "",
+            "identifiers": {},
+        }
+        if include_raw_citation:
+            ref["raw_citation"] = raw_citation
+        references.append(ref)
+
+    return references
+
+
 def parse_tei(tei_xml: str) -> Dict[str, Any]:
     """
     Parsea el TEI XML de GROBID y devuelve una estructura Python sencilla.
@@ -208,21 +271,7 @@ def parse_tei(tei_xml: str) -> Dict[str, Any]:
     """
     warnings: List[str] = []
 
-    try:
-        root = ET.fromstring(tei_xml)
-    except ET.ParseError as exc:
-        logger.error("Error parseando TEI XML de GROBID: %s", exc)
-        raise GrobidParseError(f"El input no es XML válido: {exc}") from exc
-
-    # Verificar que el elemento raíz es <TEI> (con o sin namespace).
-    # Protege contra XML bien formado que no es TEI (p.ej. HTML simple).
-    root_tag = root.tag  # puede ser "{http://www.tei-c.org/ns/1.0}TEI" o "TEI"
-    if "TEI" not in root_tag:
-        preview = tei_xml[:200]
-        raise GrobidParseError(
-            f"El documento XML no tiene <TEI> como raíz (raíz encontrada: {root_tag!r}). "
-            f"Preview: {preview!r}"
-        )
+    root = _parse_tei_root(tei_xml)
 
     # -------------------------------------------------------------------------
     # Metadatos del paper
@@ -280,13 +329,8 @@ def parse_tei(tei_xml: str) -> Dict[str, Any]:
     # -------------------------------------------------------------------------
     # Bibliografía (back > listBibl)
     # -------------------------------------------------------------------------
-    references: List[Dict[str, Any]] = []
-    list_bibl = root.find(f".//{_tag('listBibl')}")
-    if list_bibl is not None:
-        for bs in list_bibl.findall(f"{_tag('biblStruct')}"):
-            ref = _parse_bibstruct(bs)
-            references.append(ref)
-    else:
+    references = _extract_references(root, include_raw_citation=False)
+    if not references:
         warnings.append("No se encontró <listBibl> en el TEI XML (sin bibliografía).")
 
     # -------------------------------------------------------------------------
@@ -309,11 +353,99 @@ def parse_tei(tei_xml: str) -> Dict[str, Any]:
     )
 
     return {
+        "mode": "fulltext",
         "metadata": metadata,
         "sections": sections,
         "references": references,
         "inline_citations": inline_citations,
         "inline_citation_count": len(inline_citations),
+        "reference_count": len(references),
+        "_warnings": warnings,
+    }
+
+
+def parse_fulltext_tei(tei_xml: str) -> Dict[str, Any]:
+    """Alias explícito para parsear respuesta de /api/processFulltextDocument."""
+    return parse_tei(tei_xml)
+
+
+def parse_header_tei(tei_xml: str) -> Dict[str, Any]:
+    """
+    Parser para TEI de /api/processHeaderDocument.
+    Devuelve estructura simple de metadatos.
+    """
+    warnings: List[str] = []
+    root = _parse_tei_root(tei_xml)
+
+    title_el = root.find(
+        f".//{_tag('teiHeader')}//{_tag('titleStmt')}/{_tag('title')}"
+    )
+    if title_el is None:
+        title_el = root.find(f".//{_tag('analytic')}/{_tag('title')}")
+    title = _text(title_el)
+
+    authors: List[str] = []
+    source_desc = root.find(f".//{_tag('sourceDesc')}")
+    if source_desc is not None:
+        authors = _parse_authors(source_desc)
+    if not authors:
+        profile = root.find(f".//{_tag('profileDesc')}")
+        if profile is not None:
+            authors = _parse_authors(profile)
+
+    abstract_el = root.find(f".//{_tag('abstract')}")
+    abstract = _text(abstract_el) if abstract_el is not None else ""
+    if len(abstract) > _ABSTRACT_MAX_CHARS:
+        abstract = abstract[:_ABSTRACT_MAX_CHARS]
+        warnings.append(f"Abstract truncado a {_ABSTRACT_MAX_CHARS} caracteres.")
+
+    identifiers: Dict[str, str] = {}
+    doi: Optional[str] = None
+    for idno in root.findall(f".//{_tag('idno')}"):
+        id_type = (idno.get("type") or "").lower().strip() or "unknown"
+        id_val = _text(idno)
+        if not id_val:
+            continue
+        if id_type not in identifiers:
+            identifiers[id_type] = id_val
+        if id_type == "doi" and not doi:
+            doi = id_val
+
+    if not title:
+        warnings.append("GROBID no extrajo título del paper.")
+    if not authors:
+        warnings.append("GROBID no extrajo autores del paper.")
+
+    return {
+        "mode": "header",
+        "title": title,
+        "authors": authors,
+        "abstract": abstract,
+        "doi": doi,
+        "identifiers": identifiers,
+        "_warnings": warnings,
+    }
+
+
+def parse_references_tei(tei_xml: str, *, include_raw_citation: bool = True) -> Dict[str, Any]:
+    """
+    Parser para TEI de /api/processReferences.
+    Devuelve una estructura centrada en bibliografía.
+    """
+    warnings: List[str] = []
+    root = _parse_tei_root(tei_xml)
+    references = _extract_references(root, include_raw_citation=include_raw_citation)
+
+    if not references:
+        warnings.append("GROBID no encontró referencias bibliográficas en /api/processReferences.")
+
+    return {
+        "mode": "references",
+        "metadata": {},
+        "sections": [],
+        "references": references,
+        "inline_citations": [],
+        "inline_citation_count": 0,
         "reference_count": len(references),
         "_warnings": warnings,
     }
