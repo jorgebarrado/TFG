@@ -1,0 +1,829 @@
+{
+  "paper_slug": "2107_02194v2",
+  "pdf_name": "2107.02194v2.pdf",
+  "rows": [
+    {
+      "index": 0,
+      "raw_input": "A. Kitaev, “Fault-tolerant quantum computation by anyons,” Annals of Physics 303, 2–30 (2003), arXiv:quant-ph/9707021 .",
+      "refextract": {
+        "index": 0,
+        "raw_input": "A. Kitaev, “Fault-tolerant quantum computation by anyons,” Annals of Physics 303, 2–30 (2003), arXiv:quant-ph/9707021 .",
+        "title": "Fault-tolerant quantum computation by anyons",
+        "authors": [
+          "A. Kitaev"
+        ],
+        "year": 2003,
+        "doi": null,
+        "venue": "Ann. Phys.",
+        "pages": "2-30",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "quant-ph/9707021"
+          ],
+          "linemarker": [
+            "1"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] A. Kitaev, “Fault-tolerant quantum computation by anyons,” Annals of Physics 303, 2–30 (2003), arXiv:quant-ph/9707021 ."
+            ],
+            "author": [
+              "A. Kitaev"
+            ],
+            "title": [
+              "Fault-tolerant quantum computation by anyons"
+            ],
+            "journal_title": [
+              "Ann. Phys."
+            ],
+            "journal_volume": [
+              "303"
+            ],
+            "journal_year": [
+              "2003"
+            ],
+            "journal_page": [
+              "2-30"
+            ],
+            "journal_reference": [
+              "Ann. Phys. 303 (2003) 2-30"
+            ],
+            "misc": [
+              "arXiv:"
+            ],
+            "reportnumber": [
+              "quant-ph/9707021"
+            ],
+            "year": [
+              "2003"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 0,
+        "raw_input": "A. Kitaev, “Fault-tolerant quantum computation by anyons,” Annals of Physics 303, 2–30 (2003), arXiv:quant-ph/9707021 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 0,
+        "raw_input": "A. Kitaev, “Fault-tolerant quantum computation by anyons,” Annals of Physics 303, 2–30 (2003), arXiv:quant-ph/9707021 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 1,
+      "raw_input": "D. Poulin, “Stabilizer formalism for operator quantum error correction,” Physical Review Letters 95, 230504 (2005), arXiv:quant-ph/0508131 .",
+      "refextract": {
+        "index": 1,
+        "raw_input": "D. Poulin, “Stabilizer formalism for operator quantum error correction,” Physical Review Letters 95, 230504 (2005), arXiv:quant-ph/0508131 .",
+        "title": "Stabilizer formalism for operator quantum error correction",
+        "authors": [
+          "D. Poulin"
+        ],
+        "year": 2005,
+        "doi": null,
+        "venue": "Phys. Rev. Lett.",
+        "pages": "230504",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "quant-ph/0508131"
+          ],
+          "linemarker": [
+            "2"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] D. Poulin, “Stabilizer formalism for operator quantum error correction,” Physical Review Letters 95, 230504 (2005), arXiv:quant-ph/0508131 ."
+            ],
+            "author": [
+              "D. Poulin"
+            ],
+            "title": [
+              "Stabilizer formalism for operator quantum error correction"
+            ],
+            "journal_title": [
+              "Phys. Rev. Lett."
+            ],
+            "journal_volume": [
+              "95"
+            ],
+            "journal_year": [
+              "2005"
+            ],
+            "journal_page": [
+              "230504"
+            ],
+            "journal_reference": [
+              "Phys. Rev. Lett. 95 (2005) 230504"
+            ],
+            "misc": [
+              "arXiv:"
+            ],
+            "reportnumber": [
+              "quant-ph/0508131"
+            ],
+            "year": [
+              "2005"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 1,
+        "raw_input": "D. Poulin, “Stabilizer formalism for operator quantum error correction,” Physical Review Letters 95, 230504 (2005), arXiv:quant-ph/0508131 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 1,
+        "raw_input": "D. Poulin, “Stabilizer formalism for operator quantum error correction,” Physical Review Letters 95, 230504 (2005), arXiv:quant-ph/0508131 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 2,
+      "raw_input": "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara, “Subsystem surface codes with three-qubit check operators,” Quantum Information and Computation 13, 963–985 (2013), arXiv:1207.1443 .",
+      "refextract": {
+        "index": 2,
+        "raw_input": "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara, “Subsystem surface codes with three-qubit check operators,” Quantum Information and Computation 13, 963–985 (2013), arXiv:1207.1443 .",
+        "title": "Subsystem surface codes with three-qubit check operators",
+        "authors": [
+          "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara"
+        ],
+        "year": 2013,
+        "doi": null,
+        "venue": "Quantum Inf. Comput.",
+        "pages": "963-985",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "arXiv:1207.1443"
+          ],
+          "linemarker": [
+            "3"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara, “Subsystem surface codes with three-qubit check operators,” Quantum Information and Computation 13, 963–985 (2013), arXiv:1207.1443 ."
+            ],
+            "author": [
+              "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara"
+            ],
+            "title": [
+              "Subsystem surface codes with three-qubit check operators"
+            ],
+            "journal_title": [
+              "Quantum Inf. Comput."
+            ],
+            "journal_volume": [
+              "13"
+            ],
+            "journal_year": [
+              "2013"
+            ],
+            "journal_page": [
+              "963-985"
+            ],
+            "journal_reference": [
+              "Quantum Inf. Comput. 13 (2013) 963-985"
+            ],
+            "reportnumber": [
+              "arXiv:1207.1443"
+            ],
+            "year": [
+              "2013"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 2,
+        "raw_input": "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara, “Subsystem surface codes with three-qubit check operators,” Quantum Information and Computation 13, 963–985 (2013), arXiv:1207.1443 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 2,
+        "raw_input": "S. Bravyi, G. Duclos-Cianci, D. Poulin, and M. Suchara, “Subsystem surface codes with three-qubit check operators,” Quantum Information and Computation 13, 963–985 (2013), arXiv:1207.1443 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 3,
+      "raw_input": "H. Bombin, “Topological subsystem codes,” Physical Review A 81, 032301 (2010), arXiv:0908.4246 . 17",
+      "refextract": {
+        "index": 3,
+        "raw_input": "H. Bombin, “Topological subsystem codes,” Physical Review A 81, 032301 (2010), arXiv:0908.4246 . 17",
+        "title": "Topological subsystem codes",
+        "authors": [
+          "H. Bombin"
+        ],
+        "year": 2010,
+        "doi": null,
+        "venue": "Phys. Rev. A",
+        "pages": "032301",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "arXiv:0908.4246"
+          ],
+          "linemarker": [
+            "4"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] H. Bombin, “Topological subsystem codes,” Physical Review A 81, 032301 (2010), arXiv:0908.4246 . 17"
+            ],
+            "author": [
+              "H. Bombin"
+            ],
+            "title": [
+              "Topological subsystem codes"
+            ],
+            "journal_title": [
+              "Phys. Rev. A"
+            ],
+            "journal_volume": [
+              "81"
+            ],
+            "journal_year": [
+              "2010"
+            ],
+            "journal_page": [
+              "032301"
+            ],
+            "journal_reference": [
+              "Phys. Rev. A 81 (2010) 032301"
+            ],
+            "reportnumber": [
+              "arXiv:0908.4246"
+            ],
+            "misc": [
+              "17"
+            ],
+            "year": [
+              "2010"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 3,
+        "raw_input": "H. Bombin, “Topological subsystem codes,” Physical Review A 81, 032301 (2010), arXiv:0908.4246 . 17",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 3,
+        "raw_input": "H. Bombin, “Topological subsystem codes,” Physical Review A 81, 032301 (2010), arXiv:0908.4246 . 17",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 4,
+      "raw_input": "D. Bacon, “Operator quantum error-correcting subsystems for self-correcting quantum memories,” Physical Review A 73, 012340 (2006), arXiv:quant-ph/0506023 .",
+      "refextract": {
+        "index": 4,
+        "raw_input": "D. Bacon, “Operator quantum error-correcting subsystems for self-correcting quantum memories,” Physical Review A 73, 012340 (2006), arXiv:quant-ph/0506023 .",
+        "title": "Operator quantum error-correcting subsystems for self-correcting quantum memories",
+        "authors": [
+          "D. Bacon"
+        ],
+        "year": 2006,
+        "doi": null,
+        "venue": "Phys. Rev. A",
+        "pages": "012340",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "quant-ph/0506023"
+          ],
+          "linemarker": [
+            "5"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] D. Bacon, “Operator quantum error-correcting subsystems for self-correcting quantum memories,” Physical Review A 73, 012340 (2006), arXiv:quant-ph/0506023 ."
+            ],
+            "author": [
+              "D. Bacon"
+            ],
+            "title": [
+              "Operator quantum error-correcting subsystems for self-correcting quantum memories"
+            ],
+            "journal_title": [
+              "Phys. Rev. A"
+            ],
+            "journal_volume": [
+              "73"
+            ],
+            "journal_year": [
+              "2006"
+            ],
+            "journal_page": [
+              "012340"
+            ],
+            "journal_reference": [
+              "Phys. Rev. A 73 (2006) 012340"
+            ],
+            "misc": [
+              "arXiv:"
+            ],
+            "reportnumber": [
+              "quant-ph/0506023"
+            ],
+            "year": [
+              "2006"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 4,
+        "raw_input": "D. Bacon, “Operator quantum error-correcting subsystems for self-correcting quantum memories,” Physical Review A 73, 012340 (2006), arXiv:quant-ph/0506023 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 4,
+        "raw_input": "D. Bacon, “Operator quantum error-correcting subsystems for self-correcting quantum memories,” Physical Review A 73, 012340 (2006), arXiv:quant-ph/0506023 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 5,
+      "raw_input": "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea, K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman, “Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes,” Physical Re- view B 95, 235305 (2017), arXiv:1610.05289 .",
+      "refextract": {
+        "index": 5,
+        "raw_input": "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea, K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman, “Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes,” Physical Re- view B 95, 235305 (2017), arXiv:1610.05289 .",
+        "title": "Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes",
+        "authors": [
+          "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea"
+        ],
+        "year": 2017,
+        "doi": null,
+        "venue": "Phys. Rev. B",
+        "pages": "235305",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "arXiv:1610.05289"
+          ],
+          "linemarker": [
+            "6"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea, K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman, “Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes,” Physical Re- view B 95, 235305 (2017), arXiv:1610.05289 ."
+            ],
+            "author": [
+              "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea"
+            ],
+            "misc": [
+              "K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman"
+            ],
+            "title": [
+              "Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes"
+            ],
+            "journal_title": [
+              "Phys. Rev. B"
+            ],
+            "journal_volume": [
+              "95"
+            ],
+            "journal_year": [
+              "2017"
+            ],
+            "journal_page": [
+              "235305"
+            ],
+            "journal_reference": [
+              "Phys. Rev. B 95 (2017) 235305"
+            ],
+            "reportnumber": [
+              "arXiv:1610.05289"
+            ],
+            "year": [
+              "2017"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 5,
+        "raw_input": "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea, K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman, “Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes,” Physical Re- view B 95, 235305 (2017), arXiv:1610.05289 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 5,
+        "raw_input": "T. Karzig, C. Knapp, R. M. Lutchyn, P. Bonderson, M. B. Hastings, C. Nayak, J. Alicea, K. Flens- berg, S. Plugge, Y. Oreg, C. M. Marcus, and M. H. Freedman, “Scalable designs for quasiparticle- poisoning-protected topological quantum computation with majorana zero modes,” Physical Re- view B 95, 235305 (2017), arXiv:1610.05289 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 6,
+      "raw_input": "Y. Li, X. Chen, and M. P. A. Fisher, “Quantum zeno eﬀect and the many-body entanglement transition,” Phys. Rev. B 98, 205136 (2018), arXiv:1808.06134 .",
+      "refextract": {
+        "index": 6,
+        "raw_input": "Y. Li, X. Chen, and M. P. A. Fisher, “Quantum zeno eﬀect and the many-body entanglement transition,” Phys. Rev. B 98, 205136 (2018), arXiv:1808.06134 .",
+        "title": "Quantum zeno effect and the many-body entanglement transition",
+        "authors": [
+          "Y. Li, X. Chen, and M. P. A. Fisher"
+        ],
+        "year": 2018,
+        "doi": null,
+        "venue": "Phys. Rev. B",
+        "pages": "205136",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "arXiv:1808.06134"
+          ],
+          "linemarker": [
+            "7"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Y. Li, X. Chen, and M. P. A. Fisher, “Quantum zeno eﬀect and the many-body entanglement transition,” Phys. Rev. B 98, 205136 (2018), arXiv:1808.06134 ."
+            ],
+            "author": [
+              "Y. Li, X. Chen, and M. P. A. Fisher"
+            ],
+            "title": [
+              "Quantum zeno effect and the many-body entanglement transition"
+            ],
+            "journal_title": [
+              "Phys. Rev. B"
+            ],
+            "journal_volume": [
+              "98"
+            ],
+            "journal_year": [
+              "2018"
+            ],
+            "journal_page": [
+              "205136"
+            ],
+            "journal_reference": [
+              "Phys. Rev. B 98 (2018) 205136"
+            ],
+            "reportnumber": [
+              "arXiv:1808.06134"
+            ],
+            "year": [
+              "2018"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 6,
+        "raw_input": "Y. Li, X. Chen, and M. P. A. Fisher, “Quantum zeno eﬀect and the many-body entanglement transition,” Phys. Rev. B 98, 205136 (2018), arXiv:1808.06134 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 6,
+        "raw_input": "Y. Li, X. Chen, and M. P. A. Fisher, “Quantum zeno eﬀect and the many-body entanglement transition,” Phys. Rev. B 98, 205136 (2018), arXiv:1808.06134 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 7,
+      "raw_input": "B. Skinner, J. Ruhman, and A. Nahum, “Measurement-induced phase transitions in the dynamics of entanglement,” Phys. Rev. X 9, 031009 (2019), arXiv:1808.05953 .",
+      "refextract": {
+        "index": 7,
+        "raw_input": "B. Skinner, J. Ruhman, and A. Nahum, “Measurement-induced phase transitions in the dynamics of entanglement,” Phys. Rev. X 9, 031009 (2019), arXiv:1808.05953 .",
+        "title": "Measurement-induced phase transitions in the dynamics of entanglement",
+        "authors": [
+          "B. Skinner, J. Ruhman, and A. Nahum"
+        ],
+        "year": 2019,
+        "doi": null,
+        "venue": "Phys. Rev.",
+        "pages": "031009",
+        "type": "journal",
+        "identifiers": {
+          "reportnumber": [
+            "arXiv:1808.05953"
+          ],
+          "linemarker": [
+            "8"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] B. Skinner, J. Ruhman, and A. Nahum, “Measurement-induced phase transitions in the dynamics of entanglement,” Phys. Rev. X 9, 031009 (2019), arXiv:1808.05953 ."
+            ],
+            "author": [
+              "B. Skinner, J. Ruhman, and A. Nahum"
+            ],
+            "title": [
+              "Measurement-induced phase transitions in the dynamics of entanglement"
+            ],
+            "journal_title": [
+              "Phys. Rev."
+            ],
+            "journal_volume": [
+              "X9"
+            ],
+            "journal_year": [
+              "2019"
+            ],
+            "journal_page": [
+              "031009"
+            ],
+            "journal_reference": [
+              "Phys. Rev. X9 (2019) 031009"
+            ],
+            "reportnumber": [
+              "arXiv:1808.05953"
+            ],
+            "year": [
+              "2019"
+            ]
+          }
+        ],
+        "warnings": [],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 7,
+        "raw_input": "B. Skinner, J. Ruhman, and A. Nahum, “Measurement-induced phase transitions in the dynamics of entanglement,” Phys. Rev. X 9, 031009 (2019), arXiv:1808.05953 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 7,
+        "raw_input": "B. Skinner, J. Ruhman, and A. Nahum, “Measurement-induced phase transitions in the dynamics of entanglement,” Phys. Rev. X 9, 031009 (2019), arXiv:1808.05953 .",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,321 @@
+{
+  "paper_slug": "2103_02202v3",
+  "pdf_name": "2103.02202v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2103.02202v3.pdf",
+  "extractor": "citations.services.reader_data.extract_pdf_references",
+  "extractor_stats": {
+    "pages_total": 26,
+    "references_total": 29,
+    "dois_total": 15,
+    "references_numbered": true,
+    "references_header_found": true,
+    "citation_style": "numeric",
+    "max_reference_index": 30,
+    "bibliography_start_page": 23
+  },
+  "warnings": [],
+  "input_quality": {
+    "primary_bucket": "clean_input",
+    "active_issue_buckets": [],
+    "issue_flags": {
+      "numeric_noise": false,
+      "likely_fused_references": false,
+      "small_reference_set": false,
+      "low_alpha_or_short_noise": false,
+      "header_not_found_fallback": false
+    },
+    "paper_warning_count": 0,
+    "paper_warnings": [],
+    "reference_count": 29,
+    "extractor_references_total": 29,
+    "warning_counts": {
+      "empty_raw_reference": 0,
+      "very_short_reference": 1,
+      "very_long_reference": 1,
+      "starts_with_numeric_noise": 0,
+      "many_semicolon_segments": 0,
+      "low_alpha_content": 1
+    },
+    "warning_ratios": {
+      "empty_raw_reference": 0.0,
+      "very_short_reference": 0.034482758620689655,
+      "very_long_reference": 0.034482758620689655,
+      "starts_with_numeric_noise": 0.0,
+      "many_semicolon_segments": 0.0,
+      "low_alpha_content": 0.034482758620689655,
+      "short_or_low_alpha_combined": 0.06896551724137931
+    },
+    "quality_notes": [
+      "No strong degradation signals detected in raw reference input."
+    ],
+    "degraded_input": false
+  },
+  "raw_references": [
+    {
+      "index": 0,
+      "source_index": 1,
+      "raw_input": "Scott Aaronson and Daniel Gottesman. Improved simulation of stabilizer circuits. Physical Review A, 70(5):052328, 2004. DOI: 10.1103/PhysRevA.70.052328.",
+      "extractor_doi": "10.1103/physreva.70.052328",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 1,
+      "source_index": 2,
+      "raw_input": "Thomas Alexander, Lev Bishop, Andrew Cross, Jay Gambetta, Ali Javadi-Abhari, Blake Johnson, and John Smolin. \"a new openqasm for a new era of dynamic circuits\". https://medium.com/ qiskit/a-new-openqasm-for-a-new-era-of-dynamic-circuits-87f031cac49, 2020. Ac- cessed: 2021-01-26.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 2,
+      "source_index": 3,
+      "raw_input": "Simon Anders and Hans J Briegel. Fast simulation of stabilizer circuits using a graph-state representation. Physical Review A, 73(2):022334, 2006. DOI: 10.1103/PhysRevA.73.022334. Accepted in Quantum 2021-06-16, click title to verify 23",
+      "extractor_doi": "10.1103/physreva.73.022334",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 3,
+      "source_index": 4,
+      "raw_input": "Dave Bacon. Operator quantum error-correcting subsystems for self-correcting quantum memo- ries. Physical Review A, 73(1):012340, 2006. DOI: 10.1103/PhysRevA.73.012340.",
+      "extractor_doi": "10.1103/physreva.73.012340",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 4,
+      "source_index": 5,
+      "raw_input": "Sergey Bravyi and Dmitri Maslov. Hadamard-free circuits expose the structure of the cliﬀord group. arXiv preprint arXiv:2003.09412, 2020. URL https://arxiv.org/abs/2003.09412.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 5,
+      "source_index": 6,
+      "raw_input": "Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard. Simulation of quantum circuits by low-rank stabilizer decompositions. Quantum, 3:181, 2019. DOI: 10.22331/q-2019-09-02-181.",
+      "extractor_doi": "10.22331/q-2019-09-02-181",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 6,
+      "source_index": 7,
+      "raw_input": "Kaifeng Bu and Dax Enshan Koh. Eﬃcient classical simulation of cliﬀord circuits with non- stabilizer input states. Physical review letters, 123(17):170502, 2019. DOI: 10.1103/Phys- RevLett.123.170502.",
+      "extractor_doi": "10.1103/phys-",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 7,
+      "source_index": 8,
+      "raw_input": "Rui Chao, Michael E Beverland, Nicolas Delfosse, and Jeongwan Haah. Optimization of the surface code design for majorana-based qubits. Quantum, 4:352, 2020. DOI: 10.22331/q-2020-10-28-352.",
+      "extractor_doi": "10.22331/q-2020-10-28-352",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 8,
+      "source_index": 9,
+      "raw_input": "Qiskit Contributors. Qiskit: An open-source framework for quantum computing. 2019. DOI:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 9,
+      "source_index": 10,
+      "raw_input": "5281/zenodo.2562110.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 10,
+      "source_index": 10,
+      "raw_input": "A. G. Fowler, M. Mariantoni, J. M. Martinis, and A. N. Cleland. Surface codes: Towards practical large-scale quantum computation. Phys. Rev. A, 86:032324, 2012. URL https://doi.org/10. 1103/PhysRevA.86.032324. arXiv:1208.0928.",
+      "extractor_doi": "10",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 11,
+      "source_index": 11,
+      "raw_input": "Craig Gidney and Austin G Fowler. Eﬃcient magic state factories with a catalyzed |ccz⟩to 2|t⟩ transformation. Quantum, 3:135, 2019. DOI: 10.22331/q-2019-04-30-135.",
+      "extractor_doi": "10.22331/q-2019-04-30-135",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 12,
+      "source_index": 12,
+      "raw_input": "Craig Gidney, Austin Fowler, and Michael Newman. Informal private conversations about simu- lation bottlenecks, 2021.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 13,
+      "source_index": 13,
+      "raw_input": "Daniel Gottesman. Stabilizer codes and quantum error correction. arXiv preprint quant- ph/9705052, 1997. URL https://arxiv.org/abs/quant-ph/9705052.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 14,
+      "source_index": 14,
+      "raw_input": "David Gross. Hudson’s theorem for ﬁnite-dimensional quantum systems. Journal of mathematical physics, 47(12):122107, 2006. DOI: 10.1063/1.2393152.",
+      "extractor_doi": "10.1063/1.2393152",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 15,
+      "source_index": 15,
+      "raw_input": "Clare Horsman, Austin G Fowler, Simon Devitt, and Rodney Van Meter. Surface code quantum computing by lattice surgery. New Journal of Physics, 14(12):123011, 2012. DOI: 10.1088/1367- 2630/14/12/123011.",
+      "extractor_doi": "10.1088/1367-",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 16,
+      "source_index": 16,
+      "raw_input": "Jakob Nielsen Hořeňovský. \"response times: The 3 important limits\". https://www.nngroup. com/articles/response-times-3-important-limits/, 1993. Accessed: 2021-01-26.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 17,
+      "source_index": 17,
+      "raw_input": "Martin Hořeňovský. \"generating random numbers using c++ standard library: the problems\". https://codingnest.com/ generating-random-numbers-using-c-standard-library-the-problems/, 2020. Accessed: 2021-01-26.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 18,
+      "source_index": 18,
+      "raw_input": "\"Yack\" (https://quantumcomputing.stackexchange.com/users/11887/yack). An- swer to \"how many n-qubit stabilizer states are there?\". Quantum Stack Ex- change, 2020. URL https://quantumcomputing.stackexchange.com/a/11781/119. URL:https://quantumcomputing.stackexchange.com/a/11781/119 (version: 2021-01-27).",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 19,
+      "source_index": 20,
+      "raw_input": "Yifei Huang and Peter Love. Feynman-path-type simulation using stabilizer projector decomposi- tion of unitaries. Physical Review A, 103(2), February 2021. DOI: 10.1103/physreva.103.022428. URL https://doi.org/10.1103/physreva.103.022428.",
+      "extractor_doi": "10.1103/physreva.103.022428",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 20,
+      "source_index": 21,
+      "raw_input": "Intel. Intel intrinsics guide (_mm256_and_si256). https://software.intel.com/sites/ landingpage/IntrinsicsGuide/#text=_mm256_and_si256&expand=301, 2021. Accessed: 2021- 01-26.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 21,
+      "source_index": 22,
+      "raw_input": "Angela Karanjai, Joel J Wallman, and Stephen D Bartlett. Contextuality bounds the eﬃciency of classical simulation of quantum processes. arXiv preprint arXiv:1802.07744, 2018. URL https: //arxiv.org/abs/1802.07744.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 22,
+      "source_index": 23,
+      "raw_input": "Emanuel Knill. Quantum computing with realistically noisy devices. Nature, 434(7029):39–44, 2005. DOI: 10.1038/nature03350. Accepted in Quantum 2021-06-16, click title to verify 24",
+      "extractor_doi": "10.1038/nature03350",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 23,
+      "source_index": 24,
+      "raw_input": "Shota Nagayama, Austin G Fowler, Dominic Horsman, Simon J Devitt, and Rodney Van Meter. Surface code error correction on a defective lattice. New Journal of Physics, 19(2):023050, 2017. DOI: 10.1088/1367-2630/aa5918.",
+      "extractor_doi": "10.1088/1367-2630/aa5918",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 24,
+      "source_index": 25,
+      "raw_input": "Jakob Nielsen. Usability engineering. Morgan Kaufmann, 1994.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 25,
+      "source_index": 26,
+      "raw_input": "Peter Norvig. \"approximate timing for various operations on a typical pc\". http://norvig.com/ 21-days.html#answers, 2014. Accessed: 2021-01-26.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 26,
+      "source_index": 28,
+      "raw_input": "Quantum AI team and collaborators. Cirq, October 2020. URL https://doi.org/10.5281/ zenodo.4062499.",
+      "extractor_doi": "10.5281/",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 27,
+      "source_index": 29,
+      "raw_input": "Matthew Ware, Guilhem Ribeill, Diego Riste, Colm Ryan, Blake Johnson, and Marcus P da Silva. Experimental pauli-frame randomization on a superconducting qubit. In APS March Meeting Abstracts, volume 2017, pages L46–004, 2017. DOI: 10.1103/PhysRevA.103.042604.",
+      "extractor_doi": "10.1103/physreva.103.042604",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 28,
+      "source_index": 30,
+      "raw_input": "Wikipedia. Advanced Vector Extensions — Wikipedia, the free encyclopedia. http://en. wikipedia.org/w/index.php?title=Advanced%20Vector%20Extensions&oldid=1021841294, 2021. [Online; accessed 11-May-2021]. A Short Usage Examples A.1 (Command Line) Sample a noisy repetition code 1024 times echo -e \" REPEAT 20 {\\n X_ERROR(0.01) 0 1 2 3 4 5 6 7 8 9 10\\n CNOT 0 1 2 3 4 5 6 7 8 9\\n CNOT 10 9 8 7 6 5 4 3 2 1\\n MR 1 3 5 7 9\\n } \" | ./stim --sample=1024 A.2 (Python) Sample a noisy repetition code 1024 times import stim distance = 5 rounds = 20 bit_flip_rate_per_round = 0.01 qubits = range(2 * distance + 1) # Build circuit. c = stim.Circuit() c.append_operation(\"X_ERROR\", qubits, bit_flip_rate_per_round) c.append_operation(\"CNOT\", qubits[:-1]) c.append_operation(\"CNOT\", qubits[::-1][:-1]) c.append_operation(\"MR\", qubits[1::2]) c *= rounds # Collect and print samples. sampler = c.compile_sampler() samples = sampler.sample(1024) for sample in samples: print(sample) A.3 (Python) Interactive quantum teleportation Accepted in Quantum 2021-06-16, click title to verify 25 import stim s = stim.TableauSimulator() # Share EPR pair. s.h(1) s.cnot(1, 9) # Prepare state to teleport. s.h(0) s.s(0) # Alice measurements. s.cnot(0, 1) s.h(0) x, z = s.measure_many(1, 0) # Bob corrections. if x: s.x(9) if z: s.z(9) # Check received correctly by uncomputing preparation. s.s_dag(9) s.h(9) should_be_false = s.measure(9) print(f\"Alice got {x}, {z}. Bob uncomputed to {should_be_false}\") assert should_be_false == False A.4 (Python) Algebraic manipulations import stim t = stim.Tableau.random(10) t_inverse = t**-1 assert t * t_inverse == stim.Tableau(10) assert (t**1000000) * (t_inverse**500000)**2 == stim.Tableau(10) x5: stim.PauliString = t.x_output(5) z6: stim.PauliString = t.z_output(6) assert t_inverse(x5 * z6) == stim.PauliString(\"+_____XZ___\") s = stim.TableauSimulator() s.set_inverse_tableau(t) stabilizers = s.canonical_stabilizers() assert stabilizers[0].commutes(stabilizers[1]) Accepted in Quantum 2021-06-16, click title to verify 26",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_long_reference"
+      ]
+    }
+  ]
+}

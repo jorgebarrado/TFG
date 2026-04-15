@@ -1,0 +1,98 @@
+{
+  "paper_slug": "2103_02202v3",
+  "pdf_name": "2103.02202v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2103.02202v3.pdf",
+  "input_bucket": "explicit_override",
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "notes": [
+    "processCitationList returned 1 parsed references for 29 inputs."
+  ],
+  "summary": {
+    "parser": "grobid_citation_list",
+    "status": "ok",
+    "total_references": 29,
+    "title_non_empty": 1,
+    "authors_non_empty": 1,
+    "year_non_empty": 1,
+    "doi_non_empty": 1,
+    "almost_empty": 28,
+    "observations": [
+      "processCitationList returned 1 parsed references for 29 inputs.",
+      "Title coverage is low.",
+      "A large share of entries remained close to raw text."
+    ]
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "(Python) Sample a noisy repetition code 1024 times import stim distance = 5 rounds = 20 bit_flip_rate_per_round = 0.01 qubits = range(2 * distance + 1) # Build circuit. c = stim.Circuit() c.append_operation(\"X_ERROR\", qubits, bit_flip_rate_per_round) c.append_operation(\"CNOT",
+        "authors": [
+          "Aaronson, Scott",
+          "Gottesman, Daniel",
+          "Thomas Alexander, ;",
+          "Bishop, Lev",
+          "Cross, Andrew",
+          "Gambetta, Jay",
+          "Javadi-Abhari, Ali",
+          "Johnson, Blake",
+          "Smolin, John",
+          ";",
+          "Anders, Simon",
+          "Briegel, Hans J",
+          "Bravyi, Sergey",
+          "Maslov ; Sergey, Dmitri",
+          "Bravyi, Dan",
+          "Browne, Padraic",
+          "Calpin, Earl",
+          "Campbell, David",
+          "Gosset, Mark",
+          "Howard, ; Rui",
+          "Chao, Michael E",
+          "Beverland, Nicolas",
+          "Delfosse, Jeongwan",
+          "Haah, Craig",
+          "Gidney, Austin G",
+          "Fowler, Craig",
+          "Gidney, Austin",
+          "Fowler, Michael",
+          "Newman ; Clare Horsman, Austin G",
+          "Fowler, Simon",
+          "Devitt, Rodney",
+          "Van Meter, Martin",
+          "Hořeňovský, Angela",
+          "Karanjai, Joel J",
+          "Wallman, Stephen D",
+          "Bartlett ; Austin G Fowler, Dominic",
+          "Horsman, Simon J",
+          "Devitt, Rodney",
+          "Van Meter ; Matthew Ware, Guilhem",
+          "Ribeill, Diego",
+          "Riste, Colm",
+          "Ryan, Blake",
+          "Johnson, Marcus P Da",
+          "Silva"
+        ],
+        "doi": "10.1103/PhysRevA.70.052328",
+        "year": 1993,
+        "venue": "",
+        "pages": "46–50",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.70.052328",
+          "arxiv": "arXiv:2003.09412",
+          "": "qubits[1::2"
+        },
+        "raw_citation": "arXiv preprint"
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 1,
+    "_warnings": []
+  }
+}

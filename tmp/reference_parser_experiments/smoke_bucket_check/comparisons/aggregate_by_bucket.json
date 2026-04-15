@@ -1,0 +1,371 @@
+{
+  "run_id": "smoke_bucket_check",
+  "bucket_order": [
+    "clean_input",
+    "numeric_noise",
+    "likely_fused_references",
+    "small_reference_set",
+    "low_alpha_or_short_noise",
+    "header_not_found_fallback",
+    "mixed_issues"
+  ],
+  "non_empty_buckets": [
+    "clean_input"
+  ],
+  "buckets": {
+    "clean_input": {
+      "paper_count": 1,
+      "reference_count_total": 37,
+      "papers": [
+        "2017-CT-development-computational-thinking_RG.pdf"
+      ],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "ok",
+          "total_references": 37,
+          "title_non_empty": 37,
+          "authors_non_empty": 13,
+          "year_non_empty": 37,
+          "doi_non_empty": 17,
+          "almost_empty": 0,
+          "observations": [
+            "Executed with refextract string mode over already segmented references.",
+            "Refextract required a local magic shim because libmagic is not installed on this Windows environment."
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unavailable",
+          "total_references": 37,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 37,
+          "observations": [
+            "AnyStyle was not executed because Ruby/anystyle-cli is absent.",
+            "anystyle status: unavailable",
+            "A large share of entries remained close to raw text.",
+            "anystyle status: unavailable",
+            "A large share of entries remained close to raw text."
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unavailable",
+          "total_references": 37,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 37,
+          "observations": [
+            "LLM prompt was generated but no API call was made.",
+            "llm status: unavailable",
+            "A large share of entries remained close to raw text.",
+            "llm status: unavailable",
+            "A large share of entries remained close to raw text."
+          ]
+        }
+      ],
+      "observations": [
+        "Baseline bucket with cleaner extracted references."
+      ]
+    },
+    "numeric_noise": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    },
+    "likely_fused_references": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    },
+    "small_reference_set": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    },
+    "low_alpha_or_short_noise": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    },
+    "header_not_found_fallback": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    },
+    "mixed_issues": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": [],
+      "parser_summaries": [
+        {
+          "parser": "refextract",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "refextract status: unknown"
+          ]
+        },
+        {
+          "parser": "anystyle",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "anystyle status: unknown"
+          ]
+        },
+        {
+          "parser": "llm",
+          "status": "unknown",
+          "total_references": 0,
+          "title_non_empty": 0,
+          "authors_non_empty": 0,
+          "year_non_empty": 0,
+          "doi_non_empty": 0,
+          "almost_empty": 0,
+          "observations": [
+            "llm status: unknown"
+          ]
+        }
+      ],
+      "observations": [
+        "No papers matched this bucket in this run."
+      ]
+    }
+  }
+}

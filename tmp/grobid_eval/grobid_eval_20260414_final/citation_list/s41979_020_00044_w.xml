@@ -1,0 +1,584 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Computational thinking from a disciplinary perspective: Integrating computational thinking in K-12 science, technology, engineering, and mathemat- ics education</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Abelson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Angeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Giannakos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stephenson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Harrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Conery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Barth-Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Eltoukhy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Beheshti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weintrop</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Swanson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Orton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Horn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wilensky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bienkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Snow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Rutstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Buitrago Flórez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Casallas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hernández</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Reyes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Restrepo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Danies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chevalier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Giang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Piatti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mondada</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Clements</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sarama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Daro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>Mosher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Corcoran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Farris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Duschl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Farris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">W</forename><surname>Fennell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Lyon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Madamanchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Magana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Froyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Wankat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.3102/0034654317710096</idno>
+		<ptr target="https://doi.org/10.1007/s41979-018-0009-z.163" />
+	</analytic>
+	<monogr>
+		<title level="m">Learning trajectories in mathematics: A foundation for standards, curriculum, assessment, and instruction. CPRE Research Reports</title>
+		<title level="s">SRI technical report</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Marchau</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Walker</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Bloemen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">&amp;</forename><forename type="middle">S</forename><surname>Popper</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cambridge; Menlo Park, CA; Alice; Washington, DC; Cambridge; English, L; New York; London; Cham; Cham; Li, Y</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="1981">1981. 2020. 2011. 2011. 2018. 2017. April 2, 2020. 2015. March 28, 2020. 2015. 2017. 2000. 1999. 2020. 2011. 2018. February 18, 2020. 2011. July 26, 2020. 2009. 2005. 2007. 2020. 2009. 2017. June. 2016. 2000. 2018. 1991. 2008. 2018. 2019. 2020. 2012. 2012. 2016. 2013. 2018. 2016. 1990. April 2, 2020. 2018. 2018. 2016. 2018. 2020. 2009. 2019. 2018. 2020</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="147" to="166" />
+		</imprint>
+		<respStmt>
+			<orgName>Carnegie Mellon University</orgName>
+		</respStmt>
+	</monogr>
+	<note>Journal for STEM Education Research</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Resetting educational technology coursework for pre-service teachers: A computational thinking approach to the development of techno- logical pedagogical content knowledge (TPACK)</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Grasser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Benson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Duschl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Grasser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Benson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Duschl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Froyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Lye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H L</forename><surname>Koh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malyn-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malyn-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Andone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Crick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">U</forename><surname>Hoppe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Looi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Milrad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sheldon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Shih</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">F</forename><surname>Mckenna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Linsenmeier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Glucksberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Springer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Severance</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Krajcik</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Galanter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Pribram</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Holt</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Rinehart &amp; Winston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Moors</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sheenan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s41979-019-00014-x</idno>
+		<idno>_ga=2.92886875.757421025.1591995042-70633712.1591995042</idno>
+		<ptr target="https://www.nitrd.gov/pitac/reports/20050609_computational/computational.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Computational Thinking Education 2018. Hong Kong: The Education University of Hong Kong</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Nager</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Atkinson</surname></persName>
+		</editor>
+		<meeting>the International Conference on Computational Thinking Education 2018. Hong Kong: The Education University of Hong Kong<address><addrLine>New York; Pittsburgh, PA; Cham; Cham; New York; Washington, DC; Washington, DC; New York; Washington, DC</addrLine></address></meeting>
+		<imprint>
+			<publisher>National Coordination Office for Information Technology Research and Development</publisher>
+			<date type="published" when="1960">2011. 2019. 2020. 2020b. 2009. 2014. 2012. 2018. 2008. July 22, 2020. Michaelson, G. (2018. 2020. 1960. 2017. 2017. 2016. June 2, 2020. 2010. 2011. 1980. 1987. 2005. June 2005. 2020</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="147" to="166" />
+		</imprint>
+		<respStmt>
+			<orgName>National Research Council (NRC) ; National Research Council (NRC)</orgName>
+		</respStmt>
+	</monogr>
+	<note>Journal for STEM Education Research</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A content analysis of computational thinking research: An international publication trends and research typology. The Asia-Pacific Education Researcher</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Kinnebrew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Farris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hadad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tucker-Raymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Puttick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cassidy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Harteveld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Troiano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Beheshti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Horn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Orton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Trouille</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wilensky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Werner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Denner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Campe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kawamoto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Martín-Barroso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Román-González</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename></persName>
+		</author>
+		<idno type="DOI">10.1186/s40594-019-0194-z</idno>
+		<ptr target="https://www.whitehouse.gov/articles/president-trump-signs-memorandum-stem-education-funding/" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 43rd ACM Technical Symposium on Computer Science Education (SIGCSE ‘12)</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Yadav</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Stephenson</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Hong</surname></persName>
+		</editor>
+		<meeting>the 43rd ACM Technical Symposium on Computer Science Education (SIGCSE ‘12)<address><addrLine>Tokyo; Washington D.C; New York; New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Zapata-Cáceres</publisher>
+			<date type="published" when="2006">2017. 2013. 2018. 2017. 2015. 2020. 2020b. 2019. 2015. February 20. 2020. 2017. 2016. 2012. 2017. February 20. 2020. 2010. 2006. 2018. 2014. 2017. 2020</date>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="147" to="166" />
+		</imprint>
+		<respStmt>
+			<orgName>Tokyo Gagukei University</orgName>
+		</respStmt>
+	</monogr>
+	<note>Computational thinking test for beginners: Design and content validation. In 2020 IEEE Global Engineering Education Conference (EDUCON. Note Springer Nature remains neutral with regard to jurisdictional claims in published maps and institutional affiliations. 165 Journal for STEM Education Research (2020</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Duschl6 Alan H. Schoenfeld alans@berkeley.edu Andrea A. diSessa disessa@berkeley.edu Arthur C. Graesser graesser@memphis.edu Lisa C. Benson lbenson@clemson</title>
+	</analytic>
+	<monogr>
+		<title level="j">Journal for STEM Education Research</title>
+		<editor>
+			<persName><forename type="first">Affiliations</forename><surname>Yeping Li1 &amp; Alan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Schoenfeld2</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Andrea</forename><forename type="middle">A</forename><surname>Arthur</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Graesser3</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Lisa</forename><forename type="middle">C</forename><surname>Benson4</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Lyn</forename><forename type="middle">D</forename><surname>English5</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Richard</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">166</biblScope>
+			<biblScope unit="page" from="147" to="166" />
+			<date type="published" when="2020">2020</date>
+			<pubPlace>College Station, TX, USA 2 University of California-Berkeley, Berkeley, CA, USA 3 University of Memphis, Memphis, TN, USA 4 Clemson University, Clemson, SC; Dallas, TX, USA</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>A&amp;M University ; USA 5 Queensland University of Technology, Brisbane, Australia 6 Southern Methodist University</orgName>
+		</respStmt>
+	</monogr>
+	<note>edu Lyn D. English l.english@qut.edu.au Richard A. Duschl rduschl@smu.edu 1 Texas</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

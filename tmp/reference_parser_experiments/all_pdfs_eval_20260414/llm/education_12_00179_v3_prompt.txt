@@ -1,0 +1,26 @@
+You are parsing already-segmented bibliographic references.
+Return JSON only. No markdown. No commentary.
+Output must be a JSON array with exactly one object per input reference in the same order.
+Each object must use this schema:
+{"index": <integer>, "raw_input": <string>, "title": <string|null>, "authors": <array of strings>, "year": <integer|null>, "doi": <string|null>, "venue": <string|null>, "pages": <string|null>, "type": <string|null>, "identifiers": <object>, "confidence": <number|null>, "notes": <array of strings>}
+Rules:
+- Do not invent data.
+- If a field is unclear, use null or an empty array/object.
+- Keep the DOI normalized without URL prefixes if present.
+- raw_input must exactly match the input string.
+- index must exactly match the provided index.
+- authors must contain plain strings, not objects.
+
+PDF source: education-12-00179-v3.pdf
+References:
+0: Swacha, J. State of Research on Gamiﬁcation in Education: A Bibliometric Survey. Educ. Sci. 2021, 11, 69. [CrossRef]
+1: Lathwesen, C.; Belova, N. Escape Rooms in STEM Teaching and Learning—Prospective Field or Declining Trend? A Literature Review. Educ. Sci. 2021, 11, 308. [CrossRef]
+2: Hernández-Prados, M.; Belmonte, M.L.; Manzanares-Ruiz, J.C. How to Run Your Own Online Business: A Gamiﬁcation Experience in ESL. Educ. Sci. 2021, 11, 697. [CrossRef]
+3: Arboleya-García, E.; Miralles, L. ‘The Game of the Sea’: An Interdisciplinary Educational Board Game on the Marine Environment and Ocean Awareness for Primary and Secondary Students. Educ. Sci. 2022, 12, 57. [CrossRef]
+4: Quevedo Gutiérrez, E.; Llinares, A.Z. Assessment of Scratch Programming Language as a Didactic Tool to Teach Functions. Educ. Sci. 2021, 11, 499. [CrossRef]
+5: Fernández-Oliveras, A.; Espigares-Gámez, M.J.; Oliveras, M.L. Implementation of a Playful Microproject Based on Traditional Games for Working on Mathematical and Scientiﬁc Content. Educ. Sci. 2021, 11, 624. [CrossRef]
+6: Antequera-Barroso, J.A.; Revuelta-Domínguez, F.-I.; Guerra Antequera, J. Similarities in Procedures Used to Solve Mathematical Problems and Video Games. Educ. Sci. 2022, 12, 172. [CrossRef]
+7: Macías-Guillén, A.; Díez, R.M.; Serrano-Luján, L.; Borrás-Gené, O. Educational Hall Escape: Increasing Motivation and Raising Emotions in Higher Education Students. Educ. Sci. 2021, 11, 527. [CrossRef]
+8: Vázquez-Vílchez, M.; Garrido-Rosales, D.; Pérez-Fernández, B.; Fernández-Oliveras, A. Using a Cooperative Educational Game to Promote Pro-Environmental Engagement in Future Teachers. Educ. Sci. 2021, 11, 691. [CrossRef]
+9: Charlo, J.P.; García, P.O.; García, S.R. Formative Potential of the Development and Assessment of an Educational Escape Room Designed to Integrate Music-Mathematical Knowledge. Educ. Sci. 2021, 11, 131. [CrossRef]
+10: López, P.; Rodrigues-Silva, J.; Alsina, Á. Brazilian and Spanish Mathematics Teachers’ Predispositions towards Gamiﬁcation in STEAM Education. Educ. Sci. 2021, 11, 618. [CrossRef]

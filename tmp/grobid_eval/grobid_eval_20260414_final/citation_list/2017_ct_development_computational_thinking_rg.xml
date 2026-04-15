@@ -1,0 +1,837 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The locus of adult intelligence: Knowledge, abilities, and nonability traits</title>
+		<author>
+			<persName><forename type="first">Phillip</forename><forename type="middle">L</forename><surname>Ackerman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><forename type="middle">L</forename><surname>Rolfhus</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0882-7974.14.2.314WiPSCE’17</idno>
+		<ptr target="https://doi.org/10.1037/0882-7974.14.2.314WiPSCE’17" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychology and Aging</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="314" to="330" />
+			<date type="published" when="1999-11-08">1999. 1999. November 8-10, 2017</date>
+			<pubPlace>Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Casali and Barone</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School</title>
+		<author>
+			<persName><forename type="first">Ashish</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christina</forename><surname>Gardner-Mccune</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">S</forename><surname>Touretzky</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3017680.3017791</idno>
+		<ptr target="https://doi.org/10.1145/3017680.3017791" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<publisher>ACM Press</publisher>
+			<biblScope unit="page" from="9" to="14" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee</title>
+		<imprint>
+			<date type="published" when="2003">2003</date>
+			<publisher>ACM</publisher>
+			<biblScope unit="page">907036381</biblScope>
+			<pubPlace>New York. OCLC</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe</title>
+		<author>
+			<persName><forename type="first">Anja</forename><surname>Balanskat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Katja</forename><surname>Engelhardt</surname></persName>
+		</author>
+		<ptr target="http://www.eun.org/c/document_library/get_file?uuid=" />
+		<imprint>
+			<date type="published" when="2015-10">2015. Oct. 2015</date>
+			<biblScope unit="volume">3596</biblScope>
+			<biblScope unit="page">43887</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">Tim</forename><surname>Bell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ian</forename><forename type="middle">H</forename><surname>Witten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mike</forename><surname>Fellows</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computer Science Unplugged... - Off-line activities and games</title>
+		<imprint>
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+	<note>all ages (draft. 1 ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Developing Computational Thinking in Compulsory Education - Implications for policy and practice</title>
+		<author>
+			<persName><forename type="first">Stefania</forename><surname>Bocconi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Augusto</forename><surname>Chioccariello</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Giuliana</forename><surname>Dettori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anusca</forename><surname>Ferrari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Katja</forename><surname>Engelhardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Panagiotis</forename><surname>Kampylis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yves</forename><surname>Punie</surname></persName>
+		</author>
+		<idno type="DOI">10.2791/792158</idno>
+		<ptr target="https://doi.org/10.2791/792158" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>Publications Office of the European Union</publisher>
+		</imprint>
+	</monogr>
+	<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Computational thinking: Panorama of the Americas</title>
+		<author>
+			<persName><forename type="first">Christian</forename><surname>Brackmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dante</forename><surname>Barone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ana</forename><surname>Casali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rafael</forename><surname>Boucinha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Susana</forename><surname>Munoz-Hernandez</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/SIIE.2016.7751839</idno>
+		<ptr target="https://doi.org/10.1109/SIIE.2016.7751839" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="6" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">New frameworks for studying and assessing the development of computational thinking</title>
+		<author>
+			<persName><forename type="first">Karen</forename><surname>Brennan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mitchel</forename><surname>Resnick</surname></persName>
+		</author>
+		<ptr target="http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2012 annual meeting of the American Educational Research Association</title>
+		<meeting>the 2012 annual meeting of the American Educational Research Association<address><addrLine>Vancouver, Canada</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="page" from="1" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental</title>
+		<author>
+			<persName><forename type="first">Gleider</forename><surname>Campos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Simone</forename><surname>Cavalheiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luciana</forename><surname>Foss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ana</forename><surname>Pernas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Clause</forename><surname>Piana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marilton</forename><surname>Aguiar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">André Du</forename><surname>Bois</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Renata</forename><surname>Reiser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop de Informática na Escola</title>
+		<imprint>
+			<publisher>WIE</publisher>
+			<date type="published" when="2014">2014. 2014. 2014</date>
+			<biblScope unit="volume">20</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates</title>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Cohen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1988">1988. 1988</date>
+			<biblScope unit="page" from="20" to="26" />
+			<pubPlace>Hillsdale, NJ</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">cs4fn and computational thinking unplugged</title>
+		<author>
+			<persName><forename type="first">Paul</forename><surname>Curzon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th Workshop in Primary and Secondary Computing Education</title>
+		<meeting>the 8th Workshop in Primary and Secondary Computing Education</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="47" to="50" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">In- troducing teachers to computational thinking using unplugged storytelling</title>
+		<author>
+			<persName><forename type="first">Paul</forename><surname>Curzon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicola</forename><surname>Peter W Mcowan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laura</forename><forename type="middle">R</forename><surname>Plant</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Meagher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th Workshop in Primary and Secondary Computing Education</title>
+		<meeting>the 9th Workshop in Primary and Secondary Computing Education</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="89" to="92" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Engelberg</surname></persName>
+		</author>
+		<title level="m">Code Master Programming Logic Game</title>
+		<imprint>
+			<publisher>Thinkfun Inc</publisher>
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons</title>
+		<author>
+			<persName><forename type="first">Hylke</forename><surname>Faber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Menno</forename><surname>Wierdsma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><surname>Doornbos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Salvador Van Der Ven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>De Vette</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the European Teacher Education Network</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<date type="published" when="2017">2017. 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Teaching CS unplugged in the high school (with limited success)</title>
+		<author>
+			<persName><forename type="first">Yvon</forename><surname>Feaster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luke</forename><surname>Segars</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sally</forename><forename type="middle">K</forename><surname>Wahba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jason</forename><forename type="middle">O</forename><surname>Hallstrom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th annual joint conference on Innovation and technology in computer science education</title>
+		<meeting>the 16th annual joint conference on Innovation and technology in computer science education</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="248" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming</title>
+		<author>
+			<persName><forename type="first">Anna</forename><surname>Gardeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Spyros</forename><surname>Vosinakis</surname></persName>
+		</author>
+		<idno type="DOI">10.17471/2499-4324/910</idno>
+		<ptr target="https://doi.org/10.17471/2499-4324/910" />
+	</analytic>
+	<monogr>
+		<title level="j">Italian Journal of Educational Technology</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<date type="published" when="2017-07">2017. July 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Computational Thinking in K-12: A Review of the State of the Field</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pea</surname></persName>
+		</author>
+		<idno type="DOI">10.3102/0013189X12463051</idno>
+		<ptr target="https://doi.org/10.3102/0013189X12463051" />
+	</analytic>
+	<monogr>
+		<title level="j">Educational Researcher</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="38" to="43" />
+			<date type="published" when="2013-01">2013. Jan. 2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A Framework for Computational Thinking Based on a Systematic Research Review</title>
+		<author>
+			<persName><forename type="first">Filiz</forename><surname>Kalelioglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yasemin</forename><surname>Gülbahar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Volkan</forename><surname>Kukul</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Baltic Journal of Modern Computing</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">583</biblScope>
+			<date type="published" when="2016">2016. 2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">BRING- ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY</title>
+		<author>
+			<persName><forename type="first">Andiy</forename><surname>Lorenz Klopfenstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alessandro</forename><surname>Fedosyeyev</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bogliolo</surname></persName>
+		</author>
+		<idno type="DOI">10.21125/inted.2017.2327</idno>
+		<ptr target="https://doi.org/10.21125/inted.2017.2327" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="9800" to="9805" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Computer science outreach in an elementary school</title>
+		<author>
+			<persName><forename type="first">Lynn</forename><surname>Lambert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Heather</forename><surname>Guiffre</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Computing Sciences in colleges</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page">118</biblScope>
+			<date type="published" when="2009">2009. 2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<author>
+			<persName><forename type="first">Linda</forename><surname>Liukas</surname></persName>
+		</author>
+		<title level="m">Hello Ruby: adventures in coding. Feiwel &amp; Friends</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Review on teaching and learning of computational thinking through programming: What is next for K-12?</title>
+		<author>
+			<persName><forename type="first">Sze</forename><surname>Yee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lye</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joyce</forename><surname>Hwee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ling</forename><surname>Koh</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.chb.2014.09.012</idno>
+		<ptr target="https://doi.org/10.1016/j.chb.2014.09.012" />
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="51" to="61" />
+			<date type="published" when="2014">2014. 2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Estimating Effect Sizes From Pretest-Posttest-Control Group Designs</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Scott</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Morris</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1094428106291059</idno>
+		<ptr target="https://doi.org/10.1177/1094428106291059" />
+	</analytic>
+	<monogr>
+		<title level="j">Organizational Research Methods</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="364" to="386" />
+			<date type="published" when="2008-04">2008. April 2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs</title>
+		<author>
+			<persName><forename type="first">Scott</forename><forename type="middle">B</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">P</forename><surname>Deshon</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/1082-989X.7.1.105</idno>
+		<ptr target="https://doi.org/10.1037/1082-989X.7.1.105" />
+	</analytic>
+	<monogr>
+		<title level="j">Psycho- logical Methods</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="105" to="125" />
+			<date type="published" when="2002">2002. 2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Assessing Computational Thinking in CS Unplugged Activities</title>
+		<author>
+			<persName><forename type="first">Brandon</forename><surname>Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kennicutt</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cyndi</forename><surname>Rader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tracy</forename><surname>Camp</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3017680.3017779</idno>
+		<ptr target="https://doi.org/10.1145/3017680.3017779" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2017 ACM SIGCSE Technical Symposium on Computer Science Education</title>
+		<meeting>the 2017 ACM SIGCSE Technical Symposium on Computer Science Education<address><addrLine>Seattle, Washington, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="501" to="506" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Com- plementary Tools for Computational Thinking Assessment</title>
+		<author>
+			<persName><forename type="first">Marcos</forename><surname>Román-González</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jesús</forename><surname>Moreno-León</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gregorio</forename><surname>Robles</surname></persName>
+		</author>
+		<ptr target="http://www.eduhk.hk/cte2017/doc/CTE2017Proceedings.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of International Conference on Computational Thinking Education</title>
+		<editor>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Kong</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Sheldon</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><forename type="middle">Y</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting>International Conference on Computational Thinking Education</meeting>
+		<imprint>
+			<date type="published" when="2017">2017. 2017</date>
+			<biblScope unit="page" from="154" to="159" />
+		</imprint>
+	</monogr>
+	<note>The Education University of Hong Kong</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Computational Thinking Test: Design Guidelines and Content Validation</title>
+		<author>
+			<persName><forename type="first">Marcos</forename><surname>Román-González</surname></persName>
+		</author>
+		<idno type="DOI">10.13140/RG.2.1.4203.4329</idno>
+		<ptr target="https://doi.org/10.13140/RG.2.1.4203.4329" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 7th Annual International Conference on Education and New Learning Technologies</title>
+		<meeting>the 7th Annual International Conference on Education and New Learning Technologies<address><addrLine>Barcelona, Spain</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+			<biblScope unit="page" from="2436" to="2444" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<author>
+			<persName><forename type="first">Marcos</forename><surname>Román-González</surname></persName>
+		</author>
+		<title level="m">Codigoalfabetización y Pensamiento Computa- cional en Educación Primaria y Secundaria: Validación de un Instrumento y Evalu- ación de Programas</title>
+		<meeting><address><addrLine>Madrid, Spain</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+		<respStmt>
+			<orgName>Universidad Nacional de Educación a Distancia</orgName>
+		</respStmt>
+	</monogr>
+	<note>Ph.D. Dissertation</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test</title>
+		<author>
+			<persName><forename type="first">Marcos</forename><surname>Román-González</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Juan-Carlos</forename><surname>Pérez-González</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Carmen</forename><surname>Jiménez- Fernández</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.chb.2016.08.047</idno>
+		<ptr target="https://doi.org/10.1016/j.chb.2016.08.047" />
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page" from="678" to="691" />
+			<date type="published" when="2017-07">2017. July 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Teachers’ perspectives on successful strategies for teaching Computing in school</title>
+		<author>
+			<persName><forename type="first">Sue</forename><surname>Sentance</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><surname>Csizmadia</surname></persName>
+		</author>
+		<idno>IFIP TCS 2015</idno>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">The effect of CS unplugged on middle-school students’ views of CS</title>
+		<author>
+			<persName><forename type="first">Rivka</forename><surname>Taub</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mordechai</forename><surname>Ben-Ari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michal</forename><surname>Armoni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGCSE Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="99" to="103" />
+			<date type="published" when="2009">2009. 2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">On plugging &quot;unplugged&quot; into CS classes</title>
+		<author>
+			<persName><forename type="first">Renate</forename><surname>Thies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Vahrenhold</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/2445196.2445303</idno>
+		<ptr target="https://doi.org/10.1145/2445196.2445303" />
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<publisher>ACM Press</publisher>
+			<biblScope unit="page">365</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Of Elephants and Nested Loops: How to Introduce Computing to Youth in Rural India</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Unnikrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Amrita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Muir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bhavani</forename><surname>Rao</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/2930674.2930678</idno>
+		<ptr target="https://doi.org/10.1145/2930674.2930678" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>ACM Press</publisher>
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia</title>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Wallet</surname></persName>
+		</author>
+		<idno type="DOI">10.15220/978-92-9189-148-1-en</idno>
+		<ptr target="https://doi.org/10.15220/978-92-9189-148-1-en" />
+	</analytic>
+	<monogr>
+		<title level="j">UNESCO</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">ICT in Education in Sub-Saharan Africa: A comparative analysis of basic e-readiness in schools</title>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Wallet</surname></persName>
+		</author>
+		<idno type="DOI">10.15220/978-92-9189-178-8-en</idno>
+		<ptr target="https://doi.org/10.15220/978-92-9189-178-8-en" />
+	</analytic>
+	<monogr>
+		<title level="j">UNESCO</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Computational thinking</title>
+		<author>
+			<persName><forename type="first">Jeannette</forename><forename type="middle">M</forename><surname>Wing</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/1118178.1118215</idno>
+		<ptr target="https://doi.org/10.1145/1118178.1118215" />
+	</analytic>
+	<monogr>
+		<title level="j">Commun. ACM</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page">33</biblScope>
+			<date type="published" when="2006-03">2006. March 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Computational thinking and thinking about computing</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wing</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rsta.2008.0118</idno>
+		<ptr target="https://doi.org/10.1098/rsta.2008.0118" />
+	</analytic>
+	<monogr>
+		<title level="m">View publication stats View publication stats</title>
+		<imprint>
+			<date type="published" when="2008-10">2008. Oct. 2008</date>
+			<biblScope unit="volume">366</biblScope>
+			<biblScope unit="page" from="3717" to="3725" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

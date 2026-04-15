@@ -1,0 +1,578 @@
+{
+  "paper_slug": "2017_ct_development_computational_thinking_rg",
+  "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2017-CT-development-computational-thinking_RG.pdf",
+  "input_bucket": "clean_input",
+  "extractor_summary": {
+    "total_references": 37,
+    "likely_valid": 37,
+    "likely_garbage": 0,
+    "doi_non_empty": 19,
+    "references_header_found": true,
+    "references_numbered": true,
+    "citation_style": "numeric",
+    "max_reference_index": 37,
+    "input_warnings": []
+  },
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 36,
+    "title_non_empty": 36,
+    "authors_non_empty": 35,
+    "year_non_empty": 36,
+    "doi_non_empty": 19,
+    "likely_valid": 36,
+    "likely_garbage": 0,
+    "usable_bibliography": true
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "The locus of adult intelligence: Knowledge, abilities, and nonability traits",
+        "authors": [
+          "Ackerman, Phillip L",
+          "Rolfhus, Eric L"
+        ],
+        "doi": "10.1037/0882-7974.14.2.314",
+        "year": 1999,
+        "venue": "Psychology and Aging",
+        "pages": "314–330",
+        "identifiers": {
+          "doi": "10.1037/0882-7974.14.2.314"
+        }
+      },
+      {
+        "id": "b1",
+        "title": "Evaluating the Effect of Using Physical Manipulatives to Foster Computational Thinking in Elementary School",
+        "authors": [
+          "Aggarwal, Ashish",
+          "Gardner-Mccune, Christina",
+          "Touretzky, David S"
+        ],
+        "doi": "10.1145/3017680.3017791",
+        "year": 2017,
+        "venue": "",
+        "pages": "9–14",
+        "identifiers": {
+          "doi": "10.1145/3017680.3017791"
+        }
+      },
+      {
+        "id": "b2",
+        "title": "A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee",
+        "authors": [],
+        "doi": null,
+        "year": 2003,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b3",
+        "title": "Computing our future: Computer programming and coding -Priorities, school curricula and initiatives across Europe",
+        "authors": [
+          "Balanskat, Anja",
+          "Engelhardt, Katja"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b4",
+        "title": "Computer Science Unplugged... -Off-line activities and games",
+        "authors": [
+          "Bell, Tim",
+          "Witten, Ian H",
+          "Fellows, Mike"
+        ],
+        "doi": null,
+        "year": 1998,
+        "venue": "Computer Science Unplugged... -Off-line activities and games",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "all ages (draft. 1 ed."
+      },
+      {
+        "id": "b5",
+        "title": "Developing Computational Thinking in Compulsory Education -Implications for policy and practice",
+        "authors": [
+          "Bocconi, Stefania",
+          "Chioccariello, Augusto",
+          "Dettori, Giuliana",
+          "Ferrari, Anusca",
+          "Engelhardt, Katja",
+          "Kampylis, Panagiotis",
+          "Punie, Yves"
+        ],
+        "doi": "10.2791/792158",
+        "year": 2016,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.2791/792158"
+        },
+        "raw_citation": "Technical Report"
+      },
+      {
+        "id": "b6",
+        "title": "Computational thinking: Panorama of the Americas",
+        "authors": [
+          "Brackmann, Christian",
+          "Barone, Dante",
+          "Casali, Ana",
+          "Boucinha, Rafael",
+          "Munoz-Hernandez, Susana"
+        ],
+        "doi": "10.1109/SIIE.2016.7751839",
+        "year": 2016,
+        "venue": "IEEE",
+        "pages": "1–6",
+        "identifiers": {
+          "doi": "10.1109/SIIE.2016.7751839"
+        }
+      },
+      {
+        "id": "b7",
+        "title": "New frameworks for studying and assessing the development of computational thinking",
+        "authors": [
+          "Brennan, Karen",
+          "Resnick, Mitchel"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "1–25",
+        "identifiers": {}
+      },
+      {
+        "id": "b8",
+        "title": "Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental",
+        "authors": [
+          "Campos, Gleider",
+          "Cavalheiro, Simone",
+          "Foss, Luciana",
+          "Pernas, Ana",
+          "Piana, Clause",
+          "Aguiar, Marilton",
+          "Bois, André Du",
+          "Reiser, Renata"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b9",
+        "title": "Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates",
+        "authors": [
+          "Cohen, Jacob"
+        ],
+        "doi": null,
+        "year": 1988,
+        "venue": "",
+        "pages": "20–26",
+        "identifiers": {}
+      },
+      {
+        "id": "b10",
+        "title": "cs4fn and computational thinking unplugged",
+        "authors": [
+          "Curzon, Paul"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "",
+        "pages": "47–50",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "Introducing teachers to computational thinking using unplugged storytelling",
+        "authors": [
+          "Curzon, Paul",
+          "Peter W Mcowan, Nicola",
+          "Plant, Laura R",
+          "Meagher"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "89–92",
+        "identifiers": {}
+      },
+      {
+        "id": "b12",
+        "title": "Code Master Programming Logic Game",
+        "authors": [
+          "Engelberg, Mark"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons",
+        "authors": [
+          "Faber, Hylke",
+          "Wierdsma, Menno",
+          "Doornbos, Richard",
+          "Salvador Van Der Ven, Jan",
+          "De Vette, Kevin"
+        ],
+        "doi": null,
+        "year": 2017,
+        "venue": "Journal of the European Teacher Education Network",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b14",
+        "title": "Teaching CS unplugged in the high school (with limited success)",
+        "authors": [
+          "Feaster, Yvon",
+          "Segars, Luke",
+          "Wahba, Sally K",
+          "Hallstrom, Jason O"
+        ],
+        "doi": null,
+        "year": 2011,
+        "venue": "",
+        "pages": "248–252",
+        "identifiers": {}
+      },
+      {
+        "id": "b15",
+        "title": "Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining 'Unplugged' Activities with Visual Programming",
+        "authors": [
+          "Gardeli, Anna",
+          "Vosinakis, Spyros"
+        ],
+        "doi": "10.17471/2499-4324/910",
+        "year": 2017,
+        "venue": "Italian Journal of Educational Technology",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.17471/2499-4324/910"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "Computational Thinking in K-12: A Review of the State of the Field",
+        "authors": [
+          "Grover, S",
+          "Pea, R"
+        ],
+        "doi": "10.3102/0013189X12463051",
+        "year": 2013,
+        "venue": "Educational Researcher",
+        "pages": "38–43",
+        "identifiers": {
+          "doi": "10.3102/0013189X12463051"
+        }
+      },
+      {
+        "id": "b17",
+        "title": "A Framework for Computational Thinking Based on a Systematic Research Review",
+        "authors": [
+          "Kalelioglu, Filiz",
+          "Gülbahar, Yasemin",
+          "Kukul, Volkan"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "Baltic Journal of Modern Computing",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b18",
+        "title": "BRING-ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY",
+        "authors": [
+          "Lorenz Klopfenstein, Andiy",
+          "Fedosyeyev, Alessandro",
+          "Bogliolo"
+        ],
+        "doi": "10.21125/inted.2017.2327",
+        "year": 2017,
+        "venue": "",
+        "pages": "9800–9805",
+        "identifiers": {
+          "doi": "10.21125/inted.2017.2327"
+        }
+      },
+      {
+        "id": "b19",
+        "title": "Computer science outreach in an elementary school",
+        "authors": [
+          "Lambert, Lynn",
+          "Guiffre, Heather"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Journal of Computing Sciences in colleges",
+        "pages": "118–124",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "Hello Ruby: adventures in coding. Feiwel & Friends",
+        "authors": [
+          "Liukas, Linda"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b21",
+        "title": "Review on teaching and learning of computational thinking through programming: What is next for K-12?",
+        "authors": [
+          "Yee, Sze",
+          "Lye",
+          "Hwee, Joyce",
+          "Koh, Ling"
+        ],
+        "doi": "10.1016/j.chb.2014.09.012",
+        "year": 2014,
+        "venue": "Computers in Human Behavior",
+        "pages": "51–61",
+        "identifiers": {
+          "doi": "10.1016/j.chb.2014.09.012"
+        }
+      },
+      {
+        "id": "b22",
+        "title": "Estimating Effect Sizes From Pretest-Posttest-Control Group Designs",
+        "authors": [
+          "Scott, B",
+          "Morris"
+        ],
+        "doi": "10.1177/1094428106291059",
+        "year": 2008,
+        "venue": "Organizational Research Methods",
+        "pages": "364–386",
+        "identifiers": {
+          "doi": "10.1177/1094428106291059"
+        }
+      },
+      {
+        "id": "b23",
+        "title": "Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs",
+        "authors": [
+          "Morris, Scott B",
+          "Deshon, Richard P"
+        ],
+        "doi": "10.1037/1082-989X.7.1.105",
+        "year": 2002,
+        "venue": "Psychological Methods",
+        "pages": "105–125",
+        "identifiers": {
+          "doi": "10.1037/1082-989X.7.1.105"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "Assessing Computational Thinking in CS Unplugged Activities",
+        "authors": [
+          "Rodriguez, Brandon",
+          "Stephen, Kennicutt",
+          "Rader, Cyndi",
+          "Camp, Tracy",
+          "Marcos Román-González, ;",
+          "Moreno-León, Jesús",
+          "Robles, Gregorio"
+        ],
+        "doi": "10.1145/3017680.3017779",
+        "year": 2017,
+        "venue": "",
+        "pages": "154–159",
+        "identifiers": {
+          "doi": "10.1145/3017680.3017779"
+        },
+        "raw_citation": "Proceedings of International Conference on Computational Thinking Education"
+      },
+      {
+        "id": "b25",
+        "title": "Computational Thinking Test: Design Guidelines and Content Validation",
+        "authors": [
+          "Román-González, Marcos"
+        ],
+        "doi": "10.13140/RG.2.1.4203.4329",
+        "year": 2015,
+        "venue": "",
+        "pages": "2436–2444",
+        "identifiers": {
+          "doi": "10.13140/RG.2.1.4203.4329"
+        }
+      },
+      {
+        "id": "b26",
+        "title": "Codigoalfabetización y Pensamiento Computacional en Educación Primaria y Secundaria: Validación de un Instrumento y Evaluación de Programas",
+        "authors": [
+          "Román-González, Marcos"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Ph.D. Dissertation"
+      },
+      {
+        "id": "b27",
+        "title": "Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test",
+        "authors": [
+          "Román-González, Marcos",
+          "Pérez-González, Juan-Carlos",
+          "Jiménez-Fernández, Carmen"
+        ],
+        "doi": "10.1016/j.chb.2016.08.047",
+        "year": 2017,
+        "venue": "Computers in Human Behavior",
+        "pages": "678–691",
+        "identifiers": {
+          "doi": "10.1016/j.chb.2016.08.047"
+        }
+      },
+      {
+        "id": "b28",
+        "title": "Teachers' perspectives on successful strategies for teaching Computing in school",
+        "authors": [
+          "Sentance, Sue",
+          "Csizmadia, Andrew"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "IFIP TCS 2015"
+        }
+      },
+      {
+        "id": "b29",
+        "title": "The effect of CS unplugged on middle-school students' views of CS",
+        "authors": [
+          "Taub, Rivka",
+          "Ben-Ari, Mordechai",
+          "Armoni, Michal"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "ACM SIGCSE Bulletin",
+        "pages": "99–103",
+        "identifiers": {}
+      },
+      {
+        "id": "b30",
+        "title": "On plugging \"unplugged\" into CS classes",
+        "authors": [
+          "Thies, Renate",
+          "Vahrenhold, Jan"
+        ],
+        "doi": "10.1145/2445196.2445303",
+        "year": 2013,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/2445196.2445303"
+        }
+      },
+      {
+        "id": "b31",
+        "title": "Of Elephants and Nested Loops: How to Introduce Computing to Youth in Rural India",
+        "authors": [
+          "Unnikrishnan, R",
+          "Amrita, N",
+          "Muir, Alexander",
+          "Rao, Bhavani"
+        ],
+        "doi": "10.1145/2930674.2930678",
+        "year": 2016,
+        "venue": "",
+        "pages": "137–146",
+        "identifiers": {
+          "doi": "10.1145/2930674.2930678"
+        }
+      },
+      {
+        "id": "b32",
+        "title": "ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia",
+        "authors": [
+          "Wallet, Peter"
+        ],
+        "doi": "10.15220/978-92-9189-148-1-en",
+        "year": 2014,
+        "venue": "UNESCO",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.15220/978-92-9189-148-1-en"
+        },
+        "raw_citation": "Technical Report"
+      },
+      {
+        "id": "b33",
+        "title": "ICT in Education in Sub-Saharan Africa: A comparative analysis of basic e-readiness in schools",
+        "authors": [
+          "Wallet, Peter"
+        ],
+        "doi": "10.15220/978-92-9189-178-8-en",
+        "year": 2015,
+        "venue": "UNESCO",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.15220/978-92-9189-178-8-en"
+        },
+        "raw_citation": "Technical Report"
+      },
+      {
+        "id": "b34",
+        "title": "Computational thinking",
+        "authors": [
+          "Wing, Jeannette M"
+        ],
+        "doi": "10.1145/1118178.1118215",
+        "year": 2006,
+        "venue": "Commun. ACM",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/1118178.1118215"
+        }
+      },
+      {
+        "id": "b35",
+        "title": "Computational thinking and thinking about computing. Philosophical",
+        "authors": [
+          "Wing, J M"
+        ],
+        "doi": "10.1098/rsta.2008.0118",
+        "year": 2008,
+        "venue": "Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences",
+        "pages": "3717–3725",
+        "identifiers": {
+          "doi": "10.1098/rsta.2008.0118"
+        }
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 36,
+    "_warnings": []
+  }
+}

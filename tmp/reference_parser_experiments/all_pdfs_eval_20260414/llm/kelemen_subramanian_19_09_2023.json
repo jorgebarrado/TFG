@@ -1,0 +1,1204 @@
+{
+  "parser": "llm",
+  "status": "unavailable",
+  "availability": {
+    "available": false,
+    "reason": "OPENAI_API_KEY is not set; LLM parser was wired but not executed",
+    "model": "gpt-4.1-mini"
+  },
+  "entries": [
+    {
+      "index": 0,
+      "raw_input": "7 0.9 0.9 0.5 0.9 Vested interests, overrepresentation of instrumental values, and high transaction costs impede the implementation of highly transformative solutions.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 1,
+      "raw_input": "7% [30,31] For example, alternative economic models 2 2 2 1 2 Legal and regulatory (n = 13)",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 2,
+      "raw_input": "2",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 3,
+      "raw_input": "0",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 4,
+      "raw_input": "0 0.5 0.7 Enforcement is challenging due to power asymmetries, difficult to quickly adapt the legal structure, and coercive nature does not help capacity development.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 5,
+      "raw_input": "0%",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 6,
+      "raw_input": "For example, rights of nature 1 2 2 2 1 Rights-based and customary (n = 4)",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 7,
+      "raw_input": "3",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 8,
+      "raw_input": "0 Inclusive of diverse values but highly context-dependent, often incoherent with legal or economic instruments, suffering from power imbalances, and therefore difficult to upscale.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 9,
+      "raw_input": "2%",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 10,
+      "raw_input": "For example, other effective area-based conservation 1 2 2 1 1 Social and cultural (n = 7)",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 11,
+      "raw_input": "7",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 12,
+      "raw_input": "1 0.9",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 13,
+      "raw_input": "1 0.3 Highly diverse group of instruments implemented by a wide range of actors on a voluntary basis, measuring/monitoring achieved impacts, and upscaling is difficult.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 14,
+      "raw_input": "For example, comanagement regimes 2 2 1 2 1 The scoring of the policy instruments across the five assessment criteria was based on expert judgment. Scores varied on a nominal scale from 0 (not meeting the given criterion) to 2 (fulfilling the given criterion). The table indicates average scores for each type of policy instruments, and specific scores for one selected instrument within each type (in italics). Prevalence indicates which types of instruments are reported more frequently in the literature based on the review of 62 papers on policy uptake. 4 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 implemented, and evaluated in the interplay of multiple actors, values, and interests. Considering policymaking as a kaleidoscope, critical junctures and guiding principles can be identified to weave diverse values into the policy process (Figure 2). These points help address specific questions related to decisions that have an impact on nature and its con­ tributions to people, ranging from the identification of relevant stakeholders, right-holders, knowledge-holders, and their socio-environmental and political contexts, through addressing potential trade-offs and value con­ flicts that may arise from different decisions, to arriving at feasible entry points and — hopefully — more just and sustainable outcomes. Weaving values into the policy process requires different types of capacities both at individual and organizational level, to enable information exchange between and within networks [44], which incorporates diverse knowledge systems [45], fosters knowledge coproduc­ tion [46], and leads to synergistic actions. Such efforts should be understood as dynamic social processes of knowledge brokerage: bridging boundaries by trans­ forming concepts, principles, perspectives, and knowl­ edge into information that can be used and acted upon to influence decision-making in the real world [47,48]. Enhancing the information flow and strengthening the adaptive capacities of different actors at all intervention levels is key to balance power asymmetries, improve the outputs of negotiations, and reach more just and sus­ tainable results [38,49]. Enhance adaptive capacities to aid values- weaving The capacity of social–ecological systems to adapt to, and recover from, the intertwined climate, health, and environmental crises has received growing attention in the last decade [50,51]. Adaptive capacities can also support the shift toward values-centered policymaking by 1) building awareness and desire when oper­ ationalizing diverse values in decision-making; 2) pro­ viding knowledge and tools; 3) bringing together different ways of knowing and doing; 4) navigating trade-offs and uptake; 5) learning, adapting, and acting together; and 6) creating fair processes and institutions. The first three aspects allow the diverse values of nature to be recognized and understood by all relevant actors who take part in decision-making, while the last three aspects can ensure that fair institutions are created, which incorporate diverse values of nature in policy­ making in an explicit and legitimate way [12]. Since capacities are multidimensional, layered across societal groups, context-specific, and unevenly dis­ tributed geographically [52,53], developing capacities is equally important at personal, organizational, and Figure 1 Current Opinion in Environmental Sustainability Median number of transformative change criteria associated with policy options of varying diversity (n = 43 case studies). Policy options that address one value are associated with a median of 1.9 (IQR 1–3) transformative change criteria, while those that address two or three values are associated with 3.2 (IQR 1–5) and 4.1 (IQR 3–5), respectively. Figure 2 Current Opinion in Environmental Sustainability The kaleidoscope of values in policymaking. The figure illustrates that weaving diverse values can be facilitated through a process that leads through several junctures, such as identifying the purpose, stakeholders, and divergence/convergence between them, reconciling trade-offs, engaging in implementation, and evaluating outcomes. To foster a smoother process of engagement, six guiding principles have been identified that ensure the representation of different stakeholders, the meaningful and deliberate engagement amidst them, and therefore guarantee that the process is contextualized, fair, legitimate, and thereby credible, more equitably designed, and reflexive. Signposts toards transformative governance Kelemen et al. 5 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 systems levels. It often presumes that progress should be achieved compared with a base of existing (low) level of knowledge, skills, and resources via different approaches (e.g. formal trainings or mentorship) [54]. However, it can also be understood as a process of colearning be­ tween different actors, which can help transform top- down policy processes by enlarging the set of knowledge that decisions are built on, acknowledging a wider range of values of nature, and addressing power imbalances. Colearning approaches also enhance the understanding of status, trends, drivers, and impacts on nature and nature’s contribution to people and help identify work­ able policy options [55]. Conclusions Based on a meta-analysis of environmental policy op­ tions, this paper argues that rehauling the decision pro­ cess toward sustainability is possible, if formal and informal institutions (i.e. laws, norms, and policy in­ struments) are reoriented toward eliciting and in­ corporating diverse values at various junctures of the policy process. Following the value-weaving path at these junctures can aid decision-makers, as signposts help travelers on their journey: by indicating desirable outcomes that encourage transitions toward just and sustainable futures. Although general guiding principles can be identified, acting upon them requires more than technical skills, governance capacities, or negotiation abilities. Bringing together different ways of knowing, coordinating across scales and different social groups while balancing inequalities, and awakening inner mo­ tivations to consider diverse values are equally im­ portant. These findings emphasize that to achieve transformations toward sustainability, policy design, and implementation requires inclusive, participatory, and deliberative approaches across the spectrum of actors who influence any decisions related to nature and its use. Data Availability All data on which this paper is based are available in the IPBES methodological assessment on diverse values and valuation of nature. Declaration of Competing Interest The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. Acknowledgements The authors would like to thank IPBES for the opportunity to have contributed to Chapter 6 of the Values Assessment. While this article builds on Chapter 6, it represents only the views of the authors and not those of IPBES. We would like to especially thank Patricia Balvanera, Brigitte Baptiste, Unai Pascual, Mike Christie, and David González for their support, as well as all contributing authors for their work during the development of Chapter 6 of the IPBES VA. We are grateful for the constructive comments of the reviewers of this article. We would also like to thank Mariann Kovács (ESSRG) for designing Figure 1. EK acknowledges the financial support of the BioAgora project funded by the European Union (EU Horizon Europe programme, GA no. 101059438). Appendix: Methodological details of the assessment of different policy options’ transformative potential To develop the assessment criteria for transformative governance against, we can assess the potential of policy instruments to facilitate transformative change, we con­ ducted a literature review. From the literature review, we identified various aspects of transformative govern­ ance, which we then grouped into five main components (further discussed in the main text). These were address status quo, address diverse values, stimulate institutional changes, capacity-building, and integrative–adaptive governance. Within these broader categories, we defined the following criteria: Address status quo • Does the policy instrument/initiative address the di­ rect and indirect drivers of biodiversity loss (based on the IPBES Global Assessment)? • Does the policy instrument stimulate and/or promote a positive major shift to the states of ecosystem and biodiversity? • Does the policy instrument stimulate and/or promote a positive major shift in the social networks and power distribution? • Does the policy instrument stimulate and/or promote a positive major shift in rules and resource allocation in biodiversity governance? • Does the policy instrument promote positive changes in social production and consumption toward a more sustainable pattern? • Does the policy instrument challenge the inequalities and able to promote equalities among the social group involved in biodiversity management? Address diverse values • Does the policy instrument stimulate and/or promote a positive major shift in recognizing and revealing diverse knowledge and values of biodiversity? • Does the policy instrument provide room to accom­ modate or consider diverse values of different groups in biodiversity management, including the values of the local and indigenous people rooted in their indigenous local knowledge, in its decision-making process? • Does the policy instrument reflect or accommodate social and cultural values of the local community? • Does the policy instrument reflect or accommodate the indigenous local knowledge values of the local and indigenous people? 6 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 • Does the policy instrument acknowledge or accom­ modate the trade-off between values of biodiversity, including values of the marginal and underpowered group? Stimulate institutional changes • Does the policy instrument stimulate positive shifts (radical or incremental) in the organization, legisla­ tion, policies, and administration regarding biodi­ versity governance? • Does the policy instrument stimulate positive changes (radical or incremental) in the behavior, culture, and practices of actors involved in biodi­ versity governance? Promote and supported by sufficient capacity of actors • Do the actors have sufficient capacity to design the policy instrument? • Do the actors have sufficient capacity to implement the policy instrument at the targeted level(s)? • Do the marginal, under-represented, and less-pow­ erful groups be able to participate and influence the decision-making process throughout the policy process? • Do the actors have sufficient capacity to recognize and reveal the values of biodiversity throughout the policy instrument design and implementation? • Do the actors have sufficient capacity to collaborate, colearning, and coproducing values of biodiversity throughout the policy instrument? • Does the policy instrument improve the capacity of actors to recognize diverse values of biodiversity in the decision-making process? • Does the policy instrument improve the capacity of actors, particularly the marginal and less-powerful groups, to express their values of biodiversity in the decision-making process? Integrative and adaptive governance • Can the policy instrument be integrated into a policy- mix to stimulate positive transformation in biodi­ versity governance? • Can the policy instruments be adapted into local socio-economic–political culture to stimulate trans­ formations in biodiversity governance? • Does the policy instrument reflect the complexity and uncertainty of biodiversity values from different ac­ tors at the different levels involved in the biodiversity governance? We assessed altogether 37 policy instruments. The in­ itial list of policy instruments was derived from the IPBES Catalogue of Policy Instruments and Policy Support Tools [29]. Additional policy instruments were added to this list after the screening of the IPBES Global Assessment and regional assessments. The as­ sessment of the policy instruments is a meta-analysis: the main source of evidence used was the core text and the Annexes of Chapter 6 of the IPBES Global Assess­ ment, and where evidence was scarce, additional tar­ geted literature reviews were carried out. The assessment focused on evaluating the potential of policy instruments to change the current status quo ei­ ther through incremental steps or via more transforma­ tional processes. Assessing how far policy instruments can support transformational or incremental is challen­ ging for several reasons. First, for many instruments, there is a lack of detailed empirical evidence on place- based implementation. Second, in practice, several policy instruments are implemented at the same time as part of a policy-mix, hence the impacts of a single in­ strument are hard to identify as those usually emerge as a result of interplay (synergies or incoherencies) be­ tween all the used instruments. Third, even where ro­ bust evidence is available for a single instrument, it often shows a high variability across the different con­ texts. This highlights that how far a policy instrument supports transformational or incremental change de­ pends largely on how exactly it is implemented and how much it aims to challenge the institutional settings that maintain the status quo. These challenges of evaluation lead us to choose the potential for change (either trans­ formational or incremental) as the focus of our analysis. The potential for incremental or transformational change was evaluated via the above detailed five criteria. Each of these five criteria was assessed on a three-point scale: (1) unlikely to meet the criteria if maximum one sub­ question could be answered by yes (score = 0), (2) medium potential to meet the criteria if 2–3 subques­ tions could be answered by yes (score = 1), and (3) high potential to meet the criteria if three or more subques­ tions could be answered by yes (score = 2). Whether a policy instrument has potential for inducing incremental or transformational change was decided based on the scoring: • Policy instruments were justified as having more transformational potential if the average score across the five criteria was equal or higher than 1.5, • Policy instruments were justified as having more in­ cremental potential if the average score across the five criteria was higher than 0.8 and lower than 1.5, • Policy instruments were justified as maintaining the status quo if the average score across the five criteria was equal or lower than 0.8. Signposts toards transformative governance Kelemen et al. 7 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 Additionally, we collected and synthesized information on all instruments regarding what kind of valuation ap­ proach (a pluralistic and inclusive valuation or a narrower approach) is usually referred to in the literature for the given instrument (although information on this aspect was often scarce), who are the key stakeholders im­ plementing or being influenced by the instrument, what is the potential scale(s) of implementation, and what is the geographical spread of implementation. To investigate consequences of narrow and plural value approaches more deeply in and for policy, we assessed 46 international environmental initiatives that are ac­ tive at global or large regional scales. We define en­ vironmental initiatives as an agency, movement, or organization that works at a large regional or global scale and manages or influences (e.g. funds) multiple projects on the ground. For inclusion in our list of in­ itiatives, we had to ascertain that an agency, organiza­ tion, or movement • Oversees or (aims to) influence place-based projects, programs, policy, and decisions related to conserva­ tion of biodiversity and ecosystem services; • Is active over large regional (e.g. continental/sub­ continental) or global scales; • Concerns outcomes that link to biodiversity and ecosystem services; • Advocates knowledge and awareness regarding narrow, plural, or both values within its project ac­ tivities; • Has project and institutional documents available in the project domain. To identify initiatives, we used the following search cri­ teria using Google Search, and screened them against the inclusion criteria: “Environmental project”, “Ecosystem service valuation initiative”, “Ecosystem service valuation project”, “Biodiversity project”, “Biodiversity initiative”, ”Nature Project”, and “Environmental Project”. We also used “Environmental valuation initiative” and “Environmental valuation capacity building”. We also reviewed the IPBES database of policy support tools [29] to include any support tools that qualified under our in­ itiative definition. Upon establishment of our initiative list, we conducted a superficial assessment on the inclusion of diverse value approaches in each initiative, based on the initiatives’ mission, vision, “about”, and project web pages. We assessed each initiative against the following criteria: • Value(s) being addressed (based on IPBES typology: holistic value, health value, economic value, socio­ cultural value, and biophysical value) explicitly addressed in the description of the initiative, its mission and vision, and description of projects/work • Values’ typology (intrinsic, instrumental, and rela­ tional) • Diverse values present or not. We considered an in­ itiative to have diverse value inclusion when more than one value type (relational, instrumental, and intrinsic) was addressed • Whether or not the vision, mission, and “about us” pages considered indigenous and local knowledge • The IPBES region where an initiative was active (i.e. Africa, America, Europe–Central Asia, Asia-Pacific, and Global) • Dominant decision-making context: use, conserva­ tion, or development • Does it include targeted policy themes? • Does it speak to grand challenges? • Goals/objectives of the initiative • Work area boundary (Glob, Reg, Nat, Sub-nat, Ecosystem, and Sect) • Decision-makers targeted The superficial assessment of initiatives allowed us to assess how initiatives were generally aspiring to diverse value approaches, but to assess how diverse value ap­ proaches in policy were used to facilitate transformative governance, we assessed specific case studies that documented evidence of policy support for transforma­ tive governance. To identify case study for each initiative, we used one of two approaches: • We searched the SCOPUS and Web of Science da­ tabases using the following search string: “[name of initiative]” AND “values” AND “policy” AND “transformative governance” OR “status quo” OR “institutional change” OR “capacity building” OR “integration” OR “adaptation”. • Where an above search yielded no results, or papers that did not provide sufficient information or evi­ dence, we also used case studies reported on the in­ itiative’s web page. We balanced case studies by region, and specifically selected case studies that involved indigenous people and local communities. Generally, we selected case studies that presented more evidence on how policies could support transformative governance. We assessed each of the example initiatives along the following as­ pects:",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 15,
+      "raw_input": "What policy instruments are associated with the case?",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 16,
+      "raw_input": "Category of policy instrument",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 17,
+      "raw_input": "Elements of transformative governance present 8 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 18,
+      "raw_input": "Decision-making contexts",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 19,
+      "raw_input": "Stakeholders",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 20,
+      "raw_input": "Which broad values, specific values, and life frames are accounted for in the application of this policy instrument",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 21,
+      "raw_input": "At what scale is this policy instrument implemented? In this case, we used local, provincial/state, national, regional, international, and cross-scale",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 22,
+      "raw_input": "In which way did the application of policy support tools facilitate incorporation of (a) diverse value ap­ proaches and transformative governance",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 23,
+      "raw_input": "Leverage points For question eight, the dimensions differed from case to case, but elements that emerged included: what is the evidence for transformative governance presented (refer to subindicators), in which way were policy support tools used to facilitate policy implementations, how were stakeholders involved, and were multiple policy ap­ proaches used? References and recommended reading Papers of particular interest, published within the period of review, have been highlighted as: •• of special interest •• of outstanding interest.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 24,
+      "raw_input": "Bridgewater P, Schmeller DS: The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual). Biodivers Conserv 2023, 32:1-6, https://doi.org/10.1007/ s10531-022-02500-y",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 25,
+      "raw_input": "IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020, https://doi.org/10.5281/ zenodo.4147317",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 26,
+      "raw_input": "Settele J, Diaz S, Brondizio E, Daszak P: COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics. The Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services; 2020, 〈https://ipbes.net/covid19stimulus〉.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 27,
+      "raw_input": "IPBES: Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2019.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 28,
+      "raw_input": "SCBD: Global Biodiversity Outlook 5. Secretariat of the Convention on Biological Diversity; 2020, https://www.cbd.int/ gbo5.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 29,
+      "raw_input": "WWF: Living Planet Report 2020; 2020. 〈https://livingplanet. panda.org/en-gb/〉.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 30,
+      "raw_input": "Bulkeley H, Kok M, van Dijk J, Forsyth T, Nagy G, Villasante S: Moving towards transformative change (Workshop consultation draft, Post2020 GBF). Eklipse Expert Working Group; 2020. 〈https://www.eklipse-mechanism.eu/documents/13905/0/ Moving+Towards+Transformative+Change/〉.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 31,
+      "raw_input": "Burch S, Gupta A, Inoue CYA, Kalfagianni A, Persson Å, Gerlak AK, Ishii A, Patterson J, Pickering J, Scobie M, et al.: New directions in earth system governance research. Earth Syst Gov 2019, 1:100006, https://doi.org/10.1016/j.esg.2019.100006",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 32,
+      "raw_input": "IPBES: Summary for Policymakers of the Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. Edited by Pascual U, Balvanera P, Christie M, Baptiste B, González-Jiménez D, Anderson CB, Athayde S, Chaplin-Kramer R, Jacobs S, Kelemen E, Kumar R, Lazos E, Martin A, Mwampamba TH, Nakangu B, O’Farrell P, Raymond CM, Subramanian SM, Termansen M, Van Noordwijk M, Vatn A. IPBES secretariat, Bonn, Germany; 2022. 〈https://doi.org/10.5281/zenodo.6522392〉.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 33,
+      "raw_input": "Raymond C, Anderson CB, Athayde S, Vatn A, Amin A, Arias Arévalo P, Christie M, Cantú-Fernández M, Gould RK, Himes A, Kenter JO, Lenzi D, Muraca B, Murali R, O’Connor S, Pascual U, Sachdeva S, Samakov A, Zent E: An inclusive values typology for navigating transformations toward a just and sustainable future. Curr Opin Environ Sustain 2023,.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 34,
+      "raw_input": "Jacobs S, Kelemen E, O’Farrel P, Martin A, Schaafsma M, Dendoncker N, Pandit R, Mwampamba TH, Palomo I, Castro AJ, Huambachano MA, Filyushkina A, Gunimeda H: The pitfalls of plural valuation. Curr Opin Environ Sustain 2023,.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 35,
+      "raw_input": "Kelemen E, Subramanian S, Nakangu B, Islar M, Kosmus M, Nuesiri E, Porter-Bolland L, De Vos A, Amaruzaman S, Yiu E, Arroyo- Robles G: Chapter 6: policy options and capacity development to operationalize the inclusion of diverse values of nature in decision-making. In Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. Edited by Balvanera P, Pascual U, Christie M, Baptiste B, González-Jiménez D. IPBES Secretariat; 2022, , https://doi.org/10. 5281/zenodo.6522359",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 36,
+      "raw_input": "Chaffin BC, Garmestani AS, Gunderson LH, Benson MH, Angeler DG, Arnold (Tony) CA, Cosens B, Craig RK, Ruhl JB, Allen CR: Transformative environmental governance. Annu Rev Environ Resour 2016, 41:399-423, https://doi.org/10.1146/annurev- environ-110615-085817",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 37,
+      "raw_input": "Patterson J, Schulz K, Vervoort J, Van Der Hel S, Widerberg O, Adler C, Hurlbert M, Anderton K, Sethi M, Barau A: Exploring the governance and politics of transformations towards sustainability. Environ Innov Soc Transit 2017, 24:1-16, https://doi. org/10.1016/j.eist.2016.09.001",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 38,
+      "raw_input": "Beck S, Forsyth T: Who gets to imagine transformative change? Participation and representation in biodiversity assessments. Environ Conserv 2020, 47:1-4, https://doi.org/10.1017/ S0376892920000272",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 39,
+      "raw_input": "• Visseren-Hamakers IJ, Razzaque J, McElwee P, Turnhout E, Kelemen E, Rusch GM, Fernández-Llamazares Á, Chan I, Lim M, Islar M, et al.: Transformative governance of biodiversity: insights for sustainable development. Curr Opin Environ Sustain 2021, 53:20-28, https://doi.org/10.1016/j.cosust.2021.06.002. The paper reviews scientific literature on governance and transformative change to conceptualize the notion of transformative governance. It defines four main aspects of transformative governance: being in­ tegrative, inclusive, adaptive, and pluralist. It also highlights that trans­ formative governance is radically different from business-as-usual because it addresses the indirect drivers of biodiversity loss and in­ duces a multifaceted process of societal transition where changes in different realms are reinforcing each other.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 40,
+      "raw_input": "Förster JJ, Downsborough L, Biber-Freudenberger L, Kelboro Mensuro G, Börner J: Exploring criteria for transformative policy capacity in the context of South Africa’s biodiversity economy. Policy Sci 2020, 54:209-237, https://doi.org/10.1007/s11077-020- 09385-0",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 41,
+      "raw_input": "Leventon J, Duşe IA, Horcea-Milcu AI: Leveraging biodiversity action from plural values: transformations of governance systems. Front Ecol Evol 2021, 9:326, https://doi.org/10.3389/ fevo.2021.609853",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 42,
+      "raw_input": "Kelly C, Ellis G, Flannery W: Unravelling persistent problems to transformative marine governance. Front Mar Sci 2019, 6:213, https://doi.org/10.3389/fmars.2019.00213",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 43,
+      "raw_input": "Schreurs F, Bekker MPM, Helderman JK, Jansen M, Ruwaard D: Transformative governance for public health: a scoping review. Eur J Public Health 2019, 29:ckz186.705, https://doi.org/10.1093/ eurpub/ckz186.706",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 44,
+      "raw_input": "Göpel M: The Great Mindshift: How a New Economic Paradigm and Sustainability Transformations Go Hand in Hand. Springer International Publishing; 2016, https://doi.org/10.1007/978-3-319- 43766-8",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 45,
+      "raw_input": "GIZ GmbH: Cooperation Management for Practitioners Managing Social Change with Capacity WORKS. Springer Gabler; 2015.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 46,
+      "raw_input": "GIZ GmbH: Principles for Ecosystem Services Assessment: Elements, Methods, Tools and Tips, Manual for Trainers (ValuES Project Integrating Ecosystem Services into Policy, Planning and Practice). GIZ; 2018, http://www.aboutvalues.net/ data/trainings/3_manual_principlesesav_low.pdf.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 47,
+      "raw_input": "Borie M, Gustafsson KM, Obermeister N, Turnhout E, Bridgewater P: Institutionalising reflexivity? Transformative learning and the Intergovernmental science-policy Platform on Biodiversity and Ecosystem Services (IPBES). Environ Sci Policy 2020, 110:71-76, https://doi.org/10.1016/j.envsci.2020.05.005",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 48,
+      "raw_input": "In: Carrots, Sticks, and Sermons: Policy Instruments and Their Evaluation. Edited by Bemelmans-Videc ML, Rist RC, Vedung EO. Vol. 1 Routlege; 1998:280, , https://doi.org/10.4324/ 9781315081748",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 49,
+      "raw_input": "IPBES: Policy Support Gateway. IPBES Secretariat; 2017, https:// ipbes.net/policy-3917support.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 50,
+      "raw_input": "Echavarría RR, Orosz A: Buen vivir and changes in education in Ecuador, 2006–2016. Lat Am Perspect 2021, 48:119-135, https:// doi.org/10.1177/0094582X211009270",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 51,
+      "raw_input": "Dengler C, Strunk B: The monetized economy versus care and the environment: degrowth perspectives on reconciling an antagonism. Fem Econ 2018, 24:160-183, https://doi.org/10.1080/ 13545701.2017.1383620",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 52,
+      "raw_input": "Fernández-Llamazares Á, Díaz-Reviriego I, Guèze M, Cabeza M, Pyhälä A, Reyes-García V: Local perceptions as a guide for the sustainable management of natural resources: empirical evidence from a small-scale society in Bolivian Amazonia. Ecol Soc 2016, 21:art2, https://doi.org/10.5751/ES-08092-210102",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 53,
+      "raw_input": "Johnson JE, Hooper E, Welch DJ: Community Marine Monitoring Toolkit: a tool developed in the Pacific to inform community- based marine resource management. Mar Pollut Bull 2020, 159:111498, https://doi.org/10.1016/j.marpolbul.2020.111498",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 54,
+      "raw_input": "• Zafra-Calvo N, Pascual U, Brockington D, Coolsaet B, Cortes- Vazquez JA, Gross-Camp N, Palomo I, Burgess ND: Towards an indicator system to assess equitable management in protected areas. Biol Conserv 2017, 211:134-141, https://doi.org/10.1016/j. biocon.2017.05.014. The paper outlines the basis for undertaking plural valuation of nature, underscoring that this helps bridge across the multiple and diverse values held in different contexts by different actors (depending on use, purpose of valuation, and types of partnership with other actors in a context). The findings iterate that plural valuation approaches enable decision-making that promotes sustainability and justice and allows marginalized values of stakeholders to be made visible.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 55,
+      "raw_input": "Cui M, Ferreira F, Fung TK, Matos JS: Tale of two cities: how nature-based solutions help create adaptive and resilient urban water management practices in Singapore and Lisbon. Sustainability 2021, 13:10427, https://doi.org/10.3390/ su131810427",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 56,
+      "raw_input": "Chng K, Ong KW: The Singapore Green Plan 2030: analysing its implications on law and the legal industry in Singapore. Environ Law Rev 2021, 23:336-343, https://doi.org/10.1177/ 14614529211052597",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 57,
+      "raw_input": "Sydow J, Schreyögg G, Koch J: Organizational path dependence: opening the black box. Acad Manag Rev 2009, 34:689-709, https://doi.org/10.5465/amr.34.4.zok689",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 58,
+      "raw_input": "Kern F, Rogge KS, Howlett M: Policy mixes for sustainability transitions: new approaches and insights through bridging innovation and policy studies. Res Policy 2019, 48:103832, https://doi.org/10.1016/j.respol.2019.103832",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 59,
+      "raw_input": "Reed M, Stringer LC, Fazey I, Evely AC, Kruijsen JHJ: Five principles for the practice of knowledge exchange in environmental management. J Environ Manag 2014, 146:337-345, https://doi.org/10.1016/j.jenvman.2014.07.021",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 60,
+      "raw_input": "Wyborn C, Leith P: Doing Science Differently: Co-Producing Conservation Outcomes. Luc Hoffmann Institute; 2018:24.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 61,
+      "raw_input": "Laurans Y, Leflaive X, Rankovic A: Decision-making, now in 3D: exploring three dimensions of decision-making processes and their consequences for biodiversity research. Environ Sci Policy 2020, 113:31-38, https://doi.org/10.1016/j.envsci.2020.06.007 10 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 62,
+      "raw_input": "Gupta J, Termeer C, Klostermann J, Meijerink S, Van den Brink M, Jong P, Nooteboom S, Bergsma E: The adaptive capacity wheel: a method to assess the inherent characteristics of institutions to enable the adaptive capacity of society. Environ Sci Policy 2010, 13:459-471, https://doi.org/10.1016/j.envsci.2010.05.006",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 63,
+      "raw_input": "Kuhlicke C, Steinführer A: Preface: building social capacities for natural hazards: an emerging field for research and practice in Europe. Nat Hazards Earth Syst Sci 2015, 15:2359-2367, https:// doi.org/10.5194/nhess-15-2359-2015",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 64,
+      "raw_input": "Vallury S, Smith A, Chaffin BC, Nesbitt H, Lohani S, Gulab S, Banerjee S, Floyd T, Metcalf AL, Metcalf E, Twidwell D: Adaptive capacity beyond the household: a systematic review of empirical social-ecological research. Environ Res Lett 2022, 17:1-19, https://doi.org/10.1088/1748-9326/ac68fb",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 65,
+      "raw_input": "• Sterling EJ, Sigouin A, Betley E, Cheek JZ, Solomon JN, Landrigan K, Porzecanski AL, Bynum N, Cadena B, Cheng SH, Clements KR: The state of capacity development evaluation in biodiversity conservation and natural resource management. Oryx 2022, 56:728-739, https://doi.org/10.1017/S0030605321000570. The paper assesses the outputs and wider impacts of capacity devel­ opment in nature conservation through an evidence map built by re­ viewing scientific and gray literature since 2000. It highlights that enhancing knowledge, changing individual behavior, and altering atti­ tudes are the most frequently reported outcomes of capacity develop­ ment, while evidence is scarce on wider positive outcomes for nature conservation at systems level. This gap is partly due to the lack of long- term follow-up of capacity development initiatives and quests for more flexible, bottom-up, and systemic approaches to capacity development, which target diverse actors and enable co-ownership over the process.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "llm",
+      "raw_output": null,
+      "warnings": [
+        "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+      ],
+      "confidence": null
+    }
+  ],
+  "notes": [
+    "LLM prompt was generated but no API call was made."
+  ],
+  "prompt_text": "You are parsing already-segmented bibliographic references.\nReturn JSON only. No markdown. No commentary.\nOutput must be a JSON array with exactly one object per input reference in the same order.\nEach object must use this schema:\n{\"index\": <integer>, \"raw_input\": <string>, \"title\": <string|null>, \"authors\": <array of strings>, \"year\": <integer|null>, \"doi\": <string|null>, \"venue\": <string|null>, \"pages\": <string|null>, \"type\": <string|null>, \"identifiers\": <object>, \"confidence\": <number|null>, \"notes\": <array of strings>}\nRules:\n- Do not invent data.\n- If a field is unclear, use null or an empty array/object.\n- Keep the DOI normalized without URL prefixes if present.\n- raw_input must exactly match the input string.\n- index must exactly match the provided index.\n- authors must contain plain strings, not objects.\n\nPDF source: Kelemen_Subramanian_19.09.2023.pdf\nReferences:\n0: 7 0.9 0.9 0.5 0.9 Vested interests, overrepresentation of instrumental values, and high transaction costs impede the implementation of highly transformative solutions.\n1: 7% [30,31] For example, alternative economic models 2 2 2 1 2 Legal and regulatory (n = 13)\n2: 2\n3: 0\n4: 0 0.5 0.7 Enforcement is challenging due to power asymmetries, difficult to quickly adapt the legal structure, and coercive nature does not help capacity development.\n5: 0%\n6: For example, rights of nature 1 2 2 2 1 Rights-based and customary (n = 4)\n7: 3\n8: 0 Inclusive of diverse values but highly context-dependent, often incoherent with legal or economic instruments, suffering from power imbalances, and therefore difficult to upscale.\n9: 2%\n10: For example, other effective area-based conservation 1 2 2 1 1 Social and cultural (n = 7)\n11: 7\n12: 1 0.9\n13: 1 0.3 Highly diverse group of instruments implemented by a wide range of actors on a voluntary basis, measuring/monitoring achieved impacts, and upscaling is difficult.\n14: For example, comanagement regimes 2 2 1 2 1 The scoring of the policy instruments across the five assessment criteria was based on expert judgment. Scores varied on a nominal scale from 0 (not meeting the given criterion) to 2 (fulfilling the given criterion). The table indicates average scores for each type of policy instruments, and specific scores for one selected instrument within each type (in italics). Prevalence indicates which types of instruments are reported more frequently in the literature based on the review of 62 papers on policy uptake. 4 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 implemented, and evaluated in the interplay of multiple actors, values, and interests. Considering policymaking as a kaleidoscope, critical junctures and guiding principles can be identified to weave diverse values into the policy process (Figure 2). These points help address specific questions related to decisions that have an impact on nature and its con­ tributions to people, ranging from the identification of relevant stakeholders, right-holders, knowledge-holders, and their socio-environmental and political contexts, through addressing potential trade-offs and value con­ flicts that may arise from different decisions, to arriving at feasible entry points and — hopefully — more just and sustainable outcomes. Weaving values into the policy process requires different types of capacities both at individual and organizational level, to enable information exchange between and within networks [44], which incorporates diverse knowledge systems [45], fosters knowledge coproduc­ tion [46], and leads to synergistic actions. Such efforts should be understood as dynamic social processes of knowledge brokerage: bridging boundaries by trans­ forming concepts, principles, perspectives, and knowl­ edge into information that can be used and acted upon to influence decision-making in the real world [47,48]. Enhancing the information flow and strengthening the adaptive capacities of different actors at all intervention levels is key to balance power asymmetries, improve the outputs of negotiations, and reach more just and sus­ tainable results [38,49]. Enhance adaptive capacities to aid values- weaving The capacity of social–ecological systems to adapt to, and recover from, the intertwined climate, health, and environmental crises has received growing attention in the last decade [50,51]. Adaptive capacities can also support the shift toward values-centered policymaking by 1) building awareness and desire when oper­ ationalizing diverse values in decision-making; 2) pro­ viding knowledge and tools; 3) bringing together different ways of knowing and doing; 4) navigating trade-offs and uptake; 5) learning, adapting, and acting together; and 6) creating fair processes and institutions. The first three aspects allow the diverse values of nature to be recognized and understood by all relevant actors who take part in decision-making, while the last three aspects can ensure that fair institutions are created, which incorporate diverse values of nature in policy­ making in an explicit and legitimate way [12]. Since capacities are multidimensional, layered across societal groups, context-specific, and unevenly dis­ tributed geographically [52,53], developing capacities is equally important at personal, organizational, and Figure 1 Current Opinion in Environmental Sustainability Median number of transformative change criteria associated with policy options of varying diversity (n = 43 case studies). Policy options that address one value are associated with a median of 1.9 (IQR 1–3) transformative change criteria, while those that address two or three values are associated with 3.2 (IQR 1–5) and 4.1 (IQR 3–5), respectively. Figure 2 Current Opinion in Environmental Sustainability The kaleidoscope of values in policymaking. The figure illustrates that weaving diverse values can be facilitated through a process that leads through several junctures, such as identifying the purpose, stakeholders, and divergence/convergence between them, reconciling trade-offs, engaging in implementation, and evaluating outcomes. To foster a smoother process of engagement, six guiding principles have been identified that ensure the representation of different stakeholders, the meaningful and deliberate engagement amidst them, and therefore guarantee that the process is contextualized, fair, legitimate, and thereby credible, more equitably designed, and reflexive. Signposts toards transformative governance Kelemen et al. 5 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 systems levels. It often presumes that progress should be achieved compared with a base of existing (low) level of knowledge, skills, and resources via different approaches (e.g. formal trainings or mentorship) [54]. However, it can also be understood as a process of colearning be­ tween different actors, which can help transform top- down policy processes by enlarging the set of knowledge that decisions are built on, acknowledging a wider range of values of nature, and addressing power imbalances. Colearning approaches also enhance the understanding of status, trends, drivers, and impacts on nature and nature’s contribution to people and help identify work­ able policy options [55]. Conclusions Based on a meta-analysis of environmental policy op­ tions, this paper argues that rehauling the decision pro­ cess toward sustainability is possible, if formal and informal institutions (i.e. laws, norms, and policy in­ struments) are reoriented toward eliciting and in­ corporating diverse values at various junctures of the policy process. Following the value-weaving path at these junctures can aid decision-makers, as signposts help travelers on their journey: by indicating desirable outcomes that encourage transitions toward just and sustainable futures. Although general guiding principles can be identified, acting upon them requires more than technical skills, governance capacities, or negotiation abilities. Bringing together different ways of knowing, coordinating across scales and different social groups while balancing inequalities, and awakening inner mo­ tivations to consider diverse values are equally im­ portant. These findings emphasize that to achieve transformations toward sustainability, policy design, and implementation requires inclusive, participatory, and deliberative approaches across the spectrum of actors who influence any decisions related to nature and its use. Data Availability All data on which this paper is based are available in the IPBES methodological assessment on diverse values and valuation of nature. Declaration of Competing Interest The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. Acknowledgements The authors would like to thank IPBES for the opportunity to have contributed to Chapter 6 of the Values Assessment. While this article builds on Chapter 6, it represents only the views of the authors and not those of IPBES. We would like to especially thank Patricia Balvanera, Brigitte Baptiste, Unai Pascual, Mike Christie, and David González for their support, as well as all contributing authors for their work during the development of Chapter 6 of the IPBES VA. We are grateful for the constructive comments of the reviewers of this article. We would also like to thank Mariann Kovács (ESSRG) for designing Figure 1. EK acknowledges the financial support of the BioAgora project funded by the European Union (EU Horizon Europe programme, GA no. 101059438). Appendix: Methodological details of the assessment of different policy options’ transformative potential To develop the assessment criteria for transformative governance against, we can assess the potential of policy instruments to facilitate transformative change, we con­ ducted a literature review. From the literature review, we identified various aspects of transformative govern­ ance, which we then grouped into five main components (further discussed in the main text). These were address status quo, address diverse values, stimulate institutional changes, capacity-building, and integrative–adaptive governance. Within these broader categories, we defined the following criteria: Address status quo • Does the policy instrument/initiative address the di­ rect and indirect drivers of biodiversity loss (based on the IPBES Global Assessment)? • Does the policy instrument stimulate and/or promote a positive major shift to the states of ecosystem and biodiversity? • Does the policy instrument stimulate and/or promote a positive major shift in the social networks and power distribution? • Does the policy instrument stimulate and/or promote a positive major shift in rules and resource allocation in biodiversity governance? • Does the policy instrument promote positive changes in social production and consumption toward a more sustainable pattern? • Does the policy instrument challenge the inequalities and able to promote equalities among the social group involved in biodiversity management? Address diverse values • Does the policy instrument stimulate and/or promote a positive major shift in recognizing and revealing diverse knowledge and values of biodiversity? • Does the policy instrument provide room to accom­ modate or consider diverse values of different groups in biodiversity management, including the values of the local and indigenous people rooted in their indigenous local knowledge, in its decision-making process? • Does the policy instrument reflect or accommodate social and cultural values of the local community? • Does the policy instrument reflect or accommodate the indigenous local knowledge values of the local and indigenous people? 6 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 • Does the policy instrument acknowledge or accom­ modate the trade-off between values of biodiversity, including values of the marginal and underpowered group? Stimulate institutional changes • Does the policy instrument stimulate positive shifts (radical or incremental) in the organization, legisla­ tion, policies, and administration regarding biodi­ versity governance? • Does the policy instrument stimulate positive changes (radical or incremental) in the behavior, culture, and practices of actors involved in biodi­ versity governance? Promote and supported by sufficient capacity of actors • Do the actors have sufficient capacity to design the policy instrument? • Do the actors have sufficient capacity to implement the policy instrument at the targeted level(s)? • Do the marginal, under-represented, and less-pow­ erful groups be able to participate and influence the decision-making process throughout the policy process? • Do the actors have sufficient capacity to recognize and reveal the values of biodiversity throughout the policy instrument design and implementation? • Do the actors have sufficient capacity to collaborate, colearning, and coproducing values of biodiversity throughout the policy instrument? • Does the policy instrument improve the capacity of actors to recognize diverse values of biodiversity in the decision-making process? • Does the policy instrument improve the capacity of actors, particularly the marginal and less-powerful groups, to express their values of biodiversity in the decision-making process? Integrative and adaptive governance • Can the policy instrument be integrated into a policy- mix to stimulate positive transformation in biodi­ versity governance? • Can the policy instruments be adapted into local socio-economic–political culture to stimulate trans­ formations in biodiversity governance? • Does the policy instrument reflect the complexity and uncertainty of biodiversity values from different ac­ tors at the different levels involved in the biodiversity governance? We assessed altogether 37 policy instruments. The in­ itial list of policy instruments was derived from the IPBES Catalogue of Policy Instruments and Policy Support Tools [29]. Additional policy instruments were added to this list after the screening of the IPBES Global Assessment and regional assessments. The as­ sessment of the policy instruments is a meta-analysis: the main source of evidence used was the core text and the Annexes of Chapter 6 of the IPBES Global Assess­ ment, and where evidence was scarce, additional tar­ geted literature reviews were carried out. The assessment focused on evaluating the potential of policy instruments to change the current status quo ei­ ther through incremental steps or via more transforma­ tional processes. Assessing how far policy instruments can support transformational or incremental is challen­ ging for several reasons. First, for many instruments, there is a lack of detailed empirical evidence on place- based implementation. Second, in practice, several policy instruments are implemented at the same time as part of a policy-mix, hence the impacts of a single in­ strument are hard to identify as those usually emerge as a result of interplay (synergies or incoherencies) be­ tween all the used instruments. Third, even where ro­ bust evidence is available for a single instrument, it often shows a high variability across the different con­ texts. This highlights that how far a policy instrument supports transformational or incremental change de­ pends largely on how exactly it is implemented and how much it aims to challenge the institutional settings that maintain the status quo. These challenges of evaluation lead us to choose the potential for change (either trans­ formational or incremental) as the focus of our analysis. The potential for incremental or transformational change was evaluated via the above detailed five criteria. Each of these five criteria was assessed on a three-point scale: (1) unlikely to meet the criteria if maximum one sub­ question could be answered by yes (score = 0), (2) medium potential to meet the criteria if 2–3 subques­ tions could be answered by yes (score = 1), and (3) high potential to meet the criteria if three or more subques­ tions could be answered by yes (score = 2). Whether a policy instrument has potential for inducing incremental or transformational change was decided based on the scoring: • Policy instruments were justified as having more transformational potential if the average score across the five criteria was equal or higher than 1.5, • Policy instruments were justified as having more in­ cremental potential if the average score across the five criteria was higher than 0.8 and lower than 1.5, • Policy instruments were justified as maintaining the status quo if the average score across the five criteria was equal or lower than 0.8. Signposts toards transformative governance Kelemen et al. 7 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 Additionally, we collected and synthesized information on all instruments regarding what kind of valuation ap­ proach (a pluralistic and inclusive valuation or a narrower approach) is usually referred to in the literature for the given instrument (although information on this aspect was often scarce), who are the key stakeholders im­ plementing or being influenced by the instrument, what is the potential scale(s) of implementation, and what is the geographical spread of implementation. To investigate consequences of narrow and plural value approaches more deeply in and for policy, we assessed 46 international environmental initiatives that are ac­ tive at global or large regional scales. We define en­ vironmental initiatives as an agency, movement, or organization that works at a large regional or global scale and manages or influences (e.g. funds) multiple projects on the ground. For inclusion in our list of in­ itiatives, we had to ascertain that an agency, organiza­ tion, or movement • Oversees or (aims to) influence place-based projects, programs, policy, and decisions related to conserva­ tion of biodiversity and ecosystem services; • Is active over large regional (e.g. continental/sub­ continental) or global scales; • Concerns outcomes that link to biodiversity and ecosystem services; • Advocates knowledge and awareness regarding narrow, plural, or both values within its project ac­ tivities; • Has project and institutional documents available in the project domain. To identify initiatives, we used the following search cri­ teria using Google Search, and screened them against the inclusion criteria: “Environmental project”, “Ecosystem service valuation initiative”, “Ecosystem service valuation project”, “Biodiversity project”, “Biodiversity initiative”, ”Nature Project”, and “Environmental Project”. We also used “Environmental valuation initiative” and “Environmental valuation capacity building”. We also reviewed the IPBES database of policy support tools [29] to include any support tools that qualified under our in­ itiative definition. Upon establishment of our initiative list, we conducted a superficial assessment on the inclusion of diverse value approaches in each initiative, based on the initiatives’ mission, vision, “about”, and project web pages. We assessed each initiative against the following criteria: • Value(s) being addressed (based on IPBES typology: holistic value, health value, economic value, socio­ cultural value, and biophysical value) explicitly addressed in the description of the initiative, its mission and vision, and description of projects/work • Values’ typology (intrinsic, instrumental, and rela­ tional) • Diverse values present or not. We considered an in­ itiative to have diverse value inclusion when more than one value type (relational, instrumental, and intrinsic) was addressed • Whether or not the vision, mission, and “about us” pages considered indigenous and local knowledge • The IPBES region where an initiative was active (i.e. Africa, America, Europe–Central Asia, Asia-Pacific, and Global) • Dominant decision-making context: use, conserva­ tion, or development • Does it include targeted policy themes? • Does it speak to grand challenges? • Goals/objectives of the initiative • Work area boundary (Glob, Reg, Nat, Sub-nat, Ecosystem, and Sect) • Decision-makers targeted The superficial assessment of initiatives allowed us to assess how initiatives were generally aspiring to diverse value approaches, but to assess how diverse value ap­ proaches in policy were used to facilitate transformative governance, we assessed specific case studies that documented evidence of policy support for transforma­ tive governance. To identify case study for each initiative, we used one of two approaches: • We searched the SCOPUS and Web of Science da­ tabases using the following search string: “[name of initiative]” AND “values” AND “policy” AND “transformative governance” OR “status quo” OR “institutional change” OR “capacity building” OR “integration” OR “adaptation”. • Where an above search yielded no results, or papers that did not provide sufficient information or evi­ dence, we also used case studies reported on the in­ itiative’s web page. We balanced case studies by region, and specifically selected case studies that involved indigenous people and local communities. Generally, we selected case studies that presented more evidence on how policies could support transformative governance. We assessed each of the example initiatives along the following as­ pects:\n15: What policy instruments are associated with the case?\n16: Category of policy instrument\n17: Elements of transformative governance present 8 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351\n18: Decision-making contexts\n19: Stakeholders\n20: Which broad values, specific values, and life frames are accounted for in the application of this policy instrument\n21: At what scale is this policy instrument implemented? In this case, we used local, provincial/state, national, regional, international, and cross-scale\n22: In which way did the application of policy support tools facilitate incorporation of (a) diverse value ap­ proaches and transformative governance\n23: Leverage points For question eight, the dimensions differed from case to case, but elements that emerged included: what is the evidence for transformative governance presented (refer to subindicators), in which way were policy support tools used to facilitate policy implementations, how were stakeholders involved, and were multiple policy ap­ proaches used? References and recommended reading Papers of particular interest, published within the period of review, have been highlighted as: •• of special interest •• of outstanding interest.\n24: Bridgewater P, Schmeller DS: The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual). Biodivers Conserv 2023, 32:1-6, https://doi.org/10.1007/ s10531-022-02500-y\n25: IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020, https://doi.org/10.5281/ zenodo.4147317\n26: Settele J, Diaz S, Brondizio E, Daszak P: COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics. The Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services; 2020, 〈https://ipbes.net/covid19stimulus〉.\n27: IPBES: Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2019.\n28: SCBD: Global Biodiversity Outlook 5. Secretariat of the Convention on Biological Diversity; 2020, https://www.cbd.int/ gbo5.\n29: WWF: Living Planet Report 2020; 2020. 〈https://livingplanet. panda.org/en-gb/〉.\n30: Bulkeley H, Kok M, van Dijk J, Forsyth T, Nagy G, Villasante S: Moving towards transformative change (Workshop consultation draft, Post2020 GBF). Eklipse Expert Working Group; 2020. 〈https://www.eklipse-mechanism.eu/documents/13905/0/ Moving+Towards+Transformative+Change/〉.\n31: Burch S, Gupta A, Inoue CYA, Kalfagianni A, Persson Å, Gerlak AK, Ishii A, Patterson J, Pickering J, Scobie M, et al.: New directions in earth system governance research. Earth Syst Gov 2019, 1:100006, https://doi.org/10.1016/j.esg.2019.100006\n32: IPBES: Summary for Policymakers of the Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. Edited by Pascual U, Balvanera P, Christie M, Baptiste B, González-Jiménez D, Anderson CB, Athayde S, Chaplin-Kramer R, Jacobs S, Kelemen E, Kumar R, Lazos E, Martin A, Mwampamba TH, Nakangu B, O’Farrell P, Raymond CM, Subramanian SM, Termansen M, Van Noordwijk M, Vatn A. IPBES secretariat, Bonn, Germany; 2022. 〈https://doi.org/10.5281/zenodo.6522392〉.\n33: Raymond C, Anderson CB, Athayde S, Vatn A, Amin A, Arias Arévalo P, Christie M, Cantú-Fernández M, Gould RK, Himes A, Kenter JO, Lenzi D, Muraca B, Murali R, O’Connor S, Pascual U, Sachdeva S, Samakov A, Zent E: An inclusive values typology for navigating transformations toward a just and sustainable future. Curr Opin Environ Sustain 2023,.\n34: Jacobs S, Kelemen E, O’Farrel P, Martin A, Schaafsma M, Dendoncker N, Pandit R, Mwampamba TH, Palomo I, Castro AJ, Huambachano MA, Filyushkina A, Gunimeda H: The pitfalls of plural valuation. Curr Opin Environ Sustain 2023,.\n35: Kelemen E, Subramanian S, Nakangu B, Islar M, Kosmus M, Nuesiri E, Porter-Bolland L, De Vos A, Amaruzaman S, Yiu E, Arroyo- Robles G: Chapter 6: policy options and capacity development to operationalize the inclusion of diverse values of nature in decision-making. In Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. Edited by Balvanera P, Pascual U, Christie M, Baptiste B, González-Jiménez D. IPBES Secretariat; 2022, , https://doi.org/10. 5281/zenodo.6522359\n36: Chaffin BC, Garmestani AS, Gunderson LH, Benson MH, Angeler DG, Arnold (Tony) CA, Cosens B, Craig RK, Ruhl JB, Allen CR: Transformative environmental governance. Annu Rev Environ Resour 2016, 41:399-423, https://doi.org/10.1146/annurev- environ-110615-085817\n37: Patterson J, Schulz K, Vervoort J, Van Der Hel S, Widerberg O, Adler C, Hurlbert M, Anderton K, Sethi M, Barau A: Exploring the governance and politics of transformations towards sustainability. Environ Innov Soc Transit 2017, 24:1-16, https://doi. org/10.1016/j.eist.2016.09.001\n38: Beck S, Forsyth T: Who gets to imagine transformative change? Participation and representation in biodiversity assessments. Environ Conserv 2020, 47:1-4, https://doi.org/10.1017/ S0376892920000272\n39: • Visseren-Hamakers IJ, Razzaque J, McElwee P, Turnhout E, Kelemen E, Rusch GM, Fernández-Llamazares Á, Chan I, Lim M, Islar M, et al.: Transformative governance of biodiversity: insights for sustainable development. Curr Opin Environ Sustain 2021, 53:20-28, https://doi.org/10.1016/j.cosust.2021.06.002. The paper reviews scientific literature on governance and transformative change to conceptualize the notion of transformative governance. It defines four main aspects of transformative governance: being in­ tegrative, inclusive, adaptive, and pluralist. It also highlights that trans­ formative governance is radically different from business-as-usual because it addresses the indirect drivers of biodiversity loss and in­ duces a multifaceted process of societal transition where changes in different realms are reinforcing each other.\n40: Förster JJ, Downsborough L, Biber-Freudenberger L, Kelboro Mensuro G, Börner J: Exploring criteria for transformative policy capacity in the context of South Africa’s biodiversity economy. Policy Sci 2020, 54:209-237, https://doi.org/10.1007/s11077-020- 09385-0\n41: Leventon J, Duşe IA, Horcea-Milcu AI: Leveraging biodiversity action from plural values: transformations of governance systems. Front Ecol Evol 2021, 9:326, https://doi.org/10.3389/ fevo.2021.609853\n42: Kelly C, Ellis G, Flannery W: Unravelling persistent problems to transformative marine governance. Front Mar Sci 2019, 6:213, https://doi.org/10.3389/fmars.2019.00213\n43: Schreurs F, Bekker MPM, Helderman JK, Jansen M, Ruwaard D: Transformative governance for public health: a scoping review. Eur J Public Health 2019, 29:ckz186.705, https://doi.org/10.1093/ eurpub/ckz186.706\n44: Göpel M: The Great Mindshift: How a New Economic Paradigm and Sustainability Transformations Go Hand in Hand. Springer International Publishing; 2016, https://doi.org/10.1007/978-3-319- 43766-8\n45: GIZ GmbH: Cooperation Management for Practitioners Managing Social Change with Capacity WORKS. Springer Gabler; 2015.\n46: GIZ GmbH: Principles for Ecosystem Services Assessment: Elements, Methods, Tools and Tips, Manual for Trainers (ValuES Project Integrating Ecosystem Services into Policy, Planning and Practice). GIZ; 2018, http://www.aboutvalues.net/ data/trainings/3_manual_principlesesav_low.pdf.\n47: Borie M, Gustafsson KM, Obermeister N, Turnhout E, Bridgewater P: Institutionalising reflexivity? Transformative learning and the Intergovernmental science-policy Platform on Biodiversity and Ecosystem Services (IPBES). Environ Sci Policy 2020, 110:71-76, https://doi.org/10.1016/j.envsci.2020.05.005\n48: In: Carrots, Sticks, and Sermons: Policy Instruments and Their Evaluation. Edited by Bemelmans-Videc ML, Rist RC, Vedung EO. Vol. 1 Routlege; 1998:280, , https://doi.org/10.4324/ 9781315081748\n49: IPBES: Policy Support Gateway. IPBES Secretariat; 2017, https:// ipbes.net/policy-3917support.\n50: Echavarría RR, Orosz A: Buen vivir and changes in education in Ecuador, 2006–2016. Lat Am Perspect 2021, 48:119-135, https:// doi.org/10.1177/0094582X211009270\n51: Dengler C, Strunk B: The monetized economy versus care and the environment: degrowth perspectives on reconciling an antagonism. Fem Econ 2018, 24:160-183, https://doi.org/10.1080/ 13545701.2017.1383620\n52: Fernández-Llamazares Á, Díaz-Reviriego I, Guèze M, Cabeza M, Pyhälä A, Reyes-García V: Local perceptions as a guide for the sustainable management of natural resources: empirical evidence from a small-scale society in Bolivian Amazonia. Ecol Soc 2016, 21:art2, https://doi.org/10.5751/ES-08092-210102\n53: Johnson JE, Hooper E, Welch DJ: Community Marine Monitoring Toolkit: a tool developed in the Pacific to inform community- based marine resource management. Mar Pollut Bull 2020, 159:111498, https://doi.org/10.1016/j.marpolbul.2020.111498\n54: • Zafra-Calvo N, Pascual U, Brockington D, Coolsaet B, Cortes- Vazquez JA, Gross-Camp N, Palomo I, Burgess ND: Towards an indicator system to assess equitable management in protected areas. Biol Conserv 2017, 211:134-141, https://doi.org/10.1016/j. biocon.2017.05.014. The paper outlines the basis for undertaking plural valuation of nature, underscoring that this helps bridge across the multiple and diverse values held in different contexts by different actors (depending on use, purpose of valuation, and types of partnership with other actors in a context). The findings iterate that plural valuation approaches enable decision-making that promotes sustainability and justice and allows marginalized values of stakeholders to be made visible.\n55: Cui M, Ferreira F, Fung TK, Matos JS: Tale of two cities: how nature-based solutions help create adaptive and resilient urban water management practices in Singapore and Lisbon. Sustainability 2021, 13:10427, https://doi.org/10.3390/ su131810427\n56: Chng K, Ong KW: The Singapore Green Plan 2030: analysing its implications on law and the legal industry in Singapore. Environ Law Rev 2021, 23:336-343, https://doi.org/10.1177/ 14614529211052597\n57: Sydow J, Schreyögg G, Koch J: Organizational path dependence: opening the black box. Acad Manag Rev 2009, 34:689-709, https://doi.org/10.5465/amr.34.4.zok689\n58: Kern F, Rogge KS, Howlett M: Policy mixes for sustainability transitions: new approaches and insights through bridging innovation and policy studies. Res Policy 2019, 48:103832, https://doi.org/10.1016/j.respol.2019.103832\n59: Reed M, Stringer LC, Fazey I, Evely AC, Kruijsen JHJ: Five principles for the practice of knowledge exchange in environmental management. J Environ Manag 2014, 146:337-345, https://doi.org/10.1016/j.jenvman.2014.07.021\n60: Wyborn C, Leith P: Doing Science Differently: Co-Producing Conservation Outcomes. Luc Hoffmann Institute; 2018:24.\n61: Laurans Y, Leflaive X, Rankovic A: Decision-making, now in 3D: exploring three dimensions of decision-making processes and their consequences for biodiversity research. Environ Sci Policy 2020, 113:31-38, https://doi.org/10.1016/j.envsci.2020.06.007 10 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351\n62: Gupta J, Termeer C, Klostermann J, Meijerink S, Van den Brink M, Jong P, Nooteboom S, Bergsma E: The adaptive capacity wheel: a method to assess the inherent characteristics of institutions to enable the adaptive capacity of society. Environ Sci Policy 2010, 13:459-471, https://doi.org/10.1016/j.envsci.2010.05.006\n63: Kuhlicke C, Steinführer A: Preface: building social capacities for natural hazards: an emerging field for research and practice in Europe. Nat Hazards Earth Syst Sci 2015, 15:2359-2367, https:// doi.org/10.5194/nhess-15-2359-2015\n64: Vallury S, Smith A, Chaffin BC, Nesbitt H, Lohani S, Gulab S, Banerjee S, Floyd T, Metcalf AL, Metcalf E, Twidwell D: Adaptive capacity beyond the household: a systematic review of empirical social-ecological research. Environ Res Lett 2022, 17:1-19, https://doi.org/10.1088/1748-9326/ac68fb\n65: • Sterling EJ, Sigouin A, Betley E, Cheek JZ, Solomon JN, Landrigan K, Porzecanski AL, Bynum N, Cadena B, Cheng SH, Clements KR: The state of capacity development evaluation in biodiversity conservation and natural resource management. Oryx 2022, 56:728-739, https://doi.org/10.1017/S0030605321000570. The paper assesses the outputs and wider impacts of capacity devel­ opment in nature conservation through an evidence map built by re­ viewing scientific and gray literature since 2000. It highlights that enhancing knowledge, changing individual behavior, and altering atti­ tudes are the most frequently reported outcomes of capacity develop­ ment, while evidence is scarce on wider positive outcomes for nature conservation at systems level. This gap is partly due to the lack of long- term follow-up of capacity development initiatives and quests for more flexible, bottom-up, and systemic approaches to capacity development, which target diverse actors and enable co-ownership over the process.",
+  "raw_response_text": "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+}

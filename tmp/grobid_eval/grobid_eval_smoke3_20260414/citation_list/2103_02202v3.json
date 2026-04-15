@@ -1,0 +1,468 @@
+{
+  "paper_slug": "2103_02202v3",
+  "pdf_name": "2103.02202v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2103.02202v3.pdf",
+  "input_bucket": "explicit_override",
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "notes": [],
+  "summary": {
+    "parser": "grobid_citation_list",
+    "status": "ok",
+    "total_references": 29,
+    "title_non_empty": 28,
+    "authors_non_empty": 26,
+    "year_non_empty": 27,
+    "doi_non_empty": 15,
+    "almost_empty": 0,
+    "observations": [
+      "DOI coverage is relatively strong."
+    ]
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "Improved simulation of stabilizer circuits",
+        "authors": [
+          "Aaronson, Scott",
+          "Gottesman, Daniel"
+        ],
+        "doi": "10.1103/PhysRevA.70.052328",
+        "year": 2004,
+        "venue": "Physical Review A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.70.052328"
+        }
+      },
+      {
+        "id": "b1",
+        "title": "a new openqasm for a new era of dynamic circuits",
+        "authors": [
+          "Alexander, Thomas",
+          "Bishop, Lev",
+          "Cross, Andrew",
+          "Gambetta, Jay",
+          "Javadi-Abhari, Ali",
+          "Johnson, Blake",
+          "Smolin, John"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "2021–2021",
+        "identifiers": {},
+        "raw_citation": "for-a-new-era-of-dynamic-circuits-87f031cac49"
+      },
+      {
+        "id": "b2",
+        "title": "Fast simulation of stabilizer circuits using a graph-state representation",
+        "authors": [
+          "Anders, Simon",
+          "Briegel, Hans J"
+        ],
+        "doi": "10.1103/PhysRevA.73.022334",
+        "year": 2006,
+        "venue": "Physical Review A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.73.022334"
+        },
+        "raw_citation": "Accepted in Quantum 2021-06-16, click title to verify 23"
+      },
+      {
+        "id": "b3",
+        "title": "Operator quantum error-correcting subsystems for self-correcting quantum memo- ries",
+        "authors": [
+          "Bacon, Dave"
+        ],
+        "doi": "10.1103/PhysRevA.73.012340",
+        "year": 2006,
+        "venue": "Physical Review A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.73.012340"
+        }
+      },
+      {
+        "id": "b4",
+        "title": "Hadamard-free circuits expose the structure of the cliﬀord group",
+        "authors": [
+          "Bravyi, Sergey",
+          "Maslov, Dmitri"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:2003.09412"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b5",
+        "title": "Simulation of quantum circuits by low-rank stabilizer decompositions",
+        "authors": [
+          "Bravyi, Sergey",
+          "Browne, Dan",
+          "Calpin, Padraic",
+          "Campbell, Earl",
+          "Gosset, David",
+          "Howard, Mark"
+        ],
+        "doi": "10.22331/q-2019-09-02-181",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-09-02-181"
+        }
+      },
+      {
+        "id": "b6",
+        "title": "Eﬃcient classical simulation of cliﬀord circuits with non- stabilizer input states",
+        "authors": [
+          "Bu, Kaifeng",
+          "Enshan, Dax",
+          "Koh"
+        ],
+        "doi": "10.1103/Phys-RevLett.123.170502",
+        "year": 2019,
+        "venue": "Physical review letters",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/Phys-RevLett.123.170502"
+        }
+      },
+      {
+        "id": "b7",
+        "title": "Optimization of the surface code design for majorana-based qubits",
+        "authors": [
+          "Chao, Rui",
+          "Beverland, Michael E",
+          "Delfosse, Nicolas",
+          "Haah, Jeongwan"
+        ],
+        "doi": "10.22331/q-2020-10-28-352",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2020-10-28-352"
+        },
+        "raw_citation": "Quantum, 4:352, 2020"
+      },
+      {
+        "id": "b8",
+        "title": "Qiskit: An open-source framework for quantum computing",
+        "authors": [
+          "Contributors, Qiskit"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b9",
+        "title": "",
+        "authors": [],
+        "doi": null,
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "5281/zenodo.2562110"
+        }
+      },
+      {
+        "id": "b10",
+        "title": "Surface codes: Towards practical large-scale quantum computation",
+        "authors": [
+          "Fowler, A G",
+          "Mariantoni, M",
+          "Martinis, J M",
+          "Cleland, A N"
+        ],
+        "doi": "10.1103/PhysRevA.86.032324",
+        "year": 2012,
+        "venue": "Phys. Rev. A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.86.032324",
+          "arxiv": "arXiv:1208.0928"
+        }
+      },
+      {
+        "id": "b11",
+        "title": "Eﬃcient magic state factories with a catalyzed |ccz⟩to 2|t⟩ transformation",
+        "authors": [
+          "Gidney, Craig",
+          "Fowler, Austin G"
+        ],
+        "doi": "10.22331/q-2019-04-30-135",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-04-30-135"
+        }
+      },
+      {
+        "id": "b12",
+        "title": "Informal private conversations about simu- lation bottlenecks",
+        "authors": [
+          "Gidney, Craig",
+          "Fowler, Austin",
+          "Newman, Michael"
+        ],
+        "doi": null,
+        "year": 2021,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Stabilizer codes and quantum error correction",
+        "authors": [
+          "Gottesman, Daniel"
+        ],
+        "doi": null,
+        "year": 1997,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "quant- ph/9705052"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b14",
+        "title": "Hudson’s theorem for ﬁnite-dimensional quantum systems",
+        "authors": [
+          "Gross, David"
+        ],
+        "doi": "10.1063/1.2393152",
+        "year": 2006,
+        "venue": "Journal of mathematical physics",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1063/1.2393152"
+        }
+      },
+      {
+        "id": "b15",
+        "title": "Surface code quantum computing by lattice surgery",
+        "authors": [
+          "Horsman, Clare",
+          "Fowler, Austin G",
+          "Devitt, Simon",
+          "Van Meter, Rodney"
+        ],
+        "doi": "10.1088/1367-2630/14/12/123011",
+        "year": 2012,
+        "venue": "New Journal of Physics",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1088/1367-2630/14/12/123011"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "response times: The 3 important limits",
+        "authors": [
+          "Nielsen, Jakob",
+          "Hořeňovský"
+        ],
+        "doi": null,
+        "year": 1993,
+        "venue": "",
+        "pages": "2021–2021",
+        "identifiers": {}
+      },
+      {
+        "id": "b17",
+        "title": "generating random numbers using c++ standard library: the problems",
+        "authors": [
+          "Hořeňovský, Martin"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "2021–2021",
+        "identifiers": {}
+      },
+      {
+        "id": "b18",
+        "title": "An- swer to \"how many n-qubit stabilizer states are there?",
+        "authors": [],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Yack. version: 2021-01-27"
+      },
+      {
+        "id": "b19",
+        "title": "Feynman-path-type simulation using stabilizer projector decomposi- tion of unitaries",
+        "authors": [
+          "Huang, Yifei",
+          "Love, Peter"
+        ],
+        "doi": "10.1103/physreva.103.022428",
+        "year": 2021,
+        "venue": "Physical Review A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/physreva.103.022428"
+        }
+      },
+      {
+        "id": "b20",
+        "title": "Intel intrinsics guide (_mm256_and_si256",
+        "authors": [
+          "Intel"
+        ],
+        "doi": null,
+        "year": 2021,
+        "venue": "",
+        "pages": "2021–2021",
+        "identifiers": {},
+        "raw_citation": "256_and_si256&expand=301"
+      },
+      {
+        "id": "b21",
+        "title": "Contextuality bounds the eﬃciency of classical simulation of quantum processes",
+        "authors": [
+          "Karanjai, Angela",
+          "Wallman, Joel J",
+          "Bartlett, Stephen D"
+        ],
+        "doi": null,
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1802.07744"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b22",
+        "title": "Quantum computing with realistically noisy devices",
+        "authors": [
+          "Knill, Emanuel"
+        ],
+        "doi": "10.1038/nature03350",
+        "year": 2005,
+        "venue": "Nature",
+        "pages": "39–44",
+        "identifiers": {
+          "doi": "10.1038/nature03350"
+        },
+        "raw_citation": "Accepted in Quantum 2021-06-16, click title to verify 24"
+      },
+      {
+        "id": "b23",
+        "title": "Surface code error correction on a defective lattice",
+        "authors": [
+          "Nagayama, Shota",
+          "Fowler, Austin G",
+          "Horsman, Dominic",
+          "Devitt, Simon J",
+          "Van Meter, Rodney"
+        ],
+        "doi": "10.1088/1367-2630/aa5918",
+        "year": 2017,
+        "venue": "New Journal of Physics",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1088/1367-2630/aa5918"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "Usability engineering",
+        "authors": [
+          "Nielsen, Jakob"
+        ],
+        "doi": null,
+        "year": 1994,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b25",
+        "title": "approximate timing for various operations on a typical pc",
+        "authors": [
+          "Norvig, Peter"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "2021–2021",
+        "identifiers": {}
+      },
+      {
+        "id": "b26",
+        "title": "Quantum AI team and collaborators. Cirq",
+        "authors": [],
+        "doi": "10.5281/zenodo.4062499",
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5281/zenodo.4062499"
+        }
+      },
+      {
+        "id": "b27",
+        "title": "Experimental pauli-frame randomization on a superconducting qubit",
+        "authors": [
+          "Ware, Matthew",
+          "Ribeill, Guilhem",
+          "Riste, Diego",
+          "Ryan, Colm",
+          "Johnson, Blake",
+          "Silva, Marcus P Da"
+        ],
+        "doi": "10.1103/PhysRevA.103.042604",
+        "year": 2017,
+        "venue": "",
+        "pages": "46–50",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.103.042604"
+        }
+      },
+      {
+        "id": "b28",
+        "title": "]) c *= rounds # Collect and print samples. sampler = c.compile_sampler() samples = sampler.sample(1024) for sample in samples: print(sample) A.3 (Python) Interactive quantum teleportation Accepted in Quantum 2021-06-16, click title to verify 25 import stim s = stim.TableauSimulator() # Share EPR pair. s.h(1) s.cnot(1, 9) # Prepare state to teleport. s.h(0) s.s(0) # Alice measurements. s.cnot(0, 1) s.h(0) x, z = s.measure_many(1, 0) # Bob corrections",
+        "authors": [
+          "Wikipedia"
+        ],
+        "doi": null,
+        "year": 2021,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "qubits[1::2"
+        },
+        "raw_citation": "A Short Usage Examples A.1 (Command Line) Sample a noisy repetition code 1024 times. Tableau(10) x5: stim.PauliString = t.x_output(5) z6: stim.PauliString = t.z_output(6) assert t_inverse(x5 * z6) == stim.PauliString(\"+_____XZ___\") s = stim.TableauSimulator() s.set_inverse_tableau(t) stabilizers = s.canonical_stabilizers(. assert stabilizers[0].commutes(stabilizers[1. Accepted in Quantum 2021-06-16, click title to verify 26"
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 29,
+    "_warnings": []
+  }
+}

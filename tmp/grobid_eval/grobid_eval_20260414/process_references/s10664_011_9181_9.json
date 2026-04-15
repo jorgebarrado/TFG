@@ -1,0 +1,397 @@
+{
+  "paper_slug": "s10664_011_9181_9",
+  "pdf_name": "s10664-011-9181-9.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\s10664-011-9181-9.pdf",
+  "input_bucket": "small_reference_set",
+  "extractor_summary": {
+    "total_references": 2,
+    "likely_valid": 2,
+    "likely_garbage": 0,
+    "doi_non_empty": 0,
+    "references_header_found": true,
+    "references_numbered": false,
+    "citation_style": "non_numeric",
+    "max_reference_index": 2,
+    "input_warnings": [
+      "very_small_reference_set"
+    ]
+  },
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 24,
+    "title_non_empty": 24,
+    "authors_non_empty": 24,
+    "year_non_empty": 23,
+    "doi_non_empty": 0,
+    "likely_valid": 24,
+    "likely_garbage": 0,
+    "usable_bibliography": true
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "On the shoulders of giants",
+        "authors": [
+          "Barr, E T",
+          "Bird, C",
+          "Hyatt, E",
+          "Menzies, T",
+          "Robles, G"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "",
+        "pages": "23–28",
+        "identifiers": {}
+      },
+      {
+        "id": "b1",
+        "title": "Building knowledge through families of experiments",
+        "authors": [
+          "Basili, V R",
+          "Shull, F",
+          "Lanubile, F"
+        ],
+        "doi": null,
+        "year": 1999,
+        "venue": "IEEE Trans Softw Eng",
+        "pages": "456–473",
+        "identifiers": {}
+      },
+      {
+        "id": "b2",
+        "title": "PROMISE repository of empirical software engineering data",
+        "authors": [
+          "Boetticher, G",
+          "Menzies, T",
+          "Ostrand, T"
+        ],
+        "doi": null,
+        "year": 2001,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Technical report"
+      },
+      {
+        "id": "b3",
+        "title": "Reproducible research in computational harmonic analysis",
+        "authors": [
+          "Donoho, D L",
+          "Maleki, A",
+          "Rahman, I U",
+          "Shahram, M",
+          "Stodden, V"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Comput Sci Eng",
+        "pages": "8–18",
+        "identifiers": {}
+      },
+      {
+        "id": "b4",
+        "title": "Knowledge discovery and data mining: towards a unifying framework",
+        "authors": [
+          "Fayyad, U",
+          "Piatetsky-Shapiro, G",
+          "Smyth, P"
+        ],
+        "doi": null,
+        "year": 1996,
+        "venue": "",
+        "pages": "82–88",
+        "identifiers": {}
+      },
+      {
+        "id": "b5",
+        "title": "Guest editors' introduction: reproducible research",
+        "authors": [
+          "Fomel, S",
+          "Claerbout, J F"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Comput Sci Eng",
+        "pages": "5–7",
+        "identifiers": {}
+      },
+      {
+        "id": "b6",
+        "title": "Statistical analyses and reproducible research",
+        "authors": [
+          "Gentleman, R",
+          "Lang, D T"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "J Comput Graph Stat",
+        "pages": "1–23",
+        "identifiers": {}
+      },
+      {
+        "id": "b7",
+        "title": "Mining CVS repositories, the softChange experience",
+        "authors": [
+          "Germán, D M"
+        ],
+        "doi": null,
+        "year": 2004,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b8",
+        "title": "Replication, reproduction and re-analysis: three ways for verifying experimental findings",
+        "authors": [
+          "Gomez, O S",
+          "Juristo, N",
+          "Vegas, S ;",
+          "Robles, G",
+          "Michlmayr, M",
+          "Amor, J J",
+          "Germán, D M"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "262–285",
+        "identifiers": {},
+        "raw_citation": "Macro-level software evolution: a case study of a large software compilation"
+      },
+      {
+        "id": "b9",
+        "title": "Text mining for software engineering: how analyst feedback impacts final results",
+        "authors": [
+          "Hayes, J H",
+          "Dekhtyar, A",
+          "Sundaram, S"
+        ],
+        "doi": null,
+        "year": 2005,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b10",
+        "title": "FLOSSMetrics: Free/Libre/Open Source Software Metrics",
+        "authors": [
+          "Herraiz, I",
+          "Izquierdo-Cortazar, D",
+          "Rivas-Hernández, F"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "281–284",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "FLOSSmole: a collaborative repository for FLOSS research data and analyses",
+        "authors": [
+          "Hothorn, T",
+          "Leisch, F ;",
+          "Bioinform Howison, J",
+          "Conklin, M",
+          "Crowston, K"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "IJITWE",
+        "pages": "17–26",
+        "identifiers": {},
+        "raw_citation": "Case studies in reproducibility"
+      },
+      {
+        "id": "b12",
+        "title": "Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010)",
+        "authors": [
+          "Knutson, C D",
+          "Krein, J L",
+          "Prechelt, L",
+          "Juristo, N"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "",
+        "pages": "42–44",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "On reproducible econometric research",
+        "authors": [
+          "Koenker, R",
+          "Zeileis, A"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "J Appl Econ",
+        "pages": "833–847",
+        "identifiers": {}
+      },
+      {
+        "id": "b14",
+        "title": "Replicating software engineering experiments: a poisoned chalice or the holy grail",
+        "authors": [
+          "Miller, J"
+        ],
+        "doi": null,
+        "year": 2005,
+        "venue": "Inf Softw Technol",
+        "pages": "233–244",
+        "identifiers": {}
+      },
+      {
+        "id": "b15",
+        "title": "Predicting eclipse bug lifetimes",
+        "authors": [
+          "Panjer, L D"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b16",
+        "title": "Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings",
+        "authors": [
+          "Robles, G"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "",
+        "pages": "171–180",
+        "identifiers": {}
+      },
+      {
+        "id": "b17",
+        "title": "Beyond replication: an example of the potential benefits of replicability in the mining of software repositories community",
+        "authors": [
+          "Robles, G",
+          "Germán, D M"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "RESER 2010"
+      },
+      {
+        "id": "b18",
+        "title": "Beyond source code: the importance of other artifacts in software development (a case study)",
+        "authors": [
+          "Robles, G",
+          "González-Barahona, J M",
+          "Jj, Merelo-Guervós"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "J Syst Softw",
+        "pages": "1233–1248",
+        "identifiers": {}
+      },
+      {
+        "id": "b19",
+        "title": "Knowledge-sharing issues in experimental software engineering",
+        "authors": [
+          "Shull, F",
+          "Mendonça, M G",
+          "Basili, V R",
+          "Carver, J",
+          "Maldonado, J C",
+          "Fabbri, Scpf",
+          "Travassos, G H",
+          "De Oliveira, Mcf"
+        ],
+        "doi": null,
+        "year": 2004,
+        "venue": "Empir Software Eng",
+        "pages": "111–137",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "The role of replications in empirical software engineering",
+        "authors": [
+          "Shull, F J",
+          "Carver, J C",
+          "Vegas, S",
+          "Juristo, N"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "Empir Software Eng",
+        "pages": "211–218",
+        "identifiers": {}
+      },
+      {
+        "id": "b21",
+        "title": "Experiences with reproducible research in various facets of signal processing research",
+        "authors": [
+          "Vandewalle, P",
+          "Barrenexea, G",
+          "Jovanovic, I",
+          "Ridolfi, A",
+          "Vetterli, M"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "IV-1253- IV-1256"
+        }
+      },
+      {
+        "id": "b22",
+        "title": "Analysis of the influence of communication between researchers on experiment replication",
+        "authors": [
+          "Vegas, S",
+          "Juristo, N",
+          "Moreno, A",
+          "Solari, M",
+          "Letelier, P"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "",
+        "pages": "28–37",
+        "identifiers": {}
+      },
+      {
+        "id": "b23",
+        "title": "His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects",
+        "authors": [
+          "Jesús, M",
+          "González-Barahona, Universidad",
+          "Rey, Juan",
+          "Carlos, Mostoles (",
+          "Spain, )"
+        ],
+        "doi": null,
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "He is also one of the promoters of the idea of a European masters program on libre software, and has specific. interest in education relating to that area"
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 24,
+    "_warnings": []
+  }
+}

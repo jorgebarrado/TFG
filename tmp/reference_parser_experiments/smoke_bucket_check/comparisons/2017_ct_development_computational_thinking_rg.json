@@ -1,0 +1,261 @@
+{
+  "paper_slug": "2017_ct_development_computational_thinking_rg",
+  "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+  "rows": [
+    {
+      "index": 0,
+      "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+      "refextract": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": "1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314-330",
+        "authors": [
+          "Phillip L. Ackerman and Eric L. Rolfhus"
+        ],
+        "year": 2017,
+        "doi": "10.1037/0882-7974.14.2.314",
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "1"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone"
+            ],
+            "author": [
+              "Phillip L. Ackerman and Eric L. Rolfhus"
+            ],
+            "misc": [
+              "1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314-330",
+              "WiPSCE ’17, November 8-10,, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone"
+            ],
+            "doi": [
+              "doi:10.1037/0882-7974.14.2.314"
+            ],
+            "year": [
+              "2017"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_loaded_with_magic_shim_string_mode_only"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 1,
+      "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+      "refextract": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky.. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9-14",
+        "authors": [],
+        "year": 2017,
+        "doi": "10.1145/3017680",
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "2"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791"
+            ],
+            "misc": [
+              "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky.. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9-14",
+              "3017791"
+            ],
+            "doi": [
+              "doi:10.1145/3017680"
+            ],
+            "year": [
+              "2017"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_loaded_with_magic_shim_string_mode_only"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 2,
+      "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+      "refextract": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": "Association for Computing Machinery",
+        "authors": [
+          "A Model Curriculum"
+        ],
+        "year": 2003,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "3"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381."
+            ],
+            "misc": [
+              "Association for Computing Machinery",
+              "for K-12 Computer",
+              "Science: Final Report of the ACM K-12 Task",
+              "Force Curriculum Committee. ACM, New York. OCLC: 907036381"
+            ],
+            "author": [
+              "A Model Curriculum"
+            ],
+            "year": [
+              "2003"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_loaded_with_magic_shim_string_mode_only"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    }
+  ]
+}

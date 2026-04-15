@@ -1,0 +1,983 @@
+{
+  "paper_slug": "kelemen_subramanian_19_09_2023",
+  "pdf_name": "Kelemen_Subramanian_19.09.2023.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\Kelemen_Subramanian_19.09.2023.pdf",
+  "input_bucket": "low_alpha_or_short_noise",
+  "extractor_summary": {
+    "total_references": 66,
+    "likely_valid": 56,
+    "likely_garbage": 10,
+    "doi_non_empty": 31,
+    "references_header_found": true,
+    "references_numbered": true,
+    "citation_style": "numeric",
+    "max_reference_index": 82,
+    "input_warnings": [
+      "raw_references_contain_many_short_or_low_alpha_entries"
+    ]
+  },
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 54,
+    "title_non_empty": 53,
+    "authors_non_empty": 51,
+    "year_non_empty": 48,
+    "doi_non_empty": 42,
+    "likely_valid": 52,
+    "likely_garbage": 2,
+    "usable_bibliography": true
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "References and recommended reading Papers of particular interest, published within the period of review, have been highlighted as: •• of special interest •• of outstanding interest",
+        "authors": [],
+        "doi": null,
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b1",
+        "title": "The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual)",
+        "authors": [
+          "Bridgewater, P",
+          "Schmeller, D S"
+        ],
+        "doi": "10.1007/s10531-022-02500-y",
+        "year": 2023,
+        "venue": "",
+        "pages": "1–6",
+        "identifiers": {
+          "doi": "10.1007/s10531-022-02500-y"
+        }
+      },
+      {
+        "id": "b2",
+        "title": "IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020",
+        "authors": [],
+        "doi": "10.5281/zenodo.4147317",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5281/zenodo.4147317"
+        }
+      },
+      {
+        "id": "b3",
+        "title": "COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics",
+        "authors": [
+          "Settele, J",
+          "Diaz, S",
+          "Brondizio, E",
+          "Daszak, P"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "The Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b4",
+        "title": "Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat",
+        "authors": [
+          "Ipbes"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b5",
+        "title": "Global Biodiversity Outlook 5. Secretariat of the Convention on Biological Diversity",
+        "authors": [
+          "Scbd"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b6",
+        "title": "",
+        "authors": [
+          "Wwf"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Living Planet Report"
+      },
+      {
+        "id": "b7",
+        "title": "Moving towards transformative change",
+        "authors": [
+          "Bulkeley, H",
+          "Kok, M",
+          "Van Dijk, J",
+          "Forsyth, T",
+          "Nagy, G",
+          "Villasante, S"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Workshop consultation draft, Post2020 GBF"
+      },
+      {
+        "id": "b8",
+        "title": "New directions in earth system governance research",
+        "authors": [
+          "Burch, S",
+          "Gupta, A",
+          "Inoue, Cya",
+          "Kalfagianni, A",
+          "Persson, Å",
+          "Gerlak, A K",
+          "Ishii, A",
+          "Patterson, J",
+          "Pickering, J",
+          "Scobie, M"
+        ],
+        "doi": "10.1016/j.esg.2019.100006",
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1016/j.esg.2019.100006"
+        }
+      },
+      {
+        "id": "b9",
+        "title": "Summary for Policymakers of the Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services",
+        "authors": [
+          "Ipbes ; Pascual, U",
+          "Balvanera, P",
+          "Christie, M",
+          "Baptiste, B",
+          "González-Jiménez, D",
+          "Anderson, C B",
+          "Athayde, S",
+          "Chaplin-Kramer, R",
+          "Jacobs, S",
+          "Kelemen, E",
+          "Kumar, R",
+          "Lazos, E",
+          "Martin, A",
+          "Mwampamba, T H",
+          "Nakangu, B",
+          "Farrell, O'",
+          "Raymond, P",
+          "Subramanian, C M",
+          "Termansen, S M",
+          "Van Noordwijk, M",
+          "Vatn, M",
+          "A"
+        ],
+        "doi": "10.5281/zenodo.6522392",
+        "year": 2022,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5281/zenodo.6522392"
+        }
+      },
+      {
+        "id": "b10",
+        "title": "An inclusive values typology for navigating transformations toward a just and sustainable future",
+        "authors": [
+          "Raymond, C",
+          "Anderson, C B",
+          "Athayde, S",
+          "Vatn, A",
+          "Amin, A",
+          "Arévalo, Arias",
+          "Christie, P",
+          "Cantú-Fernández, M",
+          "Gould, M",
+          "Himes, R K",
+          "Kenter, A",
+          "Lenzi, J O",
+          "Muraca, D",
+          "Murali, B",
+          "R",
+          "Connor, O'",
+          "Pascual, S",
+          "Sachdeva, U",
+          "Samakov, S",
+          "Zent, A",
+          "E"
+        ],
+        "doi": null,
+        "year": 2023,
+        "venue": "Curr Opin Environ Sustain",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "The pitfalls of plural valuation",
+        "authors": [
+          "Jacobs, S",
+          "Kelemen, E",
+          "Farrel, O'",
+          "P",
+          "Schaafsma, Martin A",
+          "Dendoncker, M",
+          "Pandit, N",
+          "Mwampamba, R",
+          "Palomo, T H",
+          "Castro, I",
+          "Huambachano, A J",
+          "Filyushkina, M A",
+          "Gunimeda, A",
+          "H"
+        ],
+        "doi": null,
+        "year": 2023,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b12",
+        "title": "Chapter 6: policy options and capacity development to operationalize the inclusion of diverse values of nature in decision-making",
+        "authors": [
+          "Kelemen, E",
+          "Subramanian, S",
+          "Nakangu, B",
+          "Islar, M",
+          "Kosmus, M",
+          "Nuesiri, E",
+          "Porter-Bolland, L",
+          "Vos, De",
+          "Amaruzaman, A",
+          "Yiu, S",
+          "Arroyo-Robles, E",
+          "G"
+        ],
+        "doi": "10.5281/zenodo.6522359",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5281/zenodo.6522359"
+        }
+      },
+      {
+        "id": "b13",
+        "title": "Transformative environmental governance",
+        "authors": [
+          "Chaffin, B C",
+          "Garmestani, A S",
+          "Gunderson, L H",
+          "Benson, M H",
+          "Angeler, D G",
+          "Tony, Arnold (",
+          "Ca, )",
+          "Cosens, B",
+          "Craig, R K",
+          "Ruhl, J B",
+          "Allen, C R"
+        ],
+        "doi": "10.1146/annurev-environ-110615-085817",
+        "year": 2016,
+        "venue": "Annu Rev Environ Resour",
+        "pages": "399–423",
+        "identifiers": {
+          "doi": "10.1146/annurev-environ-110615-085817"
+        }
+      },
+      {
+        "id": "b14",
+        "title": "Exploring the governance and politics of transformations towards sustainability",
+        "authors": [
+          "Patterson, J",
+          "Schulz, K",
+          "Vervoort, J",
+          "Van Der Hel, S",
+          "Widerberg, O",
+          "Adler, C",
+          "Hurlbert, M",
+          "Anderton, K",
+          "Sethi, M",
+          "Barau, A"
+        ],
+        "doi": "10.1016/j.eist.2016.09.001",
+        "year": 2017,
+        "venue": "Environ Innov Soc Transit",
+        "pages": "1–16",
+        "identifiers": {
+          "doi": "10.1016/j.eist.2016.09.001"
+        }
+      },
+      {
+        "id": "b15",
+        "title": "Who gets to imagine transformative change? Participation and representation in biodiversity assessments",
+        "authors": [
+          "Beck, S",
+          "Forsyth, T"
+        ],
+        "doi": "10.1017/S0376892920000272",
+        "year": 2020,
+        "venue": "Environ Conserv",
+        "pages": "1–4",
+        "identifiers": {
+          "doi": "10.1017/S0376892920000272"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "The paper reviews scientific literature on governance and transformative change to conceptualize the notion of transformative governance. It defines four main aspects of transformative governance: being integrative, inclusive, adaptive, and pluralist. It also highlights that transformative governance is radically different from business-as-usual because it addresses the indirect drivers of biodiversity loss and induces a multifaceted process of societal",
+        "authors": [
+          "Visseren-Hamakers, I J",
+          "Razzaque, J",
+          "Mcelwee, P",
+          "Turnhout, E",
+          "Kelemen, E",
+          "Rusch, G M",
+          "Fernández-Llamazares, Á",
+          "Chan, I",
+          "Lim, M",
+          "Islar, M"
+        ],
+        "doi": "10.1016/j.cosust.2021.06.002",
+        "year": 2021,
+        "venue": "Curr Opin Environ Sustain",
+        "pages": "20–28",
+        "identifiers": {
+          "doi": "10.1016/j.cosust.2021.06.002"
+        },
+        "raw_citation": "Transformative governance of biodiversity: insights for sustainable development. transition where changes in different realms are reinforcing each other"
+      },
+      {
+        "id": "b17",
+        "title": "Resilience thinking: integrating resilience, adaptability and transformability",
+        "authors": [
+          "Folke, C",
+          "Carpenter, S R",
+          "Walker, B",
+          "Scheffer, M",
+          "Chapin, T",
+          "Rockström, J"
+        ],
+        "doi": "10.5751/ES-03610-150420",
+        "year": 2010,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5751/ES-03610-150420"
+        }
+      },
+      {
+        "id": "b18",
+        "title": "Exploring criteria for transformative policy capacity in the context of South Africa's biodiversity economy",
+        "authors": [
+          "Förster, J J",
+          "Downsborough, L",
+          "Biber-Freudenberger, L",
+          "Mensuro, Kelboro",
+          "Börner, G",
+          "J"
+        ],
+        "doi": "10.1007/s11077-020-09385-0",
+        "year": 2020,
+        "venue": "Policy Sci",
+        "pages": "209–237",
+        "identifiers": {
+          "doi": "10.1007/s11077-020-09385-0",
+          "": "11077-020- 09385-0"
+        }
+      },
+      {
+        "id": "b19",
+        "title": "Values as leverage points for sustainability transformation: two pathways for transformation research",
+        "authors": [
+          "Horcea-Milcu, A I"
+        ],
+        "doi": "10.1016/j.cosust.2022.101205",
+        "year": 2022,
+        "venue": "Curr Opin Environ Sustain",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1016/j.cosust.2022.101205"
+        }
+      },
+      {
+        "id": "b20",
+        "title": "Leveraging biodiversity action from plural values: transformations of governance systems",
+        "authors": [
+          "Leventon, J",
+          "Duşe, I A",
+          "Horcea-Milcu, A I"
+        ],
+        "doi": "10.3389/fevo.2021.609853",
+        "year": null,
+        "venue": "Front Ecol Evol",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.3389/fevo.2021.609853"
+        }
+      },
+      {
+        "id": "b21",
+        "title": "The transformative potential of the Sustainable Development Goals (SDGs)",
+        "authors": [
+          "Stevens, C",
+          "Kanie, N"
+        ],
+        "doi": "10.1007/s10784-016-9324-y",
+        "year": 2016,
+        "venue": "",
+        "pages": "393–396",
+        "identifiers": {
+          "doi": "10.1007/s10784-016-9324-y"
+        },
+        "raw_citation": "Int Environ Agreem: Politcs Law Econ"
+      },
+      {
+        "id": "b22",
+        "title": "Unravelling persistent problems to transformative marine governance",
+        "authors": [
+          "Kelly, C",
+          "Ellis, G",
+          "Flannery, W"
+        ],
+        "doi": "10.3389/fmars.2019.00213",
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.3389/fmars.2019.00213"
+        }
+      },
+      {
+        "id": "b23",
+        "title": "Transformative governance for public health: a scoping review",
+        "authors": [
+          "Schreurs, F",
+          "Bekker, Mpm",
+          "Helderman, J K",
+          "Jansen, M",
+          "Ruwaard, D"
+        ],
+        "doi": "10.1093/eurpub/ckz186.706",
+        "year": 2019,
+        "venue": "Eur J Public Health",
+        "pages": "186–705",
+        "identifiers": {
+          "doi": "10.1093/eurpub/ckz186.706"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "The Great Mindshift: How a New Economic Paradigm and Sustainability Transformations Go Hand in Hand",
+        "authors": [
+          "Göpel, M"
+        ],
+        "doi": "10.1007/978-3-319-43766-8",
+        "year": 2016,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1007/978-3-319-43766-8"
+        }
+      },
+      {
+        "id": "b25",
+        "title": "Cooperation Management for Practitioners Managing Social Change with Capacity WORKS",
+        "authors": [
+          "Giz Gmbh"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b26",
+        "title": "Principles for Ecosystem Services Assessment: Elements, Methods, Tools and Tips, Manual for Trainers (ValuES Project Integrating Ecosystem Services into Policy, Planning and Practice). GIZ; 2018",
+        "authors": [
+          "Giz Gmbh"
+        ],
+        "doi": null,
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b27",
+        "title": "Institutionalising reflexivity? Transformative learning and the Intergovernmental science-policy Platform on Biodiversity and Ecosystem Services (IPBES)",
+        "authors": [
+          "Borie, M",
+          "Gustafsson, K M",
+          "Obermeister, N",
+          "Turnhout, E",
+          "Bridgewater, P"
+        ],
+        "doi": "10.1016/j.envsci.2020.05.005",
+        "year": 2020,
+        "venue": "",
+        "pages": "71–76",
+        "identifiers": {
+          "doi": "10.1016/j.envsci.2020.05.005"
+        }
+      },
+      {
+        "id": "b28",
+        "title": "Carrots, Sticks, and Sermons: Policy Instruments and Their Evaluation",
+        "authors": [],
+        "doi": "10.4324/9781315081748",
+        "year": 1998,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.4324/9781315081748"
+        }
+      },
+      {
+        "id": "b29",
+        "title": "Policy Support Gateway",
+        "authors": [
+          "Ipbes"
+        ],
+        "doi": null,
+        "year": 2017,
+        "venue": "IPBES Secretariat",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b30",
+        "title": "Buen vivir and changes in education in Ecuador",
+        "authors": [
+          "Echavarría, R R",
+          "Orosz, A"
+        ],
+        "doi": "10.1177/0094582X211009270",
+        "year": 2006,
+        "venue": "Lat Am Perspect",
+        "pages": "119–135",
+        "identifiers": {
+          "doi": "10.1177/0094582X211009270"
+        }
+      },
+      {
+        "id": "b31",
+        "title": "The monetized economy versus care and the environment: degrowth perspectives on reconciling an antagonism",
+        "authors": [
+          "Dengler, C",
+          "Strunk, B"
+        ],
+        "doi": "10.1080/13545701.2017.1383620",
+        "year": 2018,
+        "venue": "Fem Econ",
+        "pages": "160–183",
+        "identifiers": {
+          "doi": "10.1080/13545701.2017.1383620"
+        }
+      },
+      {
+        "id": "b32",
+        "title": "New Transitions from Human Rights to the Environment to the Rights of Nature",
+        "authors": [
+          "Borràs, S"
+        ],
+        "doi": "10.1017/S204710251500028X",
+        "year": 2016,
+        "venue": "Transnational Environmental Law",
+        "pages": "113–143",
+        "identifiers": {
+          "doi": "10.1017/S204710251500028X"
+        }
+      },
+      {
+        "id": "b33",
+        "title": "Local perceptions as a guide for the sustainable management of natural resources: empirical evidence from a small-scale society in Bolivian Amazonia",
+        "authors": [
+          "Fernández-Llamazares, Á",
+          "Díaz-Reviriego, I",
+          "Guèze, M",
+          "Cabeza, M",
+          "Pyhälä, A",
+          "Reyes-García, V"
+        ],
+        "doi": "10.5751/ES-08092-210102",
+        "year": 2016,
+        "venue": "Ecol Soc",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.5751/ES-08092-210102"
+        }
+      },
+      {
+        "id": "b34",
+        "title": "Considering the needs of indigenous and local populations in conservation programs: needs of local populations",
+        "authors": [
+          "Kohler, F",
+          "Brondizio, E S"
+        ],
+        "doi": "10.1111/cobi.12843",
+        "year": 2017,
+        "venue": "Conserv Biol",
+        "pages": "245–251",
+        "identifiers": {
+          "doi": "10.1111/cobi.12843"
+        }
+      },
+      {
+        "id": "b35",
+        "title": "How do biosphere stewards actively shape trajectories of social-ecological change?",
+        "authors": [
+          "Plummer, R",
+          "Baird, J",
+          "Farhad, S",
+          "Witkowski, S"
+        ],
+        "doi": "10.1016/j.jenvman.2020.110139",
+        "year": 2020,
+        "venue": "J Environ Manag",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1016/j.jenvman.2020.110139"
+        }
+      },
+      {
+        "id": "b36",
+        "title": "Community Marine Monitoring Toolkit: a tool developed in the Pacific to inform communitybased marine resource management",
+        "authors": [
+          "Johnson, J E",
+          "Hooper, E",
+          "Welch, D J"
+        ],
+        "doi": "10.1016/j.marpolbul.2020.111498",
+        "year": 2020,
+        "venue": "Mar Pollut Bull",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1016/j.marpolbul.2020.111498"
+        }
+      },
+      {
+        "id": "b37",
+        "title": "Tale of two cities: how nature-based solutions help create adaptive and resilient urban water management practices in Singapore and Lisbon. Sustainability 2021",
+        "authors": [
+          "•• 39",
+          "Cui, M",
+          "Ferreira, F",
+          "Fung, T K",
+          "Matos, J S"
+        ],
+        "doi": "10.3390/su131810427",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.3390/su131810427"
+        }
+      },
+      {
+        "id": "b38",
+        "title": "The Singapore Green Plan 2030: analysing its implications on law and the legal industry in Singapore",
+        "authors": [
+          "Chng, K",
+          "Ong, K W"
+        ],
+        "doi": "10.1177/14614529211052597",
+        "year": 2021,
+        "venue": "Environ Law Rev",
+        "pages": "336–343",
+        "identifiers": {
+          "doi": "10.1177/14614529211052597"
+        }
+      },
+      {
+        "id": "b39",
+        "title": "Organizational path dependence: opening the black box",
+        "authors": [
+          "Sydow, J",
+          "Schreyögg, G",
+          "Koch, J"
+        ],
+        "doi": "10.5465/amr.34.4.zok689",
+        "year": 2009,
+        "venue": "Acad Manag Rev",
+        "pages": "689–709",
+        "identifiers": {
+          "doi": "10.5465/amr.34.4.zok689"
+        }
+      },
+      {
+        "id": "b40",
+        "title": "Policy mixes for sustainability transitions: new approaches and insights through bridging innovation and policy studies",
+        "authors": [
+          "Kern, F",
+          "Rogge, K S",
+          "Howlett, M"
+        ],
+        "doi": "10.1016/j.respol.2019.103832",
+        "year": 2019,
+        "venue": "Res Policy",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1016/j.respol.2019.103832"
+        }
+      },
+      {
+        "id": "b41",
+        "title": "Making Policy in a Complex World",
+        "authors": [
+          "Cairney, P",
+          "Heikkila, T",
+          "Wood, M"
+        ],
+        "doi": "10.1017/9781108679053",
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1017/9781108679053"
+        }
+      },
+      {
+        "id": "b42",
+        "title": "Five principles for the practice of knowledge exchange in environmental management",
+        "authors": [
+          "Reed, M",
+          "Stringer, L C",
+          "Fazey, I",
+          "Evely, A C",
+          "Kruijsen, Jhj"
+        ],
+        "doi": "10.1016/j.jenvman.2014.07.021",
+        "year": 2014,
+        "venue": "J Environ Manag",
+        "pages": "337–345",
+        "identifiers": {
+          "doi": "10.1016/j.jenvman.2014.07.021"
+        }
+      },
+      {
+        "id": "b43",
+        "title": "The paper emphasizes the need to weave different knowledge systems, including indigenous and traditional with others to ensure more sustainability-oriented governance and management of socio-ecological systems. Involving indigenous peoples and local communities in the process of colearning and coproduction of knowledge and solutions requires sensitive mobilization of different actors, translating the different knowledge across different systems, negotiating and deliberating on consequences, and further synthesizing and applying in decisionmaking",
+        "authors": [
+          "Tengö, ••",
+          "Hill, M",
+          "Malmer, R",
+          "Raymond, P",
+          "Spierenburg, C M",
+          "Danielsen, M",
+          "Elmqvist, F",
+          "Folke, T",
+          "C"
+        ],
+        "doi": "10.1016/j.cosust.2016.12.005",
+        "year": 2017,
+        "venue": "Curr Opin Environ Sustain",
+        "pages": "26–27",
+        "identifiers": {
+          "doi": "10.1016/j.cosust.2016.12.005"
+        },
+        "raw_citation": "Weaving knowledge systems in IPBES, CBD and beyond-lessons learned for sustainability"
+      },
+      {
+        "id": "b44",
+        "title": "Doing Science Differently: Co-Producing Conservation Outcomes",
+        "authors": [
+          "Wyborn, C",
+          "Leith, P"
+        ],
+        "doi": null,
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b45",
+        "title": "Knowledge brokerage designs and practices in four european climate services: a role model for biodiversity policies?",
+        "authors": [
+          "Reinecke, S"
+        ],
+        "doi": "10.1016/j.envsci.2015.08.007",
+        "year": 2015,
+        "venue": "Environ Sci Policy",
+        "pages": "513–521",
+        "identifiers": {
+          "doi": "10.1016/j.envsci.2015.08.007"
+        }
+      },
+      {
+        "id": "b46",
+        "title": "Challenges to and opportunities for biodiversity science-policy interfaces",
+        "authors": [
+          "Rodela, R",
+          "Reinecke, S",
+          "Bregt, A",
+          "Kilham, E",
+          "Lapeyre, R"
+        ],
+        "doi": "10.1016/j.envsci.2015.08.010",
+        "year": 2015,
+        "venue": "Environ Sci Policy",
+        "pages": "483–486",
+        "identifiers": {
+          "doi": "10.1016/j.envsci.2015.08.010"
+        }
+      },
+      {
+        "id": "b47",
+        "title": "Decision-making, now in 3D: exploring three dimensions of decision-making processes and their consequences for biodiversity research",
+        "authors": [
+          "Laurans, Y",
+          "Leflaive, X",
+          "Rankovic, A"
+        ],
+        "doi": "10.1016/j.envsci.2020.06.007",
+        "year": 2020,
+        "venue": "Environ Sci Policy",
+        "pages": "31–38",
+        "identifiers": {
+          "doi": "10.1016/j.envsci.2020.06.007"
+        }
+      },
+      {
+        "id": "b48",
+        "title": "The adaptive capacity wheel: a method to assess the inherent characteristics of institutions to enable the adaptive capacity of society",
+        "authors": [
+          "Gupta, J",
+          "Termeer, C",
+          "Klostermann, J",
+          "Meijerink, S",
+          "Van Den Brink, M",
+          "Jong, P",
+          "Nooteboom, S",
+          "Bergsma, E"
+        ],
+        "doi": "10.1016/j.envsci.2010.05.006",
+        "year": 2010,
+        "venue": "Environ Sci Policy",
+        "pages": "459–471",
+        "identifiers": {
+          "doi": "10.1016/j.envsci.2010.05.006"
+        }
+      },
+      {
+        "id": "b49",
+        "title": "Preface: building social capacities for natural hazards: an emerging field for research and practice in Europe",
+        "authors": [
+          "Kuhlicke, C",
+          "Steinführer, A"
+        ],
+        "doi": "10.5194/nhess-15-2359-2015",
+        "year": 2015,
+        "venue": "Nat Hazards Earth Syst Sci",
+        "pages": "2359–2367",
+        "identifiers": {
+          "doi": "10.5194/nhess-15-2359-2015"
+        }
+      },
+      {
+        "id": "b50",
+        "title": "Adaptive capacity to climate change: a synthesis of concepts, methods, and findings in a fragmented field",
+        "authors": [
+          "Siders, A R"
+        ],
+        "doi": "10.1002/wcc.573",
+        "year": 2019,
+        "venue": "Wiley Interdiscip Rev: Clim Change",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1002/wcc.573"
+        }
+      },
+      {
+        "id": "b51",
+        "title": "Adaptive capacity beyond the household: a systematic review of empirical social-ecological research",
+        "authors": [
+          "Vallury, S",
+          "Smith, A",
+          "Chaffin, B C",
+          "Nesbitt, H",
+          "Lohani, S",
+          "Gulab, S",
+          "Banerjee, S",
+          "Floyd, T",
+          "Metcalf, A L",
+          "Metcalf, E",
+          "Twidwell, D"
+        ],
+        "doi": "10.1088/1748-9326/ac68fb",
+        "year": 2022,
+        "venue": "Environ Res Lett",
+        "pages": "1–19",
+        "identifiers": {
+          "doi": "10.1088/1748-9326/ac68fb"
+        }
+      },
+      {
+        "id": "b52",
+        "title": "The paper assesses the outputs and wider impacts of capacity development in nature conservation through an evidence map built by reviewing scientific and gray literature since 2000. It highlights that enhancing knowledge, changing individual behavior, and altering attitudes are the most frequently reported outcomes of capacity development, while evidence is scarce on wider positive outcomes for nature conservation at systems level. This gap is partly due to the lack of longterm follow-up of capacity development initiatives and quests for more flexible, bottom-up, and systemic approaches to capacity development",
+        "authors": [
+          "Sterling, E J",
+          "Sigouin, A",
+          "Betley, E",
+          "Cheek, J Z",
+          "Solomon, J N",
+          "Landrigan, K",
+          "Porzecanski, A L",
+          "Bynum, N",
+          "Cadena, B",
+          "Cheng, S H",
+          "Clements, K R"
+        ],
+        "doi": "10.1017/S0030605321000570",
+        "year": 2022,
+        "venue": "Oryx",
+        "pages": "728–739",
+        "identifiers": {
+          "doi": "10.1017/S0030605321000570"
+        },
+        "raw_citation": "The state of capacity development evaluation in biodiversity conservation and natural resource management. which target diverse actors and enable co-ownership over the process"
+      },
+      {
+        "id": "b53",
+        "title": "A review of assertions about the processes and outcomes of social learning in natural resource management",
+        "authors": [
+          "Cundill, G",
+          "Rodela, R"
+        ],
+        "doi": "10.1016/j.jenvman.2012.08.021",
+        "year": 2012,
+        "venue": "J Environ Manag",
+        "pages": "7–14",
+        "identifiers": {
+          "doi": "10.1016/j.jenvman.2012.08.021"
+        }
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 54,
+    "_warnings": []
+  }
+}

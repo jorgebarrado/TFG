@@ -1,0 +1,7 @@
+Resumen extracción GROBID:
+  mode: fulltext
+  title: Development of Computational Thinking Skills through Unplugged Activities in Primary School
+  authors: Brackmann, Christian Puhlmann, Román-González, Marcos, Robles, Gregorio, Moreno-León, Jesús, Casali, Ana, Barone, Dante 2017
+  sections_count: 16
+  references_count: 36
+  inline_citations_count: 39

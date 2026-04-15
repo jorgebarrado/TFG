@@ -1,0 +1,576 @@
+{
+  "paper_slug": "1904_02703v3",
+  "pdf_name": "1904.02703v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\1904.02703v3.pdf",
+  "extractor": "citations.services.reader_data.extract_pdf_references",
+  "extractor_stats": {
+    "pages_total": 21,
+    "references_total": 54,
+    "dois_total": 28,
+    "references_numbered": true,
+    "references_header_found": true,
+    "citation_style": "numeric",
+    "max_reference_index": 97,
+    "bibliography_start_page": 17
+  },
+  "warnings": [
+    "raw_references_contain_many_short_or_low_alpha_entries"
+  ],
+  "input_quality": {
+    "primary_bucket": "low_alpha_or_short_noise",
+    "active_issue_buckets": [
+      "low_alpha_or_short_noise"
+    ],
+    "issue_flags": {
+      "numeric_noise": false,
+      "likely_fused_references": false,
+      "small_reference_set": false,
+      "low_alpha_or_short_noise": true,
+      "header_not_found_fallback": false
+    },
+    "paper_warning_count": 1,
+    "paper_warnings": [
+      "raw_references_contain_many_short_or_low_alpha_entries"
+    ],
+    "reference_count": 54,
+    "extractor_references_total": 54,
+    "warning_counts": {
+      "empty_raw_reference": 0,
+      "very_short_reference": 9,
+      "very_long_reference": 1,
+      "starts_with_numeric_noise": 0,
+      "many_semicolon_segments": 0,
+      "low_alpha_content": 9
+    },
+    "warning_ratios": {
+      "empty_raw_reference": 0.0,
+      "very_short_reference": 0.16666666666666666,
+      "very_long_reference": 0.018518518518518517,
+      "starts_with_numeric_noise": 0.0,
+      "many_semicolon_segments": 0.0,
+      "low_alpha_content": 0.16666666666666666,
+      "short_or_low_alpha_combined": 0.3333333333333333
+    },
+    "quality_notes": [
+      "Short/low-alpha noisy references in 18/54 entries."
+    ],
+    "degraded_input": true
+  },
+  "raw_references": [
+    {
+      "index": 0,
+      "source_index": 1,
+      "raw_input": "Eric Dennis, Alexei Kitaev, Andrew Landahl, and John Preskill. Topological quantum memory. Journal of Mathematical Physics, 43(9):4452–4505, 2002. doi:10.1063/1.1499754.",
+      "extractor_doi": "10.1063/1.1499754",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 1,
+      "source_index": 2,
+      "raw_input": "Michael H. Freedman and David A. Meyer. Projec- tive plane and planar quantum codes. Foundations of Computational Mathematics, 1(3):325–332, Jul 2001. doi:10.1007/s102080010013.",
+      "extractor_doi": "10.1007/s102080010013",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 2,
+      "source_index": 3,
+      "raw_input": "H. Bombin and M. A. Martin-Delgado. Topo- logical quantum distillation. Phys. Rev. Lett., 97:180501, Oct 2006. doi:10.1103/PhysRevLett.",
+      "extractor_doi": "10.1103/physrevlett",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 3,
+      "source_index": 97,
+      "raw_input": "180501.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 4,
+      "source_index": 4,
+      "raw_input": "David S. Wang, Austin G. Fowler, and Lloyd C. L. Hollenberg. Surface code quantum computing with error rates over 1%. Phys. Rev. A, 83:020302, Feb 2011. doi:10.1103/PhysRevA.83.020302.",
+      "extractor_doi": "10.1103/physreva.83.020302",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 5,
+      "source_index": 5,
+      "raw_input": "Sergey Bravyi, Martin Suchara, and Alexander Vargo. Eﬃcient algorithms for maximum likeli- hood decoding in the surface code. Phys. Rev. A, 90:032326, Sep 2014. doi:10.1103/PhysRevA.90. 032326.",
+      "extractor_doi": "10.1103/physreva.90",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 6,
+      "source_index": 6,
+      "raw_input": "Nikolas P. Breuckmann and Barbara M. Terhal. Constructions and noise threshold of hyperbolic surface codes. IEEE Transactions on Informa- tion Theory, 62(6):3731–3744, June 2016. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 7,
+      "source_index": 10,
+      "raw_input": "1109/TIT.2016.2555700.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 8,
+      "source_index": 7,
+      "raw_input": "J. Tillich and G. Z´emor. Quantum LDPC codes with positive rate and minimum distance propor- tional to n1/2. In 2009 IEEE International Sympo- sium on Information Theory, pages 799–803, June 2009. doi:10.1109/ISIT.2009.5205648.",
+      "extractor_doi": "10.1109/isit.2009.5205648",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 9,
+      "source_index": 8,
+      "raw_input": "Sergey Bravyi and Matthew B. Hastings. Ho- mological product codes. In Proceedings of the Accepted in Quantum 2021-11-02, click title to verify. Published under CC-BY 4.0. 17 Forty-sixth Annual ACM Symposium on Theory of Computing, STOC ’14, pages 273–282, New York, NY, USA, 2014. ACM. doi:10.1145/2591796. 2591870.",
+      "extractor_doi": "10.1145/2591796",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 10,
+      "source_index": 9,
+      "raw_input": "A. A. Kovalev and L. P. Pryadko. Improved quantum hypergraph-product LDPC codes. In 2012 IEEE International Symposium on Informa- tion Theory Proceedings, pages 348–352, July 2012. doi:10.1109/ISIT.2012.6284206.",
+      "extractor_doi": "10.1109/isit.2012.6284206",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 11,
+      "source_index": 10,
+      "raw_input": "Alexey A. Kovalev and Leonid P. Pryadko. Quan- tum kronecker sum-product low-density parity- check codes with ﬁnite rate. Phys. Rev. A, 88:012311, Jul 2013. doi:10.1103/PhysRevA.88. 012311.",
+      "extractor_doi": "10.1103/physreva.88",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 12,
+      "source_index": 11,
+      "raw_input": "Z. Babar, P. Botsinis, D. Alanis, S. X. Ng, and L. Hanzo. Fifteen years of quantum LDPC coding and improved decoding strategies. IEEE Access, 3:2492–2519, 2015. doi:10.1109/ACCESS.2015. 2503267.",
+      "extractor_doi": "10.1109/access.2015",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 13,
+      "source_index": 12,
+      "raw_input": "M. Hagiwara and H. Imai. Quantum quasi-cyclic LDPC codes. In 2007 IEEE International Sympo- sium on Information Theory, pages 806–810, June 2007. doi:10.1109/ISIT.2007.4557323.",
+      "extractor_doi": "10.1109/isit.2007.4557323",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 14,
+      "source_index": 13,
+      "raw_input": "M. P. C. Fossorier and Shu Lin. Soft-decision decoding of linear block codes based on ordered statistics. IEEE Transactions on Information The- ory, 41(5):1379–1396, Sep. 1995. doi:10.1109/",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 15,
+      "source_index": 18,
+      "raw_input": "412683.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 16,
+      "source_index": 14,
+      "raw_input": "M. P. C. Fossorier. Iterative reliability-based de- coding of low-density parity check codes. IEEE Journal on Selected Areas in Communications, 19(5):908–917, may 2001. doi:10.1109/49. 924874.",
+      "extractor_doi": "10.1109/49",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 17,
+      "source_index": 15,
+      "raw_input": "B. Dorsch. A decoding algorithm for binary block codes and j-ary output channels (corresp.). IEEE Transactions on Information Theory, 20(3):391– 394, may 1974. doi:10.1109/TIT.1974.1055217.",
+      "extractor_doi": "10.1109/tit.1974.1055217",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 18,
+      "source_index": 16,
+      "raw_input": "Matthew B. Hastings, Jeongwan Haah, and Ryan O’Donnell. Fiber bundle codes: Breaking the n1/2 polylog(n) barrier for quantum LDPC codes. In Proceedings of the 53rd Annual ACM SIGACT Symposium on Theory of Computing, pages 1276– 1288. Association for Computing Machinery, New York, NY, USA, June 2021. doi:10.1145/ 3406325.3451005.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 19,
+      "source_index": 17,
+      "raw_input": "Pavel Panteleev and Gleb Kalachev. Quantum LDPC codes with almost linear minimum distance. IEEE Transactions on Information Theory, pages 1–1, 2021. doi:10.1109/TIT.2021.3119384.",
+      "extractor_doi": "10.1109/tit.2021.3119384",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 20,
+      "source_index": 18,
+      "raw_input": "Nikolas P. Breuckmann and Jens N. Eberhardt. Balanced product quantum codes. IEEE Trans- actions on Information Theory, 67(10):6653–6674, October 2021. doi:10.1109/TIT.2021.3097347.",
+      "extractor_doi": "10.1109/tit.2021.3097347",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 21,
+      "source_index": 19,
+      "raw_input": "Michael Freedman and Matthew Hastings. Build- ing manifolds from quantum codes. Geometric and Functional Analysis, June 2021. doi:10.1007/ s00039-021-00567-3.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 22,
+      "source_index": 20,
+      "raw_input": "Jeongwan Haah. Local stabilizer codes in three di- mensions without string logical operators. Phys. Rev. A, 83:042330, Apr 2011. doi:10.1103/ PhysRevA.83.042330.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 23,
+      "source_index": 21,
+      "raw_input": "D. Poulin and Yeojin C. On the iterative de- coding of sparse quantum codes. Quantum Info. Comput., 8(10):987–1000, November 2008. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 24,
+      "source_index": 10,
+      "raw_input": "5555/2016985.2016993.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 25,
+      "source_index": 22,
+      "raw_input": "Y. Wang, B. C. Sanders, B. Bai, and X. Wang. Enhanced feedback iterative decoding of sparse quantum codes. IEEE Transactions on Informa- tion Theory, 58(2):1231–1241, Feb 2012. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 26,
+      "source_index": 10,
+      "raw_input": "1109/TIT.2011.2169534.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 27,
+      "source_index": 23,
+      "raw_input": "Alex Rigby, J. C. Olivier, and Peter Jarvis. Modiﬁed belief propagation decoders for quan- tum low-density parity-check codes. Physical Re- view A, 100(1):012330, July 2019. doi:10.1103/ PhysRevA.100.012330.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 28,
+      "source_index": 24,
+      "raw_input": "Daniel Gottesman. Stabilizer Codes and Quantum Error Correction. PhD thesis, California Institute of Technology, 1997. doi:10.7907/rzr7-dt72.",
+      "extractor_doi": "10.7907/rzr7-dt72",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 29,
+      "source_index": 25,
+      "raw_input": "A. R. Calderbank and Peter W. Shor. Good quan- tum error-correcting codes exist. Phys. Rev. A, 54:1098–1105, Aug 1996. doi:10.1103/PhysRevA.",
+      "extractor_doi": "10.1103/physreva",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 30,
+      "source_index": 54,
+      "raw_input": "1098.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 31,
+      "source_index": 26,
+      "raw_input": "A. M. Steane. Error correcting codes in quantum theory. Phys. Rev. Lett., 77:793–797, Jul 1996. doi:10.1103/PhysRevLett.77.793.",
+      "extractor_doi": "10.1103/physrevlett.77.793",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 32,
+      "source_index": 27,
+      "raw_input": "R. G. Gallager. Low-Density Parity-Check Codes. M.I.T. Press, Cambridge, MA, 1963. doi:10. 7551/mitpress/4347.001.0001.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 33,
+      "source_index": 28,
+      "raw_input": "R. Tanner. A recursive approach to low com- plexity codes. IEEE Transactions on Informa- tion Theory, 27(5):533–547, September 1981. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 34,
+      "source_index": 10,
+      "raw_input": "1109/TIT.1981.1056404.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 35,
+      "source_index": 29,
+      "raw_input": "F.R. Kschischang, B.J. Frey, and H.-A. Loeliger. Factor graphs and the sum-product algorithm. IEEE Transactions on Informa- tion Theory, 47(2):498–519, February 2001. doi:10.1109/18.910572. Accepted in Quantum 2021-11-02, click title to verify. Published under CC-BY 4.0. 18",
+      "extractor_doi": "10.1109/18.910572",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 36,
+      "source_index": 30,
+      "raw_input": "E. Prange. The use of information sets in de- coding cyclic codes. IRE Transactions on Infor- mation Theory, 8(5):5–9, September 1962. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 37,
+      "source_index": 10,
+      "raw_input": "1109/TIT.1962.1057777.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 38,
+      "source_index": 31,
+      "raw_input": "Jack Edmonds. Matroids and the greedy algo- rithm. Mathematical Programming, 1(1):127–136, December 1971. doi:10.1007/BF01584082.",
+      "extractor_doi": "10.1007/bf01584082",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 39,
+      "source_index": 32,
+      "raw_input": "M.P.C. Fossorier, Shu Lin, and J. Snyders. Reliability-based syndrome decoding of linear block codes. IEEE Transactions on Information Theory, 44(1):388–398, January 1998. doi:10. 1109/18.651070.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 40,
+      "source_index": 33,
+      "raw_input": "Raymond Laﬂamme, Cesar Miquel, Juan Pablo Paz, and Wojciech Hubert Zurek. Perfect quan- tum error correcting code. Physical Review Let- ters, 77(1):198–201, July 1996. doi:10.1103/ PhysRevLett.77.198.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 41,
+      "source_index": 34,
+      "raw_input": "Kao-Yueh Kuo and Ching-Yi Lai. Reﬁned be- lief propagation decoding of sparse-graph quan- tum codes. IEEE Journal on Selected Areas in Information Theory, 1(2):487–498, August 2020. doi:10.1109/JSAIT.2020.3011758.",
+      "extractor_doi": "10.1109/jsait.2020.3011758",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 42,
+      "source_index": 35,
+      "raw_input": "Marc Fossorier, David Declercq, and Ezio Biglieri. Channel Coding: Theory, Algorithms, and Appli- cations. Academic Press, July 2014. doi:10.1016/ C2011-0-07211-3.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 43,
+      "source_index": 36,
+      "raw_input": "Jack Edmonds. Paths, Trees, and Flowers. Cana- dian Journal of Mathematics, 17:449–467, 1965/ed. doi:10.4153/CJM-1965-045-4.",
+      "extractor_doi": "10.4153/cjm-1965-045-4",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 44,
+      "source_index": 37,
+      "raw_input": "D. J. C. MacKay, G. Mitchison, and P. L. McFad- den. Sparse-graph codes for quantum error correc- tion. IEEE Transactions on Information Theory, 50(10):2315–2330, Oct 2004. doi:10.1109/TIT. 2004.834737.",
+      "extractor_doi": "10.1109/tit",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 45,
+      "source_index": 38,
+      "raw_input": "H Bombin, R W Chhajlany, M Horodecki, and M A Martin-Delgado. Self-correcting quantum comput- ers. New Journal of Physics, 15(5):055023, may 2013. doi:10.1088/1367-2630/15/5/055023.",
+      "extractor_doi": "10.1088/1367-2630/15/5/055023",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 46,
+      "source_index": 39,
+      "raw_input": "Yuichiro Fujiwara. Ability of stabilizer quantum error correction to protect itself from its own im- perfection. Phys. Rev. A, 90:062304, Dec 2014. doi:10.1103/PhysRevA.90.062304.",
+      "extractor_doi": "10.1103/physreva.90.062304",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 47,
+      "source_index": 40,
+      "raw_input": "Tom Richardson. Error-ﬂoors of LDPC codes. In Proceedings of the 41st Annual Conference on Communication, Control and Computing, pages 1426–1435, 2003.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 48,
+      "source_index": 41,
+      "raw_input": "Ye-Hua Liu and David Poulin. Neural belief- propagation decoders for quantum error-correcting codes. Physical Review Letters, 122(20):200501, May 2019. doi:10.1103/PhysRevLett.122. 200501.",
+      "extractor_doi": "10.1103/physrevlett.122",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 49,
+      "source_index": 42,
+      "raw_input": "Kristine Lally and Patrick Fitzpatrick. Algebraic structure of quasicyclic codes. Discrete Applied Mathematics, 111(1):157–175, July 2001. doi:",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 50,
+      "source_index": 10,
+      "raw_input": "1016/S0166-218X(00)00350-4.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": [
+        "very_short_reference",
+        "low_alpha_content"
+      ]
+    },
+    {
+      "index": 51,
+      "source_index": 43,
+      "raw_input": "Roxana Smarandache and Pascal O. Vontobel. Quasi-cyclic LDPC codes: Inﬂuence of proto- and tanner-graph structure on minimum hamming dis- tance upper bounds. IEEE Transactions on In- formation Theory, 58(2):585–607, February 2012. doi:10.1109/TIT.2011.2173244.",
+      "extractor_doi": "10.1109/tit.2011.2173244",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 52,
+      "source_index": 44,
+      "raw_input": "San Ling, Harald Niederreiter, and Patrick Sol´e. On the algebraic structure of quasi-cyclic codes IV: Repeated roots. Designs, Codes and Cryptography, 38:337–361, 2006. doi:10.1007/ s10623-005-1431-7.",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 53,
+      "source_index": 45,
+      "raw_input": "I. Dumer, A. A. Kovalev, and L. P. Pryadko. Dis- tance veriﬁcation for classical and quantum LDPC codes. IEEE Transactions on Information Theory, 63(7):4675–4686, 2017. doi:10.1109/TIT.2017. 2690381. A Algebraic structure of the ring F⟨ℓ⟩ q Let Fq be a ﬁnite ﬁeld of characteristics 2. The algebraic structure of the ring F⟨ℓ⟩ q is well studied in the coding literature (see, e.g., [44]). Below we brieﬂy review it. First, let us consider the special case when ℓis odd. In this case the polynomial xℓ−1 factors into a product of diﬀerent irreducible polynomials over Fq xℓ−1 = f1(x) · · · fs(x). (22) This is true, since gcd \u0000(xℓ−1)′, xℓ−1 \u0001 = gcd \u0000ℓxℓ−1, xℓ−1 \u0001 = 1, and the polynomial xℓ−1 is square-free. In the general case, we have ℓ= 2eℓ′, where ℓ′ is odd. Hence it follows that xℓ−1 = x2eℓ′ −1 = (xℓ′ −1)2e. Moreover, since ℓ′ is odd, we can apply factoriza- tion (22) to the polynomial xℓ′ −1 and obtain that xℓ−1 = \u0000f1(x) \u00012e · · · \u0000fs(x) \u00012e . (23) Since the polynomials (f1(x) \u00012e , . . . , (fs(x) \u00012e are pairwise coprime, from the Chinese remainder theorem it follows that the ring F⟨ℓ⟩ q is isomorphic to the direct product R1 × · · · × Rs (24) of the rings Ri = Fq[x]/ \u0000fi(x) \u00012e , i ∈[s]. When ℓis odd we have e = 0 and the rings R1, . . . , Rs are in fact ﬁelds, since the polynomials f1(x), . . . , fs(x) are irreducible over Fq. Accepted in Quantum 2021-11-02, click title to verify. Published under CC-BY 4.0. 19 B Matrices used for simulations All matrices for generalized hypergraph product and generalized bicycle codes that we used for simulations have the form HX = [A, B], HZ = [BT , AT ] where A and B are quasi-cyclic matrices. Thus, to deﬁne the code, we specify matrices A and B in the polynomial form as matrices over F⟨ℓ⟩ 2 . For all codes presented here, we also provide lower and upper bounds on the minimum distance obtained either by methods similar to the ones from [45] or by a straightforward reduction of the minimum distance problem to a mixed integer linear program and us- ing the GNU Linear Programming Kit, Version 4.63, http://www.gnu.org/software/glpk/glpk.html. A. Generalized bicycle (GB) codes. The matrices A and B have form A = (a(x)), B = (b(x)), so here we specify the polynomials a(x), b(x), and the circulant size ℓ. A1) [[254, 28, d]] code (ℓ= 127), 14 ⩽d ⩽20. a(x) = 1 + x15 + x20 + x28 + x66, b(x) = 1 + x58 + x59 + x100 + x121. A2) [[126, 28, 8]] code (ℓ= 63). a(x) = 1 + x + x14 + x16 + x22, b(x) = 1 + x3 + x13 + x20 + x42. A3) [[48, 6, 8]] code (ℓ= 24). a(x) = 1 + x2 + x8 + x15, b(x) = 1 + x2 + x12 + x17. A4) [[46, 2, 9]] code (ℓ= 23). a(x) = 1 + x5 + x8 + x12, b(x) = 1 + x + x5 + x7. A5) [[180, 10, d]] code (ℓ= 90), 15 ⩽d ⩽18. a(x) = 1 + x28 + x80 + x89, b(x) = 1 + x2 + x21 + x25. A6) [[900, 50, 15]] code (ℓ= 450). a(x) = 1 + x97 + x372 + x425, b(x) = 1 + x50 + x265 + x390. B. Generalized hypergraph product (GHP) codes. Here the matrix B is diagonal; B = b(x)In, where In is the n × n identity matrix over the ring F⟨ℓ⟩ 2 . B1) [[882, 24, d]] code, 18 ⩽d ⩽24. The matrices HX and HZ are (3,6)-regular (ℓ= 63). A =     x27 0 0 0 0 1 x54 x54 x27 0 0 0 0 1 1 x54 x27 0 0 0 0 0 1 x54 x27 0 0 0 0 0 1 x54 x27 0 0 0 0 0 1 x54 x27 0 0 0 0 0 1 x54 x27    , B = (1 + x + x6)I7. B2) [[882, 48, 16]] code. Half of the columns for both HX and HZ matrices have weight 3, an- other half have weight 5. All the rows have weight 8 (ℓ= 63). A =     x27 0 0 1 x18 x27 1 1 x27 0 0 1 x18 x27 x27 1 x27 0 0 1 x18 x18 x27 1 x27 0 0 1 1 x18 x27 1 x27 0 0 0 1 x18 x27 1 x27 0 0 0 1 x18 x27 1 x27    , B = (1 + x + x6)I7. B3) [[1270, 28, d]] code, 16 ⩽d ⩽46. The matrices HX and HZ are (3,6)-regular (ℓ= 127). A =   1 0 x51 x52 0 0 1 0 x111 x20 1 0 x98 0 x122 1 x80 0 x119 0 0 1 x5 0 x106  , B = (1 + x + x7)I5. C. Hypergraph product (HP) codes. Each hy- pergraph product code in our simulations is con- structed from a single cyclic code deﬁned by its parity polynomial h(x) and the length ℓ. C1) [[7938, 578, 16]] code. The matrices HX and HZ are (5,10)-regular, and we have: ℓ= 63, h(x) = 1 + x3 + x34 + x41 + x57. C2) [[1922, 50, 16]] code. The matrices HX and HZ are (3,6)-regular, and we have: ℓ= 31, h(x) = 1 + x2 + x5. D. Haah’s cubic codes. We used the [[1024, 30, d]] Haah’s cubic code on the 8 × 8 × 8 lattice from [20, Code 1], 13 ⩽d ⩽32. E. Hyperbicycle (HB) codes. We used the [[900, 50, 14]] hyperbicycle code from [9, Exam- ple 8], [10, Example 6]. F. Homological product (HMP) codes. We used one of the randomly constructed [[49, 1, 9]] homo- logical product codes from [8]. Accepted in Quantum 2021-11-02, click title to verify. Published under CC-BY 4.0. 20 Table 1: Codes parameters Code N K d rate wr wc girth A1 254 28 14–20 0.110 10 5 6 A2 126 28 8 0.222 10 5 4 A3 48 6 8 0.125 8 4 4 A4 46 2 9 0.043 8 4 4 A5 180 10 15–18 0.056 8 4 6 A6 900 50 15 0.056 8 4 6 B1 882 24 18–24 0.027 6 3 6 B2 882 48 16 0.054 8 3,5 6 B3 1270 28 16–46 0.022 6 3 6 C1 7938 578 16 0.073 10 5 6 C2 1922 50 16 0.026 6 3 6 D 1024 30 13–32 0.029 8 4 4 E 900 50 14 0.056 8 4 4 F 49 1 9 0.020 6,8 6,8 4 C Additional Simulations In this appendix, we show some additional simulation results of the BP-OSD decoder on the depolarizing channel. In Fig. 9, we demonstrate the WER performance of several 6-limited generalized bicycle (GB) codes with the parameters [[2s+1 −2, 2s]], s ∈N, under the BP- OSD-0 decoder. As one can see from the curves, these codes have the threshold pGB ≈15%, which is quite close to the corresponding threshold pS ≈18% of the surface codes from [5]. The codes from this family were constructed in the same way as the GB codes from Sub- section 4.6, where for each s ∈N the corresponding syn- drome code Cg is the cyclic Hamming [2s −1, s, 3] code deﬁned by some irreducible polynomial g(x) ∈F2[x] of degree s. In all our previous examples, we considered only CSS codes. In fact, as it is shown in Subsection 3.3, the BP-OSD decoder can be applied to any stabilizer code. In Fig. 10, we demonstrate the WER performance of the BP-OSD-0 decoder on the 5-limited cyclic non-CSS [[126,2,12]] code. This code is deﬁned by the parity- check matrix H = [HX | HZ], where HX and HZ are the 126×126 circulant matrices represented respectively by the polynomials: 1 + x71 + x55 and 1 + x40 + x86. As we can see, the WER gain of OSD-0 post-processing in this case is at least three orders of magnitude. 0.1 0.11 0.12 0.13 0.14 0.15 0.16 10−1 100 Physical error rate WER Threshold for GB codes (BP-OSD-0) [[126,12]] [[254,14]] [[510,16]] [[1022,18]] [[8190,24]] Figure 9: The WER performance on the depolarizing channel for ﬁve 6-limited GB codes under the BP-OSD-0 decoder. The threshold is pGB ≈15%. The corresponding threshold of the 4-limited surface codes [5] is pS ≈18%. 10−1 10−2 10−7 10−6 10−5 10−4 10−3 10−2 10−1 5 · 10−2 Physical error rate WER Cyclic non-CSS code (BP-OSD-0) BP BP-OSD-0 Figure 10: The WER performance of the BP-OSD-0 decoder on the 5-limited cyclic non-CSS [[126,2,12]] code deﬁned by the parity-check matrix H = [HX | HZ], where HX and HZ are the 126 × 126 circulant matrices represented respectively by the polynomials: 1 + x71 + x55 and 1 + x40 + x86. Accepted in Quantum 2021-11-02, click title to verify. Published under CC-BY 4.0. 21",
+      "extractor_doi": "10.1109/tit.2017",
+      "extractor_confidence": 1.0,
+      "numbered": true,
+      "warnings": [
+        "very_long_reference"
+      ]
+    }
+  ]
+}

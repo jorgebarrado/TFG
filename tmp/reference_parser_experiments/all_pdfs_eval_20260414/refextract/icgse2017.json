@@ -1,0 +1,3592 @@
+{
+  "parser": "refextract",
+  "status": "ok",
+  "availability": {
+    "available": true,
+    "shim_used": false,
+    "mode": "string"
+  },
+  "entries": [
+    {
+      "index": 0,
+      "raw_input": "K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al. Manifesto for Agile Software Development, 2001.",
+      "title": "Manifesto for Agile Software Development",
+      "authors": [
+        "K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al."
+      ],
+      "year": 2001,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "1"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "1"
+          ],
+          "raw_ref": [
+            "[1] K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al. Manifesto for Agile Software Development, 2001."
+          ],
+          "author": [
+            "K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al."
+          ],
+          "misc": [
+            "Manifesto for Agile Software Development"
+          ],
+          "year": [
+            "2001"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 1,
+      "raw_input": "K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank. Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST, 2008.",
+      "title": "Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST",
+      "authors": [
+        "K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank"
+      ],
+      "year": 2008,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "2"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "2"
+          ],
+          "raw_ref": [
+            "[2] K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank. Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST, 2008."
+          ],
+          "author": [
+            "K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank"
+          ],
+          "misc": [
+            "Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST"
+          ],
+          "year": [
+            "2008"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 2,
+      "raw_input": "C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu. Open borders? Immigration in Open Source projects. In MSR, pages 6–11. IEEE, 2007.",
+      "title": "Open borders? Immigration in Open Source projects. In MSR, pages 6-11",
+      "authors": [
+        "C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu"
+      ],
+      "year": 2007,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "3"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "3"
+          ],
+          "raw_ref": [
+            "[3] C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu. Open borders? Immigration in Open Source projects. In MSR, pages 6–11. IEEE, 2007."
+          ],
+          "author": [
+            "C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu"
+          ],
+          "misc": [
+            "Open borders? Immigration in Open Source projects. In MSR, pages 6-11"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2007"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 3,
+      "raw_input": "E. Constantinou and T. Mens. Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER. IEEE, 2017.",
+      "title": "Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER",
+      "authors": [
+        "E. Constantinou and T. Mens"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "4"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "4"
+          ],
+          "raw_ref": [
+            "[4] E. Constantinou and T. Mens. Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER. IEEE, 2017."
+          ],
+          "author": [
+            "E. Constantinou and T. Mens"
+          ],
+          "misc": [
+            "Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 4,
+      "raw_input": "J. Dibbern, J. Winkler, and A. Heinzl. Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333–366, 2008.",
+      "title": "Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333-366",
+      "authors": [
+        "J. Dibbern, J. Winkler, and A. Heinzl"
+      ],
+      "year": 2008,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "5"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "5"
+          ],
+          "raw_ref": [
+            "[5] J. Dibbern, J. Winkler, and A. Heinzl. Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333–366, 2008."
+          ],
+          "author": [
+            "J. Dibbern, J. Winkler, and A. Heinzl"
+          ],
+          "misc": [
+            "Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333-366"
+          ],
+          "year": [
+            "2008"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 5,
+      "raw_input": "C. Ebert and P. De Neve. Surviving Global Software Development. IEEE Software, 18(2):62–69, 2001.",
+      "title": "Surviving Global Software Development",
+      "authors": [
+        "C. Ebert and P. De Neve"
+      ],
+      "year": 2001,
+      "doi": null,
+      "venue": "IEEE Softw.",
+      "pages": "62-69",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "6"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "6"
+          ],
+          "raw_ref": [
+            "[6] C. Ebert and P. De Neve. Surviving Global Software Development. IEEE Software, 18(2):62–69, 2001."
+          ],
+          "author": [
+            "C. Ebert and P. De Neve"
+          ],
+          "misc": [
+            "Surviving Global Software Development"
+          ],
+          "journal_title": [
+            "IEEE Softw."
+          ],
+          "journal_volume": [
+            "18"
+          ],
+          "journal_year": [
+            "2001"
+          ],
+          "journal_page": [
+            "62-69"
+          ],
+          "journal_reference": [
+            "IEEE Softw. 18 (2001) 62-69"
+          ],
+          "year": [
+            "2001"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 6,
+      "raw_input": "C. Ebert, B. K. Murthy, and N. N. Jha. Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131–140. IEEE, 2008.",
+      "title": "Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131-140",
+      "authors": [
+        "C. Ebert, B. K. Murthy, and N. N. Jha"
+      ],
+      "year": 2008,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "7"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "7"
+          ],
+          "raw_ref": [
+            "[7] C. Ebert, B. K. Murthy, and N. N. Jha. Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131–140. IEEE, 2008."
+          ],
+          "author": [
+            "C. Ebert, B. K. Murthy, and N. N. Jha"
+          ],
+          "misc": [
+            "Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131-140"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2008"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 7,
+      "raw_input": "M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri. Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829–841. ACM, 2015.",
+      "title": "Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829-841. ACM",
+      "authors": [
+        "M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "8"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "8"
+          ],
+          "raw_ref": [
+            "[8] M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri. Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829–841. ACM, 2015."
+          ],
+          "author": [
+            "M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri"
+          ],
+          "misc": [
+            "Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829-841. ACM"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 8,
+      "raw_input": "D. M. German. The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201–215, 2003.",
+      "title": "The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201-215",
+      "authors": [
+        "D. M. German"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "9"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "9"
+          ],
+          "raw_ref": [
+            "[9] D. M. German. The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201–215, 2003."
+          ],
+          "author": [
+            "D. M. German"
+          ],
+          "misc": [
+            "The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201-215"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 9,
+      "raw_input": "M. Goeminne and T. Mens. Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551–555. IEEE, 2015.",
+      "title": "Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551-555",
+      "authors": [
+        "M. Goeminne and T. Mens"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "10"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "10"
+          ],
+          "raw_ref": [
+            "[10] M. Goeminne and T. Mens. Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551–555. IEEE, 2015."
+          ],
+          "author": [
+            "M. Goeminne and T. Mens"
+          ],
+          "misc": [
+            "Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551-555"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 10,
+      "raw_input": "T. Hall, H. Sharp, S. Beecham, N. Baddoo, and H. Robin- son. What do we know about developer motivation? IEEE Software, 25(4):92–94, 2008.",
+      "title": "and H. Robin- son. What do we know about developer motivation?",
+      "authors": [
+        "T. Hall, H. Sharp, S. Beecham, N. Baddoo"
+      ],
+      "year": 2008,
+      "doi": null,
+      "venue": "IEEE Softw.",
+      "pages": "92-94",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "11"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "11"
+          ],
+          "raw_ref": [
+            "[11] T. Hall, H. Sharp, S. Beecham, N. Baddoo, and H. Robin- son. What do we know about developer motivation? IEEE Software, 25(4):92–94, 2008."
+          ],
+          "author": [
+            "T. Hall, H. Sharp, S. Beecham, N. Baddoo"
+          ],
+          "misc": [
+            "and H. Robin- son. What do we know about developer motivation?"
+          ],
+          "journal_title": [
+            "IEEE Softw."
+          ],
+          "journal_volume": [
+            "25"
+          ],
+          "journal_year": [
+            "2008"
+          ],
+          "journal_page": [
+            "92-94"
+          ],
+          "journal_reference": [
+            "IEEE Softw. 25 (2008) 92-94"
+          ],
+          "year": [
+            "2008"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 11,
+      "raw_input": "J. D. Herbsleb and D. Moitra. Global Software Develop- ment. IEEE Software, 18(2):16–20, 2001.",
+      "title": "Global Software Develop- ment",
+      "authors": [
+        "J. D. Herbsleb and D. Moitra"
+      ],
+      "year": 2001,
+      "doi": null,
+      "venue": "IEEE Softw.",
+      "pages": "16-20",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "12"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "12"
+          ],
+          "raw_ref": [
+            "[12] J. D. Herbsleb and D. Moitra. Global Software Develop- ment. IEEE Software, 18(2):16–20, 2001."
+          ],
+          "author": [
+            "J. D. Herbsleb and D. Moitra"
+          ],
+          "misc": [
+            "Global Software Develop- ment"
+          ],
+          "journal_title": [
+            "IEEE Softw."
+          ],
+          "journal_volume": [
+            "18"
+          ],
+          "journal_year": [
+            "2001"
+          ],
+          "journal_page": [
+            "16-20"
+          ],
+          "journal_reference": [
+            "IEEE Softw. 18 (2001) 16-20"
+          ],
+          "year": [
+            "2001"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 12,
+      "raw_input": "I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. Gonz´alez Barahona. The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27–33. ACM, 2006.",
+      "title": "The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27-33. ACM",
+      "authors": [
+        "I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. González Barahona"
+      ],
+      "year": 2006,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "13"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "13"
+          ],
+          "raw_ref": [
+            "[13] I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. Gonz´alez Barahona. The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27–33. ACM, 2006."
+          ],
+          "author": [
+            "I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. González Barahona"
+          ],
+          "misc": [
+            "The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27-33. ACM"
+          ],
+          "year": [
+            "2006"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 13,
+      "raw_input": "G. Hertel, S. Niedner, and S. Herrmann. Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159–1177, 2003.",
+      "title": "Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159-1177",
+      "authors": [
+        "G. Hertel, S. Niedner, and S. Herrmann"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "14"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "14"
+          ],
+          "raw_ref": [
+            "[14] G. Hertel, S. Niedner, and S. Herrmann. Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159–1177, 2003."
+          ],
+          "author": [
+            "G. Hertel, S. Niedner, and S. Herrmann"
+          ],
+          "misc": [
+            "Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159-1177"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 14,
+      "raw_input": "D. A. Higgins. Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company, 1986.",
+      "title": "Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company",
+      "authors": [
+        "D. A. Higgins"
+      ],
+      "year": 1986,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "15"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "15"
+          ],
+          "raw_ref": [
+            "[15] D. A. Higgins. Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company, 1986."
+          ],
+          "author": [
+            "D. A. Higgins"
+          ],
+          "misc": [
+            "Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company"
+          ],
+          "year": [
+            "1986"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 15,
+      "raw_input": "H. Holmstrom, E. ´O. Conch´uir, J. Agerfalk, and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3–11. IEEE, 2006.",
+      "title": "and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3-11",
+      "authors": [
+        "H. Holmstrom, E. Ó. Conchúir, J. Agerfalk"
+      ],
+      "year": 2006,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "16"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "16"
+          ],
+          "raw_ref": [
+            "[16] H. Holmstrom, E. ´O. Conch´uir, J. Agerfalk, and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3–11. IEEE, 2006."
+          ],
+          "author": [
+            "H. Holmstrom, E. Ó. Conchúir, J. Agerfalk"
+          ],
+          "misc": [
+            "and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3-11"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2006"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 16,
+      "raw_input": "A. Iqbal. Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study of Apache Projects. ISRN Software Engineering, 2014, 2014.",
+      "title": "Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study",
+      "authors": [
+        "A. Iqbal"
+      ],
+      "year": null,
+      "doi": null,
+      "venue": "Engineering",
+      "pages": "2014",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "17"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "17"
+          ],
+          "raw_ref": [
+            "[17] A. Iqbal. Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study of Apache Projects. ISRN Software Engineering, 2014, 2014."
+          ],
+          "author": [
+            "A. Iqbal"
+          ],
+          "misc": [
+            "Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study",
+            "of Apache Projects. ISRN Software"
+          ],
+          "journal_title": [
+            "Engineering"
+          ],
+          "journal_volume": [
+            "2014"
+          ],
+          "journal_page": [
+            "2014"
+          ],
+          "journal_reference": [
+            "Engineering 2014 () 2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 17,
+      "raw_input": "D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. Gonz´alez-Barahona. Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1–10. IEEE, 2009.",
+      "title": "Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1-10",
+      "authors": [
+        "D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. González-Barahona"
+      ],
+      "year": 2009,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "18"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "18"
+          ],
+          "raw_ref": [
+            "[18] D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. Gonz´alez-Barahona. Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1–10. IEEE, 2009."
+          ],
+          "author": [
+            "D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. González-Barahona"
+          ],
+          "misc": [
+            "Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1-10"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2009"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 18,
+      "raw_input": "E. L. Kaplan and P. Meier. Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457–481, 1958.",
+      "title": "Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457-481",
+      "authors": [
+        "E. L. Kaplan and P. Meier"
+      ],
+      "year": 1958,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "19"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "19"
+          ],
+          "raw_ref": [
+            "[19] E. L. Kaplan and P. Meier. Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457–481, 1958."
+          ],
+          "author": [
+            "E. L. Kaplan and P. Meier"
+          ],
+          "misc": [
+            "Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457-481"
+          ],
+          "year": [
+            "1958"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 19,
+      "raw_input": "E. Kouters, B. Vasilescu, A. Serebrenik, and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592–595, 2012.",
+      "title": "and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592-595",
+      "authors": [
+        "E. Kouters, B. Vasilescu, A. Serebrenik"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "20"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "20"
+          ],
+          "raw_ref": [
+            "[20] E. Kouters, B. Vasilescu, A. Serebrenik, and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592–595, 2012."
+          ],
+          "author": [
+            "E. Kouters, B. Vasilescu, A. Serebrenik"
+          ],
+          "misc": [
+            "and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592-595"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 20,
+      "raw_input": "K. Lakhani and R. G. Wolf. Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1–27, 2003.",
+      "title": "Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1-27",
+      "authors": [
+        "K. Lakhani and R. G. Wolf"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "21"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "21"
+          ],
+          "raw_ref": [
+            "[21] K. Lakhani and R. G. Wolf. Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1–27, 2003."
+          ],
+          "author": [
+            "K. Lakhani and R. G. Wolf"
+          ],
+          "misc": [
+            "Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1-27"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 21,
+      "raw_input": "E. G. Lambert, N. L. Hogan, and S. M. Barton. The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233–250, 2001.",
+      "title": "The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233-250",
+      "authors": [
+        "E. G. Lambert, N. L. Hogan, and S. M. Barton"
+      ],
+      "year": 2001,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "22"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "22"
+          ],
+          "raw_ref": [
+            "[22] E. G. Lambert, N. L. Hogan, and S. M. Barton. The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233–250, 2001."
+          ],
+          "author": [
+            "E. G. Lambert, N. L. Hogan, and S. M. Barton"
+          ],
+          "misc": [
+            "The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233-250"
+          ],
+          "year": [
+            "2001"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 22,
+      "raw_input": "Y. Li, C.-H. Tan, and H.-H. Teo. Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257– 267, 2012.",
+      "title": "Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257- 267",
+      "authors": [
+        "Y. Li, C.-H. Tan, and H.-H. Teo"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "23"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "23"
+          ],
+          "raw_ref": [
+            "[23] Y. Li, C.-H. Tan, and H.-H. Teo. Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257– 267, 2012."
+          ],
+          "author": [
+            "Y. Li, C.-H. Tan, and H.-H. Teo"
+          ],
+          "misc": [
+            "Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257- 267"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 23,
+      "raw_input": "A. Martensen and L. Grønholdt. Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92–116, 2006.",
+      "title": "Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92-116",
+      "authors": [
+        "A. Martensen and L. Grønholdt"
+      ],
+      "year": 2006,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "24"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "24"
+          ],
+          "raw_ref": [
+            "[24] A. Martensen and L. Grønholdt. Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92–116, 2006."
+          ],
+          "author": [
+            "A. Martensen and L. Grønholdt"
+          ],
+          "misc": [
+            "Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92-116"
+          ],
+          "year": [
+            "2006"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 24,
+      "raw_input": "B. Mehlenbacher. Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527–543, 2003.",
+      "title": "Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527-543",
+      "authors": [
+        "B. Mehlenbacher"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "25"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "25"
+          ],
+          "raw_ref": [
+            "[25] B. Mehlenbacher. Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527–543, 2003."
+          ],
+          "author": [
+            "B. Mehlenbacher"
+          ],
+          "misc": [
+            "Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527-543"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 25,
+      "raw_input": "T. Mens. Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner, editors, Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D: Information and Communication Security, pages 170–192. IOS Press, 2015.",
+      "title": "Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner (eds.)",
+      "authors": [
+        "T. Mens"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "26"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "26"
+          ],
+          "raw_ref": [
+            "[26] T. Mens. Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner, editors, Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D: Information and Communication Security, pages 170–192. IOS Press, 2015."
+          ],
+          "author": [
+            "T. Mens"
+          ],
+          "misc": [
+            "Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner (eds.)",
+            "Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D",
+            ": Information and Communication Security, pages 170-192. IOS Press"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 26,
+      "raw_input": "T. Mens, M. Claes, P. Grosjean, and A. Serebrenik. Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve, editors, Evolving Software Systems, chapter 10, pages 297–326. Springer, 2014.",
+      "title": "Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve (eds.)",
+      "authors": [
+        "T. Mens, M. Claes, P. Grosjean, and A. Serebrenik"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "27"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "27"
+          ],
+          "raw_ref": [
+            "[27] T. Mens, M. Claes, P. Grosjean, and A. Serebrenik. Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve, editors, Evolving Software Systems, chapter 10, pages 297–326. Springer, 2014."
+          ],
+          "author": [
+            "T. Mens, M. Claes, P. Grosjean, and A. Serebrenik"
+          ],
+          "misc": [
+            "Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve (eds.)",
+            "Evolving Software Systems, chapter 10, pages 297-326"
+          ],
+          "publisher": [
+            "Springer"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 27,
+      "raw_input": "V. Midha and P. Palvia. Retention and quality in Open Source Software projects. AMCIS 2007 Proceedings, page 25, 2007.",
+      "title": "Retention and quality in Open Source Software projects. AMCISProceedings, page 25",
+      "authors": [
+        "V. Midha and P. Palvia"
+      ],
+      "year": 2007,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "28"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "28"
+          ],
+          "raw_ref": [
+            "[28] V. Midha and P. Palvia. Retention and quality in Open Source Software projects. AMCIS 2007 Proceedings, page 25, 2007."
+          ],
+          "author": [
+            "V. Midha and P. Palvia"
+          ],
+          "misc": [
+            "Retention and quality in Open Source Software projects. AMCISProceedings, page 25"
+          ],
+          "year": [
+            "2007"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 28,
+      "raw_input": "V. Midha, R. Singh, P. Palvia, and N. Kshetri. Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81–90, 2010.",
+      "title": "Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81-90",
+      "authors": [
+        "V. Midha, R. Singh, P. Palvia, and N. Kshetri"
+      ],
+      "year": 2010,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "29"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "29"
+          ],
+          "raw_ref": [
+            "[29] V. Midha, R. Singh, P. Palvia, and N. Kshetri. Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81–90, 2010."
+          ],
+          "author": [
+            "V. Midha, R. Singh, P. Palvia, and N. Kshetri"
+          ],
+          "misc": [
+            "Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81-90"
+          ],
+          "year": [
+            "2010"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 29,
+      "raw_input": "M. Nagappan, T. Zimmermann, and C. Bird. Diversity in software engineering research. In ESEC/FSE, pages 466–476, New York, NY, USA, 2013. ACM.",
+      "title": "Diversity in software engineering research. In ESEC/FSE, pages 466-476, New York, NY, USA,. ACM",
+      "authors": [
+        "M. Nagappan, T. Zimmermann, and C. Bird"
+      ],
+      "year": 2013,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "30"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "30"
+          ],
+          "raw_ref": [
+            "[30] M. Nagappan, T. Zimmermann, and C. Bird. Diversity in software engineering research. In ESEC/FSE, pages 466–476, New York, NY, USA, 2013. ACM."
+          ],
+          "author": [
+            "M. Nagappan, T. Zimmermann, and C. Bird"
+          ],
+          "misc": [
+            "Diversity in software engineering research. In ESEC/FSE, pages 466-476, New York, NY, USA,. ACM"
+          ],
+          "year": [
+            "2013"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 30,
+      "raw_input": "F. Ortega and D. Izquierdo-Cortazar. Survival analysis in open development projects. In FLOSS, pages 7–12. IEEE, 2009.",
+      "title": "Survival analysis in open development projects. In FLOSS, pages 7-12",
+      "authors": [
+        "F. Ortega and D. Izquierdo-Cortazar"
+      ],
+      "year": 2009,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "31"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "31"
+          ],
+          "raw_ref": [
+            "[31] F. Ortega and D. Izquierdo-Cortazar. Survival analysis in open development projects. In FLOSS, pages 7–12. IEEE, 2009."
+          ],
+          "author": [
+            "F. Ortega and D. Izquierdo-Cortazar"
+          ],
+          "misc": [
+            "Survival analysis in open development projects. In FLOSS, pages 7-12"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2009"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 31,
+      "raw_input": "J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang. A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331–336, 2010.",
+      "title": "A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331-336",
+      "authors": [
+        "J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang"
+      ],
+      "year": 2010,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "32"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "32"
+          ],
+          "raw_ref": [
+            "[32] J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang. A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331–336, 2010."
+          ],
+          "author": [
+            "J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang"
+          ],
+          "misc": [
+            "A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331-336"
+          ],
+          "year": [
+            "2010"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 32,
+      "raw_input": "D. Riehle. How Open Source is changing the software developer’s career. IEEE Computer, 48(5):51–57, 2015.",
+      "title": "How Open Source is changing the software developer’s career",
+      "authors": [
+        "D. Riehle"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": "Computer",
+      "pages": "51-57",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "33"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "33"
+          ],
+          "raw_ref": [
+            "[33] D. Riehle. How Open Source is changing the software developer’s career. IEEE Computer, 48(5):51–57, 2015."
+          ],
+          "author": [
+            "D. Riehle"
+          ],
+          "misc": [
+            "How Open Source is changing the software developer’s career"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "journal_title": [
+            "Computer"
+          ],
+          "journal_volume": [
+            "48"
+          ],
+          "journal_year": [
+            "2015"
+          ],
+          "journal_page": [
+            "51-57"
+          ],
+          "journal_reference": [
+            "Computer 48 (2015) 51-57"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 33,
+      "raw_input": "D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt. Paid vs. volunteer work in Open Source. In HICSS, pages 3286–3295. IEEE, 2014.",
+      "title": "Paid vs. volunteer work in Open Source. In HICSS, pages 3286-3295",
+      "authors": [
+        "D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "34"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "34"
+          ],
+          "raw_ref": [
+            "[34] D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt. Paid vs. volunteer work in Open Source. In HICSS, pages 3286–3295. IEEE, 2014."
+          ],
+          "author": [
+            "D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt"
+          ],
+          "misc": [
+            "Paid vs. volunteer work in Open Source. In HICSS, pages 3286-3295"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 34,
+      "raw_input": "G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo. Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233–1248, 2006.",
+      "title": "Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233-1248",
+      "authors": [
+        "G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo"
+      ],
+      "year": 2006,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "35"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "35"
+          ],
+          "raw_ref": [
+            "[35] G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo. Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233–1248, 2006."
+          ],
+          "author": [
+            "G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo"
+          ],
+          "misc": [
+            "Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233-1248"
+          ],
+          "year": [
+            "2006"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 35,
+      "raw_input": "P. Runeson and M. H¨ost. Guidelines for conducting and reporting case study research in software engineering. Empirical Software Engineering, 14(2):131–164, 2009.",
+      "title": "Guidelines for conducting and reporting case study research in software engineering. Empirical Software",
+      "authors": [
+        "P. Runeson and M. Höst"
+      ],
+      "year": 2009,
+      "doi": null,
+      "venue": "Engineering",
+      "pages": "131-164",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "36"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "36"
+          ],
+          "raw_ref": [
+            "[36] P. Runeson and M. H¨ost. Guidelines for conducting and reporting case study research in software engineering. Empirical Software Engineering, 14(2):131–164, 2009."
+          ],
+          "author": [
+            "P. Runeson and M. Höst"
+          ],
+          "misc": [
+            "Guidelines for conducting and reporting case study research in software engineering. Empirical Software"
+          ],
+          "journal_title": [
+            "Engineering"
+          ],
+          "journal_volume": [
+            "14"
+          ],
+          "journal_year": [
+            "2009"
+          ],
+          "journal_page": [
+            "131-164"
+          ],
+          "journal_reference": [
+            "Engineering 14 (2009) 131-164"
+          ],
+          "year": [
+            "2009"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 36,
+      "raw_input": "I. Samoladas, L. Angelis, and I. Stamelos. Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902–922, 2010.",
+      "title": "Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902-922",
+      "authors": [
+        "I. Samoladas, L. Angelis, and I. Stamelos"
+      ],
+      "year": 2010,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "37"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "37"
+          ],
+          "raw_ref": [
+            "[37] I. Samoladas, L. Angelis, and I. Stamelos. Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902–922, 2010."
+          ],
+          "author": [
+            "I. Samoladas, L. Angelis, and I. Stamelos"
+          ],
+          "misc": [
+            "Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902-922"
+          ],
+          "year": [
+            "2010"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 37,
+      "raw_input": "A. Schilling, S. Laumer, and T. Weitzel. Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446–3455, 2012.",
+      "title": "Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446-3455",
+      "authors": [
+        "A. Schilling, S. Laumer, and T. Weitzel"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "38"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "38"
+          ],
+          "raw_ref": [
+            "[38] A. Schilling, S. Laumer, and T. Weitzel. Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446–3455, 2012."
+          ],
+          "author": [
+            "A. Schilling, S. Laumer, and T. Weitzel"
+          ],
+          "misc": [
+            "Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446-3455"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 38,
+      "raw_input": "A. Schilling, S. Laumer, and T. Weitzel. Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of the 2013 annual conference on Computers and people research, pages 167–172. ACM, 2013.",
+      "title": "Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of theannual conference on Computers and people research, pages 167-172. ACM",
+      "authors": [
+        "A. Schilling, S. Laumer, and T. Weitzel"
+      ],
+      "year": 2013,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "39"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "39"
+          ],
+          "raw_ref": [
+            "[39] A. Schilling, S. Laumer, and T. Weitzel. Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of the 2013 annual conference on Computers and people research, pages 167–172. ACM, 2013."
+          ],
+          "author": [
+            "A. Schilling, S. Laumer, and T. Weitzel"
+          ],
+          "misc": [
+            "Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of theannual conference on Computers and people research, pages 167-172. ACM"
+          ],
+          "year": [
+            "2013"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 39,
+      "raw_input": "P. N. Sharma, J. Hulland, and S. Daniel. Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331–337, 2012.",
+      "title": "Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331-337",
+      "authors": [
+        "P. N. Sharma, J. Hulland, and S. Daniel"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "40"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "40"
+          ],
+          "raw_ref": [
+            "[40] P. N. Sharma, J. Hulland, and S. Daniel. Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331–337, 2012."
+          ],
+          "author": [
+            "P. N. Sharma, J. Hulland, and S. Daniel"
+          ],
+          "misc": [
+            "Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331-337"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 40,
+      "raw_input": "B. Shibuya and T. Tamai. Understanding the process of participating in Open Source communities. In FLOSS, pages 1–6. IEEE Computer Society, 2009.",
+      "title": "Understanding the process of participating in Open Source communities. In FLOSS, pages 1-6",
+      "authors": [
+        "B. Shibuya and T. Tamai"
+      ],
+      "year": 2009,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "41"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "41"
+          ],
+          "raw_ref": [
+            "[41] B. Shibuya and T. Tamai. Understanding the process of participating in Open Source communities. In FLOSS, pages 1–6. IEEE Computer Society, 2009."
+          ],
+          "author": [
+            "B. Shibuya and T. Tamai"
+          ],
+          "misc": [
+            "Understanding the process of participating in Open Source communities. In FLOSS, pages 1-6",
+            "Computer Society"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2009"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 41,
+      "raw_input": "D. Spinellis. Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73–79. ACM, 2006.",
+      "title": "Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73-79. ACM",
+      "authors": [
+        "D. Spinellis"
+      ],
+      "year": 2006,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "42"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "42"
+          ],
+          "raw_ref": [
+            "[42] D. Spinellis. Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73–79. ACM, 2006."
+          ],
+          "author": [
+            "D. Spinellis"
+          ],
+          "misc": [
+            "Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73-79. ACM"
+          ],
+          "year": [
+            "2006"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 42,
+      "raw_input": "I. Steinmacher, M. A. Gerosa, and D. Redmiles. Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective, 2014.",
+      "title": "Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective",
+      "authors": [
+        "I. Steinmacher, M. A. Gerosa, and D. Redmiles"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "43"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "43"
+          ],
+          "raw_ref": [
+            "[43] I. Steinmacher, M. A. Gerosa, and D. Redmiles. Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective, 2014."
+          ],
+          "author": [
+            "I. Steinmacher, M. A. Gerosa, and D. Redmiles"
+          ],
+          "misc": [
+            "Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 43,
+      "raw_input": "J. Teixeira. Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM, 2014.",
+      "title": "Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM",
+      "authors": [
+        "J. Teixeira"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "44"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "44"
+          ],
+          "raw_ref": [
+            "[44] J. Teixeira. Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM, 2014."
+          ],
+          "author": [
+            "J. Teixeira"
+          ],
+          "misc": [
+            "Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 44,
+      "raw_input": "B. Vasilescu, D. Posnett, B. Ray, M. G. van den Brand, A. Serebrenik, P. Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789– 3798, 2015.",
+      "title": "M. G. van den Brand, A. Serebrenik, P",
+      "authors": [
+        "B. Vasilescu, D. Posnett, B. Ray"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "45"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "45"
+          ],
+          "raw_ref": [
+            "[45] B. Vasilescu, D. Posnett, B. Ray, M. G. van den Brand, A. Serebrenik, P. Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789– 3798, 2015."
+          ],
+          "author": [
+            "B. Vasilescu, D. Posnett, B. Ray"
+          ],
+          "misc": [
+            "M. G. van den Brand, A. Serebrenik, P",
+            "Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789- 3798"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 45,
+      "raw_input": "B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens. On the variation and specialisation of workload – A case study of the GNOME ecosystem community. Empirical Software Engineering, 19(4):955–1008, 2013.",
+      "title": "On the variation and specialisation of workload - A case study of the GNOME ecosystem community. Empirical Software",
+      "authors": [
+        "B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens"
+      ],
+      "year": 2013,
+      "doi": null,
+      "venue": "Engineering",
+      "pages": "955-1008",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "46"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "46"
+          ],
+          "raw_ref": [
+            "[46] B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens. On the variation and specialisation of workload – A case study of the GNOME ecosystem community. Empirical Software Engineering, 19(4):955–1008, 2013."
+          ],
+          "author": [
+            "B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens"
+          ],
+          "misc": [
+            "On the variation and specialisation of workload - A case study of the GNOME ecosystem community. Empirical Software"
+          ],
+          "journal_title": [
+            "Engineering"
+          ],
+          "journal_volume": [
+            "19"
+          ],
+          "journal_year": [
+            "2013"
+          ],
+          "journal_page": [
+            "955-1008"
+          ],
+          "journal_reference": [
+            "Engineering 19 (2013) 955-1008"
+          ],
+          "year": [
+            "2013"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 46,
+      "raw_input": "S. Wellek. A log-rank test for equivalence of two survivor functions. Biometrics, pages 877–881, 1993.",
+      "title": "A log-rank test for equivalence of two survivor functions. Biometrics, pages 877-881",
+      "authors": [
+        "S. Wellek"
+      ],
+      "year": 1993,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "47"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "47"
+          ],
+          "raw_ref": [
+            "[47] S. Wellek. A log-rank test for equivalence of two survivor functions. Biometrics, pages 877–881, 1993."
+          ],
+          "author": [
+            "S. Wellek"
+          ],
+          "misc": [
+            "A log-rank test for equivalence of two survivor functions. Biometrics, pages 877-881"
+          ],
+          "year": [
+            "1993"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 47,
+      "raw_input": "S. G. Westlund and J. C. Hannon. Retaining talent: Assessing job satisfaction facets most signiﬁcantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1–15, 2008.",
+      "title": "Retaining talent: Assessing job satisfaction facets most significantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1-15",
+      "authors": [
+        "S. G. Westlund and J. C. Hannon"
+      ],
+      "year": 2008,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "48"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "48"
+          ],
+          "raw_ref": [
+            "[48] S. G. Westlund and J. C. Hannon. Retaining talent: Assessing job satisfaction facets most signiﬁcantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1–15, 2008."
+          ],
+          "author": [
+            "S. G. Westlund and J. C. Hannon"
+          ],
+          "misc": [
+            "Retaining talent: Assessing job satisfaction facets most significantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1-15"
+          ],
+          "year": [
+            "2008"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 48,
+      "raw_input": "I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa. Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13. IEEE, 2016.",
+      "title": "Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13",
+      "authors": [
+        "I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "49"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "49"
+          ],
+          "raw_ref": [
+            "[49] I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa. Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13. IEEE, 2016."
+          ],
+          "author": [
+            "I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa"
+          ],
+          "misc": [
+            "Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 49,
+      "raw_input": "C.-G. Wu, J. H. Gerlach, and C. E. Young. An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253–262, 2007.",
+      "title": "An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253-262",
+      "authors": [
+        "C.-G. Wu, J. H. Gerlach, and C. E. Young"
+      ],
+      "year": 2007,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "50"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "50"
+          ],
+          "raw_ref": [
+            "[50] C.-G. Wu, J. H. Gerlach, and C. E. Young. An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253–262, 2007."
+          ],
+          "author": [
+            "C.-G. Wu, J. H. Gerlach, and C. E. Young"
+          ],
+          "misc": [
+            "An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253-262"
+          ],
+          "year": [
+            "2007"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 50,
+      "raw_input": "K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi. Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339– 348, 2016.",
+      "title": "Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339- 348",
+      "authors": [
+        "K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "51"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "51"
+          ],
+          "raw_ref": [
+            "[51] K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi. Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339– 348, 2016."
+          ],
+          "author": [
+            "K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi"
+          ],
+          "misc": [
+            "Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339- 348"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 51,
+      "raw_input": "D. Yang, T. Sinha, D. Adamson, and C. P. Rose. Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13–20, Lake Tahoe, NV, USA, 2013.",
+      "title": "Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13-20, Lake Tahoe, NV, USA",
+      "authors": [
+        "D. Yang, T. Sinha, D. Adamson, and C. P. Rose"
+      ],
+      "year": 2013,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "52"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "52"
+          ],
+          "raw_ref": [
+            "[52] D. Yang, T. Sinha, D. Adamson, and C. P. Rose. Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13–20, Lake Tahoe, NV, USA, 2013."
+          ],
+          "author": [
+            "D. Yang, T. Sinha, D. Adamson, and C. P. Rose"
+          ],
+          "misc": [
+            "Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13-20, Lake Tahoe, NV, USA"
+          ],
+          "year": [
+            "2013"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 52,
+      "raw_input": "M. Zhou and A. Mockus. Who will stay in the ﬂoss community? modeling participant’s initial behavior. TSE, 41(1):82–99, Jan 2015.",
+      "title": "Who will stay in the floss community? modeling participant’s initial behavior. TSE, 41(1):82-99, Jan",
+      "authors": [
+        "M. Zhou and A. Mockus"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "53"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "53"
+          ],
+          "raw_ref": [
+            "[53] M. Zhou and A. Mockus. Who will stay in the ﬂoss community? modeling participant’s initial behavior. TSE, 41(1):82–99, Jan 2015."
+          ],
+          "author": [
+            "M. Zhou and A. Mockus"
+          ],
+          "misc": [
+            "Who will stay in the floss community? modeling participant’s initial behavior. TSE, 41(1):82-99, Jan"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 53,
+      "raw_input": "M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei. Inﬂow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1–13:29, Apr. 2016. 10",
+      "title": "Inflow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1-13:29, Apr.. 10",
+      "authors": [
+        "M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "54"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "54"
+          ],
+          "raw_ref": [
+            "[54] M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei. Inﬂow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1–13:29, Apr. 2016. 10"
+          ],
+          "author": [
+            "M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei"
+          ],
+          "misc": [
+            "Inflow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1-13:29, Apr.. 10"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc"
+      ],
+      "confidence": null
+    }
+  ],
+  "notes": [
+    "Executed with refextract string mode over already segmented references."
+  ],
+  "raw_parser_output": [
+    [
+      {
+        "linemarker": [
+          "1"
+        ],
+        "raw_ref": [
+          "[1] K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al. Manifesto for Agile Software Development, 2001."
+        ],
+        "author": [
+          "K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al."
+        ],
+        "misc": [
+          "Manifesto for Agile Software Development"
+        ],
+        "year": [
+          "2001"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "2"
+        ],
+        "raw_ref": [
+          "[2] K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank. Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST, 2008."
+        ],
+        "author": [
+          "K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank"
+        ],
+        "misc": [
+          "Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST"
+        ],
+        "year": [
+          "2008"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "3"
+        ],
+        "raw_ref": [
+          "[3] C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu. Open borders? Immigration in Open Source projects. In MSR, pages 6–11. IEEE, 2007."
+        ],
+        "author": [
+          "C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu"
+        ],
+        "misc": [
+          "Open borders? Immigration in Open Source projects. In MSR, pages 6-11"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2007"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "4"
+        ],
+        "raw_ref": [
+          "[4] E. Constantinou and T. Mens. Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER. IEEE, 2017."
+        ],
+        "author": [
+          "E. Constantinou and T. Mens"
+        ],
+        "misc": [
+          "Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "5"
+        ],
+        "raw_ref": [
+          "[5] J. Dibbern, J. Winkler, and A. Heinzl. Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333–366, 2008."
+        ],
+        "author": [
+          "J. Dibbern, J. Winkler, and A. Heinzl"
+        ],
+        "misc": [
+          "Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333-366"
+        ],
+        "year": [
+          "2008"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "6"
+        ],
+        "raw_ref": [
+          "[6] C. Ebert and P. De Neve. Surviving Global Software Development. IEEE Software, 18(2):62–69, 2001."
+        ],
+        "author": [
+          "C. Ebert and P. De Neve"
+        ],
+        "misc": [
+          "Surviving Global Software Development"
+        ],
+        "journal_title": [
+          "IEEE Softw."
+        ],
+        "journal_volume": [
+          "18"
+        ],
+        "journal_year": [
+          "2001"
+        ],
+        "journal_page": [
+          "62-69"
+        ],
+        "journal_reference": [
+          "IEEE Softw. 18 (2001) 62-69"
+        ],
+        "year": [
+          "2001"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "7"
+        ],
+        "raw_ref": [
+          "[7] C. Ebert, B. K. Murthy, and N. N. Jha. Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131–140. IEEE, 2008."
+        ],
+        "author": [
+          "C. Ebert, B. K. Murthy, and N. N. Jha"
+        ],
+        "misc": [
+          "Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131-140"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2008"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "8"
+        ],
+        "raw_ref": [
+          "[8] M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri. Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829–841. ACM, 2015."
+        ],
+        "author": [
+          "M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri"
+        ],
+        "misc": [
+          "Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829-841. ACM"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "9"
+        ],
+        "raw_ref": [
+          "[9] D. M. German. The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201–215, 2003."
+        ],
+        "author": [
+          "D. M. German"
+        ],
+        "misc": [
+          "The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201-215"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "10"
+        ],
+        "raw_ref": [
+          "[10] M. Goeminne and T. Mens. Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551–555. IEEE, 2015."
+        ],
+        "author": [
+          "M. Goeminne and T. Mens"
+        ],
+        "misc": [
+          "Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551-555"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "11"
+        ],
+        "raw_ref": [
+          "[11] T. Hall, H. Sharp, S. Beecham, N. Baddoo, and H. Robin- son. What do we know about developer motivation? IEEE Software, 25(4):92–94, 2008."
+        ],
+        "author": [
+          "T. Hall, H. Sharp, S. Beecham, N. Baddoo"
+        ],
+        "misc": [
+          "and H. Robin- son. What do we know about developer motivation?"
+        ],
+        "journal_title": [
+          "IEEE Softw."
+        ],
+        "journal_volume": [
+          "25"
+        ],
+        "journal_year": [
+          "2008"
+        ],
+        "journal_page": [
+          "92-94"
+        ],
+        "journal_reference": [
+          "IEEE Softw. 25 (2008) 92-94"
+        ],
+        "year": [
+          "2008"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "12"
+        ],
+        "raw_ref": [
+          "[12] J. D. Herbsleb and D. Moitra. Global Software Develop- ment. IEEE Software, 18(2):16–20, 2001."
+        ],
+        "author": [
+          "J. D. Herbsleb and D. Moitra"
+        ],
+        "misc": [
+          "Global Software Develop- ment"
+        ],
+        "journal_title": [
+          "IEEE Softw."
+        ],
+        "journal_volume": [
+          "18"
+        ],
+        "journal_year": [
+          "2001"
+        ],
+        "journal_page": [
+          "16-20"
+        ],
+        "journal_reference": [
+          "IEEE Softw. 18 (2001) 16-20"
+        ],
+        "year": [
+          "2001"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "13"
+        ],
+        "raw_ref": [
+          "[13] I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. Gonz´alez Barahona. The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27–33. ACM, 2006."
+        ],
+        "author": [
+          "I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. González Barahona"
+        ],
+        "misc": [
+          "The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27-33. ACM"
+        ],
+        "year": [
+          "2006"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "14"
+        ],
+        "raw_ref": [
+          "[14] G. Hertel, S. Niedner, and S. Herrmann. Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159–1177, 2003."
+        ],
+        "author": [
+          "G. Hertel, S. Niedner, and S. Herrmann"
+        ],
+        "misc": [
+          "Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159-1177"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "15"
+        ],
+        "raw_ref": [
+          "[15] D. A. Higgins. Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company, 1986."
+        ],
+        "author": [
+          "D. A. Higgins"
+        ],
+        "misc": [
+          "Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company"
+        ],
+        "year": [
+          "1986"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "16"
+        ],
+        "raw_ref": [
+          "[16] H. Holmstrom, E. ´O. Conch´uir, J. Agerfalk, and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3–11. IEEE, 2006."
+        ],
+        "author": [
+          "H. Holmstrom, E. Ó. Conchúir, J. Agerfalk"
+        ],
+        "misc": [
+          "and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3-11"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2006"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "17"
+        ],
+        "raw_ref": [
+          "[17] A. Iqbal. Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study of Apache Projects. ISRN Software Engineering, 2014, 2014."
+        ],
+        "author": [
+          "A. Iqbal"
+        ],
+        "misc": [
+          "Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study",
+          "of Apache Projects. ISRN Software"
+        ],
+        "journal_title": [
+          "Engineering"
+        ],
+        "journal_volume": [
+          "2014"
+        ],
+        "journal_page": [
+          "2014"
+        ],
+        "journal_reference": [
+          "Engineering 2014 () 2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "18"
+        ],
+        "raw_ref": [
+          "[18] D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. Gonz´alez-Barahona. Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1–10. IEEE, 2009."
+        ],
+        "author": [
+          "D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. González-Barahona"
+        ],
+        "misc": [
+          "Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1-10"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2009"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "19"
+        ],
+        "raw_ref": [
+          "[19] E. L. Kaplan and P. Meier. Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457–481, 1958."
+        ],
+        "author": [
+          "E. L. Kaplan and P. Meier"
+        ],
+        "misc": [
+          "Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457-481"
+        ],
+        "year": [
+          "1958"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "20"
+        ],
+        "raw_ref": [
+          "[20] E. Kouters, B. Vasilescu, A. Serebrenik, and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592–595, 2012."
+        ],
+        "author": [
+          "E. Kouters, B. Vasilescu, A. Serebrenik"
+        ],
+        "misc": [
+          "and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592-595"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "21"
+        ],
+        "raw_ref": [
+          "[21] K. Lakhani and R. G. Wolf. Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1–27, 2003."
+        ],
+        "author": [
+          "K. Lakhani and R. G. Wolf"
+        ],
+        "misc": [
+          "Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1-27"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "22"
+        ],
+        "raw_ref": [
+          "[22] E. G. Lambert, N. L. Hogan, and S. M. Barton. The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233–250, 2001."
+        ],
+        "author": [
+          "E. G. Lambert, N. L. Hogan, and S. M. Barton"
+        ],
+        "misc": [
+          "The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233-250"
+        ],
+        "year": [
+          "2001"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "23"
+        ],
+        "raw_ref": [
+          "[23] Y. Li, C.-H. Tan, and H.-H. Teo. Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257– 267, 2012."
+        ],
+        "author": [
+          "Y. Li, C.-H. Tan, and H.-H. Teo"
+        ],
+        "misc": [
+          "Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257- 267"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "24"
+        ],
+        "raw_ref": [
+          "[24] A. Martensen and L. Grønholdt. Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92–116, 2006."
+        ],
+        "author": [
+          "A. Martensen and L. Grønholdt"
+        ],
+        "misc": [
+          "Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92-116"
+        ],
+        "year": [
+          "2006"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "25"
+        ],
+        "raw_ref": [
+          "[25] B. Mehlenbacher. Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527–543, 2003."
+        ],
+        "author": [
+          "B. Mehlenbacher"
+        ],
+        "misc": [
+          "Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527-543"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "26"
+        ],
+        "raw_ref": [
+          "[26] T. Mens. Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner, editors, Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D: Information and Communication Security, pages 170–192. IOS Press, 2015."
+        ],
+        "author": [
+          "T. Mens"
+        ],
+        "misc": [
+          "Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner (eds.)",
+          "Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D",
+          ": Information and Communication Security, pages 170-192. IOS Press"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "27"
+        ],
+        "raw_ref": [
+          "[27] T. Mens, M. Claes, P. Grosjean, and A. Serebrenik. Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve, editors, Evolving Software Systems, chapter 10, pages 297–326. Springer, 2014."
+        ],
+        "author": [
+          "T. Mens, M. Claes, P. Grosjean, and A. Serebrenik"
+        ],
+        "misc": [
+          "Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve (eds.)",
+          "Evolving Software Systems, chapter 10, pages 297-326"
+        ],
+        "publisher": [
+          "Springer"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "28"
+        ],
+        "raw_ref": [
+          "[28] V. Midha and P. Palvia. Retention and quality in Open Source Software projects. AMCIS 2007 Proceedings, page 25, 2007."
+        ],
+        "author": [
+          "V. Midha and P. Palvia"
+        ],
+        "misc": [
+          "Retention and quality in Open Source Software projects. AMCISProceedings, page 25"
+        ],
+        "year": [
+          "2007"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "29"
+        ],
+        "raw_ref": [
+          "[29] V. Midha, R. Singh, P. Palvia, and N. Kshetri. Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81–90, 2010."
+        ],
+        "author": [
+          "V. Midha, R. Singh, P. Palvia, and N. Kshetri"
+        ],
+        "misc": [
+          "Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81-90"
+        ],
+        "year": [
+          "2010"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "30"
+        ],
+        "raw_ref": [
+          "[30] M. Nagappan, T. Zimmermann, and C. Bird. Diversity in software engineering research. In ESEC/FSE, pages 466–476, New York, NY, USA, 2013. ACM."
+        ],
+        "author": [
+          "M. Nagappan, T. Zimmermann, and C. Bird"
+        ],
+        "misc": [
+          "Diversity in software engineering research. In ESEC/FSE, pages 466-476, New York, NY, USA,. ACM"
+        ],
+        "year": [
+          "2013"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "31"
+        ],
+        "raw_ref": [
+          "[31] F. Ortega and D. Izquierdo-Cortazar. Survival analysis in open development projects. In FLOSS, pages 7–12. IEEE, 2009."
+        ],
+        "author": [
+          "F. Ortega and D. Izquierdo-Cortazar"
+        ],
+        "misc": [
+          "Survival analysis in open development projects. In FLOSS, pages 7-12"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2009"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "32"
+        ],
+        "raw_ref": [
+          "[32] J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang. A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331–336, 2010."
+        ],
+        "author": [
+          "J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang"
+        ],
+        "misc": [
+          "A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331-336"
+        ],
+        "year": [
+          "2010"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "33"
+        ],
+        "raw_ref": [
+          "[33] D. Riehle. How Open Source is changing the software developer’s career. IEEE Computer, 48(5):51–57, 2015."
+        ],
+        "author": [
+          "D. Riehle"
+        ],
+        "misc": [
+          "How Open Source is changing the software developer’s career"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "journal_title": [
+          "Computer"
+        ],
+        "journal_volume": [
+          "48"
+        ],
+        "journal_year": [
+          "2015"
+        ],
+        "journal_page": [
+          "51-57"
+        ],
+        "journal_reference": [
+          "Computer 48 (2015) 51-57"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "34"
+        ],
+        "raw_ref": [
+          "[34] D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt. Paid vs. volunteer work in Open Source. In HICSS, pages 3286–3295. IEEE, 2014."
+        ],
+        "author": [
+          "D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt"
+        ],
+        "misc": [
+          "Paid vs. volunteer work in Open Source. In HICSS, pages 3286-3295"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "35"
+        ],
+        "raw_ref": [
+          "[35] G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo. Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233–1248, 2006."
+        ],
+        "author": [
+          "G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo"
+        ],
+        "misc": [
+          "Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233-1248"
+        ],
+        "year": [
+          "2006"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "36"
+        ],
+        "raw_ref": [
+          "[36] P. Runeson and M. H¨ost. Guidelines for conducting and reporting case study research in software engineering. Empirical Software Engineering, 14(2):131–164, 2009."
+        ],
+        "author": [
+          "P. Runeson and M. Höst"
+        ],
+        "misc": [
+          "Guidelines for conducting and reporting case study research in software engineering. Empirical Software"
+        ],
+        "journal_title": [
+          "Engineering"
+        ],
+        "journal_volume": [
+          "14"
+        ],
+        "journal_year": [
+          "2009"
+        ],
+        "journal_page": [
+          "131-164"
+        ],
+        "journal_reference": [
+          "Engineering 14 (2009) 131-164"
+        ],
+        "year": [
+          "2009"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "37"
+        ],
+        "raw_ref": [
+          "[37] I. Samoladas, L. Angelis, and I. Stamelos. Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902–922, 2010."
+        ],
+        "author": [
+          "I. Samoladas, L. Angelis, and I. Stamelos"
+        ],
+        "misc": [
+          "Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902-922"
+        ],
+        "year": [
+          "2010"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "38"
+        ],
+        "raw_ref": [
+          "[38] A. Schilling, S. Laumer, and T. Weitzel. Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446–3455, 2012."
+        ],
+        "author": [
+          "A. Schilling, S. Laumer, and T. Weitzel"
+        ],
+        "misc": [
+          "Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446-3455"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "39"
+        ],
+        "raw_ref": [
+          "[39] A. Schilling, S. Laumer, and T. Weitzel. Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of the 2013 annual conference on Computers and people research, pages 167–172. ACM, 2013."
+        ],
+        "author": [
+          "A. Schilling, S. Laumer, and T. Weitzel"
+        ],
+        "misc": [
+          "Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of theannual conference on Computers and people research, pages 167-172. ACM"
+        ],
+        "year": [
+          "2013"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "40"
+        ],
+        "raw_ref": [
+          "[40] P. N. Sharma, J. Hulland, and S. Daniel. Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331–337, 2012."
+        ],
+        "author": [
+          "P. N. Sharma, J. Hulland, and S. Daniel"
+        ],
+        "misc": [
+          "Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331-337"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "41"
+        ],
+        "raw_ref": [
+          "[41] B. Shibuya and T. Tamai. Understanding the process of participating in Open Source communities. In FLOSS, pages 1–6. IEEE Computer Society, 2009."
+        ],
+        "author": [
+          "B. Shibuya and T. Tamai"
+        ],
+        "misc": [
+          "Understanding the process of participating in Open Source communities. In FLOSS, pages 1-6",
+          "Computer Society"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2009"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "42"
+        ],
+        "raw_ref": [
+          "[42] D. Spinellis. Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73–79. ACM, 2006."
+        ],
+        "author": [
+          "D. Spinellis"
+        ],
+        "misc": [
+          "Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73-79. ACM"
+        ],
+        "year": [
+          "2006"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "43"
+        ],
+        "raw_ref": [
+          "[43] I. Steinmacher, M. A. Gerosa, and D. Redmiles. Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective, 2014."
+        ],
+        "author": [
+          "I. Steinmacher, M. A. Gerosa, and D. Redmiles"
+        ],
+        "misc": [
+          "Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "44"
+        ],
+        "raw_ref": [
+          "[44] J. Teixeira. Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM, 2014."
+        ],
+        "author": [
+          "J. Teixeira"
+        ],
+        "misc": [
+          "Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "45"
+        ],
+        "raw_ref": [
+          "[45] B. Vasilescu, D. Posnett, B. Ray, M. G. van den Brand, A. Serebrenik, P. Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789– 3798, 2015."
+        ],
+        "author": [
+          "B. Vasilescu, D. Posnett, B. Ray"
+        ],
+        "misc": [
+          "M. G. van den Brand, A. Serebrenik, P",
+          "Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789- 3798"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "46"
+        ],
+        "raw_ref": [
+          "[46] B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens. On the variation and specialisation of workload – A case study of the GNOME ecosystem community. Empirical Software Engineering, 19(4):955–1008, 2013."
+        ],
+        "author": [
+          "B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens"
+        ],
+        "misc": [
+          "On the variation and specialisation of workload - A case study of the GNOME ecosystem community. Empirical Software"
+        ],
+        "journal_title": [
+          "Engineering"
+        ],
+        "journal_volume": [
+          "19"
+        ],
+        "journal_year": [
+          "2013"
+        ],
+        "journal_page": [
+          "955-1008"
+        ],
+        "journal_reference": [
+          "Engineering 19 (2013) 955-1008"
+        ],
+        "year": [
+          "2013"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "47"
+        ],
+        "raw_ref": [
+          "[47] S. Wellek. A log-rank test for equivalence of two survivor functions. Biometrics, pages 877–881, 1993."
+        ],
+        "author": [
+          "S. Wellek"
+        ],
+        "misc": [
+          "A log-rank test for equivalence of two survivor functions. Biometrics, pages 877-881"
+        ],
+        "year": [
+          "1993"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "48"
+        ],
+        "raw_ref": [
+          "[48] S. G. Westlund and J. C. Hannon. Retaining talent: Assessing job satisfaction facets most signiﬁcantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1–15, 2008."
+        ],
+        "author": [
+          "S. G. Westlund and J. C. Hannon"
+        ],
+        "misc": [
+          "Retaining talent: Assessing job satisfaction facets most significantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1-15"
+        ],
+        "year": [
+          "2008"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "49"
+        ],
+        "raw_ref": [
+          "[49] I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa. Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13. IEEE, 2016."
+        ],
+        "author": [
+          "I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa"
+        ],
+        "misc": [
+          "Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "50"
+        ],
+        "raw_ref": [
+          "[50] C.-G. Wu, J. H. Gerlach, and C. E. Young. An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253–262, 2007."
+        ],
+        "author": [
+          "C.-G. Wu, J. H. Gerlach, and C. E. Young"
+        ],
+        "misc": [
+          "An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253-262"
+        ],
+        "year": [
+          "2007"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "51"
+        ],
+        "raw_ref": [
+          "[51] K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi. Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339– 348, 2016."
+        ],
+        "author": [
+          "K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi"
+        ],
+        "misc": [
+          "Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339- 348"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "52"
+        ],
+        "raw_ref": [
+          "[52] D. Yang, T. Sinha, D. Adamson, and C. P. Rose. Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13–20, Lake Tahoe, NV, USA, 2013."
+        ],
+        "author": [
+          "D. Yang, T. Sinha, D. Adamson, and C. P. Rose"
+        ],
+        "misc": [
+          "Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13-20, Lake Tahoe, NV, USA"
+        ],
+        "year": [
+          "2013"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "53"
+        ],
+        "raw_ref": [
+          "[53] M. Zhou and A. Mockus. Who will stay in the ﬂoss community? modeling participant’s initial behavior. TSE, 41(1):82–99, Jan 2015."
+        ],
+        "author": [
+          "M. Zhou and A. Mockus"
+        ],
+        "misc": [
+          "Who will stay in the floss community? modeling participant’s initial behavior. TSE, 41(1):82-99, Jan"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "54"
+        ],
+        "raw_ref": [
+          "[54] M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei. Inﬂow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1–13:29, Apr. 2016. 10"
+        ],
+        "author": [
+          "M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei"
+        ],
+        "misc": [
+          "Inflow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1-13:29, Apr.. 10"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ]
+  ]
+}

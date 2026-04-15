@@ -1,0 +1,121 @@
+{
+  "run_id": "grobid_eval_20260414_final",
+  "rows": [
+    {
+      "paper_slug": "1904_02703v3",
+      "pdf_name": "1904.02703v3.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 94,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "icgse2017",
+      "pdf_name": "ICGSE2017.pdf",
+      "input_bucket": "header_not_found_fallback",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 59,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "jscientometres_14_3_838",
+      "pdf_name": "JScientometRes-14-3-838.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 76,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "kelemen_subramanian_19_09_2023",
+      "pdf_name": "Kelemen_Subramanian_19.09.2023.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 56,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "s10664_011_9181_9",
+      "pdf_name": "s10664-011-9181-9.pdf",
+      "input_bucket": "small_reference_set",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 29,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "s41979_020_00044_w",
+      "pdf_name": "s41979-020-00044-w.pdf",
+      "input_bucket": "small_reference_set",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 121,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "1610_06546v3",
+      "pdf_name": "1610.06546v3.pdf",
+      "input_bucket": "clean_input",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 72,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "2002_12508v3",
+      "pdf_name": "2002.12508v3.pdf",
+      "input_bucket": "clean_input",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 67,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    },
+    {
+      "paper_slug": "2017_ct_development_computational_thinking_rg",
+      "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+      "input_bucket": "clean_input",
+      "status_pair": "ok_ok",
+      "delta_total_refs": 0,
+      "delta_valid_refs": 0,
+      "inline_citation_count": 39,
+      "fulltext_adds_value": false,
+      "process_references_status": "ok",
+      "fulltext_status": "ok"
+    }
+  ],
+  "aggregate": {
+    "paper_count": 9,
+    "comparable_paper_count": 9,
+    "added_value_count": 0,
+    "added_value_papers": [],
+    "avg_delta_total_refs": 0.0,
+    "avg_delta_valid_refs": 0.0
+  }
+}

@@ -1,0 +1,750 @@
+{
+  "run_id": "grobid_eval_20260414_final",
+  "rows": [
+    {
+      "paper_slug": "1904_02703v3",
+      "pdf_name": "1904.02703v3.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 54,
+        "title_non_empty": 51,
+        "authors_non_empty": 27,
+        "year_non_empty": 49,
+        "doi_non_empty": 28,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract required a local magic shim because libmagic is not installed on this Windows environment.",
+          "Refextract produced multiple candidate parses for 1 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string.",
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "error",
+        "total_references": 0,
+        "title_non_empty": 0,
+        "authors_non_empty": 0,
+        "year_non_empty": 0,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": [
+          "500 Server Error: Server Error for url: http://localhost:8070/api/processCitationList",
+          "grobid_citation_list status: error"
+        ]
+      },
+      "delta": {
+        "title_non_empty": -51,
+        "authors_non_empty": -27,
+        "year_non_empty": -49,
+        "doi_non_empty": -28,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "icgse2017",
+      "pdf_name": "ICGSE2017.pdf",
+      "input_bucket": "header_not_found_fallback",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 54,
+        "title_non_empty": 54,
+        "authors_non_empty": 54,
+        "year_non_empty": 53,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 54,
+        "title_non_empty": 53,
+        "authors_non_empty": 54,
+        "year_non_empty": 54,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": []
+      },
+      "delta": {
+        "title_non_empty": -1,
+        "authors_non_empty": 0,
+        "year_non_empty": 1,
+        "doi_non_empty": 0,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "jscientometres_14_3_838",
+      "pdf_name": "JScientometRes-14-3-838.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 180,
+        "title_non_empty": 135,
+        "authors_non_empty": 67,
+        "year_non_empty": 137,
+        "doi_non_empty": 8,
+        "almost_empty": 36,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 71 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 180,
+        "title_non_empty": 113,
+        "authors_non_empty": 72,
+        "year_non_empty": 104,
+        "doi_non_empty": 51,
+        "almost_empty": 46,
+        "observations": []
+      },
+      "delta": {
+        "title_non_empty": -22,
+        "authors_non_empty": 5,
+        "year_non_empty": -33,
+        "doi_non_empty": 43,
+        "almost_empty": 10
+      }
+    },
+    {
+      "paper_slug": "kelemen_subramanian_19_09_2023",
+      "pdf_name": "Kelemen_Subramanian_19.09.2023.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 66,
+        "title_non_empty": 52,
+        "authors_non_empty": 35,
+        "year_non_empty": 44,
+        "doi_non_empty": 20,
+        "almost_empty": 4,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 15 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 66,
+        "title_non_empty": 57,
+        "authors_non_empty": 41,
+        "year_non_empty": 39,
+        "doi_non_empty": 30,
+        "almost_empty": 6,
+        "observations": []
+      },
+      "delta": {
+        "title_non_empty": 5,
+        "authors_non_empty": 6,
+        "year_non_empty": -5,
+        "doi_non_empty": 10,
+        "almost_empty": 2
+      }
+    },
+    {
+      "paper_slug": "s10664_011_9181_9",
+      "pdf_name": "s10664-011-9181-9.pdf",
+      "input_bucket": "small_reference_set",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 2,
+        "title_non_empty": 2,
+        "authors_non_empty": 1,
+        "year_non_empty": 2,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 1 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 2,
+        "title_non_empty": 2,
+        "authors_non_empty": 2,
+        "year_non_empty": 2,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": []
+      },
+      "delta": {
+        "title_non_empty": 0,
+        "authors_non_empty": 1,
+        "year_non_empty": 0,
+        "doi_non_empty": 0,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "s41979_020_00044_w",
+      "pdf_name": "s41979-020-00044-w.pdf",
+      "input_bucket": "small_reference_set",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 4,
+        "title_non_empty": 4,
+        "authors_non_empty": 4,
+        "year_non_empty": 4,
+        "doi_non_empty": 3,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 3 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string.",
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 4,
+        "title_non_empty": 4,
+        "authors_non_empty": 3,
+        "year_non_empty": 4,
+        "doi_non_empty": 3,
+        "almost_empty": 0,
+        "observations": [
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "delta": {
+        "title_non_empty": 0,
+        "authors_non_empty": -1,
+        "year_non_empty": 0,
+        "doi_non_empty": 0,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "1610_06546v3",
+      "pdf_name": "1610.06546v3.pdf",
+      "input_bucket": "clean_input",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 51,
+        "title_non_empty": 51,
+        "authors_non_empty": 51,
+        "year_non_empty": 50,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 4 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 51,
+        "title_non_empty": 51,
+        "authors_non_empty": 51,
+        "year_non_empty": 51,
+        "doi_non_empty": 0,
+        "almost_empty": 0,
+        "observations": []
+      },
+      "delta": {
+        "title_non_empty": 0,
+        "authors_non_empty": 0,
+        "year_non_empty": 1,
+        "doi_non_empty": 0,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "2002_12508v3",
+      "pdf_name": "2002.12508v3.pdf",
+      "input_bucket": "clean_input",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 45,
+        "title_non_empty": 45,
+        "authors_non_empty": 41,
+        "year_non_empty": 42,
+        "doi_non_empty": 23,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract produced multiple candidate parses for 4 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string.",
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 45,
+        "title_non_empty": 41,
+        "authors_non_empty": 40,
+        "year_non_empty": 39,
+        "doi_non_empty": 23,
+        "almost_empty": 0,
+        "observations": [
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "delta": {
+        "title_non_empty": -4,
+        "authors_non_empty": -1,
+        "year_non_empty": -3,
+        "doi_non_empty": 0,
+        "almost_empty": 0
+      }
+    },
+    {
+      "paper_slug": "2017_ct_development_computational_thinking_rg",
+      "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+      "input_bucket": "clean_input",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 37,
+        "title_non_empty": 37,
+        "authors_non_empty": 13,
+        "year_non_empty": 37,
+        "doi_non_empty": 17,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 37,
+        "title_non_empty": 37,
+        "authors_non_empty": 36,
+        "year_non_empty": 37,
+        "doi_non_empty": 19,
+        "almost_empty": 0,
+        "observations": [
+          "DOI coverage is relatively strong."
+        ]
+      },
+      "delta": {
+        "title_non_empty": 0,
+        "authors_non_empty": 23,
+        "year_non_empty": 0,
+        "doi_non_empty": 2,
+        "almost_empty": 0
+      }
+    }
+  ],
+  "aggregate": {
+    "paper_count": 9,
+    "metric_wins": {
+      "title_non_empty": 1,
+      "authors_non_empty": 4,
+      "year_non_empty": 2,
+      "doi_non_empty": 3,
+      "almost_empty_lower_is_better": 0
+    },
+    "delta_sums": {
+      "title_non_empty": -73,
+      "authors_non_empty": 6,
+      "year_non_empty": -88,
+      "doi_non_empty": 27,
+      "almost_empty": 12
+    }
+  },
+  "difficult_reference_examples": {
+    "1904_02703v3": [],
+    "icgse2017": [],
+    "jscientometres_14_3_838": [
+      {
+        "index": 0,
+        "raw_input": "Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060.",
+        "refextract": {
+          "score": 3,
+          "title": "transplantation: A bibliometric review of six-decade study fromto 2024. Acta Obstet Gynecol Scand. 2024",
+          "authors": [
+            "Akbari R, Ghaemi M, Panahi Z. Uterus"
+          ],
+          "year": 1960,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 5,
+          "title": "Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024",
+          "authors": [
+            "Akbari, R",
+            "Ghaemi, M",
+            "Panahi, Z"
+          ],
+          "year": 2024,
+          "doi": "10.1111/aogs.14977"
+        }
+      },
+      {
+        "index": 1,
+        "raw_input": "Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034.",
+        "refextract": {
+          "score": 3,
+          "title": "Ma’murov B, Akramova S",
+          "authors": [
+            "Akramova G"
+          ],
+          "year": 2024,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "Methods of using STEAM technologies in the development of pupils’ computational thinking",
+          "authors": [
+            "Akramova, G",
+            "Ma’murov, B",
+            "Akramova, S",
+            "Qo’ldoshev, R",
+            "Shodmonova, A"
+          ],
+          "year": 2024,
+          "doi": "10.1051/e3sconf/202453805034"
+        }
+      },
+      {
+        "index": 3,
+        "raw_input": "5771/0943-7444-2022-5-303.",
+        "refextract": {
+          "score": 2,
+          "title": "5771/0943-7444--5-303",
+          "authors": [],
+          "year": 2022,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 5,
+        "raw_input": "Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018.",
+        "refextract": {
+          "score": 3,
+          "title": "young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav",
+          "authors": [
+            "Angeli C, Valanides N. Developing"
+          ],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 5,
+          "title": "Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy",
+          "authors": [
+            "Angeli, C",
+            "Valanides, N"
+          ],
+          "year": 2020,
+          "doi": "10.1016/j.chb.2019.03.018"
+        }
+      },
+      {
+        "index": 7,
+        "raw_input": "1016/j. compedu.2020.103807.",
+        "refextract": {
+          "score": 2,
+          "title": "1016/j. compedu..103807",
+          "authors": [],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      }
+    ],
+    "kelemen_subramanian_19_09_2023": [
+      {
+        "index": 14,
+        "raw_input": "For example, comanagement regimes 2 2 1 2 1 The scoring of the policy instruments across the five assessment criteria was based on expert judgment. Scores varied on a nominal scale from 0 (not meeting the given criterion) to 2 (fulfilling the given criterion). The table indicates average scores for each type of policy instruments, and specific scores for one selected instrument within each type (in italics). Prevalence indicates which types of instruments are reported more frequently in the literature based on the review of 62 papers on policy uptake. 4 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 implemented, and evaluated in the interplay of multiple actors, values, and interests. Considering policymaking as a kaleidoscope, critical junctures and guiding principles can be identified to weave diverse values into the policy process (Figure 2). These points help address specific questions related to decisions that have an impact on nature and its con­ tributions to people, ranging from the identification of relevant stakeholders, right-holders, knowledge-holders, and their socio-environmental and political contexts, through addressing potential trade-offs and value con­ flicts that may arise from different decisions, to arriving at feasible entry points and — hopefully — more just and sustainable outcomes. Weaving values into the policy process requires different types of capacities both at individual and organizational level, to enable information exchange between and within networks [44], which incorporates diverse knowledge systems [45], fosters knowledge coproduc­ tion [46], and leads to synergistic actions. Such efforts should be understood as dynamic social processes of knowledge brokerage: bridging boundaries by trans­ forming concepts, principles, perspectives, and knowl­ edge into information that can be used and acted upon to influence decision-making in the real world [47,48]. Enhancing the information flow and strengthening the adaptive capacities of different actors at all intervention levels is key to balance power asymmetries, improve the outputs of negotiations, and reach more just and sus­ tainable results [38,49]. Enhance adaptive capacities to aid values- weaving The capacity of social–ecological systems to adapt to, and recover from, the intertwined climate, health, and environmental crises has received growing attention in the last decade [50,51]. Adaptive capacities can also support the shift toward values-centered policymaking by 1) building awareness and desire when oper­ ationalizing diverse values in decision-making; 2) pro­ viding knowledge and tools; 3) bringing together different ways of knowing and doing; 4) navigating trade-offs and uptake; 5) learning, adapting, and acting together; and 6) creating fair processes and institutions. The first three aspects allow the diverse values of nature to be recognized and understood by all relevant actors who take part in decision-making, while the last three aspects can ensure that fair institutions are created, which incorporate diverse values of nature in policy­ making in an explicit and legitimate way [12]. Since capacities are multidimensional, layered across societal groups, context-specific, and unevenly dis­ tributed geographically [52,53], developing capacities is equally important at personal, organizational, and Figure 1 Current Opinion in Environmental Sustainability Median number of transformative change criteria associated with policy options of varying diversity (n = 43 case studies). Policy options that address one value are associated with a median of 1.9 (IQR 1–3) transformative change criteria, while those that address two or three values are associated with 3.2 (IQR 1–5) and 4.1 (IQR 3–5), respectively. Figure 2 Current Opinion in Environmental Sustainability The kaleidoscope of values in policymaking. The figure illustrates that weaving diverse values can be facilitated through a process that leads through several junctures, such as identifying the purpose, stakeholders, and divergence/convergence between them, reconciling trade-offs, engaging in implementation, and evaluating outcomes. To foster a smoother process of engagement, six guiding principles have been identified that ensure the representation of different stakeholders, the meaningful and deliberate engagement amidst them, and therefore guarantee that the process is contextualized, fair, legitimate, and thereby credible, more equitably designed, and reflexive. Signposts toards transformative governance Kelemen et al. 5 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 systems levels. It often presumes that progress should be achieved compared with a base of existing (low) level of knowledge, skills, and resources via different approaches (e.g. formal trainings or mentorship) [54]. However, it can also be understood as a process of colearning be­ tween different actors, which can help transform top- down policy processes by enlarging the set of knowledge that decisions are built on, acknowledging a wider range of values of nature, and addressing power imbalances. Colearning approaches also enhance the understanding of status, trends, drivers, and impacts on nature and nature’s contribution to people and help identify work­ able policy options [55]. Conclusions Based on a meta-analysis of environmental policy op­ tions, this paper argues that rehauling the decision pro­ cess toward sustainability is possible, if formal and informal institutions (i.e. laws, norms, and policy in­ struments) are reoriented toward eliciting and in­ corporating diverse values at various junctures of the policy process. Following the value-weaving path at these junctures can aid decision-makers, as signposts help travelers on their journey: by indicating desirable outcomes that encourage transitions toward just and sustainable futures. Although general guiding principles can be identified, acting upon them requires more than technical skills, governance capacities, or negotiation abilities. Bringing together different ways of knowing, coordinating across scales and different social groups while balancing inequalities, and awakening inner mo­ tivations to consider diverse values are equally im­ portant. These findings emphasize that to achieve transformations toward sustainability, policy design, and implementation requires inclusive, participatory, and deliberative approaches across the spectrum of actors who influence any decisions related to nature and its use. Data Availability All data on which this paper is based are available in the IPBES methodological assessment on diverse values and valuation of nature. Declaration of Competing Interest The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. Acknowledgements The authors would like to thank IPBES for the opportunity to have contributed to Chapter 6 of the Values Assessment. While this article builds on Chapter 6, it represents only the views of the authors and not those of IPBES. We would like to especially thank Patricia Balvanera, Brigitte Baptiste, Unai Pascual, Mike Christie, and David González for their support, as well as all contributing authors for their work during the development of Chapter 6 of the IPBES VA. We are grateful for the constructive comments of the reviewers of this article. We would also like to thank Mariann Kovács (ESSRG) for designing Figure 1. EK acknowledges the financial support of the BioAgora project funded by the European Union (EU Horizon Europe programme, GA no. 101059438). Appendix: Methodological details of the assessment of different policy options’ transformative potential To develop the assessment criteria for transformative governance against, we can assess the potential of policy instruments to facilitate transformative change, we con­ ducted a literature review. From the literature review, we identified various aspects of transformative govern­ ance, which we then grouped into five main components (further discussed in the main text). These were address status quo, address diverse values, stimulate institutional changes, capacity-building, and integrative–adaptive governance. Within these broader categories, we defined the following criteria: Address status quo • Does the policy instrument/initiative address the di­ rect and indirect drivers of biodiversity loss (based on the IPBES Global Assessment)? • Does the policy instrument stimulate and/or promote a positive major shift to the states of ecosystem and biodiversity? • Does the policy instrument stimulate and/or promote a positive major shift in the social networks and power distribution? • Does the policy instrument stimulate and/or promote a positive major shift in rules and resource allocation in biodiversity governance? • Does the policy instrument promote positive changes in social production and consumption toward a more sustainable pattern? • Does the policy instrument challenge the inequalities and able to promote equalities among the social group involved in biodiversity management? Address diverse values • Does the policy instrument stimulate and/or promote a positive major shift in recognizing and revealing diverse knowledge and values of biodiversity? • Does the policy instrument provide room to accom­ modate or consider diverse values of different groups in biodiversity management, including the values of the local and indigenous people rooted in their indigenous local knowledge, in its decision-making process? • Does the policy instrument reflect or accommodate social and cultural values of the local community? • Does the policy instrument reflect or accommodate the indigenous local knowledge values of the local and indigenous people? 6 Values for transformative change: The IPBES approach www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 • Does the policy instrument acknowledge or accom­ modate the trade-off between values of biodiversity, including values of the marginal and underpowered group? Stimulate institutional changes • Does the policy instrument stimulate positive shifts (radical or incremental) in the organization, legisla­ tion, policies, and administration regarding biodi­ versity governance? • Does the policy instrument stimulate positive changes (radical or incremental) in the behavior, culture, and practices of actors involved in biodi­ versity governance? Promote and supported by sufficient capacity of actors • Do the actors have sufficient capacity to design the policy instrument? • Do the actors have sufficient capacity to implement the policy instrument at the targeted level(s)? • Do the marginal, under-represented, and less-pow­ erful groups be able to participate and influence the decision-making process throughout the policy process? • Do the actors have sufficient capacity to recognize and reveal the values of biodiversity throughout the policy instrument design and implementation? • Do the actors have sufficient capacity to collaborate, colearning, and coproducing values of biodiversity throughout the policy instrument? • Does the policy instrument improve the capacity of actors to recognize diverse values of biodiversity in the decision-making process? • Does the policy instrument improve the capacity of actors, particularly the marginal and less-powerful groups, to express their values of biodiversity in the decision-making process? Integrative and adaptive governance • Can the policy instrument be integrated into a policy- mix to stimulate positive transformation in biodi­ versity governance? • Can the policy instruments be adapted into local socio-economic–political culture to stimulate trans­ formations in biodiversity governance? • Does the policy instrument reflect the complexity and uncertainty of biodiversity values from different ac­ tors at the different levels involved in the biodiversity governance? We assessed altogether 37 policy instruments. The in­ itial list of policy instruments was derived from the IPBES Catalogue of Policy Instruments and Policy Support Tools [29]. Additional policy instruments were added to this list after the screening of the IPBES Global Assessment and regional assessments. The as­ sessment of the policy instruments is a meta-analysis: the main source of evidence used was the core text and the Annexes of Chapter 6 of the IPBES Global Assess­ ment, and where evidence was scarce, additional tar­ geted literature reviews were carried out. The assessment focused on evaluating the potential of policy instruments to change the current status quo ei­ ther through incremental steps or via more transforma­ tional processes. Assessing how far policy instruments can support transformational or incremental is challen­ ging for several reasons. First, for many instruments, there is a lack of detailed empirical evidence on place- based implementation. Second, in practice, several policy instruments are implemented at the same time as part of a policy-mix, hence the impacts of a single in­ strument are hard to identify as those usually emerge as a result of interplay (synergies or incoherencies) be­ tween all the used instruments. Third, even where ro­ bust evidence is available for a single instrument, it often shows a high variability across the different con­ texts. This highlights that how far a policy instrument supports transformational or incremental change de­ pends largely on how exactly it is implemented and how much it aims to challenge the institutional settings that maintain the status quo. These challenges of evaluation lead us to choose the potential for change (either trans­ formational or incremental) as the focus of our analysis. The potential for incremental or transformational change was evaluated via the above detailed five criteria. Each of these five criteria was assessed on a three-point scale: (1) unlikely to meet the criteria if maximum one sub­ question could be answered by yes (score = 0), (2) medium potential to meet the criteria if 2–3 subques­ tions could be answered by yes (score = 1), and (3) high potential to meet the criteria if three or more subques­ tions could be answered by yes (score = 2). Whether a policy instrument has potential for inducing incremental or transformational change was decided based on the scoring: • Policy instruments were justified as having more transformational potential if the average score across the five criteria was equal or higher than 1.5, • Policy instruments were justified as having more in­ cremental potential if the average score across the five criteria was higher than 0.8 and lower than 1.5, • Policy instruments were justified as maintaining the status quo if the average score across the five criteria was equal or lower than 0.8. Signposts toards transformative governance Kelemen et al. 7 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 Additionally, we collected and synthesized information on all instruments regarding what kind of valuation ap­ proach (a pluralistic and inclusive valuation or a narrower approach) is usually referred to in the literature for the given instrument (although information on this aspect was often scarce), who are the key stakeholders im­ plementing or being influenced by the instrument, what is the potential scale(s) of implementation, and what is the geographical spread of implementation. To investigate consequences of narrow and plural value approaches more deeply in and for policy, we assessed 46 international environmental initiatives that are ac­ tive at global or large regional scales. We define en­ vironmental initiatives as an agency, movement, or organization that works at a large regional or global scale and manages or influences (e.g. funds) multiple projects on the ground. For inclusion in our list of in­ itiatives, we had to ascertain that an agency, organiza­ tion, or movement • Oversees or (aims to) influence place-based projects, programs, policy, and decisions related to conserva­ tion of biodiversity and ecosystem services; • Is active over large regional (e.g. continental/sub­ continental) or global scales; • Concerns outcomes that link to biodiversity and ecosystem services; • Advocates knowledge and awareness regarding narrow, plural, or both values within its project ac­ tivities; • Has project and institutional documents available in the project domain. To identify initiatives, we used the following search cri­ teria using Google Search, and screened them against the inclusion criteria: “Environmental project”, “Ecosystem service valuation initiative”, “Ecosystem service valuation project”, “Biodiversity project”, “Biodiversity initiative”, ”Nature Project”, and “Environmental Project”. We also used “Environmental valuation initiative” and “Environmental valuation capacity building”. We also reviewed the IPBES database of policy support tools [29] to include any support tools that qualified under our in­ itiative definition. Upon establishment of our initiative list, we conducted a superficial assessment on the inclusion of diverse value approaches in each initiative, based on the initiatives’ mission, vision, “about”, and project web pages. We assessed each initiative against the following criteria: • Value(s) being addressed (based on IPBES typology: holistic value, health value, economic value, socio­ cultural value, and biophysical value) explicitly addressed in the description of the initiative, its mission and vision, and description of projects/work • Values’ typology (intrinsic, instrumental, and rela­ tional) • Diverse values present or not. We considered an in­ itiative to have diverse value inclusion when more than one value type (relational, instrumental, and intrinsic) was addressed • Whether or not the vision, mission, and “about us” pages considered indigenous and local knowledge • The IPBES region where an initiative was active (i.e. Africa, America, Europe–Central Asia, Asia-Pacific, and Global) • Dominant decision-making context: use, conserva­ tion, or development • Does it include targeted policy themes? • Does it speak to grand challenges? • Goals/objectives of the initiative • Work area boundary (Glob, Reg, Nat, Sub-nat, Ecosystem, and Sect) • Decision-makers targeted The superficial assessment of initiatives allowed us to assess how initiatives were generally aspiring to diverse value approaches, but to assess how diverse value ap­ proaches in policy were used to facilitate transformative governance, we assessed specific case studies that documented evidence of policy support for transforma­ tive governance. To identify case study for each initiative, we used one of two approaches: • We searched the SCOPUS and Web of Science da­ tabases using the following search string: “[name of initiative]” AND “values” AND “policy” AND “transformative governance” OR “status quo” OR “institutional change” OR “capacity building” OR “integration” OR “adaptation”. • Where an above search yielded no results, or papers that did not provide sufficient information or evi­ dence, we also used case studies reported on the in­ itiative’s web page. We balanced case studies by region, and specifically selected case studies that involved indigenous people and local communities. Generally, we selected case studies that presented more evidence on how policies could support transformative governance. We assessed each of the example initiatives along the following as­ pects:",
+        "refextract": {
+          "score": 3,
+          "title": "Environmental project",
+          "authors": [
+            "Kelemen et al."
+          ],
+          "year": 2023,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 1,
+          "title": "Can the policy instrument be integrated into a policy- mix to stimulate positive transformation in biodi­ versity governance? • Can the policy instruments be adapted into local socio-economic-political culture to stimulate trans­ formations in biodiversity governance? • Does the policy instrument reflect the complexity and uncertainty of biodiversity values from different ac­ tors at the different levels involved in the biodiversity governance? We assessed altogether 37 policy instruments. The in­ itial list of policy instruments was derived from the IPBES Catalogue of Policy Instruments and Policy Support Tools [29]. Additional policy instruments were added to this list after the screening of the IPBES Global Assessment and regional assessments. The as­ sessment of the policy instruments is a meta-analysis: the main source of evidence used was the core text and the Annexes of Chapter 6 of the IPBES Global Assess­ ment, and where evidence was scarce, additional tar­ geted literature reviews were carried out. The assessment focused on evaluating the potential of policy instruments to change the current status quo ei­ ther through incremental steps or via more transforma­ tional processes. Assessing how far policy instruments can support transformational or incremental is challen­ ging for several reasons. First, for many instruments, there is a lack of detailed empirical evidence on place- based implementation. Second, in practice, several policy instruments are implemented at the same time as part of a policy-mix, hence the impacts of a single in­ strument are hard to identify as those usually emerge as a result of interplay (synergies or incoherencies) be­ tween all the used instruments. Third, even where ro­ bust evidence is available for a single instrument, it often shows a high variability across the different con­ texts. This highlights that how far a policy instrument supports transformational or incremental change de­ pends largely on how exactly it is implemented and how much it aims to challenge the institutional settings that maintain the status quo. These challenges of evaluation lead us to choose the potential for change (either trans­ formational or incremental) as the focus of our analysis. The potential for incremental or transformational change was evaluated via the above detailed five criteria. Each of these five criteria was assessed on a three-point scale: (1) unlikely to meet the criteria if maximum one sub­ question could be answered by yes (score = 0), (2) medium potential to meet the criteria if 2-3 subques­ tions could be answered by yes (score = 1), and (3) high potential to meet the criteria if three or more subques­ tions could be answered by yes (score = 2). Whether a policy instrument has potential for inducing incremental or transformational change was decided based on the scoring: • Policy instruments were justified as having more transformational potential if the average score across the five criteria was equal or higher than 1.5, • Policy instruments were justified as having more in­ cremental potential if the average score across the five criteria was higher than 0.8 and lower than 1.5, • Policy instruments were justified as maintaining the status quo if the average score across the five criteria was equal or lower than 0.8. Signposts toards transformative governance Kelemen et al. 7 www.sciencedirect.com Current Opinion in Environmental Sustainability 2023, 64:101351 Additionally, we collected and synthesized information on all instruments regarding what kind of valuation ap­ proach (a pluralistic and inclusive valuation or a narrower approach) is usually referred to in the literature for the given instrument (although information on this aspect was often scarce), who are the key stakeholders im­ plementing or being influenced by the instrument, what is the potential scale(s) of implementation, and what is the geographical spread of implementation. To investigate consequences of narrow and plural value approaches more deeply in and for policy, we assessed 46 international environmental initiatives that are ac­ tive at global or large regional scales. We define en­ vironmental initiatives as an agency, movement, or organization that works at a large regional or global scale and manages or influences (e.g. funds) multiple projects on the ground. For inclusion in our list of in­ itiatives, we had to ascertain that an agency, organiza­ tion, or movement • Oversees or (aims to) influence place-based projects, programs, policy, and decisions related to conserva­ tion of biodiversity and ecosystem services; • Is active over large regional (e.g. continental/sub­ continental) or global scales; • Concerns outcomes that link to biodiversity and ecosystem services; • Advocates knowledge and awareness regarding narrow, plural, or both values within its project ac­ tivities; • Has project and institutional documents available in the project domain. To identify initiatives, we used the following search cri­ teria using Google Search, and screened them against the inclusion criteria: “Environmental project",
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 24,
+        "raw_input": "Bridgewater P, Schmeller DS: The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual). Biodivers Conserv 2023, 32:1-6, https://doi.org/10.1007/ s10531-022-02500-y",
+        "refextract": {
+          "score": 3,
+          "title": "Schmeller DS: The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual). Biodivers Conserv, 32:1-6",
+          "authors": [
+            "Bridgewater P"
+          ],
+          "year": 2023,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual)",
+          "authors": [
+            "Bridgewater, P",
+            "Schmeller, D S"
+          ],
+          "year": 2023,
+          "doi": "10.1007/s10531-022-02500-y"
+        }
+      },
+      {
+        "index": 25,
+        "raw_input": "IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020, https://doi.org/10.5281/ zenodo.4147317",
+        "refextract": {
+          "score": 2,
+          "title": "zenodo.4147317",
+          "authors": [],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 2,
+          "title": "IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020",
+          "authors": [],
+          "year": null,
+          "doi": "10.5281/zenodo.4147317"
+        }
+      },
+      {
+        "index": 26,
+        "raw_input": "Settele J, Diaz S, Brondizio E, Daszak P: COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics. The Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services; 2020, 〈https://ipbes.net/covid19stimulus〉.",
+        "refextract": {
+          "score": 2,
+          "title": null,
+          "authors": [
+            "Settele J, Diaz S, Brondizio E, Daszak P"
+          ],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics",
+          "authors": [
+            "Settele, J",
+            "Diaz, S",
+            "Brondizio, E",
+            "Daszak, P"
+          ],
+          "year": 2020,
+          "doi": null
+        }
+      },
+      {
+        "index": 27,
+        "raw_input": "IPBES: Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2019.",
+        "refextract": {
+          "score": 1,
+          "title": null,
+          "authors": [],
+          "year": 2019,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat",
+          "authors": [
+            "Ipbes"
+          ],
+          "year": 2019,
+          "doi": null
+        }
+      }
+    ],
+    "s10664_011_9181_9": [],
+    "s41979_020_00044_w": [],
+    "1610_06546v3": [],
+    "2002_12508v3": [
+      {
+        "index": 16,
+        "raw_input": "1103/PhysRevA.66.032314. Accepted in Quantum 2020-12-04, click title to verify. Published under CC-BY 4.0. 17",
+        "refextract": {
+          "score": 2,
+          "title": "1103/PhysRevA.66.032314. Accepted in Quantum-12-04, click title to verify. Published under CC-BY 4.0. 17",
+          "authors": [],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 44,
+        "raw_input": "0 a 100 10 2 10 4 10 5 error Figure 2: The error of implementing R<0(a) for a ∈[0, 1] using QSP, with polynomial S(x; δ, ϵ) where δ = 0.2 and ϵ is of the order of 10−4. The vertical axis uses logarithmic scale. Using the above circuit, Lemma 5 guarantees that when the eigenvalues of H(a) are contained in [−1, −δ]∪[δ, 1], we will have a good approximation of R<0(a). However when at least one eigenvalue, which in our case can only be λ−(a) = 1 −2a, is in (−δ, δ), or in other words when a ∈(0.4, 0.6), there is no such guarantee. We plot the operator norm error between the approximate reﬂector obtained through QSP and the exact reﬂector R<0(a) in Figure 2. It can be seen in the ﬁgure that the error is smaller than 10−4 everywhere except for a ∈(0.4, 0.6), where the error spikes. B Gap and overlap in the unstructured search problem In this appendix we compute the spectral gap of the Hamiltonian H(1/2 −N−1/2+δ) for H(τ) deﬁned in (4), 0 < δ < 1/6, and the overlap between its ground state and |u⟩and |t⟩deﬁned in Section 5. The ﬁrst thing we should realize is that we only need to care about the subspace of the Hilbert space spanned by |u⟩and |t⟩. In the orthogonal complement of this subspace H(τ) is simple a multiple of identity. In this subspace, with respect to the non-orthogonal basis {|u⟩, |t⟩}, the operator H(1/2 −N−1/2+δ) is represented by the following matrix Nδ−1/2 −2 −(N−δ + 2N−1/2) −(N−δ −2N−1/2) 2 ! . (8) Direct calculation shows the eigenvalues are λ± = ±Nδ−1/2p 4 + N−2δ −4N−1 = ±Nδ−1/2(2 + 1 4N−2δ + O(N−4δ)). Thus we obtain the spectral gap in (6). To simplify notation we let eλ = N1/2−δλ+. We Accepted in Quantum 2020-12-04, click title to verify. Published under CC-BY 4.0. 21 then compute the ground state. We ﬁrst ﬁnd an eigenvector corresponding to λ− |χ⟩= Nδ((N−δ + 2N−1/2) |u⟩+ (−2 + eλ) |t⟩) = (1 + 2Nδ−1/2) |u⟩+ (1 4N−δ + O(N−3δ)) |t⟩ = |u⟩+ 1 4N−δ |t⟩+ O(Nδ−1/2). We still need to normalize |χ⟩. The normalization factor is ∥|χ⟩∥= s (1 + 2Nδ−1/2)2 + (1 4N−δ + O(N−3δ))2 + 2 √ N (1 + 2Nδ−1/2)(1 4N−δ + O(N−3δ)) = 1 + O(N−2δ). Note that the third term under the square root comes from the overlap between |u⟩and |t⟩, and it does not play an important role asymptotically. Therefore normalizing we have the expression for the normalized eigenstate (5). Accepted in Quantum 2020-12-04, click title to verify. Published under CC-BY 4.0. 22",
+        "refextract": {
+          "score": 3,
+          "title": "δ, ϵ) where δ = 0.2 and ϵ is of the order of 10-4. The vertical axis uses logarithmic scale. Using the above circuit, Lemma 5 guarantees that when the eigenvalues of H(a) are contained in [-1, -δ]∪[δ, 1], we will have a good approximation of R<0(a). However when at least one eigenvalue, which in our case can only be λ-(a) = 1 -2a, is in (-δ, δ), or in other words when a ∈(0.4, 0.6), there is no such guarantee. We plot the operator norm error between the approximate reflector obtained through QSP and the exact reflector R<0(a) in Figure 2. It can be seen in the figure that the error is smaller than 10-4 everywhere except for a ∈(0.4, 0.6), where the error spikes",
+          "authors": [
+            "B Gap"
+          ],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 1,
+          "title": "However when at least one eigenvalue, which in our case can only be λ-(a) = 1 -2a, is in (-δ, δ), or in other words when a ∈(0.4, 0.6), there is no such guarantee. We plot the operator norm error between the approximate reﬂector obtained through QSP and the exact reﬂector R<0(a) in Figure 2. It can be seen in the ﬁgure that the error is smaller than 10-4 everywhere except for a ∈(0.4, 0.6), where the error spikes. B Gap and overlap in the unstructured search problem In this appendix we compute the spectral gap of the Hamiltonian H(1/2 -N-1/2+δ) for H(τ) deﬁned in (4), 0 < δ < 1/6, and the overlap between its ground state and |u⟩and |t⟩deﬁned in Section 5. The ﬁrst thing we should realize is that we only need to care about the subspace of the Hilbert space spanned by |u⟩and |t⟩. In the orthogonal complement of this subspace H(τ) is simple a multiple of identity. In this subspace, with respect to the non-orthogonal basis {|u⟩, |t⟩}, the operator H(1/2 -N-1/2+δ) is represented by the following matrix",
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      }
+    ],
+    "2017_ct_development_computational_thinking_rg": [
+      {
+        "index": 5,
+        "raw_input": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+        "refextract": {
+          "score": 2,
+          "title": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie.. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union",
+          "authors": [],
+          "year": 2016,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "Developing Computational Thinking in Compulsory Education - Implications for policy and practice",
+          "authors": [
+            "Bocconi, Stefania",
+            "Chioccariello, Augusto",
+            "Dettori, Giuliana",
+            "Ferrari, Anusca",
+            "Engelhardt, Katja",
+            "Kampylis, Panagiotis",
+            "Punie, Yves"
+          ],
+          "year": 2016,
+          "doi": "10.2791/792158"
+        }
+      },
+      {
+        "index": 6,
+        "raw_input": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+        "refextract": {
+          "score": 3,
+          "title": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez.. Computational thinking: Panorama of the Americas",
+          "authors": [],
+          "year": 2016,
+          "doi": "10.1109/siie.2016.7751839"
+        },
+        "grobid_citation_list": {
+          "score": 5,
+          "title": "Computational thinking: Panorama of the Americas",
+          "authors": [
+            "Brackmann, Christian",
+            "Barone, Dante",
+            "Casali, Ana",
+            "Boucinha, Rafael",
+            "Munoz-Hernandez, Susana"
+          ],
+          "year": 2016,
+          "doi": "10.1109/siie.2016.7751839"
+        }
+      },
+      {
+        "index": 13,
+        "raw_input": "Hylke Faber, Menno Wierdsma, Richard Doornbos, Jan Salvador van der Ven, and Kevin de Vette. 2017. Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons. Journal of the European Teacher Education Network 12 (2017).",
+        "refextract": {
+          "score": 2,
+          "title": "Hylke Faber, Menno Wierdsma, Richard Doornbos, Jan Salvador van der Ven, and Kevin de Vette.. Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons. Journal of the European Teacher Education Network 12",
+          "authors": [],
+          "year": 2017,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons",
+          "authors": [
+            "Faber, Hylke",
+            "Wierdsma, Menno",
+            "Doornbos, Richard",
+            "Salvador Van Der Ven, Jan",
+            "De Vette, Kevin"
+          ],
+          "year": 2017,
+          "doi": null
+        }
+      },
+      {
+        "index": 15,
+        "raw_input": "Anna Gardeli and Spyros Vosinakis. 2017. Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming. Italian Journal of Educational Technology 1 (July 2017). https://doi.org/10.17471/2499-4324/910",
+        "refextract": {
+          "score": 3,
+          "title": "Anna Gardeli and Spyros Vosinakis.. Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming. Italian Journal of Educational Technology 1 (July)",
+          "authors": [],
+          "year": 2017,
+          "doi": "10.17471/2499-4324/910"
+        },
+        "grobid_citation_list": {
+          "score": 5,
+          "title": "Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming",
+          "authors": [
+            "Gardeli, Anna",
+            "Vosinakis, Spyros"
+          ],
+          "year": 2017,
+          "doi": "10.17471/2499-4324/910"
+        }
+      },
+      {
+        "index": 19,
+        "raw_input": "Lynn Lambert and Heather Guiffre. 2009. Computer science outreach in an elementary school. Journal of Computing Sciences in colleges 24, 3 (2009), 118–",
+        "refextract": {
+          "score": 2,
+          "title": "Lynn Lambert and Heather Guiffre.. Computer science outreach in an elementary school. Journal of Computing Sciences in colleges 24, 3 , 118-",
+          "authors": [],
+          "year": 2009,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 4,
+          "title": "Computer science outreach in an elementary school",
+          "authors": [
+            "Lambert, Lynn",
+            "Guiffre, Heather"
+          ],
+          "year": 2009,
+          "doi": null
+        }
+      }
+    ]
+  }
+}

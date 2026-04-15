@@ -1,0 +1,2077 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">On Computational Thinking and STEM Education</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2020-08-19">2020 August 19</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yeping</forename><surname>Li</surname></persName>
+							<email>yepingli@tamu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Texas A&amp;M University</orgName>
+								<address>
+									<settlement>College Station</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="institution">Texas A&amp;M University</orgName>
+								<address>
+									<settlement>College Station</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Alan</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+							<email>alans@berkeley.edu</email>
+							<affiliation key="aff1">
+								<orgName type="institution">University of California-Berkeley</orgName>
+								<address>
+									<settlement>Berkeley</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University of California-Berkeley</orgName>
+								<address>
+									<settlement>Berkeley</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Andrea</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+							<email>disessa@berkeley.edu</email>
+							<affiliation key="aff1">
+								<orgName type="institution">University of California-Berkeley</orgName>
+								<address>
+									<settlement>Berkeley</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University of California-Berkeley</orgName>
+								<address>
+									<settlement>Berkeley</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Arthur</forename><forename type="middle">C</forename><surname>Graesser</surname></persName>
+							<email>graesser@memphis.edu</email>
+							<affiliation key="aff2">
+								<orgName type="institution">University of Memphis</orgName>
+								<address>
+									<settlement>Memphis</settlement>
+									<region>TN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">University of Memphis</orgName>
+								<address>
+									<settlement>Memphis</settlement>
+									<region>TN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Lisa</forename><forename type="middle">C</forename><surname>Benson</surname></persName>
+							<email>lbenson@clemson.edu</email>
+							<affiliation key="aff3">
+								<orgName type="institution">Clemson University</orgName>
+								<address>
+									<settlement>Clemson</settlement>
+									<region>SC</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="institution">Clemson University</orgName>
+								<address>
+									<settlement>Clemson</settlement>
+									<region>SC</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Lyn</forename><forename type="middle">D</forename><surname>English</surname></persName>
+							<email>l.english@qut.edu.au</email>
+							<affiliation key="aff4">
+								<orgName type="institution">Queensland University of Technology</orgName>
+								<address>
+									<settlement>Brisbane</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Richard</forename><forename type="middle">A</forename><surname>Duschl</surname></persName>
+							<email>rduschl@smu.edu</email>
+							<affiliation key="aff5">
+								<orgName type="institution">Southern Methodist University</orgName>
+								<address>
+									<settlement>Dallas</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff5">
+								<orgName type="institution">Southern Methodist University</orgName>
+								<address>
+									<settlement>Dallas</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">D</forename><surname>English</surname></persName>
+						</author>
+						<title level="a" type="main">On Computational Thinking and STEM Education</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2020-08-19">2020 August 19</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">81EF4627F4BB2F6E7C31EE5C7A5D1D70</idno>
+					<idno type="DOI">10.1007/s41979-020-00044-w</idno>
+					<note type="submission">Mathematical Thinking and Learning Jan 2018 Computational thinking and mathematics learning Computers in Human Behavior Mar 2018 Exploring the computational thinking effects in pre-university education International Journal of Child-Computer Interaction 2018 Computational thinking and coding in childhood Journal of Science Education and Technology Feb 2020 Computational thinking from a disciplinary perspective The Asia-Pacific Education Researcher Feb 2020 Computational thinking education in the Asian Pacific region</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2026-04-14T19:59+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Assessment</term>
+					<term>Computational thinking</term>
+					<term>Programming</term>
+					<term>STEM disciplines</term>
+					<term>STEM education</term>
+					<term>Teacher education</term>
+					<term>Trends</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The recognized importance of computational thinking has helped to propel the rapid development of related educational efforts and programs over the past decade. Given the multi-faceted nature of computational thinking, which goes beyond programming and computer science, however, approaches and practices for developing students' computational thinking are not always self-explanatory in terms of their foci and feasibility in diverse educational contexts. In this editorial, we first examine relevant publications in computational thinking to identify a trend of integrating computational thinking into disciplinary education. We subsequently build on recent discussions about the concept of computational thinking to (1) frame a review of educational efforts in developing students' computational thinking, (2) discuss opportunities and challenges to further such educational efforts through not only programming and computer science but also other disciplines, and (3) articulate needed research and scholarship to support educational practices.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>In our recent editorial <ref type="bibr">(Li et al. 2020a)</ref>, we discussed computational thinking (CT) as a model of thinking that is important to every student. Contrary to a common perception that CT belongs to programming and computer science (CS), we discussed its multifaceted nature and highlighted the importance of knowing and understanding the concept as truly transdisciplinary, surpassing programming and CS instruction. Based on our proposal that CT should emphasize thinking as part of the problem-solving process and de-emphasize computing as producing "code," we further discussed how this notion relates to different facets of CT as described with various approaches taken in the literature.</p><p>The meaning of CT has been open to different interpretations (e.g., <ref type="bibr">Barr et al. 2011;</ref><ref type="bibr">Li et al. 2020a;</ref><ref type="bibr">NRC 2010)</ref>, so it is not surprising that multiple models of CT exist, emphasizing different facets <ref type="bibr" target="#b61">(Shute et al. 2017</ref>). There currently is diversity in efforts to design and promote educational approaches and practices that aim to develop students' CT <ref type="bibr" target="#b27">(Grover and Pea 2013;</ref><ref type="bibr">NRC 2011)</ref>. However, existing approaches and practices for developing students' CT are not always self-explanatory in guiding researchers and practitioners in the selection of relevant CT skills in particular educational contexts. Our purpose in this editorial is to build on recent discussions of CT to provide an overview of educational efforts in developing students' CT, specifically within the context of science, technology, engineering and mathematics (STEM) education.</p><p>In the following sections, we first provide a brief overview of trends of research in CT education in light of research publications, followed by a discussion of the complexity and challenges in terms of shifts in disconnecting and re-connecting CT and disciplinary education in STEM. We then focus our review and discussion on efforts in developing students' CT in terms of specific facets of CT, most prominently: CT as a discipline-specific thinking practice and CT as a trans-disciplinary thinking practice. Efforts in CT assessment and teacher education are also discussed as they are inseparable parts of CT education. We conclude by discussing future areas of research and scholarship to support educational practices in developing CT integrated in and through STEM education.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Brief Overview: Trends of CT Research and Instruction</head><p>CT is a relatively new notion to educators, especially in pre-college school settings. Consequently, researchers and educators alike have devoted much time and efforts to debate and define its nature over the past decade (see for example, <ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr">Li et al. 2020a;</ref><ref type="bibr">NRC 2010;</ref><ref type="bibr" target="#b61">Shute et al. 2017)</ref>. At the same time, many scholars have also noted the need for further research on CT and related education in both undergraduate and pre-college school levels, especially the need for empirical studies <ref type="bibr" target="#b23">(Fennell et al. 2020;</ref><ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr" target="#b33">Kalelioglu et al. 2016)</ref>. Simple Google searches with the terms "computational thinking research," "computational thinking education," or "computational thinking in education" all returned more than 43,000,000 items. Such voluminous information shows a rapidly evolving and vibrant topic area, on the growth in interest in CT over the past decade.</p><p>Several articles published over the past several years have summarized and highlighted related development in CT research (e.g., <ref type="bibr" target="#b23">Fennell et al. 2020;</ref><ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr" target="#b32">Ilic et al. 2018;</ref><ref type="bibr" target="#b33">Kalelioglu et al. 2016;</ref><ref type="bibr" target="#b61">Shute et al. 2017;</ref><ref type="bibr">Tang et al 2020a)</ref>. For example, <ref type="bibr" target="#b61">Shute et al. (2017)</ref> searched several databases (e.g., ERIC and PsycINFO) and selected, reviewed, and discussed 45 articles published since 2006 to come up with a working definition of CT, which emerged from their review primarily as a way of thinking and acting. <ref type="bibr" target="#b32">Ilic et al. (2018)</ref> also conducted a review of studies on CT indexed in the Web of Science (WoS) and ERIC databases. Their search revealed 96 studies on CT published between 2006 and 2016. They found that there was an increase in the number of CT studies in recent years, with 80 out of 96 studies (83.3%) published from 2013 to 2016, and that these studies were mainly conducted in CS. In fact, the majority of these articles were published in journals with a focus on computer, computing, and/ or technology, with the largest set of publications (11) in ACM Transactions on Computing Education. Likewise, <ref type="bibr">Tang et al. (2020a)</ref> searched the WoS database and identified 715 CT-related journal publications from 2006 to 2018. Although <ref type="bibr">Tang et al. (2020a)</ref> did not examine the nature of journals where these articles were published, they reported an increasing trend of CT-related article publications over the years, especially when examining them in two time periods <ref type="bibr">: 2006-2012 (246 articles) to 2013-2018 (469 articles)</ref>.</p><p>Research on CT does not necessarily mean, or even include, research on CT in STEM education. In a recent review of STEM education research, <ref type="bibr">Li et al. (2020b)</ref> identified and selected 798 articles published in 36 journals from 2000 to 2018 with authors' inclusion of self-identified term of STEM, or science, technology, engineering, and mathematics. Out of these 798 articles, however, only six articles had an explicit focus or connection with CT. The results suggest that CT research and instruction were dramatically lacking as evidenced in the number of journal publications related to STEM education. Putting that together with what was reported about CT research publications above (e.g., <ref type="bibr" target="#b32">Ilic et al. 2018)</ref>, we can determine that, at least as of a few years ago, CT research and instruction were mainly conducted through programming and within CS education, but without a close and clear connection with other disciplinary education.</p><p>In a simple Google search with the term "computational thinking book," we found that many books on CT were published over the past decade, either with a focus on research or instructional practice. There is also an increasing trend in book publication on CT over the past several years. Specifically, one book, Computational Thinking in the STEM Disciplines <ref type="bibr" target="#b34">(Khine 2018)</ref>, intended to focus on CT and STEM disciplines. However, only two out of 15 chapters in this book present a clear and direct connection with STEM disciplines. Most of other chapters in the book are on CT in school curricula, teacher education, programming and coding, or practices in various international contexts. It illustrates again the general lack of focus on CT research and instruction in disciplinary education just a few years ago.</p><p>In addition to what we can learn from research reviews and book publications, there are also some collective efforts in publishing about CT as special issues of journals. Table <ref type="table">1</ref> shows a list of sample special issues of journals that we identified through a Google search with the term "computational thinking special issue." Three of these five special issues on CT research and instruction were published in journals with a clear focus on computer or technology, a result that echoes what was reported by <ref type="bibr" target="#b32">Ilic et al. (2018)</ref>. The other two journals are either content subject specific (i.e., Mathematical Thinking and Learning) or educational research in general albeit focusing on a region (i.e., The Asia-Pacific Education Researcher).</p><p>The topics of these special issues range from CT in education in general to CT with disciplinary education. For example, the special issue of Mathematical Thinking and Learning is a collection of four articles published in March 2018. As discussed and summarized by the journal's editor, these articles "present stimulating examples of how the implicit links between computational thinking and mathematics learning can be explicated and built upon." <ref type="bibr">(English 2018, p. 2)</ref>. The special issue of Journal of Science Education and Technology is another collection of 12 articles that focus on the relationship between CT and other disciplines, especially in making connections between established pre-college school subject content areas of STEM and newer CT-integrated disciplines <ref type="bibr" target="#b35">(Lee et al. 2020)</ref>.</p><p>At the time of writing this editorial, there are at least three more special issues of journals on CT that are in preparation. Two of these have a clear focus on CT and disciplinary education: "computational thinking for STEAM and engineering education" in Computer Applications in Engineering Education; and "data literacy &amp; computational thinking in engineering education" in Journal of Computing in Higher Education.</p><p>These recent publications show a trend of research in developing students' CT, from efforts similar to those in the past that focused on programming and CS education (e.g., <ref type="bibr" target="#b32">Ilic et al. 2018)</ref> to connecting and integrating CT with disciplinary education, especially STEM education. It is this latter trend that we aim to discuss further in this editorial.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>The Complexity and Challenge in Connecting CT and STEM in Education</head><p>In comparison to efforts in developing students' CT predominantly through programming and in CS instruction, the slow and late-emerging trend of developing CT in disciplinary education is likely associated with other factors, such as politics and curriculum decisions. For example, in Switzerland, STEM is implemented in the German-speaking region as <ref type="bibr">MINT (mathematik, informatik, naturwissenschaften, and technik)</ref> but not yet in the French-speaking part. In the latter, it is thus likely to integrate newly mandated CS education in another discipline with cross-disciplinary projects and CT may be considered as a transversal skill as others such as creativity and communication. <ref type="foot" target="#foot_1">1</ref> It is important for us to know how CT may be connected with STEM when discussing how to develop CT in connection with STEM education.</p><p>In the following sections, we discuss two shifts to illustrate the complexity and challenge in connecting CT and STEM in pre-college education. The first shift (disconnecting CT from non-CS STEM in education) has already taken place. It concerns the rapidly rising visibility of CT as important to all students, but enacted mainly in terms of programming and within CS education. The second shift (re-connecting CT with non-CS STEM in education) started more recently. It concerns moving CT beyond programming and CS, per se, to integration in disciplinary education, especially integration with STEM.</p><p>Shift 1: CT Comes to Be Taken as Important Not Only for STEM Professionals But Also for Every Student, But It Is Enacted Instructionally Within a CS Disciplinary Perspective</p><p>In STEM professions, it is commonly recognized that computing and CT are important <ref type="bibr" target="#b15">(Denning 2007;</ref><ref type="bibr" target="#b25">Froyd et al. 2012)</ref>. In fact, as <ref type="bibr" target="#b16">Denning (2009)</ref> pointed out, CT has long been used and commonly talked about in many professional fields, such as physics and biology, even without the participation of computer scientists. To many scientists, the use of computing is not only a tool, but also a way of making discoveries, involving problem solving, design, and model building. For example, computational modeling is used in biology research <ref type="bibr" target="#b7">(Brodland 2015)</ref>, climate risk management <ref type="bibr" target="#b26">(Garner et al. 2016)</ref>, and robust decision making under deep uncertainty <ref type="bibr" target="#b37">(Lempert 2019)</ref>. CT is naturally part of STEM, including of course, CS.</p><p>However, the significance of CT in STEM fields did not automatically translate into school instruction. CT was not considered to be important to everyone until Wing's call for its special role <ref type="bibr" target="#b73">(Wing 2006)</ref>. At the same time, as a computer scientist, Wing populated a CS discipline-based notion of CT that presents a foundational connection between CT and CS. Following Wing's conception of CT, it would become necessary to make CS education available for every student in order to develop their CT. There are, indeed, many educational initiatives that have been developed to make CS education available to many more students, simultaneously developing their CT (e.g., <ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr">U.S. National Science Foundation n.d.)</ref>. With Wing's particular disciplinary perspective on CT, the subject fixation of CT within CS becomes all but inevitable. In fact, her perspective simultaneously makes the connection between CT and other disciplines of professional STEM and STEM education much less direct and unclear. It would even lead to the question whether CS is already part of STEM, so that developing students' CT (under the CS disciplinebased perspective) is readily part of STEM education. As we discuss further, below, the relationship between STEM and CS has not been straightforward and clear either in scholarly discussion or in educational practice.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>T in STEM Is Not the Same as CS</head><p>Although there is "T" in STEM, meaning technology, the position of technology (and also engineering) in STEM has been less clear in comparison to the traditional subjects of mathematics (M) and science (S) in STEM (e.g., <ref type="bibr" target="#b9">Bybee 2000;</ref><ref type="bibr" target="#b13">Daugherty 2009;</ref><ref type="bibr" target="#b52">Nager and Atkinson 2016)</ref>.</p><p>If taking T as the use of computers, one may think that T includes CS as part of STEM. But a focus on the computer as a tool does not serve either T or CS well. As discussed in the previous editorial, CS is no longer taken as a study centering on computers, per se, but rather about processing information, both artificial and natural <ref type="bibr" target="#b14">(Denning 2005)</ref>. At the same time, T needs to be taken as a field of interdisciplinary study that goes well beyond computers, or even computation. For example, <ref type="bibr" target="#b9">Bybee (2000)</ref> argued that "To be clear, the use of computers, as one of many educational technologies, is essential in this age. However, it should not be confused with the study of technology, which provides students with opportunities to learn about the processes of design, fundamental concepts of technology and engineering, and the limits and possibilities of technology in society" (p. 23). In fact, many argued the importance of CS and considered CS as closely related but not the same as T (e.g., <ref type="bibr" target="#b29">Guzdial and Morrison 2016;</ref><ref type="bibr" target="#b52">Nager and Atkinson 2016)</ref>. <ref type="bibr" target="#b52">Nager and Atkinson (2016)</ref> even argued that CS is not part of STEM, as it is not even represented in the acronym "STEM."</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>CS Had Not Been Considered as Important as Other Disciplines in STEM Education Until Recently</head><p>The importance of CS did not gain much recognition in many education systems including the USA in the past (e.g., <ref type="bibr" target="#b72">Wilson et al. 2010)</ref>. With the recognized importance of computing in many different fields <ref type="bibr">(PITAC 2005)</ref>, making CS education for all has gained momentum over the past decade. Specifically in the USA, Congress passed a "STEM Education Act of 2015" with an explicit indication: the term "STEM education" means education in the subjects of science, technology, engineering, and mathematics, including computer science (U.S. Congress 2015). Thus, although CS differs from T in STEM, including CS in STEM education has been officially recognized and promoted at the national level in the USA (U.S. Department of Education n.d.).</p><p>Viewing CS as equally important as other disciplines of STEM is now echoed in many influential documents and initiatives in the USA. For example, current administration announced an initiative for STEM education funding, with CS listed together with STEM in the announcement (White House 2017). However, the inclusion of CS in STEM education does not yet help make direct connections between CT and STEM in disciplinary education other than in CS.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Shift 2: Transforming Students' CT Development as Connected Directly with Not Only Programming and CS, But Also Other Disciplines of STEM in Education</head><p>Putting CS as part of STEM education helps promote CS as important for all students, but does not provide direct implications for developing CT through non-CS education, respecting the fact that CT can (and maybe should) also be developed through other STEM disciplines. Instead, taking CT as intimately connected with STEM disciplines, and not just CS, reflects what has been the reality in many professional fields of STEM even before Shift 1 discussed above. More importantly, it presents a re-direction in CT education to explicitly and substantially link to STEM education, beyond just CS.</p><p>As discussed in our previous editorial <ref type="bibr">(Li et al. 2020a)</ref>, this shift in educational efforts requires us to broaden the conception of CT so that it is not restricted to a CS disciplinary perspective. Such broadening can contribute to the framing of our review and discussion about educational efforts in developing students' CT.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Understanding CT Development as Involving Discipline-Specific Facets</head><p>Recognizing CT's importance does not immediately provide guidance for how to teach it. In fact, many teachers in pre-college education have difficulties in developing and implementing particular educational activities for teaching CT to students <ref type="bibr">(Denning 2017;</ref><ref type="bibr" target="#b31">Hsu et al. 2018)</ref>. The complexity in CT education relates not only to the multifaceted nature of CT, but also to the diversity of related interventions and educational programs (e.g., <ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr">NRC 2011;</ref><ref type="bibr" target="#b61">Shute et al. 2017</ref>). In our view, complexity in understanding the nature of CT and complexity in instructional orientations are closely related, with one leading to another. Researchers, instructional developers, educators can pre-specify facets of CT and then develop or identify activities or tools for instructional use. Conversely, facets of CT may not be consciously prespecified or chosen, but resulted from implementing educational activities and tools determined by a third party. By using the nature of CT as a lens, we can frame our review and discussion of different educational initiatives and programs in the following two sections: developing CT with a specific disciplinary focus and with a focus on trans-disciplinary thinking practices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Developing CT as a Discipline-Specific Thinking Practice</head><p>Viewing CT as a discipline situated thinking process and practice is common for researchers and educators in STEM disciplines. Because CT is commonly used by professionals not only in CS but also in other STEM disciplines, developing students' CT can potentially take approaches that differ in terms of the view of CT as related to CS in specific or other individual disciplines of STEM.</p><p>Developing Discipline-Specific CT in and Through Programming-or Coding-Oriented Activities and CS Education CT is often viewed as directly related to programming, coding and CS, especially after the publication of Wing's seminal paper <ref type="bibr" target="#b73">(Wing 2006)</ref>. Efforts to develop students' CT thus tend to develop and use activities, tools or platforms related to programming knowledge and skills in educational interventions and programs (e.g., <ref type="bibr" target="#b4">Barth-Cohen et al. 2018;</ref><ref type="bibr" target="#b31">Hsu et al. 2018;</ref><ref type="bibr" target="#b43">Lye and Koh 2014;</ref><ref type="bibr" target="#b61">Shute et al. 2017)</ref>. As an example, <ref type="bibr" target="#b4">Barth-Cohen et al. (2018)</ref> investigated how fifth graders interpret and navigate information when participating in various coding and problem-solving activities in a programming environment. In their study, the school adopted and used a robotics curriculum, had software installed in school-provided laptops for students, and had one physical robot for instructional use. Students' CT development was examined with an emphasis on their performance in formulating and solving problems in this robotic programming environment.</p><p>It should be pointed out that, even with the CS discipline-based view of CT, previous work has proposed various models and frameworks to further conceptualize and operationalize CT <ref type="bibr" target="#b27">(Grover and Pea 2013;</ref><ref type="bibr" target="#b61">Shute et al. 2017)</ref>. It is thus not surprising to find many contrasting educational activities and programs for teaching and assessing CT. Several review articles summarized how active relevant research and educational efforts are in developing students' CS discipline-based CT. For example, a literature review of CT research by <ref type="bibr" target="#b61">Shute et al. (2017)</ref> includes a synthesis of various approaches used to develop CT in K-16 settings. Among 11 studies being reviewed, 10 studies used specific programming tools or platforms for CT training purpose, such as Scratch, C, Alice (Carnegie Mellon University 1999), paper-and-pencil programming, and various robotics packages. Likewise, in a meta-review of CT education studies published in journals between 2006 and 2017, <ref type="bibr" target="#b31">Hsu et al. (2018)</ref> found that CT has mainly been applied to activities in program design and CS. Most of the 120 articles focused on programming skill training and mathematical computing, while some adopted a cross-domain teaching mode to enable students to manage and analyze materials of various domains by computing.</p><p>Although programming is commonly used as important activities for developing students' CT, some researchers have pointed out that the acquisition of superficial or language-oriented programming skills is often ineffective in helping students to transit from novice programming to problem-solving-oriented programming (e.g., Buitrago <ref type="bibr" target="#b8">Flórez et al. 2017;</ref><ref type="bibr" target="#b47">Michaelson 2018;</ref><ref type="bibr" target="#b50">Moors and Sheenan 2017)</ref>. CT development should not be limited to acquiring programming skills, but more on problem solving through computational means. Thus, some researchers proposed alternative approaches to develop problem-solving-oriented CT such as, "systematic CT" <ref type="bibr" target="#b47">(Michaelson 2018)</ref> and "creative computational problem solving" <ref type="bibr" target="#b10">(Chevalier et al. 2020)</ref>. For example, <ref type="bibr" target="#b10">Chevalier et al. (2020)</ref> took the view of CT development using a robot as more about the problem-solving process than just programming the robot to solve the problem. They proposed a creative computational problem solving model for teaching CT. With this model, they conducted an experimental study with elementary school students using an educational robot and a programming interface. They imposed pre-designed restrictions to the experimental group for accessing the programming interface or executing the code on the robot, while the control group was given the same task and working environment without any accessing restrictions. They found that students in the control group spent most of their time in programming and evaluating in a trialand-error loop and could hardly move out of this loop to systematically analyze the problem and test strategies for solving it. In contrast, the experimental group was forced to shift their attention toward understanding the problem, generating ideas and formulating strategies, instead of jumping to programming the robot. Their results suggest the importance of not only having a good understanding of CT (e.g., not focusing exclusively on acquiring programming skills), but also thinking and planning carefully in developing and implementing educational activities to develop students' CT.</p><p>In our previous editorial <ref type="bibr">(Li et al. 2020a)</ref>, we pointed out that computational literacy is a concept proposed and used even before <ref type="bibr">CT (diSessa 2000</ref><ref type="bibr">, 2018)</ref>. This concept highlights the importance of computation for students' learning beyond programming. The concept is not the same as <ref type="bibr" target="#b73">Wing's (2006)</ref> conception of CT in that computation is not viewed as the special province of computer scientists, and everyone does not need to think like a computer scientist. In recent report Charting a Course for Success: America's Strategy for STEM Education (Committee on STEM Education 2018), both computational literacy and CT were included and used when laying out the vision for the USA to success in STEM education.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Developing Discipline-Specific CT in and Through Education in Non-CS STEM Disciplines</head><p>As discussed and summarized above, there is a growing trend of work that tries to integrate CT with disciplinary education. One approach commonly used is to follow the conception of CT outlined by <ref type="bibr" target="#b73">Wing (2006)</ref>, and then discusses possible activities and approaches to develop students' CT within different disciplines (e.g., <ref type="bibr" target="#b2">Barr and Stephenson 2011;</ref><ref type="bibr" target="#b23">Fennell et al. 2020;</ref><ref type="bibr" target="#b35">Lee et al. 2020;</ref><ref type="bibr" target="#b62">Swaid 2015)</ref>. For example, early efforts in this direction involved the identification of possible inclusion of CT in various school subjects, with explanation about which aspects of CT can be included for a specific school subject (e.g., <ref type="bibr" target="#b2">Barr and Stephenson 2011;</ref><ref type="bibr" target="#b62">Swaid 2015)</ref>. Typically, there is a lack of empirical investigations <ref type="bibr" target="#b27">(Grover and Pea 2013)</ref>.</p><p>Recent efforts in this direction involve more in specific integration designs and/or empirical follow-up studies (e.g., <ref type="bibr" target="#b23">Fennell et al. 2020;</ref><ref type="bibr" target="#b35">Lee et al. 2020;</ref><ref type="bibr" target="#b65">Tucker-Raymond et al. 2019)</ref>. For example, in the special issue of Journal of Science Education and Technology, researchers reported particular strategies taken to make connections between existing STEM subjects in pre-college education and CT, CT-integrated disciplines such as computational sciences <ref type="bibr" target="#b35">(Lee et al. 2020)</ref>. As another example, <ref type="bibr" target="#b23">Fennell et al. (2020)</ref> pointed out the lack of effective pedagogy in postsecondary engineering education that can help develop students' "computational adaptive expertise," one's ability to flexibly use computational knowledge in novel situation in the context of engineering design <ref type="bibr" target="#b46">(McKenna et al. 2008)</ref>. They drew upon recent research to formulate a computational apprenticeship framework. It is a constructivist research and practice model to introduce students to meaningful computational practices through a series of discipline-situated programming projects.</p><p>When discussing CT as associated directly with STEM disciplines, and not just CS, it is also reasonable to ask if the nature of CT practices in STEM disciplines differ from CT practices in CS. In fact, some researchers tried to examine the practices of CT by STEM professionals to help inform CT development and assessment in disciplinary education (e.g., <ref type="bibr" target="#b5">Beheshti et al. 2017;</ref><ref type="bibr" target="#b44">Malyn-Smith and Lee 2012;</ref><ref type="bibr" target="#b69">Weintrop et al. 2016)</ref>. For example, <ref type="bibr" target="#b69">Weintrop et al. (2016)</ref> took the approach, in contrast to others, that emphasized topics such as abstraction and algorithms, defining CT as a taxonomy of CT practices in mathematics and science. They drew on the existing CT literature, exemplary CT instructional activities and materials, and interviews with mathematicians and scientists, to develop the taxonomy of 22 CT practices organized into four major categories: data practices, modeling and simulation practices, computational problem solving practices, and systems thinking practices. <ref type="bibr">Weintrop et al. discussed, with specific</ref> examples, how such a taxonomy can help provide three main benefits of integrating CT with STEM education: (1) building a reciprocal relationship for learning mathematics and science with CT, (2) establishing a sustainable learning environment that can engage all students, and (3) bringing efforts in developing CT in disciplinary education in line with the increasingly computational nature of scientific and mathematical practices.</p><p>Along this line of work, characterizing the nature of CT in professional practices, <ref type="bibr" target="#b5">Beheshti et al. (2017)</ref> further interviewed 17 professional practitioners in STEM to identify possible characteristics of CT practices that are important to them. These 17 interviewees had expertise in a range of STEM disciplines such as biochemistry, materials science, chemistry, computer science, and transportation engineering. Based on the same taxonomy of 22 CT practices grouped into four categories <ref type="bibr" target="#b69">(Weintrop et al. 2016)</ref>, <ref type="bibr" target="#b5">Beheshti et al. (2017)</ref> found that each main category of CT practices is identified at similar levels across different disciplines: around 30% use in data analysis, 20% in modeling and simulation, 30-35% in computational problem solving, and 15-20% in systems thinking. At the same time, when focusing on the role of computation in CT practices of these interviewees' research, they found that STEM researchers working more on experimentation than computation would use data practices more frequently, those with higher use of computation entailed a greater use of systems thinking practices and modeling-and-simulation practices. Theoretical researchers mainly drew on computational problem solving practices. <ref type="bibr" target="#b5">Beheshti et al. (2017)</ref> indicated that these results help identify and inform educational efforts in high school mathematics and science learning contexts.</p><p>Across different disciplines that students are exposed to, it is also important to consider different families of CT practices that likely exist within them. CT can vary in different disciplines such as chemistry, physics, and logic, as revealed by <ref type="bibr" target="#b5">Beheshti et al. (2017)</ref>. It is not surprising that CT would become discipline-specific when viewed within different disciplinary education. CT competence, if taken as trans-disciplinary practices, would then require exposure for students to a variety of different disciplines so they can apply the right ones when solving practical problems.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Developing CT as a Trans-disciplinary Thinking Practice</head><p>By emphasizing the process of thinking, we proposed that CT involves searching for ways of processing information that are incrementally improvable in their efficiency, correctness, and elegance <ref type="bibr">(Li et al. 2020a</ref>). This definition helps broaden the conceptualization of CT to go beyond specific subjects in which CT may operate, thus avoiding a subject fixation concerning CT. In fact, some scholars shared similar thoughts in their conceptions of CT. For example, <ref type="bibr" target="#b60">Sengupta et al. (2018)</ref> took an epistemological shift to view coding and CT more as a complex form of experience, rather than as mastery over computational logic and symbolic form. <ref type="bibr" target="#b61">Shute et al. (2017)</ref> conducted a literature review concerning CT and then defined CT primarily as a way of thinking and acting, with or without the assistance of computers. Then, they further specified CT primarily in computational problem solving with six main aspects: decomposition, abstraction, algorithm design, debugging, iteration, and generalization.</p><p>To make CT truly accessible and important to all students, educational initiatives and programs need to be developed and made available in pre-college STEM education with the broadened view of CT as a trans-disciplinary thinking process and practice. The following sections discuss some educational initiatives from the literature and also discuss efforts in facilitating students' learning of STEM with CT.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Developing Trans-disciplinary CT in and Through STEM Education</head><p>With the recognition that CT is not only in CS but also in many different subjects and everyday activities, <ref type="bibr" target="#b42">Lu and Fletcher (2009)</ref> argued that CT development should be articulated and reflected in students' learning of different subject contents before teaching programming language. They provided specific examples to illustrate their argument for developing (aspects of) CT as a general competence, without the use of programming language. For example, in mathematics when solving algebraic word problems, students can learn and experience the use of a trial-and-error (blind) approach, or a heuristic approach to identify and use specific strategy. They can learn how to represent word problems, and apply algebraic rules to derive simpler forms. To <ref type="bibr" target="#b42">Lu and Fletcher (2009)</ref>, these notions (especially those rendered in italic) are similar to CT as experienced in CS. As another example, they argued that group work in science can also be used in developing CT. Specifically, data-exchange interactions among group members "are ideal situations for formally introducing notions of interface and encapsulation." (p. 264). <ref type="bibr" target="#b60">Sengupta et al. (2018)</ref> took a paradigmatic shift in the epistemology and pedagogy of computing and CT, especially for pre-college STEM education. They built on the Science as Practice <ref type="bibr" target="#b20">(Duschl 2008;</ref><ref type="bibr" target="#b36">Lehrer 2009</ref>) conception to argue for adopting a perspective in which epistemic and representational work are deeply intertwined. Specifically, they proposed to shift away from technocentrism <ref type="bibr" target="#b55">(Papert 1987</ref>) that focuses more on the production of a set of axiomatic computational abstractions, to a view from the perspective of teachers and students of computing and CT more "as discursive, perspectival, material and embodied experiences, among others" (p. 49). They discussed several previous studies as examples grounded in this perspective, and highlighted that computing and CT can take different forms, involving different sequences of learning activities and experiences. For example, teachers can use embodied modeling activity to help students in a third grade science classroom <ref type="bibr" target="#b18">(Dickes et al. 2016)</ref>. In that learning environment, students engaged iteratively in cycles of embodied modeling of foraging behavior and graphing, and then modeled the same phenomena using multi-agent-based NetLogo simulations. They indicate that such event-based programming and modeling in that study can support students in developing conceptual understanding of complex scientific phenomena, by valuing (rather than ignoring) the roles of uncertainty and interpretive dilemmas that are inherent in students' modeling work <ref type="bibr" target="#b22">(Farris et al. 2019)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Facilitating Students' Learning of STEM with the Integration of CT</head><p>Although the term CT was not used earlier in the history of computers and education, researchers have long been thinking about and developing educational activities and programs that combine the learning of programming and computational modeling together with mathematics and science in school education. For example, as a pioneer in developing students' procedural thinking through LOGO programming <ref type="bibr" target="#b54">(Papert 1980)</ref>, Papert and colleagues also developed LOGO-based learning environments for subject content such as fraction in elementary school curricula <ref type="bibr" target="#b30">(Harel and Papert 1990</ref>). The results from experimental studies led them to argue that integrated learning of programming with concepts in another domain can be easier and more effective than learning them separately. They believe that computation and programming have a reflexive synergistic quality to facilitate other knowledge acquisition. <ref type="bibr" target="#b0">Abelson and diSessa (1981)</ref> produced a fully computationally infused version of a curriculum in geometry (known as "turtle geometry"), arguing both that this combination eased learning, but also that it changed the personal relationship between students and mathematics, turning "mathematics" into a more personal and experiential process. Some researchers also strived to develop and use other visual programming such as <ref type="bibr">Boxer (e.g., diSessa 2000;</ref><ref type="bibr" target="#b19">diSessa et al. 1991)</ref> and block-based programming <ref type="bibr" target="#b5">(Weintrop and Wilensky 2017)</ref>.</p><p>Since current connotations of CT are relatively recent, integrating it with disciplinary thinking and learning are also recent, especially when CT is viewed as a transdisciplinary thinking practice. We can identify two possible directions with the existence of limited research in this area. One direction is to take the view of CT as a trans-disciplinary thinking practice, and then identify and design ways of integrating CT with discipline-specific content learning. When on a specific discipline, educational design and effort can place more attention on improving students' learning of disciplinary content in STEM with the integration of CT. When looking at CT integration across different disciplines, educational design and effort can place specific attention to developing students' CT as a general competence. In this way, development of CT instruction can potentially let students apply the proper practices when solving problems in the future. Several publications cited in the last section can provide illustrations (e.g., <ref type="bibr" target="#b42">Lu and Fletcher 2009;</ref><ref type="bibr" target="#b60">Sengupta et al. 2018)</ref>. To develop and use a systematic approach in this direction, it would also be valuable to explore and identify essential productive practices of trans-discipline CT and their connections with individual disciplines. Such essential productive practices can then be both an identifying feature and a bridge between CT and the disciplines. As an example, similar effort was taken in mathematics about productive patterns of mathematical thinking <ref type="bibr" target="#b58">(Schoenfeld 2017)</ref>.</p><p>Another direction is to take CT as naturally integrated in different STEM disciplines, and then reconceptualize and shift STEM content learning from the traditional subject format to computational-based STEM content learning. Abelson and diSessa's "turtle geometry," cited above, and more recent work by diSessa and others (see cited in diSessa 2018) are examples. In this direction, CT may be taken as a core skill for all students with a specific set of CT integration elements identified and used for bridging (e.g., <ref type="bibr" target="#b45">Malyn-Smith et al. 2018</ref>). The special issue on "computational thinking from a disciplinary perspective" published recently in the Journal of Science Education and Technology contains some further information on this approach <ref type="bibr" target="#b35">(Lee et al. 2020</ref>).</p><p>If CT is still viewed as discipline-specific and connected specifically with programming, we can identify a growing number of studies that investigate and document the effect of facilitating students' learning of STEM integrated with CT. For example, <ref type="bibr" target="#b59">Sengupta et al. (2013)</ref> proposed the use of agent-based computation to integrate CT with existing pre-college science curricula. Specifically, following Wing's notion of CT, they proposed a theoretical framework with four components and a sample learning environment: CTSiM (computational thinking in simulation and modeling), a visual-programming based learning environment for middle school science. The results from their pilot study with sixth grade students in two content units (kinematics and ecology) suggested significant student learning gains, as measured by students' pre-and post-test scores. As another example, <ref type="bibr" target="#b48">Miller et al. (2020)</ref> presented an approach of integrating CT, as a set of practices delineated by <ref type="bibr">Grover and</ref><ref type="bibr">Pea (2013, 2018)</ref>, in promoting students' learning in science education. Specifically, they demonstrated its feasibility and benefits through a case study of a group of US students in a fifth-grade project-based learning of science. Their case study provided qualitative analyses of how various practices associated with CT helped these students in developing shared understanding of the particle nature of matter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Assessment as an Important Dimension of CT, CT Research, and Instruction</head><p>Assessment has been an important dimension of CT itself since its early stage of development. The idea of Generate and Test was advanced early in information processing theory, such as the T.O.T.E. for -Operate -Test -Exit" proposed by <ref type="bibr" target="#b49">Miller al. (1960)</ref> for having monitoring devices that control the acquisition of stimulus-response relationship populated in behaviorism.</p><p>A computational procedure or algorithm takes input and generates an output, followed by an evaluation of the output in the test phase. Proficiency in CT requires some fluency in choosing or developing alternative procedures and algorithms (with different sets of these in different disciplines), as well as criteria for evaluating the output to assess its relevance, appropriateness, utility, efficiency, and so on. The test component often requires multiple representations and perspectives. When a mathematical procedure is performed, those manipulations in the procedure may involve a sensory-motor skill such as evaluating whether a robot performance matches expectations, whereas magnitude estimation of the output is a separate skill. Thus, CT is likely to involve multiple cognitive processes and representations rather than mechanically applying a single computational component. Implementing the test component of generate and test, or T.O.T.E., remains an important ingredient in CT.</p><p>In CT research and instruction, researchers have realized the importance of CT assessment (e.g., <ref type="bibr" target="#b27">Grover and Pea 2013;</ref><ref type="bibr" target="#b61">Shute et al. 2017;</ref><ref type="bibr" target="#b70">Werner et al. 2012)</ref>. <ref type="bibr" target="#b27">Grover and Pea (2013)</ref> summarized specific techniques and methods as developed and used in different projects, such as the use of student-created or predesigned programming artifacts to evaluate students' understanding and use of CT components <ref type="bibr" target="#b70">(Werner et al. 2012)</ref>, and students' debugging prebuilt faulty e-textile projects to evaluate students' engineering and programming skills <ref type="bibr" target="#b24">(Fields et al. 2012)</ref>. Some important efforts in developing or promoting CT assessment have also been carried out by education professional organizations, assessment service entities, or nonprofit scientific research organizations such as SRI education (e.g., <ref type="bibr" target="#b6">Bienkowski et al. 2015)</ref>.</p><p>Recent development in CT education has led to further attention to operationalizing CT. A common approach is to provide a list of component skills, possibly conceptualized as a model. The existence of diverse definitions and models of CT might make it difficult to get a consensus on CT assessment, and consequently make comparisons across different assessments also difficult if not impossible. <ref type="bibr" target="#b61">Shute et al. (2017)</ref> summarized some research efforts in CT assessment, including the use of questionnaires and surveys for measuring knowledge of and attitudes toward CT, interviews and observations with participants to understand their CT skill development, particular activity-based assessment (e.g., Scratch-based, or game-based), and the development and validation of CT scales for generic usage. <ref type="bibr" target="#b61">Shute et al. (2017)</ref> illustrated assessments of the conceptual foundation of several facets of their competency-based model of CT (decomposition, abstraction, algorithms, debugging, iteration, and generalization) with sample activities."</p><p>In a literature review of empirical studies about CT assessment, Tang et al. (2020b) identified a total of 96 journal articles published before August 2019 through searching ERIC, PsycINFO, and Google Scholar. Their review showed some findings consistent with what others reported (e.g., <ref type="bibr" target="#b61">Shute et al. 2017</ref>) and also identified aspects that call for further research and development efforts such as the following: CT assessment being mainly focused on assessing students' programming or computing skills but not others; the need for reliability and validity evidence for CT assessments; and the need for CT assessments for high school, college, and teacher education in addition to K-8 school levels. At the same time, it is important to point out that CT assessment is receiving ever-increased attention from many researchers. Readers find increasing number of publications in topic area, including design and content validation of CT tests for beginners <ref type="bibr" target="#b57">(Relkin et al. 2020</ref>; Zapata-Cáceres et al.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Teacher Education in CT and CT-Integrated Disciplinary Education</head><p>Efforts to develop students' CT in school education require special attention to teachers who need to be prepared and supported to take on the challenge. As CT itself is relatively new in pre-college education and undergraduate education, it is not surprising that much more research is needed to understand how to prepare and support teachers in CT <ref type="bibr" target="#b1">(Angeli and Giannakos 2020;</ref><ref type="bibr" target="#b2">Barr and Stephenson 2011;</ref><ref type="bibr" target="#b75">Yadav et al. 2014</ref><ref type="bibr" target="#b76">Yadav et al. , 2017))</ref>.</p><p>CT is not a discipline by itself. Compared to disciplinary training for teachers, there are unique challenges in finding ways of helping teachers to develop students' CT. One common approach is to view teachers' instructional expertise as knowledge and skill based, similar to the case in disciplinary education, such as mathematics instruction <ref type="bibr" target="#b39">(Li and Kaiser 2011)</ref>. With this perspective, some researchers have tried to find out what CT knowledge and skills teachers may need for themselves, and then what they may need to integrate and implement CT in subject content teaching for their students <ref type="bibr" target="#b51">(Mouza et al. 2017;</ref><ref type="bibr" target="#b76">Yadav et al. 2017)</ref>. For example, <ref type="bibr" target="#b51">Mouza et al. (2017)</ref> redesigned an educational technology course for pre-service teachers (PSTs) to prepare PSTs to integrate CT in school curricula. Based on the technological pedagogical content knowledge (TPACK) framework, Mouza et al. tried to explicate the framework with CT-related concepts, computing tools, and practices. They hypothesized that teachers who need to integrate CT in disciplinary content teaching would need to have two sets of knowledge in relation to their framework: (1) technology knowledge related to CT (TK-CT), and (2) disciplinary content knowledge and pedagogical strategies (both general and content-specific) in relation to CT. Together, they called this body of knowledge TPACK-CT. In their study with 21 PSTs in this redesigned course, they designed specific instruction to model for PSTs the use of TK-CT across course activities as integrated with specific disciplinary content and pedagogy (TPACK-CT). PSTs also had opportunities to design and implement their own CT integrated disciplinary content lessons in K-8 classrooms. Based on a self-reported survey and case reports from PSTs, Mouza et al. indicated the course's positive effect on PSTs' TPACK-CT. At the same time, they indicated that some PSTs experienced difficulty and could not design CT-integrated lessons as expected.</p><p>Helping in-service teachers to learn and implement CT-integrated content lessons could present a variety of challenges, as professional development (PD) can vary dramatically based on teachers' needs and school contexts. <ref type="bibr" target="#b74">Yadav et al. (2018)</ref> tried to learn what changes may happen in teachers' understanding of CT over a year-long PD course. The PD focused on the use of CT ideas and practices for supporting students' learning in science and mathematics. To measure how teachers' thinking about CT emerged, <ref type="bibr">Yadav et al. used</ref> two open-ended teaching vignettes. Based on teachers' responses, they noticed shifts in teachers' understanding of CT from general to more elaborated ideas. The results suggest the possibility of helping teachers to learn and develop an understanding of CT and its integration in elementary science. They also pointed out the need to examine teachers may be able to translate their competence into their classroom instruction. illustrated above in these studies, current research related to teacher preparation and training in CT and CT education is still at the stage. It will take time, effort, commitment, and collaboration for researchers to learn a sufficient amount about specific challenges teachers face and what it might take to address them.</p><p>Opportunities and Challenges in Broadening the Perspective About CT and the Need for New Research and Scholarship</p><p>We started with a brief overview of research trends in CT education. It helped us to uncover and delineate the dramatic development in CT research and instruction over the past decade. The recent trend of integrating and developing CT with disciplinary education in STEM suggests the importance of broadening the notion of CT beyond programming in the context of CS. At the same time, two shifts have happened in disconnecting and then re-connecting CT with STEM in education. These shifts imply that appropriately broadening our perspective on CT brings both opportunities and challenges in research and practice.</p><p>Some opportunities and challenges become visible in our review of CT research and instruction, through the lens of CT's disciplinary connections. As existing efforts in CT research and instruction dominantly take a CS discipline-based view of CT, opportunities for developing both CS and CT in school education will grow with a more encompassing view of the relationship between CT and disciplines (U.S. National Science Foundation, n.d.). But a great challenge remains to make CT consequential and accessible to all students. It becomes important to broaden the view of CT as a transdisciplinary thinking practice, as we elaborated in the last editorial <ref type="bibr">(Li et al. 2020a)</ref>. At the same time, what we can learn through the review above is that integrating CT with disciplinary education in STEM has scarcely been explored in undergraduate and precollege education. There are abundant opportunities for exploration in both research and instruction, not because we can build on a solid, existing foundation, but because we know so little. Similarly, challenges still exist in bringing this broadened perspective into productive outcomes in CT-integrated research and instruction. For example, <ref type="bibr" target="#b1">Angeli and Giannakos (2020)</ref> recently summarized some challenges such as specifying CT competencies for different grades or student development levels, developing and using pedagogical approaches for teaching CT, teacher training in CT and CT education, and CT assessment. Each of these challenges will indeed require tremendous effort, in particular with respect to assessment and teacher education in CT and CT instruction. The same is the case for specifying CT competencies that serve as a foundation for curriculum, instruction, and assessment in CT. Similar efforts on learning trajectories in mathematics and their application in early childhood mathematics interventions may provide us hints for what it may take for such a development <ref type="bibr" target="#b11">(Clements and Sarama 2011;</ref><ref type="bibr" target="#b12">Daro et al. 2011)</ref>. Nevertheless, recent trends in integrating CT into STEM education suggest an enthusiasm by many researchers and educators for pursuing opportunities while embracing challenges.</p><p>It is also important to point out that, in our view, CT with a broadened conception presents a model of thinking that is important for all students. STEM (including CS) education is uniquely positioned to develop students' (models thinking <ref type="bibr" target="#b39">(Li et al. 2019)</ref>. Integrating disciplinary education of STEM is a new topic, but it is very in educating new generations of students in the twenty-first century. The topic is also enticingly open, calling for broad, cross-disciplinary research collaborations. It is certainly a frontier topic for which this journal welcomes manuscript submissions <ref type="bibr" target="#b38">(Li 2018)</ref>.</p></div>			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Journal for STEM Education Research (2020) 3:147-166   </p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_1"><p>Email communication with Morgane Chevalier in Switzerland, July</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2020" xml:id="foot_2"><p></p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments We would like to thank <rs type="person">Lauren A. Barth-Cohen</rs>, <rs type="person">Morgane Chevalier</rs>, and <rs type="person">Pratim Sengupta</rs> for their valuable feedback on an earlier version of this editorial.</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Publisher's Note</head><p>Springer Nature remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Turtle geometry: The computer as a medium for exploring mathematics</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Abelson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1981">1981</date>
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Computational thinking education: Issues and challenges</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Angeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Giannakos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="page">106185</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Bringing computational thinking to K-12: What is involved and what is the role of the computer science education community?</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stephenson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<publisher>ACM Inroads</publisher>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="48" to="54" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Computational thinking: A digital age skill for everyone</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Harrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Conery</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Learning and Leading with Technology</title>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="20" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Interpreting and navigating multiple representations for computational thinking in a robotics programing environment</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Barth-Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Eltoukhy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J STEM Educ Res</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="119" to="147" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Computational thinking in practice: How STEM professionals use CT in their work</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Beheshti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weintrop</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Swanson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Orton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Horn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wilensky</surname></persName>
+		</author>
+		<ptr target="https://ccl.northwestern.edu/2017/Beheshtietal.pdf" />
+		<imprint>
+			<date type="published" when="2017-04-02">2017. April 2, 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Assessment design patterns for computational thinking practices in secondary computer science: A first look</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bienkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Snow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Rutstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<ptr target="http://pact.sri.com/resources" />
+	</analytic>
+	<monogr>
+		<title level="s">SRI technical report</title>
+		<imprint>
+			<date type="published" when="2015-03-28">2015. March 28, 2020</date>
+			<pubPlace>Menlo Park, CA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">How computational models can help unlock biological systems</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Brodland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Seminars in Cell &amp; Developmental Biology</title>
+		<imprint>
+			<biblScope unit="page" from="62" to="73" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Changing a generation&apos;s way of thinking: Teaching computational thinking through programming</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Buitrago Flórez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Casallas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hernández</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Reyes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Restrepo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Danies</surname></persName>
+		</author>
+		<idno type="DOI">10.3102/0034654317710096</idno>
+		<ptr target="https://doi.org/10.3102/0034654317710096" />
+	</analytic>
+	<monogr>
+		<title level="j">Review of Educational Research</title>
+		<imprint>
+			<biblScope unit="volume">87</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="834" to="860" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Achieving technological literacy: A national imperative</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W</forename><surname>Bybee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Technology Teacher</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="23" to="28" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Fostering computational thinking through educational robotics: A model for creative computational problem solving</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chevalier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Giang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Piatti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mondada</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s40594-020-00238-z</idno>
+		<ptr target="https://doi.org/10.1186/s40594-020-00238-z" />
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of STEM Education</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">39</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Committee on STEM Education, National Science &amp; Technology Council, the White House</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Clements</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sarama</surname></persName>
+		</author>
+		<ptr target="https://www.whitehouse.gov/wp-content/uploads/2018/12/STEM-Education-Strategic-Plan-2018" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">333</biblScope>
+			<biblScope unit="page" from="968" to="970" />
+			<date type="published" when="2011">2011. 2018. February 18, 2020</date>
+			<pubPlace>Washington, DC</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Charting a course for success: America&apos;s strategy for STEM education</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">P</forename><surname>Daro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>Mosher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Corcoran</surname></persName>
+		</author>
+		<ptr target="http://repository.upenn.edu/cpre_researchreports/60" />
+		<title level="m">Learning trajectories in mathematics: A foundation for standards, curriculum, assessment, and instruction. CPRE Research Reports</title>
+		<imprint>
+			<date type="published" when="2011-07-26">2011. July 26, 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Daugherty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The overlooked STEM imperatives: Technology and engineering</title>
+		<meeting><address><addrLine>Reston</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="18" to="25" />
+		</imprint>
+	</monogr>
+	<note>The &quot;T&quot; and &quot;E&quot; in STEM. In ITEEA</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Is computer science science?</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Denning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="27" to="31" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Computing is a natural science</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Denning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="13" to="18" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">The profession of IT beyond computational thinking</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Denning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="page" from="28" to="30" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Remaining trouble spots computational thinking</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Denning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="33" to="39" />
+			<date>June</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Development of mechanistic reasoning and multilevel explanations of ecology in third grade using agent-based models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Farris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/10986065.2018.1403544</idno>
+		<ptr target="https://doi.org/10.1080/10986065.2018.1403544" />
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Thinking and Learning</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="3" to="31" />
+			<date type="published" when="2000">2016. 2000. 2018</date>
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Science Education</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">An overview of boxer</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Abelson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ploger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mathematical Behavior</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="15" />
+			<date type="published" when="1991">1991</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Science education in three-part harmony: Balancing conceptual, epistemic, and social learning goals</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Duschl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Review of Research in Education</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="268" to="291" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">On MTL&apos;s second milestone: Exploring computational thinking and mathematics learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>English</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Thinking and Learning</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="2" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Learning to interpret measurement and motion in fourth grade computational modeling</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Farris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science &amp; Education</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="927" to="956" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Toward computational apprenticeship: Bringing a constructivist agenda to computational pedagogy</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">W</forename><surname>Fennell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Lyon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Madamanchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Magana</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/jee.20316</idno>
+		<ptr target="https://doi.org/10.1002/jee.20316" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Engineering Education</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Debuggems to assess student learning in etextiles</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Fields</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Searle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">B</forename><surname>Kafai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Min</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 43rd SIGCSE Technical Symposium on Computer Science Education</title>
+		<meeting>the 43rd SIGCSE Technical Symposium on Computer Science Education<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Five major shifts in 100 years of engineering education</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Froyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Wankat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/JPROC.2012.2190167</idno>
+		<ptr target="https://doi.org/10.1109/JPROC.2012.2190167" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE</title>
+		<meeting>the IEEE</meeting>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="page" from="1344" to="1360" />
+		</imprint>
+	</monogr>
+	<note>Special Centennial Issue</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Climate risk management requires explicit representation of societal trade-offs</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Garner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Reed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Keller</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10584-016-1607-3</idno>
+		<ptr target="https://doi.org/10.1007/s10584-016-1607-3" />
+	</analytic>
+	<monogr>
+		<title level="j">Climatic Change</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="page" from="713" to="723" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Computational thinking in K-12: A review of the state of the field</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Educational Researcher</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="38" to="43" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Computational thinking: A competency whose time has come</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computer science education: Perspectives on teaching and learning in school</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Sentance</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Barendsen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Schulte</surname></persName>
+		</editor>
+		<meeting><address><addrLine>London</addrLine></address></meeting>
+		<imprint>
+			<publisher>Bloomsbury Academic</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="19" to="38" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Growing computer science education into a STEM education discipline</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Guzdial</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Morrison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="31" to="33" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Software design as a learning environment</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Harel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Papert</surname></persName>
+		</author>
+		<ptr target="http://dailypapert.com/wp-content/uploads/2015/10/Software-Design-as-a-Learning-Environment.pdf" />
+	</analytic>
+	<monogr>
+		<title level="j">Epistemology &amp; Learning Memo</title>
+		<imprint>
+			<date type="published" when="1990-04-02">1990. April 2, 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">How to learn and how to teach computational thinking: Suggestions based on a review of the literature</title>
+		<author>
+			<persName><forename type="first">T.-C</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S.-C</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y.-T</forename><surname>Hung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers &amp; Education</title>
+		<imprint>
+			<biblScope unit="volume">126</biblScope>
+			<biblScope unit="page" from="296" to="310" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Publication trends over 10 years of computational thinking research</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Ilic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">I</forename><surname>Haseski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Tugtekin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Contemporary Educational Technology</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="131" to="153" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A framework for computational thinking based on a systematic research review</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Kalelioglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gülbahar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kukul</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Modern Computing</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="583" to="596" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Computational thinking in the STEM disciplines: Foundations and research highlights</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Khine</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Computational thinking from a disciplinary perspective: Integrating computational thinking in K-12 science, technology, engineering, and mathematics education</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malyn-Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Science Education and Technology</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Designing to develop disciplinary dispositions: Modeling natural systems</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Lehrer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Psychologist</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="759" to="771" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Robust decision making (RDM)</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Lempert</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-05252-2_2</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-05252-2_2" />
+	</analytic>
+	<monogr>
+		<title level="m">Decision making under deep uncertainty</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Marchau</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Walker</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Bloemen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">&amp;</forename><forename type="middle">S</forename><surname>Popper</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="23" to="51" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Journal for STEM education research -Promoting the development of interdisciplinary research in STEM education</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s41979-018-0009-z</idno>
+		<ptr target="https://doi.org/10.1007/s41979-018-0009-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal for STEM Education Research</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="1" to="6" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Expertise in mathematics instruction: An international perspective</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="middle">Y</forename><surname>Springer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schoenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Grasser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Benson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Duschl</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s41979-019-00014-x</idno>
+		<ptr target="https://doi.org/10.1007/s41979-019-00014-x" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal for STEM Education Research</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2011">2011. 2019</date>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+	<note>On thinking and STEM education</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Computational thinking is more about thinking than computing</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Disessa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Grasser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Benson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Duschl</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s41979-020-00030-2</idno>
+		<ptr target="https://doi.org/10.1007/s41979-020-00030-2" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal for STEM Education Research</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Research and trends in STEM education: A systematic review of journal publications</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Froyd</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s40594-020-00207-6</idno>
+		<ptr target="https://doi.org/10.1186/s40594-020-00207-6" />
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of STEM Education</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">11</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Thinking about computational thinking</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Fletcher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGCSE Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="260" to="264" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Review on teaching and learning of computational thinking through programming: What is next for K-12?</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Lye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H L</forename><surname>Koh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="51" to="61" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Application of the occupational analysis of computational thinkingenabled STEM professionals as a program assessment tool</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malyn-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Computational Science Education</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="2" to="10" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Developing a framework for computational thinking from a disciplinary perspective</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malyn-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>In</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Andone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">U</forename><surname>Crick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Hoppe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Looi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Milrad</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Sheldon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Computational Thinking Education</title>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Shih</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><forename type="middle">F</forename><surname>Sin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Tissenbaum</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Vahrenhold</surname></persName>
+		</editor>
+		<meeting>the International Conference on Computational Thinking Education</meeting>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+	<note>Hong Kong: The Education University of Hong Kong</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Characterizing computational adaptive expertise</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mckenna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Linsenmeier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Glucksberg</surname></persName>
+		</author>
+		<ptr target="https://peer.asee.org/4415" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ASEE Annual Conference &amp; Exposition</title>
+		<meeting>the ASEE Annual Conference &amp; Exposition<address><addrLine>Pittsburgh, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2008-07-22">2008. July 22, 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Microworlds, objects first, computational thinking and programming</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Michaelson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computational thinking in the STEM disciplines</title>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Khine</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="31" to="48" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Connecting computational thinking and science in U.S. elementary classroom</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Severance</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Krajcik</surname></persName>
+		</author>
+		<editor>J. Anderson &amp; Y. Li</editor>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Integrated approaches to STEM education: An international perspective</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Galanter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Pribram</surname></persName>
+		</author>
+		<title level="m">Plans and the structure of behavior</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Holt, Rinehart &amp; Winston</publisher>
+			<date type="published" when="1960">1960</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Aiding the transition from novice to traditional programming environments</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Moors</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sheenan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of IDC 2017: ACM interaction design and children conference</title>
+		<meeting>IDC 2017: ACM interaction design and children conference<address><addrLine>Stanford University</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="509" to="514" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Resetting educational technology coursework for pre-service teachers: A computational thinking approach to the development of technological pedagogical content knowledge (TPACK)</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mouza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y.-C</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yilmaz Ozden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pollock</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Australasian Journal of Educational Technology</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="61" to="76" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Report of a workshop on the scope and nature of computational thinking</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Atkinson</surname></persName>
+		</author>
+		<idno>_ga=2.92886875.757421025.1591995042-70633712.1591995042</idno>
+		<ptr target="http://www2.itif.org/2016-computer-science-education" />
+	</analytic>
+	<monogr>
+		<title level="m">Information Technology &amp; Innovation Foundation report</title>
+		<meeting><address><addrLine>Washington, DC</addrLine></address></meeting>
+		<imprint>
+			<publisher>The National Academies Press</publisher>
+			<date type="published" when="2010">2016. June 2, 2020. 2010</date>
+		</imprint>
+	</monogr>
+	<note>The case for improving U.S. computer science education</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<monogr>
+		<title level="m" type="main">Report of a workshop on the pedagogical aspects of computational thinking</title>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<publisher>The National Academies Press</publisher>
+			<pubPlace>Washington, DC</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>National Research Council (NRC)</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<title level="m" type="main">Mindstorms: Children, computers, and powerful ideas</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Papert</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1980">1980</date>
+			<publisher>Basic Books</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Computer criticism vs. technocentric thinking</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Papert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Educational Researcher</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="22" to="30" />
+			<date type="published" when="1987">1987</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<monogr>
+		<title level="m" type="main">Computational science: Ensuring America&apos;s competitiveness (Report to the President</title>
+		<ptr target="https://www.nitrd.gov/pitac/reports/20050609_computational/computational.pdf" />
+		<imprint>
+			<date type="published" when="2005-02-02">2005. June 2005. February 2, 2020</date>
+			<publisher>National Coordination Office for Information Technology Research and Development</publisher>
+			<pubPlace>Washington, DC</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">TechCheck: Development and validation of an unplugged assessment of computational thinking in early childhood education</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Relkin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>De Ruiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">U</forename><surname>Bers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Science Education and Technology</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="482" to="498" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Teaching for robust understanding of essential mathematics</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Schoenfeld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Essential mathematics for the generation: What and students should</title>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Mcdougal</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="104" to="129" />
+		</imprint>
+		<respStmt>
+			<orgName>Tokyo Gagukei University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Integrating computational thinking with K-12 science education using agent-based computation: A theoretical framework</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Kinnebrew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Clark</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Education and Information Technologies</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="351" to="380" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Toward a phenomenology of computational thinking in STEM education</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dickes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Farris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computational thinking in the STEM disciplines: Foundations and research highlights</title>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Khine</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="49" to="72" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Demystifying computational thinking</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">J</forename><surname>Shute</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Asbell-Clarke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Educational Research Review</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="142" to="158" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Bringing computational thinking to STEM education</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">I</forename><surname>Swaid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Procedia Manufacturing</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="3657" to="3662" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">A content analysis of computational thinking research: An international publication trends and research typology</title>
+		<author>
+			<persName><forename type="first">K.-Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-L</forename><surname>Chou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-C</forename><surname>Tsai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Asia-Pacific Education Researcher</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="19" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Assessing computational thinking: A systematic review of empirical studies</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hadad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers &amp; Education</title>
+		<imprint>
+			<biblScope unit="volume">148</biblScope>
+			<biblScope unit="page">103798</biblScope>
+			<date type="published" when="2020">2020b</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">I broke your game!&quot;: Critique among middle schoolers designing computer games about climate change</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tucker-Raymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Puttick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cassidy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Harteveld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Troiano</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s40594-019-0194-z</idno>
+		<ptr target="https://doi.org/10.1186/s40594-019-0194-z" />
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of STEM Education</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">41</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<monogr>
+		<title level="m" type="main">Public Law 114-59: STEM Education Act of 2015</title>
+		<ptr target="https://www.congress.gov/114/plaws/publ59/PLAW-114publ59" />
+		<imprint>
+			<date type="published" when="2015-02-20">2015. February 20. 2020</date>
+			<publisher>U.S. Congress</publisher>
+			<pubPlace>Washington D.C</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<monogr>
+		<ptr target="https://www.ed.gov/stem" />
+		<title level="m">Science, Technology, Engineering, and Math, including Computer Science</title>
+		<imprint>
+			<publisher>U.S. Department of Education</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Comparing block-based and text-based programming in high school computer science classrooms</title>
+		<ptr target="https://www.nsf.gov/news/special_reports/csed/csforall.jsp" />
+	</analytic>
+	<monogr>
+		<title level="m">CS for All</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Weintrop</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Wilensky</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>U.S. National Science Foundation</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">18</biblScope>
+		</imprint>
+	</monogr>
+	<note>Article 3</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Defining computational thinking for mathematics and science classrooms</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weintrop</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Beheshti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Horn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Orton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Trouille</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wilensky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Science Education and Technology</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="127" to="147" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">The Fairy performance assessment: Measuring computational thinking in middle school</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Werner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Denner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Campe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Kawamoto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 43rd ACM Technical Symposium on Computer Science Education (SIGCSE &apos;12)</title>
+		<meeting>the 43rd ACM Technical Symposium on Computer Science Education (SIGCSE &apos;12)<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="page" from="215" to="220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<monogr>
+		<title level="m" type="main">President Trump signs memorandum for STEM education funding</title>
+		<author>
+			<persName><forename type="first">White</forename><surname>House</surname></persName>
+		</author>
+		<ptr target="https://www.whitehouse.gov/articles/president-trump-signs-memorandum-stem-education-funding/" />
+		<imprint>
+			<date type="published" when="2017-02-20">2017. February 20. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<monogr>
+		<title level="m" type="main">Running on empty: The failure to teach K-12 computer science in the digital age</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Sudol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stephenson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Stehlik</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<publisher>The Association for Computing Machinery and the Computer Science Teachers Association</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">Computational thinking</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="33" to="36" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">Computational thinking in elementary classrooms: Measuring teacher understanding of computational ideas for teaching science</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yadav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Krist</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Good</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">N</forename><surname>Caeli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computer Science Education</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="371" to="400" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<analytic>
+		<title level="a" type="main">Computational thinking in elementary and secondary teacher education</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yadav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mayfield</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hambrusch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Korb</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Computing Education</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note>Article 5</note>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<analytic>
+		<title level="a" type="main">Computational thinking for teacher education</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yadav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stephenson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="55" to="62" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<analytic>
+		<title level="a" type="main">Computational thinking test for beginners: Design and content validation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zapata-Cáceres</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Martín-Barroso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Román-González</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Global Engineering Education Conference</title>
+		<imprint>
+			<biblScope unit="page" from="1905" to="1914" />
+			<date type="published" when="2020">2020. 2020</date>
+			<publisher>IEEE</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

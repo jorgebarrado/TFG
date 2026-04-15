@@ -1,0 +1,676 @@
+{
+  "paper_slug": "2017_ct_development_computational_thinking_rg",
+  "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+  "rows": [
+    {
+      "index": 0,
+      "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+      "refextract": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": "1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314-330",
+        "authors": [
+          "Phillip L. Ackerman and Eric L. Rolfhus"
+        ],
+        "year": 2017,
+        "doi": "10.1037/0882-7974.14.2.314",
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "1"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone"
+            ],
+            "author": [
+              "Phillip L. Ackerman and Eric L. Rolfhus"
+            ],
+            "misc": [
+              "1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314-330",
+              "WiPSCE ’17, November 8-10,, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone"
+            ],
+            "doi": [
+              "doi:10.1037/0882-7974.14.2.314"
+            ],
+            "year": [
+              "2017"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 0,
+        "raw_input": "Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 1,
+      "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+      "refextract": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky.. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9-14",
+        "authors": [],
+        "year": 2017,
+        "doi": "10.1145/3017680",
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "2"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791"
+            ],
+            "misc": [
+              "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky.. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9-14",
+              "3017791"
+            ],
+            "doi": [
+              "doi:10.1145/3017680"
+            ],
+            "year": [
+              "2017"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 1,
+        "raw_input": "Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 2,
+      "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+      "refextract": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": "Association for Computing Machinery",
+        "authors": [
+          "A Model Curriculum"
+        ],
+        "year": 2003,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "3"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381."
+            ],
+            "misc": [
+              "Association for Computing Machinery",
+              "for K-12 Computer",
+              "Science: Final Report of the ACM K-12 Task",
+              "Force Curriculum Committee. ACM, New York. OCLC: 907036381"
+            ],
+            "author": [
+              "A Model Curriculum"
+            ],
+            "year": [
+              "2003"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 2,
+        "raw_input": "Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 3,
+      "raw_input": "Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+      "refextract": {
+        "index": 3,
+        "raw_input": "Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+        "title": "Anja Balanskat and Katja Engelhardt.. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct.)",
+        "authors": [],
+        "year": 2015,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "url": [
+            "http://www.eun.org/c/document_library/get_file?uuid="
+          ],
+          "linemarker": [
+            "4"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887"
+            ],
+            "misc": [
+              "Anja Balanskat and Katja Engelhardt.. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct.)",
+              "3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887"
+            ],
+            "url": [
+              "http://www.eun.org/c/document_library/get_file?uuid="
+            ],
+            "year": [
+              "2015"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 3,
+        "raw_input": "Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 3,
+        "raw_input": "Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 4,
+      "raw_input": "Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+      "refextract": {
+        "index": 4,
+        "raw_input": "Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+        "title": "and Mike Fellows.. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.)",
+        "authors": [
+          "Ian H. Witten"
+        ],
+        "year": 1998,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "5"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.)."
+            ],
+            "misc": [
+              "Tim Bell",
+              "and Mike Fellows.. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.)"
+            ],
+            "author": [
+              "Ian H. Witten"
+            ],
+            "year": [
+              "1998"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 4,
+        "raw_input": "Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 4,
+        "raw_input": "Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 5,
+      "raw_input": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+      "refextract": {
+        "index": 5,
+        "raw_input": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+        "title": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie.. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union",
+        "authors": [],
+        "year": 2016,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "url": [
+            "https://doi.org/10.2791/"
+          ],
+          "linemarker": [
+            "6"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158"
+            ],
+            "misc": [
+              "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie.. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union",
+              "792158"
+            ],
+            "url": [
+              "https://doi.org/10.2791/"
+            ],
+            "year": [
+              "2016"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 5,
+        "raw_input": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 5,
+        "raw_input": "Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 6,
+      "raw_input": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+      "refextract": {
+        "index": 6,
+        "raw_input": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+        "title": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez.. Computational thinking: Panorama of the Americas",
+        "authors": [],
+        "year": 2016,
+        "doi": "10.1109/siie.2016.7751839",
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "7"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839"
+            ],
+            "misc": [
+              "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez.. Computational thinking: Panorama of the Americas",
+              "1-6"
+            ],
+            "publisher": [
+              "IEEE"
+            ],
+            "doi": [
+              "doi:10.1109/SIIE.2016.7751839"
+            ],
+            "year": [
+              "2016"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 6,
+        "raw_input": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 6,
+        "raw_input": "Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 7,
+      "raw_input": "Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+      "refextract": {
+        "index": 7,
+        "raw_input": "Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+        "title": "Karen Brennan and Mitchel Resnick.. New frameworks for studying and assessing the development of computational thinking. In Proceedings of theannual meeting of the American Educational Research Association. Vancouver, Canada, 1-25",
+        "authors": [],
+        "year": 2012,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "url": [
+            "http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf"
+          ],
+          "linemarker": [
+            "8"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf"
+            ],
+            "misc": [
+              "Karen Brennan and Mitchel Resnick.. New frameworks for studying and assessing the development of computational thinking. In Proceedings of theannual meeting of the American Educational Research Association. Vancouver, Canada, 1-25"
+            ],
+            "url": [
+              "http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf"
+            ],
+            "year": [
+              "2012"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 7,
+        "raw_input": "Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 7,
+        "raw_input": "Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    }
+  ]
+}

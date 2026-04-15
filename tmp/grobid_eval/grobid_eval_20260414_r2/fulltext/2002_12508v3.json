@@ -1,0 +1,1233 @@
+{
+  "paper_slug": "2002_12508v3",
+  "pdf_name": "2002.12508v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2002.12508v3.pdf",
+  "input_bucket": "clean_input",
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 44,
+    "title_non_empty": 44,
+    "authors_non_empty": 44,
+    "year_non_empty": 43,
+    "doi_non_empty": 31,
+    "likely_valid": 44,
+    "likely_garbage": 0,
+    "usable_bibliography": true,
+    "inline_citation_count": 67,
+    "section_count": 18
+  },
+  "parsed": {
+    "mode": "fulltext",
+    "metadata": {
+      "title": "Near-optimal ground state preparation",
+      "authors": [
+        "Lin, Lin",
+        "Tong, Yu"
+      ],
+      "abstract": "Preparing the ground state of a given Hamiltonian and estimating its ground energy are important but computationally hard tasks. However, given some additional information, these problems can be solved efficiently on a quantum computer. We assume that an initial state with non-trivial overlap with the ground state can be efficiently prepared, and the spectral gap between the ground energy and the first excited energy is bounded from below. With these assumptions we design an algorithm that prepares the ground state when an upper bound of the ground energy is known, whose runtime has a logarithmic dependence on the inverse error. When such an upper bound is not known, we propose a hybrid quantum-classical algorithm to estimate the ground energy, where the dependence of the number of queries to the initial state on the desired precision is exponentially improved compared to the current state-ofthe-art algorithm proposed in [Ge et al. 2019]. These two algorithms can then be combined to prepare a ground state without knowing an upper bound of the ground energy. We also prove that our algorithms reach the complexity lower bounds by applying it to the unstructured search problem and the quantum approximate counting problem."
+    },
+    "sections": [
+      {
+        "head": "Introduction",
+        "paragraphs": [
+          "Estimating ground energy and obtaining information on the ground state of a given quantum Hamiltonian are of immense importance in condensed matter physics, quantum chemistry, and quantum information. Classical methods suffer from the exponential growth of the size of Hilbert space, and therefore quantum computers are expected to be used to overcome this difficulty. However even for quantum computer, estimating the ground energy is a hard problem: deciding whether the smallest eigenvalue of a generic local Hamiltonian is greater than b or smaller than a for some a < b is QMA-complete [1,27,29,39].",
+          "Therefore to make the problem efficiently solvable we need more assumptions. We denote the Hamiltonian we are dealing with by H, and consider its spectral decomposition",
+          "The key assumption is that we have an initial state |φ 0 which can be efficiently prepared by an oracle U I , and has some overlap with the ground state |ψ 0 lower bounded by γ. This is a reasonable assumption in many practical scenarios. For instance, even for strongly-correlated molecules in quantum chemistry, there is often a considerable overlap between the true ground state and the Hartree-Fock state. The latter can be trivially prepared in the molecular orbital basis, and efficiently prepared in other basis [30]. For the moment we also assume the spectral gap is bounded from below: λ 1 -λ 0 ≥ ∆.",
+          "With these assumptions we can already use phase estimation coupled with amplitude amplification [12] to prepare the ground state, if we further know the ground energy to high precision. To our knowledge, the most comprehensive work on ground state preparation and ground state energy estimation was done by Ge et al. [21], which provided detailed complexity estimates for well-known methods such as phase estimation, and proposed new methods to be discussed below. As analyzed in [21,Appendix A], in order to prepare the ground state to fidelity 1 1 -, the runtime of the controlled-time-evolution of the Hamiltonian is O(1/(γ 2 ∆ )) 2 , and the number of queries to U I is O(1/γ), assuming the spectral norm of H is bounded by a constant. This is however far from optimal. Poulin and Wocjan [42] proposed a method that, by executing the inverse of phase estimation to filter out the unwanted components in the initial state, can prepare a state whose energy is in a certain given range. A different choice of parameters yields a way to prepare the ground state to fidelity 1 -by running the controlled-time-evolution of the Hamiltonian with O(1/(γ∆) log(1/ )) runtime, and using O(1/γ) queries to U I [21,Appendix C].",
+          "A key difference between ground state preparation and Hamiltonian simulation, where significant progress has been made in recent years [8,9,17,32,33,34,35], is its non-unitary nature. The recent development of linear combination of unitaries (LCU) method [9,15] provided a versatile tool to apply non-unitary operators. Using LCU, Ge et al. proposed a new method to filter the initial state by applying a linear combination of time-evolutions of different time length [21], which achieves the same complexity, up to logarithmic factors, as the modified version of Poulin and Wocjan's method discussed above.",
+          "All of the above methods prepare the ground state assuming the ground energy is known to high precision. When the ground energy is unknown, Ge et al. proposed a method to estimate the ground energy using a search method called minimum label finding [21]. This method can estimate the ground energy to precision h by running the controlledtime-evolution of the Hamiltonian for O(1/(γh 3/2 )) 3 , and querying U I O(1/(γ √ h)) times. It is worth noting that their method requires h = O(∆), and therefore is very expensive when the gap is extremely small. When the ground energy is not known a priori , Ge et al. proposed a method to first estimate the ground energy and then apply the LCU approach.",
+          "In recent years several hybrid quantum-classical algorithms have been developed to estimate the ground energy, or to prepare the ground state, or both. The variational quantum eigenvalue solver (VQE) [41] has gained much attention recently because of its low requirement for circuit depth and its variational structure. However the exact complexity of this algorithm is not clear because it relies on a proper choice of ansatz and needs to solve a non-convex optimization problem. Other such algorithms include quantum imaginary-time evolution, quantum Lanczos [37], and quantum filter diagonalization [40,44]. Their complexities are either quasi-polynomial or unknown.",
+          "The recent development of block-encoding [9] and quantum signal processing (QSP) [23,33,36] enables us to apply non-unitary operators, specifically polynomials of a blockencoded matrix efficiently. It uses a minimal number of ancilla qubits, and avoids the Hamiltonian simulation. These will be the basic tools of this work, of which we give a brief introduction below.",
+          "Block-encoding is a powerful tool to represent a non-unitary matrix in the quantum circuit. A matrix A ∈ C N ×N where N = 2 n can be encoded in the upper-left corner of an 1 In this work, the fidelity between states |x , |y is defined to be | x|y |. 2 In this work the notation O(f ) means O(f poly log(f )) unless otherwise stated. 3 In [21], the meaning of the notation O(•) is different from that in our work. In particular, O(•) in [21] hides all factors that are poly-logarithmic in 1/h, 1/ , 1/γ, and 1/∆, regardless of what is inside the parentheses. We preserve their notation when citing their results since these factors do not play an important role when comparing the complexities of our methods."
+        ]
+      },
+      {
+        "head": "(m + n)-qubit unitary matrix if",
+        "paragraphs": [
+          "(1)",
+          "In this case we say U is an (α, m, )-block-encoding of A. Many matrices of practical interests can be efficiently block-encoded. In particular we will discuss the block-encoding of Hamiltonians of physical systems in Section 7.",
+          "Using the block-encoding of a Hermitian A, QSP enables us to construct blockencodings for a large class of polynomial eigenvalue transformations of A. We pay special attention to even or odd polynomials with real coefficients, because we only apply this type of polynomial eigenvalue transformation in this work. Also for simplicity we assume the block-encoding is done without error. [23,Theorem 2] enables us to perform eigenvalue transformation of A for polynomials of definite parity (even or odd).",
+          "Theorem 1 (QSP for polynomials of definite parity). Let U be an (α, m, 0)-block-encoding of a Hermitian matrix A. Let P ∈ R[x] be a degree-even or odd real polynomial and |P (x)| ≤ 1 for any x ∈ [-1, 1]. Then there exists an (1, m + 1, 0)-block-encoding U of P (A/α) using queries of U , U † , and O((m + 1) ) other primitive quantum gates. Theorem 2] provides a singular value transformation for any square matrix A and polynomials of definite parity. When A is a Hermitian matrix, the eigenvalue transformation is the same as the singular value transformation [23,Page 203]. A related statement in the same paper is [23,Theorem 31], which describes the eigenvalue transformation of a Hermitian matrix for an arbitrary polynomial, by means of a linear combination of two polynomials of even and odd parities respectively."
+        ]
+      },
+      {
+        "head": "Remark 2. [23,",
+        "paragraphs": [
+          "Constructing the quantum circuit for QSP requires computing a sequence of phase factors beforehand, and there are classical algorithms capable of doing this [25]. Some recent progress has been made to efficiently compute phase factors for high-degree polynomials to high precision [13,19]. In this work, unless otherwise specified, we assume the phase factors are computed without error.",
+          "Using the tools introduced above, we assume the Hamiltonian H is given in its (α, m, 0)block-encoding U H . This, together with U I , are the two oracles we assume we are given in this work. QSP enables us to filter eigenstates using fewer qubits than LCU. In [31] a filtering method named optimal eigenstate filtering is introduced. It is based on an explicitly constructed optimal minimax polynomial, and achieves the same asymptotic complexity, ignoring poly-logarithmic factors, as the method by Ge et al. when applied to the ground state preparation problem if the ground energy is known exactly.",
+          "In this work we first develop a filtering method that filters out all eigenstates corresponding to eigenvalues above a certain threshold. This filtering method enables us to prepare the ground state of a Hamiltonian with spectral gap bounded away from zero when only an upper bound of the ground energy is known, unlike in the filtering methods discussed above which all require either exact value or high-precision estimate of the ground energy. Our filtering method has an exponentially improved dependence on precision compared to Kitaev's phase estimation [28] and uses fewer qubits compared to other variants of the phase estimation algorithm [21,42]. This filtering method, applied to the initial state given in our assumption, also enables us to tell whether the ground energy is smaller than a or greater than b for some b > a, with high probability. Therefore a binary search yields a ground energy estimate with success probability arbitrarily close to one. We then combine the filtering method and ground energy estimation to prepare the ground state when no non-trivial bound for the ground energy is known. A comparison of the query complexities between the method in our work and the corresponding ones in [21], which to our best knowledge achieve state-or-the-art query complexities, are shown in Table 1."
+        ]
+      },
+      {
+        "head": "Preparation (bound known)",
+        "paragraphs": [
+          "Ground energy Preparation (bound unknown)  [34]. The usage of the notation O is [21] different from that in our work, as explained in footnote 3.",
+          "From the query complexities in Table 1 we can see our method for ground energy estimation achieves a exponential speedup in terms of the dependence of number of queries to U I on the ground energy estimate precision h and a speedup of 1/ √ h factor in the dependence of number of queries to U H on the precision. Moreover, Ge et al. assumes in their work that the precision h = O(∆), while we make no such assumptions. This gives our algorithm even greater advantage when the gap is much smaller than desired precision. This becomes useful in the case of preparing a low energy state (not necessarily a ground state). Because Ge et al. used a slightly different query assumption, i.e. access to time-evolution rather than block-encoding, when computing the complexities for methods in [21] in Table 1 we assume the Hamiltonian simulation is done with O(αt) queries to U H , and the error is negligible. This can be achieved using the Hamiltonian simulation in [34], and cannot be asymptotically improved because of the complexity lower bound proved in [9]. Therefore the comparison here is fair even though our work makes use of a different oracle. Also [21] assumed a scaled Hamiltonian H with its spectrum contained in [0, 1]. We do not make such an assumption, and therefore the α factor should be properly taken into account as is done in Table 1.",
+          "Organization: The rest of the paper is organized as follows. In Section 2 we use QSP to construct block-encodings of reflectors and projectors associated with eigen-subspaces. In Section 3 we use the projectors to prepare ground state when an upper bound of the ground energy is given. In Section 4 we introduce the ground energy estimation algorithm, a hybrid quantum-classical algorithm based on the binary search, and use it to prepare the ground state when no ground energy upper bound is known a priori . In Section 5 we show the dependence of our query complexities on the overlap and gap is essentially optimal by considering the unstructured search problem. We also show the dependence of our ground energy estimation algorithm on the precision is nearly optimal by considering the quantum approximate counting problem. In Section 6 we use our methods to prepare low-energy states when the spectral lower gap is unknown, or even when the ground state is degenerate. In Section 7 we discuss practical issues and future research directions."
+        ]
+      },
+      {
+        "head": "Block-encoding of reflector and projector",
+        "paragraphs": [
+          "A key component in our method is a polynomial approximation of the sign function in the domain",
+          ". The error scaling of the best polynomial approximation has been studied in [20], and an explicit construction of a polynomial with the same error scaling is provided in [33] based on the approximation of the erf function. We quote [23,Lemma 14] here with some small modification: Lemma 3 (Polynomial approximation of the sign function). For all 0 < δ < 1, 0 < < 1, there exists an efficiently computable odd polynomial S(•; δ, Lemma 14] we have rescaled the interval from [-2, 2] to [-1, 1], and this does not result in any substantial change.",
+          "When we have the (α, m, 0)-block-encoding of a Hermitian matrix",
+          "we can construct a (α + |µ|, m + 1, 0)-block-encoding of matrix H -µI using of [23,Lemma 29] for any µ ∈ R. Then using QSP, by Theorem 1, we can obtain an (1, m + 2, 0)-block-encoding of -S( H-µI α+|µ| ; δ, ) for any δ and . If we assume further that ∆/2 ≤ min k |µ -λ k |, then we let δ = ∆ 4α , and by Lemma 3 all the eigenvalues of -S( H-µI α+|µ| ; δ, ) are -close to either 0 or 1. Therefore -S( H-µI α+|µ| ; δ, ) is -close, in operator norm, to the reflector about the direct sum of eigen-subspaces corresponding to eigenvalues smaller than µ:",
+          "and thus the block-encoding is also an (1, m + 2, )-block-encoding of R <µ . We denote this block-encoding by REF(µ, δ, ). We omitted the dependence on H because H as well as its block-encoding is usually fixed in the rest of the paper.",
+          "In the above discussion we have used QSP in a black-box manner. For concreteness, we present a single-qubit illustrative example to demonstrate how to use a block-encoded Hamiltonian to construct the reflector in Appendix A.",
+          "Because our goal is to prepare the ground state, we will use the projector more often than the reflector. Now we construct a block-encoding of projector using REF(µ, δ, ) by the following circuit",
+          "where H is the Hadamard gate, and we denote this circuit as PROJ(µ, δ, ). Note that",
+          "and we have",
+          "Here P <µ is the projector into the direct sum of eigen-subspaces corresponding to eigenvalues smaller than µ",
+          "Therefore PROJ(µ, δ, ) is an (1, m + 3, /2)-block-encoding of P <µ . In fact this can still be seen as an application of linear combination of block encoding [23, Lemma 29], using the relation P <µ = 1 2 (R <µ + I). We use the following lemma to summarize the results Lemma 5 (Reflector and projector). Given a Hermitian matrix H with its (α, m, 0)block-encoding U H , with the guarantee that µ ∈ R is separated from the spectrum of H by a gap of at least ∆/2, we can construct an (1, m + 2, )-block-encoding of R <µ , and an (1, m + 3, /2)-block-encoding of P <µ , both using O( α ∆ log( 1)) applications of U H and U † H , and O( mα ∆ log( 1)) other one-and two-qubit gates. We remark that for the block-encoding PROJ(µ, δ, ), even a failed application of it can give us potentially useful information. We have",
+          "where P >µ = I -P <µ and |E satisfies |E ≤ . Thus when we apply the block-encoding and measure the first two registers, i.e. the first m + 3 qubits, we have probability at least 1-",
+          "2 to obtain an outcome with either 0 or 1 followed by (m+2) 0's. In the former case the projection has been successful, and in the latter case we have obtained an approximation of P >µ |φ .",
+          "If we do not treat the output of 1 followed by m + 2 0's as failure then there is another interpretation of the circuit PROJ(µ, δ, ): this is an approximate projective measurement {P <µ , P >µ }. In fact the whole circuit can be seen as phase estimation on a reflector, which needs only one ancilla qubit."
+        ]
+      },
+      {
+        "head": "Algorithm with a priori ground energy bound",
+        "paragraphs": [
+          "With the approximate projector developed in the previous section we can readily design an algorithm to prepare the ground state. We assume we have the Hamiltonian H given through its block-encoding as in the last section. If we are further given an initial state |φ 0 prepared by a unitary U I , i.e. U I |0 n = |φ 0 , and the promises that for some known γ > 0, µ, and ∆, we have (P1) Lower bound for the overlap: | φ 0 |ψ 0 | ≥ γ, (P2) Bounds for the ground energy and spectral gap:",
+          "Here µ is an upper bound for the ground energy, ∆ is a lower bound for the spectral gap, and γ is a lower bound for the initial overlap. Now suppose we want to prepare the ground state to precision , we can use Lemma 5 to build a block-encoding of the projector P <µ = |ψ 0 ψ 0 |, and then apply it to |φ 0 which we can prepare. This will give us something close to |ψ 0 . We use fidelity to measure how close we can get. To achieve 1 -fidelity we need to use circuit PROJ(µ, ∆/4α, γ ), and we denote,",
+          "then the resulting fidelity will be",
+          "Here we have used",
+          "This is when we have a successful application of the block-encoding. The success probability is",
+          "With amplitude amplification [12] we can boost the success probability to Ω(1) with O( 1 γ ) applications of PROJ(µ, ∆/4α, γ ) and its inverse, as well as O( m γ ) other one-and twoqubit gates. Here we are describing the expected complexity since the procedure succeeds with some constant probability. In amplitude amplification we need to use a reflector similar to the oracle used in Grover's search algorithm [24]. Instead of constructing a reflector from PROJ(µ, ∆/4α, γ ) we can directly use REF(µ, ∆/4α, γ ) constructed in the previous section.",
+          "We summarize the results in the following theorem Theorem 6 (Ground state preparation with a priori ground energy bound). Suppose we have Hamiltonian"
+        ]
+      },
+      {
+        "head": "Algorithm without a priori ground energy bound",
+        "paragraphs": [
+          "Next we consider the case when we are not given a known µ to bound the ground energy from above. All other assumptions about H and its eigenvalues and eigenstates are identical to the previous sections. The basic idea is to test different values for µ and perform a binary search. This leads to a quantum-classical hybrid method that can estimate the ground energy as well as preparing the ground state to high precision. All eigenvalues must be in the interval [-α, α], thus we first partition [-α, α] by grid points -α = x 0 < x 1 < . . . < x G = α, where x k+1 -x k = h for all k. Then we attempt to locate λ 0 in a small interval between two grid points (not necessarily adjacent, but close) through a binary search. To do a binary search we need to be able to tell whether a given x k is located to the left or right of λ 0 . Because of the random nature of measurement we can only do so correctly with some probability, and we want to make this probability as close to 1 as possible. This is achieved using a technique we call binary amplitude estimation.",
+          "Lemma 7 (Binary amplitude estimation). Let U be a unitary that acts on two registers, the first register indicating success or failure. Let A = ( 0| ⊗ I)U (|0 |0 ) be the success amplitude. Given γ 0 and γ 1 , ∆ := γ 1 -γ 0 > 0, provided that A is either smaller than γ 0 or greater than γ 1 , we can correctly distinguish between the two cases, i.e. output 0 for the former and 1 for the latter, with probability 1 -δ using O((1/∆) log(1/δ)) applications of (controlled-) U and its inverse.",
+          "Proof. The proof is essentially identical to the proof for gapped phase estimation in [2,15]. We can perform amplitude estimation up to error ∆/4 with O(1/∆) applications of U and U † . This has a success probability of 8/π 2 according to Theorem 12 of [12]. We turn the estimation result into a boolean indicating whether it is larger or smaller than (γ 0 + γ 1 )/2. The boolean is correct with probability at least 8/π 2 . Then we do a majority voting to boost this probability. Chernoff bound guarantees that to obtain a 1 -δ probability of getting the correct output we need to repeat O(log(1/δ)) times. Therefore in total we need to run U and U † O((1/∆) log(1/δ)) times.",
+          "We then apply binary amplitude estimation to the block-encoding of the projector defined in (2) PROJ(x k , h/2α, ) for some precision to be chosen. We denote the amplitude of the \"good\" component after applying block-encoding by",
+          "which satisfies the following:",
+          "We can then let = γ/2, the two amplitudes are separated by a gap lower bounded by γ/2. Therefore we can run the binary amplitude estimation, letting U in Lemma 7 be",
+          "to correctly distinguish the two cases where λ 0 ≤ x k-1 and λ 0 ≥ x k+1 with probability 1 -δ, by running PROJ(x k , h/2α, ), U I , and their inverses O((1/γ) log(1/δ)) times. The output of the binary amplitude estimation is denoted by B k .",
+          "We then define E as the event that an error occurs in the final result of binary amplitude estimation when we are computing B k for some k such that x k+1 < λ 0 or x k-1 > λ 0 in our search process. All future discussion is conditional on E c meaning that there is no error in binary amplitude estimation for B k when x k+1 < λ 0 or x k-1 > λ 0 . This has a probability that is at least (1 -δ) R where R is the number of times binary amplitude estimation is run.",
+          "Conditional on E c , almost surely (with probability 1) B k = 1 when λ 0 ≤ x k-1 and B k = 0 when λ 0 ≥ x k+1 . Therefore B k = 0 tells us λ 0 > x k-1 and B k = 1 tells us λ 0 < x k+1 . B k and B k+1 combined give us the information as shown in Table 2.",
+          "Run binary amplitude estimation to get B k and B k+1 .",
+          "Using the Table 2 we can do the binary search as outlined in Algorithm 1. For the -th step in Algorithm 1 we denote the integer variables U and L by U and L . In all four outcomes for (B k , B k+1 ), if the algorithm does not terminate at this step, then the new U +1 -L +1 will be at most (U -L )/2 + 1. Since U 0 -L 0 = G at the very beginning, we can show inductively U -L ≤ (G -2)/2 + 2. Therefore when ≥ log 2 (G -2) we have U -L ≤ 3. Thus the algorithm must terminate in log 2 (G) = O(log(α/h)) steps. The output we denote by L and U . They satisfy x L < λ 0 < x U and U -L ≤ 3.",
+          "If we want the whole procedure to be successful with probability at least 1 -ϑ, then we need",
+          "we only need, for small ϑ, δ ≤ ϑ 2 log 2 (4α/h) .",
+          "Algorithm 1 enables us to locate λ 0 within an interval of length at most 3h. In total we need to run binary amplitude estimation at most O(log(α/h)) times. Each amplitude estimation queries PROJ(x k , h/2α, ) and U I O((1/γ) log(1/δ)) times, where = γ/2. Therefore the number of queries to U H and U I are respectively",
+          "In particular, in the procedure above we did not use (P2) but only used (P1). Therefore we do not need to assume the presence of a gap. The result can be summarized into the following theorem:"
+        ]
+      },
+      {
+        "head": "Theorem 8 (Ground energy). Suppose we have Hamiltonian",
+        "paragraphs": [
+          ", where λ k ≤ λ k+1 , given through its (α, m, 0)-block-encoding U H . Also suppose we have an initial state |φ 0 prepared by circuit U I , as well as the promise (P1). Then the ground energy can be estimated to precision h with probability 1 -ϑ with the following costs:"
+        ]
+      },
+      {
+        "head": "Other one-and two-qubit gates:",
+        "paragraphs": [
+          "The extra O(log(1/γ)) qubits needed come from amplitude estimation, which uses phase estimation. If we use Kitaev's original version of phase estimation using only a single qubit [28], we can reduce the number of extra qubits to O (1). With Theorem 8 we can then use Algorithm 1 to prepare the ground state without knowing an upper bound for the ground energy beforehand, when in addition to (P1) we have a lower bound for the spectral gap: (P2') Bound for the spectral gap: λ 1 -λ 0 ≥ ∆.",
+          "We first run Algorithm 1 to locate the ground energy in an interval [x L , x U ] of length at most ∆. Then we simply apply PROJ((x L + x U )/2, ∆/4α, γ ) to |φ 0 . This will give us an approximate ground state with at least 1 -fidelity. Therefore we have the following corollary:"
+        ]
+      },
+      {
+        "head": "Corollary 9 (Ground state preparation without a priori bound). Suppose we have Hamiltonian",
+        "paragraphs": [
+          ", where λ k ≤ λ k+1 , given through its (α, m, 0)-blockencoding U H . Also suppose we have an initial state |φ 0 prepared by circuit U I , as well as the promises (P1) and (P2'). Then the ground state can be can be prepared to fidelity 1with probability 1 -ϑ with the following costs:"
+        ]
+      },
+      {
+        "head": "Other one-and two-qubit gates:",
+        "paragraphs": [
+          "It may be sometimes desirable to ignore whether the procedure is successful or not. In this case we will see the output as a mixed state whose density matrix is",
+          "where | ψ 0 is the approximate ground state with fidelity at least 1 -, which is produced conditional on the event E c , and Trρ = Prob(E). Then this mixed state will have a fidelity lower bounded by",
+          "If we want to achieve √ 1 -ξ fidelity for the mixed state, we can simply let ϑ = = ξ/3. Thus the number of queries to U H and U I are O( α γ∆ log( 1 ξ )) and O( 1 γ log( α ∆ ) log( 1 ξ )) respectively."
+        ]
+      },
+      {
+        "head": "Optimality of the query complexities",
+        "paragraphs": [
+          "In this section we prove for the ground state preparation algorithms outlined in Section 3 and Section 4 the number of queries to U H and U I are essentially optimal. We will also show our ground energy estimation algorithm has an nearly optimal dependence on the precision. We first prove the following complexity lower bounds:"
+        ]
+      },
+      {
+        "head": "Theorem 10. Suppose we have a generic Hamiltonian",
+        "paragraphs": [
+          "where λ k ≤ λ k+1 , given through its (α, m, 0)-block-encoding U H , and α = Θ(1). Also suppose we have an initial state |φ 0 prepared by circuit U I , as well as the promises (P1) and (P2). Then the query complexities of preparing the ground state |ψ 0 of H to fidelity at least √ 3/2 satisfy 1. When ∆ = Ω(1), and γ → 0 + , the number of queries to U H is Ω(1/γ);",
+          "2. When γ = Ω(1), and ∆ → 0 + , the number of queries to U H is Ω(1/∆);",
+          "3. When ∆ = Ω(1), and γ → 0 + , it is not possible to accomplish the above task using O(1/γ 1-θ ) queries to U I and O(poly(1/γ)) queries to U H for any θ > 0.",
+          "Proof. We prove all three lower bounds by applying the ground state preparation algorithm to the unstructured search problem. In the unstructured search problem we try to find a n-bit string t marked out by the oracle",
+          "It is proved for this problem the number of queries to U t to find t with probability 1/2 is lower bounded by Ω( √ N ) where N = 2 n [6]. This problem can be seen as a ground state preparation problem. We find that |t is the ground state of U t , which is at the same time a unitary and therefore an (1, 0, 0)block-encoding of itself. Therefore U t serves as the U H in the theorem. The spectral gap is 2. Also, let",
+          "be the uniform superposition of all n-strings, then we have u|t = 1 √ N , and |u can be efficiently prepared by the Hadamard transform since H ⊗n |0 n = |u . Therefore H ⊗n serves as the U I described in the theorem.",
+          "If the ground state preparation problem can be solved with o(1/γ) queries to U H for fixed ∆ to produce an approximate ground state with fidelity at least √ 3/2, then from the above setup we have γ = 1/ √ N , and we can first find the approximate ground state and then measure in the computational basis, obtaining t with probability at least 3/4. Therefore the unstructured search problem can be solved with o( √ N ) queries to the oracle U t , which is impossible. Thus we have proved the first lower bound in our theorem.",
+          "To prove the second lower bound we want to create a situation in which the overlap is bounded from below by a constant but the gap vanishes. We need to introduce the Grover diffusion operator",
+          "which can be efficiently implemented. Then we define",
+          "and consider H(1/2). Because both span(|u , |t ) and its orthogonal complement are invariant subspaces of D and U t , and both operators become the identity operator when restricted to the orthogonal complement of span(|u , |t ), we only need to look for the ground state in the 2-dimensional subspace span(|u , |t ). In this subspace, relative to the basis {|u , |t }, the matrix representation of",
+          "Therefore the ground state of",
+          ".",
+          "√ N . Therefore |t can be prepared in the following way: we first prepare the ground state of H(1/2), whose block-encoding is easy to construct using one application of U t . The resulting approximate ground state we denote by | Ψ . Then we measure | Ψ in the computational basis. If there is some non-vanishing probability of obtaining t then we can boost the success probability to above 1/2 by repeating the procedure and verifying using U t .",
+          "If the second lower bound in the theorem does not hold, then | Ψ can be prepared with o(1/∆(1/2)) = o( √ N ) queries to the block-encoding of H(1/2) and therefore the same number of queries to U t . Because the angle corresponding to fidelity is the great-circle distance on the unit sphere, we have the triangle inequality (using that",
+          "Therefore for large N we have",
+          "The probability of getting t when performing measurement is at least 1/16. Therefore we can boost the success probability to above 1/2 by O(1) repetitions and verifications. The total number of queries to U t is therefore o( √ N ). Again, this is impossible. Therefore we have proved the second lower bound in our theorem.",
+          "For the last lower bound we need to create some trade off between the gap and the overlap. We consider preparing the ground state of the Hamiltonian H(1/2 -N -1/2+δ ), 0 < δ < 1/6, whose block-encoding can be efficiently constructed with a single application of U t , as an intermediate step. It is shown in Appendix B that the ground state is",
+          "Therefore",
+          "Also we show in Appendix B that the gap is",
+          "We first apply the algorithm described in Section 3 to prepare the ground state of H(1/2 -N -1/2+δ ) to fidelity 1 -N -2δ /128. Using the overlap γ u and the gap in (6), the approximate ground state, denoted by | Φ , can be prepared with O(N 1/2-δ log(N )) queries to the block-encoding of H(1/2 -N -1/2+δ ), and therefore the same number of queries to U t .",
+          "The overlap between | Φ and |t can again be bounded using the triangle inequality",
+          "Therefore we have",
+          "If the last lower bound in our theorem does not hold, we can then prepare the ground state of U t by using the initial state | Φ only O(1/ γ 1-θ t ) times for some θ > 0, and the number of queries to U t at this step, i.e. not including the queries used for preparing | Φ , is O(1/ γ p t ) for some p > 0. Therefore the total number of queries to U t is",
+          "This complexity must be Ω(N 1/2 ) according to the lower bound for unstructured search problem. Therefore we need δp ≥ 1/2. However we can choose δ to be arbitrarily small, and no finite p can satisfy this condition. Hence we have a contradiction. This proves the last lower bound in our theorem.",
+          "When we look at the query complexities of the ground state preparation algorithms in Secs. 3 and 4, we can use O notation to hide the logarithmic factors, and both algorithms use O( α γ∆ ) queries to U H and O( 1 γ ) queries to U I when we want to achieve some fixed fidelity. Given the lower bound in Theorem 10 we can see the algorithm with a priori bound for ground energy essentially achieves the optimal dependence on γ and ∆. The algorithm without a priori bound for ground energy achieves the same complexity modulo logarithmic factors, while using less information. This fact guarantees that the dependence is also nearly optimal.",
+          "We will then prove the nearly optimal dependence of our ground energy estimation algorithm on the precision h. We have the following theorem:"
+        ]
+      },
+      {
+        "head": "Theorem 11. Suppose we have a generic Hamiltonian",
+        "paragraphs": [
+          "where λ k ≤ λ k+1 , given through its (α, m, 0)-block-encoding U H , and α = Θ(1). Also suppose we have an initial state |φ 0 prepared by circuit U I , as well as the promise that | φ 0 |ψ 0 | = Ω(1). Then estimating the ground energy to precision h requires Ω(1/h) queries to U H . This time we convert the quantum approximate counting problem, which is closely related to the unstructured search problem, into an eigenvalue problem. The quantum approximate counting problem is defined in the following way. We are given a set of n-bit strings S ⊂ {0, 1} n specified by the oracle U f satisfying",
+          "for any x ∈ {0, 1} n . We want to estimate the size |S|/N up to relative error . It has been proven that this requires",
+          "where N = 2 n , for the success probability to be greater than 3/4, and this lower bound can be achieved using amplitude estimation [12].",
+          "We convert this problem into an eigenvalue problem of a block-encoded Hamiltonian. Let |u be the uniform superposition of the computational basis and D be the Grover diffusion operator defined in (3). Then define the following (n + 1)-qubit unitary (H is the Hadamard gate)",
+          "which can be implemented using two applications of controlled-U f . We define",
+          "Note that here H is given in its (1, 1, 0)-block-encoding U H . Let",
+          "where the unit vectors |u 0 and |u 1 satisfy",
+          "then we find a = |S|/N . We only need to estimate the value of a to precision O( N/|S|) in order to estimate |S|/N to precision .",
+          "We analyze the eigenvalues and eigenvectors of H. It can be verified that {|u 0 , |u 1 } span an invariant subspace of H, and relative to this orthonormal basis H is represented by the matrix",
+          "In the orthogonal complement of this subspace, H is simply the zero matrix. Therefore H has only two non-zero eigenvalues ±2a √ 1 -a 2 corresponding to eigenvectors",
+          "The ground state of H is therefore |ψ + with ground energy -2a √ 1 -a 2 . We can use |u as the initial state, with an overlap",
+          "We use this Hamiltonian to prove Theorem 11:",
+          "Proof. Assume toward contradiction that there exists an algorithm that estimates the ground energy to precision h using only o ( ) queries to U H and therefore twice the amount of queries to U f . This contradicts the lower bound for the approximate counting problem in [38].",
+          "Remark 12. Theorem 11 can also be viewed as a consequence of the optimality of the quantum phase estimation algorithm [10]. If instead of the block-encoding U H we have e -iτ H as the oracle for some τ such that |τ | H ≤ π, then even when given the exact ground state of H, [10, Lemma 3] gives a query complexity lower bound Ω(1/h) for estimating the ground energy to within additive error h. This provides a different proof of the above theorem, since e -iτ H and the block-encoding of H are interconvertible: one can efficiently implement e -iτ H via Hamiltonian simulation starting from a block-encoding of H [34], and can efficiently obtain a block-encoding of H by querying e -iτ H according to [22,Corollary 71]."
+        ]
+      },
+      {
+        "head": "Low-energy state preparation",
+        "paragraphs": [
+          "It is known that estimating the spectral gap ∆ is a difficult task [3,5,18]. Our algorithm for finding ground energy, as discussed in Theorem 8, does not depend on knowing the spectral gap. However both of our algorithms for preparing the ground state in Theorem 6 and Corollary 9 require a lower bound of the spectral gap. We would like to point out that if we only want to produce a low-energy state |ψ , making ψ|H|ψ ≤ µ for some µ > λ 0 , as in [42], then this can be done without any knowledge of the spectral gap. In fact this is even possible for when the ground state is degenerate.",
+          "To do this, we need to first assume we have a normalized initial state |φ 0 with nontrivial overlap with the low-energy eigen-subspaces. Quantitatively this means for some γ, δ > 0, if we expand the initial state in the eigenbasis of H, obtaining",
+          "From the above bounds we further get",
+          "Now denoting |ψ = |ψ / |ψ we can make ψ|H|ψ ≤ µ by choosing = O(γ 2 δ/α). Therefore the total number of queries to U H required is O( 1 δγ log( α δγ )) and the number of queries to U I is O( 1 γ ). From this we can see that if the initial state |φ 0 has a overlap with the the ground state that is at least γ, and we want to prepare a state with energy upper bounded by λ 0 + δ, the required number of queries to U H and U I are O( 1δγ log( α δγ )) and O( 1 γ ) respectively. If we do not know the ground energy beforehand we can use the algorithm in Theorem 8 to estimate it first. Note that none of these procedures assumes a spectral gap."
+        ]
+      },
+      {
+        "head": "Discussions",
+        "paragraphs": [
+          "In this work we proposed an algorithm to prepare the ground state of a given Hamiltonian when a ground energy upper bound is known (Theorem 6), an algorithm to estimate the ground energy based on binary search (Theorem 8), and combining these two to get an algorithm to prepare the ground state without knowing an upper bound a priori (Corollary 9). By solving the unstructured search problem and the approximate counting problem through preparing the ground state, we proved that the query complexities for the tasks above cannot be substantially improved, as otherwise the complexity lower bound for the two problems would be violated.",
+          "All our algorithms are based on the availability of the block-encoding of the target Hamiltonian. This is a non-trivial task but we know it can be done for many important settings. For example, Childs et al. proposed an LCU approach to block-encode the Hamiltonian of a quantum spin system [16], in which the Hamiltonian is decomposed into a sum of Pauli matrices. In [35], Low and Wiebe outlined the methods to construct blockencoding of Hubbard Hamiltonian with long-range interaction, and of quantum chemistry Hamiltonian in plane-wave basis, both using fast-fermionic Fourier transform (FFFT) [4]. The FFFT can be replaced by a series of Givens rotations which gives lower circuit depth and better utilizes limited connectivity [26,30]. Any sparse Hamiltonian whose entries can be efficiently computed can also be block-encoded using a quantum walk operator [7,9,15].",
+          "We remark that the quantum circuit used in our method for ground energy estimation can be further simplified. The main obstacle to applying this method to near-term devices is the need of amplitude estimation, which requires phase estimation. It is possible to replace amplitude estimation by estimating the success probability classically. In the context of binary amplitude estimation in Lemma 7, we need to determine whether the success amplitude is greater than 3γ/4 or smaller than γ/4. This can be turned into a classical hypothesis testing to determine whether the success probability is greater than 9γ 2 /16 or smaller than γ 2 /16. A simple Chernoff bound argument tells us that we need O(log(1/ϑ)/γ 2 ) samples to distinguish the two cases with success probability at least 1-ϑ, as opposed to the O(log(1/ϑ)/γ) complexity in amplitude estimation.",
+          "In this approach, the only quantum circuit we need to use is the one in (2). The circuit depth is therefore only O((α/h) log(1/γ)). It also does not require the O(log(1/γ)) qubits that are introduced as a result of using amplitude estimation. These features make it suitable for near-to-intermediate term devices.",
+          "In [31] we proposed an eigenstate filtering method (similar in spirit to the method proposed in Section 3), and we combined it with quantum Zeno effect [11,14] to solve the quantum linear system problem. The resulting algorithm utilizes the fact that the desired eigenstate along the eigenpath always corresponds to the eigenvalue 0. In the setting of quantum Zeno effect based state preparation, in which we have a series of Hamiltonians and wish to incrementally prepare the ground state of each of them, our algorithm in Theorem 6 can be used to go from the ground state of one Hamiltonian to the next one, provided that we have a known upper bound for the ground energy. In the absence of such an upper bound, there is the possibility of using the algorithm in Corollary 9 to solve this problem. However in this setting we only want to use the initial state once for every Hamiltonian, since preparing the initial state involves going through the ground state of all previous Hamiltonians. This presents a challenge and is a topic for our future work.",
+          "It is worth pointing out that none of the Hamiltonians used in the proofs of lower bounds in Section 5 is a local Hamiltonian, and therefore our lower bounds do not rule out the possibility that if special properties such as locality are properly taken into consideration, better complexities can be achieved."
+        ]
+      },
+      {
+        "head": "A An example of block-encoding and constructing the reflector",
+        "paragraphs": [
+          "In this section we use σ x , σ y , and σ z to denote the three Pauli matrices. We use H to denote the Hadamard gate. We consider a single-qubit illustrative example of blockencoded matrix and obtain the corresponding reflector through QSP.",
+          "The matrix we consider is",
+          "for 0 ≤ a ≤ 1. Its block-encoding can be using the following circuit",
+          "where",
+          "We denote the above circuit by U H (a). This is a (α, m, 0)-block-encoding of H(a) where α = 1 and m = 1, since we can readily check that To do this we need an odd polynomial S(x; δ, ) introduced in Lemma 3. Instead of the construction done in Ref. [33] we use the Remez algorithm [43] to obtain this polynomial.",
+          "We choose δ = 0.2 and the L ∞ error of the residual is required to be less than 10 -4 , i.e. ≤ 10 -4 . Given the polynomial S(x; δ, ), using the optimization method proposed in Ref. [19], we find a polynomial P (x) ∈ C[x] of odd degree d such that",
+          "where",
+          "The existence of the phase factors is guaranteed by [23,Theorem 5]. Ref. [19] uses quasi-Newton method to solve a least squares problem to obtain these phase factors, and we terminate the iteration only when L ∞ error of the residual of the real part is smaller than = 10 -4 . The circuit in Figure 1 with phase factors {ϕ j } d j=0 implements the transformation H/α → Re P (H/α) ≈ S(H/α; δ, ). The various components of this circuit are explained in detail in [23,  Using the above circuit, Lemma 5 guarantees that when the eigenvalues of H(a) are contained in [-1, -δ] ∪ [δ, 1], we will have a good approximation of R <0 (a). However when at least one eigenvalue, which in our case can only be λ -(a) = 1 -2a, is in (-δ, δ), or in other words when a ∈ (0.4, 0.6), there is no such guarantee. We plot the operator norm error between the approximate reflector obtained through QSP and the exact reflector R <0 (a) in Figure 2. It can be seen in the figure that the error is smaller than 10 -4 everywhere except for a ∈ (0.4, 0.6), where the error spikes."
+        ]
+      },
+      {
+        "head": "B Gap and overlap in the unstructured search problem",
+        "paragraphs": [
+          "In this appendix we compute the spectral gap of the Hamiltonian H(1/2 -N -1/2+δ ) for H(τ ) defined in (4), 0 < δ < 1/6, and the overlap between its ground state and |u and |t defined in Section 5.",
+          "The first thing we should realize is that we only need to care about the subspace of the Hilbert space spanned by |u and |t . In the orthogonal complement of this subspace H(τ ) is simple a multiple of identity. In this subspace, with respect to the non-orthogonal basis {|u , |t }, the operator H(1/2 -N -1/2+δ ) is represented by the following matrix",
+          "Direct calculation shows the eigenvalues are",
+          "Thus we obtain the spectral gap in (6). To simplify notation we let λ = N 1/2-δ λ + . We"
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "b0",
+        "title": "The power of quantum systems on a line",
+        "authors": [
+          "Aharonov, D",
+          "Gottesman, D",
+          "Irani, S",
+          "Kempe, J"
+        ],
+        "doi": "10.1007/s00220-008-0710-3",
+        "year": 2009,
+        "venue": "Comm. Math. Phys",
+        "pages": "41–65",
+        "identifiers": {
+          "doi": "10.1007/s00220-008-0710-3"
+        }
+      },
+      {
+        "id": "b1",
+        "title": "Variable time amplitude amplification and quantum algorithms for linear algebra problems",
+        "authors": [
+          "Ambainis, A"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "636–647",
+        "identifiers": {}
+      },
+      {
+        "id": "b2",
+        "title": "On physical problems that are slightly more difficult than QMA",
+        "authors": [
+          "Ambainis, A"
+        ],
+        "doi": "10.1109/CCC.2014.12",
+        "year": 2014,
+        "venue": "",
+        "pages": "32–43",
+        "identifiers": {
+          "doi": "10.1109/CCC.2014.12"
+        }
+      },
+      {
+        "id": "b3",
+        "title": "Low-depth quantum simulation of materials",
+        "authors": [
+          "Babbush, R",
+          "Wiebe, N",
+          "Mcclean, J",
+          "Mcclain, J",
+          "Neven, H",
+          "G K",
+          "Chan, L"
+        ],
+        "doi": "10.1103/PhysRevX.8.011044",
+        "year": 2018,
+        "venue": "Phys. Rev. X",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.8.011044"
+        }
+      },
+      {
+        "id": "b4",
+        "title": "Undecidability of the spectral gap in one dimension",
+        "authors": [
+          "Bausch, J",
+          "Cubitt, T",
+          "Lucia, A",
+          "Perez-Garcia, D"
+        ],
+        "doi": "10.1103/PhysRevX.10.031038",
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.10.031038",
+          "arxiv": "arXiv:1810.01858"
+        }
+      },
+      {
+        "id": "b5",
+        "title": "Strengths and weaknesses of quantum computing",
+        "authors": [
+          "Bennett, C H",
+          "Bernstein, E",
+          "Brassard, G",
+          "Vazirani, U"
+        ],
+        "doi": "10.1137/S0097539796300933",
+        "year": 1997,
+        "venue": "SIAM J. Comput",
+        "pages": "1510–1523",
+        "identifiers": {
+          "doi": "10.1137/S0097539796300933"
+        }
+      },
+      {
+        "id": "b6",
+        "title": "Black-box hamiltonian simulation and unitary implementation",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:0910.4157"
+        }
+      },
+      {
+        "id": "b7",
+        "title": "Simulating Hamiltonian dynamics with a truncated taylor series",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M",
+          "Cleve, R",
+          "Kothari, R",
+          "Somma, R D"
+        ],
+        "doi": "10.1103/PhysRevLett.114.090502",
+        "year": 2015,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.114.090502"
+        }
+      },
+      {
+        "id": "b8",
+        "title": "Hamiltonian simulation with nearly optimal dependence on all parameters",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M",
+          "Kothari, R"
+        ],
+        "doi": "10.1109/FOCS.2015.54",
+        "year": 2015,
+        "venue": "",
+        "pages": "792–809",
+        "identifiers": {
+          "doi": "10.1109/FOCS.2015.54"
+        }
+      },
+      {
+        "id": "b9",
+        "title": "Lower bound for quantum phase estimation",
+        "authors": [
+          "Bessen, A J"
+        ],
+        "doi": "10.1103/PhysRevA.71.042313",
+        "year": 2005,
+        "venue": "Phys. Rev. A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.71.042313"
+        }
+      },
+      {
+        "id": "b10",
+        "title": "Eigenpath traversal by phase randomization",
+        "authors": [
+          "Boixo, S",
+          "Knill, E",
+          "Somma, R D"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Quantum Info. Comput",
+        "pages": "833–855",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "Quantum amplitude amplification and estimation",
+        "authors": [
+          "Brassard, G",
+          "Hoyer, P",
+          "Mosca, M",
+          "Tapp, A"
+        ],
+        "doi": "10.1090/conm/305/05215",
+        "year": 2002,
+        "venue": "Contemp. Math",
+        "pages": "53–74",
+        "identifiers": {
+          "doi": "10.1090/conm/305/05215"
+        }
+      },
+      {
+        "id": "b12",
+        "title": "Finding Angles for Quantum Signal Processing with Machine Precision",
+        "authors": [
+          "Chao, R",
+          "Ding, D",
+          "Gilyén, A",
+          "Huang, C",
+          "Szegedy, M"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Quantum search by measurement",
+        "authors": [
+          "Childs, A M",
+          "Deotto, E",
+          "Farhi, E",
+          "Goldstone, J",
+          "Gutmann, S",
+          "Landahl, A J"
+        ],
+        "doi": "10.1103/PhysRevA.66.032314",
+        "year": 2002,
+        "venue": "Phys. Rev. A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.66.032314"
+        }
+      },
+      {
+        "id": "b14",
+        "title": "Quantum algorithm for systems of linear equations with exponentially improved dependence on precision",
+        "authors": [
+          "Childs, A M",
+          "Kothari, R",
+          "Somma, R D"
+        ],
+        "doi": "10.1137/16M1087072",
+        "year": 1920,
+        "venue": "SIAM J. Comput",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1137/16M1087072"
+        }
+      },
+      {
+        "id": "b15",
+        "title": "Toward the first quantum simulation with quantum speedup",
+        "authors": [
+          "Childs, A M",
+          "Maslov, D",
+          "Nam, Y",
+          "Ross, N J",
+          "Su, Y"
+        ],
+        "doi": "10.1073/pnas.1801723115",
+        "year": 2018,
+        "venue": "Proc. Natl. Acad. Sci",
+        "pages": "9456–9461",
+        "identifiers": {
+          "doi": "10.1073/pnas.1801723115"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "A theory of Trotter error",
+        "authors": [
+          "Childs, A M",
+          "Su, Y",
+          "Tran, M C",
+          "Wiebe, N",
+          "Zhu, S"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1912.08854"
+        }
+      },
+      {
+        "id": "b17",
+        "title": "Undecidability of the spectral gap",
+        "authors": [
+          "Cubitt, T S",
+          "Perez-Garcia, D",
+          "Wolf, M M"
+        ],
+        "doi": "10.1038/nature16059",
+        "year": 2015,
+        "venue": "Nature",
+        "pages": "207–211",
+        "identifiers": {
+          "doi": "10.1038/nature16059"
+        }
+      },
+      {
+        "id": "b18",
+        "title": "Efficient phase factor evaluation in quantum signal processing",
+        "authors": [
+          "Dong, Y",
+          "Meng, X",
+          "Whaley, K B",
+          "Lin, L"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:2002.11649"
+        }
+      },
+      {
+        "id": "b19",
+        "title": "Uniform approximation of sgn(x) by polynomials and entire functions",
+        "authors": [
+          "Eremenko, A",
+          "Yuditskii, P"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "Journal d'Analyse Mathématique",
+        "pages": "313–324",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "Faster ground state preparation and high-precision ground energy estimation with fewer qubits",
+        "authors": [
+          "Ge, Y",
+          "Tura, J",
+          "Cirac, J I"
+        ],
+        "doi": "10.1063/1.5027484",
+        "year": 2019,
+        "venue": "J. Math. Phys",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1063/1.5027484"
+        }
+      },
+      {
+        "id": "b21",
+        "title": "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics",
+        "authors": [
+          "Gilyén, A",
+          "Su, Y",
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": "10.1145/3313276.3316366",
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/3313276.3316366",
+          "arxiv": "arXiv:1806.01838"
+        }
+      },
+      {
+        "id": "b22",
+        "title": "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics",
+        "authors": [
+          "Gilyén, A",
+          "Su, Y",
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": "10.1145/3313276.3316366",
+        "year": 2019,
+        "venue": "",
+        "pages": "193–204",
+        "identifiers": {
+          "doi": "10.1145/3313276.3316366"
+        }
+      },
+      {
+        "id": "b23",
+        "title": "A fast quantum mechanical algorithm for database search",
+        "authors": [
+          "Grover, L K"
+        ],
+        "doi": "10.1145/237814.237866",
+        "year": 1996,
+        "venue": "",
+        "pages": "212–219",
+        "identifiers": {
+          "doi": "10.1145/237814.237866"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "Product decomposition of periodic functions in quantum signal processing",
+        "authors": [
+          "Haah, J"
+        ],
+        "doi": "10.22331/q-2019-10-07-190",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-10-07-190"
+        }
+      },
+      {
+        "id": "b25",
+        "title": "Quantum algorithms to simulate many-body physics of correlated fermions",
+        "authors": [
+          "Jiang, Z",
+          "Sung, K J",
+          "Kechedzhi, K",
+          "Smelyanskiy, V N",
+          "Boixo, S"
+        ],
+        "doi": "10.1103/PhysRevApplied.9.044036",
+        "year": 2018,
+        "venue": "Phys. Rev. Applied",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevApplied.9.044036"
+        }
+      },
+      {
+        "id": "b26",
+        "title": "The complexity of the local Hamiltonian problem",
+        "authors": [
+          "Kempe, J",
+          "Kitaev, A",
+          "Regev, O"
+        ],
+        "doi": "10.1007/978-3-540-30538-5_31",
+        "year": 2006,
+        "venue": "SIAM J. Comput",
+        "pages": "1070–1097",
+        "identifiers": {
+          "doi": "10.1007/978-3-540-30538-5_31"
+        }
+      },
+      {
+        "id": "b27",
+        "title": "Quantum measurements and the abelian stabilizer problem",
+        "authors": [
+          "Kitaev, A Y"
+        ],
+        "doi": null,
+        "year": 1995,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "quant-ph/9511026"
+        }
+      },
+      {
+        "id": "b28",
+        "title": "Classical and quantum computation. Number 47",
+        "authors": [
+          "Kitaev, A Y",
+          "Shen, A",
+          "Vyalyi, M N"
+        ],
+        "doi": "10.1090/gsm/047",
+        "year": 2002,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1090/gsm/047"
+        }
+      },
+      {
+        "id": "b29",
+        "title": "Quantum simulation of electronic structure with linear depth and connectivity",
+        "authors": [
+          "Kivlichan, I D",
+          "Mcclean, J",
+          "Wiebe, N",
+          "Gidney, C",
+          "Aspuru-Guzik, A",
+          "-L. Chan, G K",
+          "Babbush, R"
+        ],
+        "doi": "10.1103/PhysRevLett.120.110501",
+        "year": 2018,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.120.110501"
+        }
+      },
+      {
+        "id": "b30",
+        "title": "Optimal polynomial based quantum eigenstate filtering with application to solving quantum linear systems",
+        "authors": [
+          "Lin, L",
+          "Tong, Y"
+        ],
+        "doi": "10.22331/q-2020-11-11-361",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2020-11-11-361"
+        }
+      },
+      {
+        "id": "b31",
+        "title": "Universal quantum simulators",
+        "authors": [
+          "Lloyd, S"
+        ],
+        "doi": "10.1126/science.273.5278.1073",
+        "year": 1996,
+        "venue": "Science",
+        "pages": "1073–1078",
+        "identifiers": {
+          "doi": "10.1126/science.273.5278.1073"
+        }
+      },
+      {
+        "id": "b32",
+        "title": "Optimal Hamiltonian simulation by quantum signal processing",
+        "authors": [
+          "Low, G H",
+          "Chuang, I L"
+        ],
+        "doi": "10.1103/PhysRevLett.118.010501",
+        "year": 2017,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.118.010501"
+        }
+      },
+      {
+        "id": "b33",
+        "title": "Hamiltonian simulation by qubitization",
+        "authors": [
+          "Low, G H",
+          "Chuang, I L"
+        ],
+        "doi": "10.22331/q-2019-07-12-163",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-07-12-163"
+        }
+      },
+      {
+        "id": "b34",
+        "title": "Hamiltonian simulation in the interaction picture",
+        "authors": [
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": null,
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1805.00675"
+        }
+      },
+      {
+        "id": "b35",
+        "title": "Methodology of resonant equiangular composite quantum gates",
+        "authors": [
+          "Low, G H",
+          "Yoder, T J",
+          "Chuang, I L"
+        ],
+        "doi": "10.1103/PhysRevX.6.041067",
+        "year": 2016,
+        "venue": "Phys. Rev. X",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.6.041067"
+        }
+      },
+      {
+        "id": "b36",
+        "title": "Quantum imaginary time evolution, quantum lanczos, and quantum thermal averaging",
+        "authors": [
+          "Motta, M",
+          "Sun, C",
+          "Tan, A T K",
+          "O'rourke, M J",
+          "Ye, E",
+          "Minnich, A J",
+          "Brandao, F G",
+          "Chan, G K"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1901.07653"
+        }
+      },
+      {
+        "id": "b37",
+        "title": "The quantum query complexity of approximating the median and related statistics",
+        "authors": [
+          "Nayak, A",
+          "Wu, F"
+        ],
+        "doi": "10.1145/301250.301349",
+        "year": 1999,
+        "venue": "",
+        "pages": "384–393",
+        "identifiers": {
+          "doi": "10.1145/301250.301349"
+        }
+      },
+      {
+        "id": "b38",
+        "title": "The complexity of quantum spin systems on a twodimensional square lattice",
+        "authors": [
+          "Oliveira, R",
+          "B M"
+        ],
+        "doi": null,
+        "year": 2005,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "quant-ph/0504050"
+        }
+      },
+      {
+        "id": "b39",
+        "title": "Quantum filter diagonalization: Quantum eigendecomposition without full quantum phase estimation",
+        "authors": [
+          "Parrish, R M",
+          "Mcmahon, P L"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1909.08925"
+        }
+      },
+      {
+        "id": "b40",
+        "title": "A variational eigenvalue solver on a photonic quantum processor",
+        "authors": [
+          "Peruzzo, A",
+          "Mcclean, J",
+          "Shadbolt, P",
+          "Yung, M.-H",
+          "Zhou, X.-Q",
+          "Love, P J",
+          "Aspuru-Guzik, A",
+          "O'brien, J L"
+        ],
+        "doi": "10.1038/ncomms5213",
+        "year": 2014,
+        "venue": "Nat. Commun",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1038/ncomms5213"
+        }
+      },
+      {
+        "id": "b41",
+        "title": "Preparing ground states of quantum many-body systems on a quantum computer",
+        "authors": [
+          "Poulin, D",
+          "Wocjan, P"
+        ],
+        "doi": "10.1103/PhysRevLett.102.130503",
+        "year": 2009,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.102.130503"
+        }
+      },
+      {
+        "id": "b42",
+        "title": "Sur le calcul effectif des polynomes d'approximation de tchebichef",
+        "authors": [
+          "Remes, E"
+        ],
+        "doi": null,
+        "year": 1934,
+        "venue": "C. R. Acad. Sci",
+        "pages": "337–340",
+        "identifiers": {}
+      },
+      {
+        "id": "b43",
+        "title": "A multireference quantum Krylov algorithm for strongly correlated electrons",
+        "authors": [
+          "Stair, N H",
+          "Huang, R",
+          "Evangelista, F A"
+        ],
+        "doi": "10.1021/acs.jctc.9b01125",
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1021/acs.jctc.9b01125",
+          "arxiv": "arXiv:1911.05163"
+        }
+      }
+    ],
+    "inline_citations": [
+      {
+        "target_id": "b0",
+        "anchor_text": "[1,"
+      },
+      {
+        "target_id": "b26",
+        "anchor_text": "27,"
+      },
+      {
+        "target_id": "b28",
+        "anchor_text": "29,"
+      },
+      {
+        "target_id": "b38",
+        "anchor_text": "39]"
+      },
+      {
+        "target_id": "b29",
+        "anchor_text": "[30]"
+      },
+      {
+        "target_id": "b11",
+        "anchor_text": "[12]"
+      },
+      {
+        "target_id": "b20",
+        "anchor_text": "[21]"
+      },
+      {
+        "target_id": "b20",
+        "anchor_text": "[21,"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Appendix A]"
+      },
+      {
+        "target_id": "b41",
+        "anchor_text": "[42]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Appendix C]"
+      },
+      {
+        "target_id": "b7",
+        "anchor_text": "[8,"
+      },
+      {
+        "target_id": "b8",
+        "anchor_text": "9,"
+      },
+      {
+        "target_id": "b16",
+        "anchor_text": "17,"
+      },
+      {
+        "target_id": "b31",
+        "anchor_text": "32,"
+      },
+      {
+        "target_id": "b32",
+        "anchor_text": "33,"
+      },
+      {
+        "target_id": "b33",
+        "anchor_text": "34,"
+      },
+      {
+        "target_id": "b34",
+        "anchor_text": "35]"
+      },
+      {
+        "target_id": "b8",
+        "anchor_text": "[9,"
+      },
+      {
+        "target_id": "b14",
+        "anchor_text": "15]"
+      },
+      {
+        "target_id": "b40",
+        "anchor_text": "[41]"
+      },
+      {
+        "target_id": "b36",
+        "anchor_text": "[37]"
+      },
+      {
+        "target_id": "b39",
+        "anchor_text": "[40,"
+      },
+      {
+        "target_id": "b43",
+        "anchor_text": "44]"
+      },
+      {
+        "target_id": "b8",
+        "anchor_text": "[9]"
+      },
+      {
+        "target_id": "b22",
+        "anchor_text": "[23,"
+      },
+      {
+        "target_id": "b35",
+        "anchor_text": "36]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Theorem 2]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Page 203]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Theorem 31]"
+      },
+      {
+        "target_id": "b24",
+        "anchor_text": "[25]"
+      },
+      {
+        "target_id": "b12",
+        "anchor_text": "[13,"
+      },
+      {
+        "target_id": "b18",
+        "anchor_text": "19]"
+      },
+      {
+        "target_id": "b30",
+        "anchor_text": "[31]"
+      },
+      {
+        "target_id": "b27",
+        "anchor_text": "[28]"
+      },
+      {
+        "target_id": "b41",
+        "anchor_text": "42]"
+      },
+      {
+        "target_id": "b33",
+        "anchor_text": "[34]"
+      },
+      {
+        "target_id": "b19",
+        "anchor_text": "[20]"
+      },
+      {
+        "target_id": "b32",
+        "anchor_text": "[33]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Lemma 14]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Lemma 29]"
+      },
+      {
+        "target_id": "b23",
+        "anchor_text": "[24]"
+      },
+      {
+        "target_id": "b1",
+        "anchor_text": "[2,"
+      },
+      {
+        "target_id": "b0",
+        "anchor_text": "(1)"
+      },
+      {
+        "target_id": "b5",
+        "anchor_text": "[6]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "("
+      },
+      {
+        "target_id": "b37",
+        "anchor_text": "[38]"
+      },
+      {
+        "target_id": "b9",
+        "anchor_text": "[10]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Lemma 3]"
+      },
+      {
+        "target_id": "b21",
+        "anchor_text": "[22,"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Corollary 71"
+      },
+      {
+        "target_id": "b2",
+        "anchor_text": "[3,"
+      },
+      {
+        "target_id": "b4",
+        "anchor_text": "5,"
+      },
+      {
+        "target_id": "b17",
+        "anchor_text": "18]"
+      },
+      {
+        "target_id": "b15",
+        "anchor_text": "[16]"
+      },
+      {
+        "target_id": "b34",
+        "anchor_text": "[35]"
+      },
+      {
+        "target_id": "b3",
+        "anchor_text": "[4]"
+      },
+      {
+        "target_id": "b25",
+        "anchor_text": "[26,"
+      },
+      {
+        "target_id": "b29",
+        "anchor_text": "30]"
+      },
+      {
+        "target_id": "b6",
+        "anchor_text": "[7,"
+      },
+      {
+        "target_id": "b10",
+        "anchor_text": "[11,"
+      },
+      {
+        "target_id": "b13",
+        "anchor_text": "14]"
+      },
+      {
+        "target_id": "b42",
+        "anchor_text": "[43]"
+      },
+      {
+        "target_id": "b18",
+        "anchor_text": "[19]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "Theorem 5]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "[23,"
+      },
+      {
+        "target_id": "b5",
+        "anchor_text": "(6)"
+      }
+    ],
+    "inline_citation_count": 67,
+    "reference_count": 44,
+    "_warnings": []
+  }
+}

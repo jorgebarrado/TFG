@@ -1,0 +1,27 @@
+{
+  "run_id": "grobid_eval_smoke3_20260414",
+  "created_at": "2026-04-14T21:58:21.986083",
+  "grobid_base_url": "http://localhost:8070",
+  "timeout": 180,
+  "problem_buckets_targeted": [
+    "low_alpha_or_short_noise",
+    "small_reference_set",
+    "header_not_found_fallback"
+  ],
+  "clean_control_count": 3,
+  "pdf_names_final": [
+    "2103.02202v3.pdf"
+  ],
+  "pdf_count": 1,
+  "resolved_pdf_paths": [
+    "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2103.02202v3.pdf"
+  ],
+  "selection": {
+    "mode": "explicit_pdf_list",
+    "selected_pdf_names": [
+      "2103.02202v3.pdf"
+    ],
+    "selected_count": 1
+  },
+  "bucket_summary_path": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_parser_experiments\\all_pdfs_eval_20260414\\summary.json"
+}

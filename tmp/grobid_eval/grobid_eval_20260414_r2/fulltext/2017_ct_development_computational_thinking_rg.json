@@ -1,0 +1,856 @@
+{
+  "paper_slug": "2017_ct_development_computational_thinking_rg",
+  "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2017-CT-development-computational-thinking_RG.pdf",
+  "input_bucket": "clean_input",
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 36,
+    "title_non_empty": 36,
+    "authors_non_empty": 35,
+    "year_non_empty": 36,
+    "doi_non_empty": 19,
+    "likely_valid": 36,
+    "likely_garbage": 0,
+    "usable_bibliography": true,
+    "inline_citation_count": 39,
+    "section_count": 16
+  },
+  "parsed": {
+    "mode": "fulltext",
+    "metadata": {
+      "title": "Development of Computational Thinking Skills through Unplugged Activities in Primary School",
+      "authors": [
+        "Brackmann, Christian Puhlmann",
+        "Román-González, Marcos",
+        "Robles, Gregorio",
+        "Moreno-León, Jesús",
+        "Casali, Ana",
+        "Barone, Dante 2017"
+      ],
+      "abstract": "Computational thinking is nowadays being widely adopted and investigated. Educators and researchers are using two main approaches to teach these skills in schools: with computer programming exercises, and with unplugged activities that do not require the use of digital devices or any kind of specific hardware. While the former is the mainstream approach, the latter is especially important for schools that do not have proper technology resources, Internet connections or even electrical power. However, there is a lack of investigations that prove the effectiveness of the unplugged activities in the development of computational thinking skills, particularly for primary schools. This paper, which summarizes a quasiexperiment carried out in two primary schools in Spain, tries to shed some light on this regard. The results show that students in the experimental groups, who took part in the unplugged activities, enhanced their computational thinking skills significantly more than their peers in the control groups who did not participate during the classes, proving that the unplugged approach may be effective for the development of this ability."
+    },
+    "sections": [
+      {
+        "head": "INTRODUCTION",
+        "paragraphs": [
+          "In the last years, countries from all over the world have started to modify their national curricula to introduce Computational Thinking (CT) skills [4,7]. A review of policy initiatives for integrating CT in compulsory education in European countries reveals two reasons behind this movement: i) to prepare for future employment and fill ICT job vacancies; and ii) to enable students to think in a different way, express themselves using new media and solve real-world problems [6].",
+          "Although the most common strategy to teach CT skills uses computerized activities mainly based on different types of programming tasks, educators and scholars are also using another approach with unplugged activities (i.e., in which there is no use of digital devices) [18]. Such activities involve logic games, cards, strings or physical movements that are used to represent and understand computer science concepts such as algorithms or data transmission.",
+          "The unplugged approach is the only one possible for a huge number of schools around the world that do not have basic technology infrastructure [33], such as electricity, Internet, computers, mobile devices, and other electronic devices. According to UNESCO, the use of ICT in education is still at a very early stage in most countries in sub-Saharan Africa, since the percentage of basic infrastructures in primary schools is under 15% in all the region [35]. In other regions, such as Asia, the percentage of schools with basic infrastructure is also far from being close to 100% [34]. But even in most European countries, there are still remote, rural areas with a lack of proper resources.",
+          "In this scenario, it is of capital importance to perform research that analyzes the effectiveness of the unplugged approach for the teaching of CT skills. This is the main goal of the investigation reported in this paper, in which we collaborated with two primary schools in Spain to perform a quasi-experiment to study differences in the development of CT skills between learners who participated in a series of unplugged activities, and students who did not take those lessons.",
+          "In addition, if evidences of the effectiveness of the unplugged approach are found, it would reinforce the theory that CT is mainly a problem-solving cognitive process/ability, which is possible to develop not only trough computer programming [36]  [37].",
+          "The paper is structured as follows. In Section 2 we review research using the unplugged approach to teach computer science concepts and CT skills in schools. Then, in Section 3, we introduce the methods used during the intervention, including a description of the participants, instruments, class sessions, and other procedures. In Sections 4 and 5, we present and discuss the results and limitations, respectively. Finally, the main conclusions are summarized in Section 6, where we also discuss ideas for future research."
+        ]
+      },
+      {
+        "head": "BACKGROUND",
+        "paragraphs": [
+          "The first records of unplugged activities are found in 1997 when Bell published a draft version of \"Computer Science Unplugged... Off-line activities and games for all ages\", which was published in 1998 [5]. The book was targeted mainly for primary and secondary teachers, and it was very well accepted by educators and scholars alike. Due to the quality of the material, it was recommended by the Association for Computing Machinery (ACM) as part of the Computer Science Teachers Association school curriculum [3] and the activities were published on the CS Unplugged web page 1 .",
+          "Although the use of computer programming activities is the main approach to teach CT skills in schools, educators and scholars are also making use of the unplugged approach, as stated in a systematic literature review that studied 125 papers focused on CT [18]. Similar conclusions are reached in a survey on how to teach Computing [30], where 13% of 357 participating in-service teachers affirm that they use unplugged activities in their computer science lessons. Nonetheless, while the effectiveness of computer programming to foster the development of CT skills is being widely investigated [22], this is not the case for the unplugged approach.",
+          "Most of experiences using unplugged activities aim to foster learners' interest in computer science. Using questionnaires and interviews, the effect of the CS unplugged activities on middleschool students' views about computer science is examined in [31]. The results show that \"although students generally understood what CS is, they perceived the computer as the essence of CS and not primarily as a tool, contrary to the intention of the activities\". With similar goals and results, the CS unplugged program was implemented as part of a one-year outreach program for high school students aiming to \"excite the next generation of undergraduates about pursuing a degree in computer science\" [15]. The findings show that the program had no impact on learners' perceived content understanding nor on their attitudes towards computer science.",
+          "Different results are achieved in [20], though, where a group of researchers visit several fourth grade classes aiming to increase interest in computer science making use of CS unplugged activities. The results, based on pre-tests and post-tests, show improved confidence and interest in both computer science and mathematics. Positive results are also found in [14], which summarizes the work 1 CS Unplugged Book: http://csunplugged.org/ performed in 26 different schools for a total of 14,040 hours of classes using unplugged activities. This exploratory study concludes that CT unplugged lessons are a valuable alternative to regular, on-line programming lessons.",
+          "The use of the unplugged approach for teacher training has been studied as well. A series of workshops were organized to explore the effectiveness of unplugged methods to introduce educators to computer science topics [12]. The evaluation, based on surveys, \"suggests that unplugged activities make for an inspiring and fun session for teachers that they also find useful, interesting and confidence building\". In a similar vein, [11] describes how unplugged activities embedded in stories can be used to teach CT ideas. Specifically, the paper presents two examples, \"one based on the problem of helping people with locked-in syndrome communicate, the second based around magic tricks\". After a 2-hour professional development workshop for teachers, attendants provide positive feedback, 100% of them stating that the workshop had given them useful ideas for the classroom.",
+          "Most of the afore reviewed investigations focus on measuring participants' enthusiasm and interest for computing, but there is no assessment on whether participants develop their CT skills with unplugged activities. This is exactly the goal of interventions with middle schools students using an unplugged curriculum [25]  [32]. The results support the hypothesis that students do learn CT skills from unplugged activities at least as effective as when following more conventional approaches.",
+          "Campos et al. [9] used a CT quiz, which consists of four questions about abstraction, correlation, and codification, to measure students' CT skills before and after the implementation of CT unplugged activities from the CS Unplugged Book. The results, however, were not conclusive.",
+          "The review of the literature, hence, highlights that there is a need for more empirical research providing evidence on the usefulness of unplugged activities to develop CT skills, especially when it comes to its use in primary schools. Consequently, in this paper, we try to shed some light on this matter."
+        ]
+      },
+      {
+        "head": "METHOD",
+        "paragraphs": [
+          "In this section, we describe the sample in our research, and how participants were divided into two different groups-conditions: the experimental group-condition and the control group-condition. Then, we present the instrument used for assessing the CT skills of the participants from both conditions, with a pre-test and a posttest. The pedagogical materials containing the unplugged activities taken by the experimental group along the teaching sessions are then explained. Finally, we report the procedure followed in our quasi-experiment."
+        ]
+      },
+      {
+        "head": "Participants",
+        "paragraphs": [
+          "The valid sample of our quasi-experiment, that is, the set of individuals who were assessed both in the pre-test and post-test time, is composed of 73 students enrolled in 5th and 6th grade (10-12 years old) from two different public primary schools located in Madrid (Spain). The distribution of the sample regarding school, grade, gender, and condition, is presented in Table 1.  27,29] was the instrument used to assess the level of CT in the participants in our research. The CT Test measures \"the ability to formulate and solve problems by relying on fundamental concepts of computation (i.e., sequences, loops, conditionals, functions, and variables), and using the inherent logic of computer programming\". All the items that assemble the test involve, to a greater or lesser extent, the four-pillar cognitive processes of CT: decomposition, pattern recognition, abstraction and algorithmic design. Thus, when a student tries to solve an item (e.g., item #8, see Figure 1), he/she must: break down the steps that the Pac-Man should follow; recognize the visual patterns on the marked path (e.g, in the item #8 there is a repeated pattern that consists of advancing four squares and then turning to the right); abstract the core elements of the problem and ignore the irrelevant details (e.g., such as the colour of the path or the features of the characters); and design an algorithm to solve the problem, which involves some computational concepts (e.g., in item #8, nested loops must be used along the algorithmic design).",
+          "The CT Test was selected for our research because of its precise (although necessarily reductionist) operational definition of CT, which may shed some light on the controversy surrounding this often blurry construct [17]  [18]. The CT Test was also elected due its quantitative and aptitudinal approach, and because it has already undergone a rigorous validation process, which has stated its content validity [27], criterion validity [29], and convergent validity [26].",
+          "Overall, the psychometric studies of the CT Test support that this test is reliable (α ≈ .80) and valid for assessing the level of CT in students from 10 to 16 years old. The CT Test is composed of a set of 28 multiple choice items with four answer options (only one correct), and it is created and executed on Google Forms technology, being available therefore on virtually any device 2 . Examples of CT Test items are shown in Figure 1, Figure 2 and Figure 3."
+        ]
+      },
+      {
+        "head": "Materials for Computational",
+        "paragraphs": [
+          "Thinking Unplugged. Most of the pedagogical materials about the unplugged activities taken by the experimental group have been created by the authors, while some were adapted and translated to Spanish from the \"Hello Ruby\" book [21] and the \"Code Master\" board game [13]. Some of the 2 A sample copy of the CT Test is available at: https://goo.gl/5O06Oh    activities are presented in Table 2, and most of them are available in the \"Computacional\" websitefoot_0 ."
+        ]
+      },
+      {
+        "head": "Procedure",
+        "paragraphs": [
+          "Students in the 5th and 6th grade from two public schools in Madrid (Spain) were invited to participate in the research as part of their regular classes during the second semester of 2016 and the first semester of 2017. We respected the existing grouping of the subjects"
+        ]
+      },
+      {
+        "head": "Pattern Recognition Algorithms",
+        "paragraphs": [
+          "\"Elephants\" activity: uses a popular students song as exemplification of how a song can turn to an algorithm. In this particular song, the repetition, variables, and conditionals are worked through the increase of the amount of the elephants. Every verse had an increase of the variable until it reached a number equal or bigger than 10."
+        ]
+      },
+      {
+        "head": "Abstraction Pattern Recognition Algorithms",
+        "paragraphs": [
+          "\"Tetris\" activity: some drawings of Tetris pieces are presented to one of the students who gives instructions to its partner. The student who got the upper part of the paper had to hide the images from the partner so it would be possible only to hear the instructions without looking to the answers. The instructions are limited to \"start\", \"up\", \"down\", \"left\", \"right\", and \"stop\". No other words can be used to describe how the figure is drawn."
+        ]
+      },
+      {
+        "head": "Pattern Recognition Algorithms",
+        "paragraphs": [
+          "\"Repetition Drawing\" activity: allows the students to understand the use of repetitions on Tetris-like figures. In this case, the students need to use instructions based on the perspective of the direction of the arrow and try to use the most amount of multipliers in their command. Differently from the \"Tetris\" activity, the students do it individually and only the use of turn left, turn right and forward are available (↑, , and ). The pillars of abstraction, pattern recognition and algorithm are mainly developed."
+        ]
+      },
+      {
+        "head": "Decomposition Abstraction Pattern Recognition Algorithms",
+        "paragraphs": [
+          "\"Monica's Automata\": The last activity is a simpler remake of the Code Master board game developed by the ThinkFun company. In this activity the student is supposed to find a route between two nodes using the allowed colors for each path. All the colors had to be used, leaving no blank spaces. The number located on the left side is the start point and on the right side the finish point."
+        ]
+      },
+      {
+        "head": "Decomposition Abstraction Algorithms",
+        "paragraphs": [
+          "Figure 4: Stages and groups of the project in their natural classrooms for the assignment of the experimental and control conditions. In other words, the individuals were not randomly assigned to the conditions, so that a quasi-experiment was performed.",
+          "For the CT Test collective administration in pre-test time (week #1), none of the students had prior formal programming experience. The test was performed in the school's computer lab. After some students had finished the test, we kept them busy so that they do not distract those students still taking the test.",
+          "During the next five weeks, lessons involving CT unplugged activities were administered by the researchers once a week to the experimental group. At first, the schools allowed the researchers to use only one hour per week, but after observing the high motivation of the students and the approval of the teacher, the schools allowed to double the time per week. So, a total of 10 hours of CT unplugged sessions were given. Meanwhile, the control group did not receive any intervention from the researchers.",
+          "On average, it was possible to implement two activities per session. On week #7, students from both groups were invited again to take the CT Test in the same way as described before. Therefore, six weeks elapsed between the pre-test and the post-test, which is a sufficient time to avoid the undesirable 'memory-effect' of using an identical set of items at both administrations. A diagram of all the steps of the research is depicted in Figure 4.",
+          "All answers by students to the CT Test were stored and available to preview, convert and download on Google Spreadsheets. Answers were then imported and analyzed with the 24 t h version of IBM SPSS (Statistical Package for the Social Sciences)."
+        ]
+      },
+      {
+        "head": "RESULTS AND DISCUSSION",
+        "paragraphs": [
+          "This section presents and discusses our findings from a double point of view. On the one hand, we report the quantitative results from our quasi-experiment, which intends to answer the following research question: Did the unplugged activities improve the CT skills of the students? On the other hand, we complement the afore mentioned 'hard' results with a qualitative approach, including in the discussion the informal observations of the researchers during the unplugged activities and the CT Test administrations."
+        ]
+      },
+      {
+        "head": "Quantitative Results: Performance in the CT Test",
+        "paragraphs": [
+          "The Table 3 shows the summary quantitative results of our quasiexperiment for the entire valid sample. As it can be seen, the control group had not a statistical significant improvement in the CT Test score between the pre-test and the post-test (t= 1.128; p(t)= .267 > .05); the effect size of the improvement in the control group was d=.17 [24], that can be considered as 'no effect' at all [10].",
+          "Conversely, a statistical significant pre-post improvement in the CT Test score is found in the experimental group (t=4.431; p(t)= .000 < .001), which involves a 'large' effect size (d=.80). These results are depicted in Figure 5.",
+          "As it can also be seen in Figure 5, there were not statistically significant differences in the CT Test score between the control group and the experimental group at the time of pre-test (t= 1.441; p(t)= .154 > .05). This result indicates that both groups were initially equivalent at the beginning of the quasi-experiment, which is desirable in this type of research design. Conversely, statistically significant differences were found between the control group and the experimental group after our intervention on the latter. (t= 3.730; p(t)= .000 < .001).",
+          "In order to test the overall statistical significance of our quasiexperiment, we perform an analysis of covariance (ANCOVA), which checks the differences between control and experimental groups in post-test time taking into account the differences, if any, in pre-test time. The ANCOVA results are statistically significant (F(1,72)=11.690; p(F)=.001 < .01), in favor of the experimental group, with an associated global effect size of our quasi-experiment d=.59 [23], which can be considered in the 'zone of desired effects' to affirm the effectiveness of an educational intervention [10]. Furthermore, this global value is very similar to that found for the CT Test score in a recent and analogous quasi-experiment performed with middle school students who took a 12-weeks Code.org course [28], where a global d=.62 was reported.  We consider that these findings have two more additional implications. Firstly, they support the assertion that the CT Test is valid and sensitive to detect improvements in the CT skills of the students, not only after taking on-line coding courses such as the ones of Code.org [28], but also after receiving CT unplugged activities. Secondly, our results give evidence that the size of the improvement is similar after both types of interventions; this fact might guide future curriculum decisions of teachers and policy makers.",
+          "When we split our analysis regarding school and grade (Table 4, Figure 6), we obtain results that globally replicate those found in the entire sample. Furthermore, these segmented results show that the CT Test score seems to increase consistently, not only due to intervention, but also due to age (although this increase regarding age is not statistically significant in our quasi-experiment). Hence, it might be hypothesized that the performance on the CT Test tends to increase as it does the grade. This result would be consistent with the assumption that CT is mainly a problem-solving ability that it should be therefore linked to the cognitive development and maturity of the subjects [1], and it was already found during our large validation study of the CT Test [29] Overall, our results permit us to answer the research question. It has been demonstrated through a quasi-experimental research design that our set of CT unplugged activities improve the CT skills of the students as measured by the CT Test."
+        ]
+      },
+      {
+        "head": "Qualitative Results: Performance along the Unplugged Activities",
+        "paragraphs": [
+          "As mentioned in subsection 3.3, the schools initially allowed the researchers to use only one hour per week for the unplugged activities; but after watching the motivation of the students, the teachers asked to double the time per week. It was surprising to the researchers because the principals of the schools emphasized at the beginning of the quasi-experiment that it would not be possible. Many notes were taken while the activities were conducted at the schools. Most annotations were related to minor adjustments or corrections of the instructions and small tweaks to better understand the activities. Some of the relevant notes describing qualitative observations of the teaching-learning process are pointed out below. Please see Table 2 as reference.",
+          "• The \"Monica's Decomposition\" activity was the first exercise the groups carried out after the pre-test. The students could not quite understand what they were supposed to do because they were not used to decompose problems. After solving the first two questions as an example, they were able to finish the other ones. When everybody was finished, the researcher read some answers and dramatized the movements to the others students. Many \"bugs\" were encountered in their algorithm and solved by the students themselves.",
+          "• \"Monica's Map\" activity had an excellent acceptance by the students and it was easy to perform. Some students finished the activity in few minutes, and others took a long time to conclude it. Most students had a hard time finding the path from one point to another in the map and had to fix what they had done before. Many students also did not take the shortest path between two points and a correction was necessary. • The \"Elephants\" activity was one of the most cheerful exercises because it involved several choruses and code reading/processing. Since the song was made for small children, the researcher felt that some students from the 6th grade felt uncomfortable with the song. It was the most creative and attractive way found to teach variables to students, and it was possible to achieve the objective. • During the \"Tetris\" activity, the students had the opportunity to sit in pairs. Many mistakes happened when the students started the first drawing and errors were getting less often on the following challenges. The instructions were not respected many times, and the investigator had to step in.",
+          "• During the \"Repetition Drawing\", many students had difficulties to understand the position and direction in the perspective of the arrow. The exercises had to be explained several times until they understood the difference between this exercise and the \"Monica's Map\" moving strategy. The best way to make them better understand was standing up and to walk/turn according to the instructions they wrote on the paper. • \"Monica's Automata\", which is based on Code Master board game, was the most motivating activity, because it involved several steps (cut, paste and strategize). Since the exercises have more than one correct answer, the students enjoyed very much discussing about the diverse possibilities."
+        ]
+      },
+      {
+        "head": "LIMITATIONS AND THREATS TO VALIDITY",
+        "paragraphs": [
+          "Some limitations and threats to validity of our research can be pointed out. Firstly, the CT Test has some limitations, since it is heavily focused on computational concepts, only partially covers computational practices, and ignores computational perspectives [8]. Moreover, the CT Test has a (deliberately) reductionist conception of CT, which puts over-emphasis on path-finding algorithms. Secondly, most of the unplugged activities carried out along the research might be considered as excessively and artificially aligned with the items of the CT Test. Therefore, if a different set of unplugged activities had been used, we would probably have obtained different results. Finally, the small size of the sample should be noted (N < 120), in order to consider the limited generalization power of our results."
+        ]
+      },
+      {
+        "head": "CONCLUSIONS AND FURTHER RESEARCH",
+        "paragraphs": [
+          "This paper presents a quasi-experiment carried out in two primary schools in Spain aiming to develop students' CT skills through a series of unplugged activities. The students were divided into two groups in each of the schools; the experimental groups were the ones who participated in the unplugged class, while the control groups did not take those lessons. The results show that the CT skills of the students in the experimental groups significantly increased after the intervention, while this was not the case for the control groups. Consequently, these findings provide empirical evidence about the effectiveness of the unplugged approach to develop CT skills. They also contribute to reaffirm CT as a cognitive variable, which mainly consists in a problem-solving ability/process whose development can be disconnected from computer programming [36] [37].",
+          "It must be taken into account that these results were achieved after just 10 hours of unplugged activities led by a researcher who is not a native Spanish speaker, and that the effect size found is very similar to the one detected in a previous investigation after 12 weeks of programming training in the Code.org platform [28], which highlights the real impact that the unplugged lessons had in the development of CT of participants.",
+          "Nevertheless, even if the unplugged activities can be a good resource for introducing students into CT, it is apparent that this approach has limitations and, therefore, further research is necessary to identify the point at which the unplugged approach loses its effectiveness and the use of computing devices is required to keep on developing CT skills. Some investigations are already merging the two approaches and allowing the students to migrate from unplugged to plugged activities [16] [19] [2] in a smoother pace.",
+          "Aiming to broaden the sample and replicate the experiment in a different country, at the moment of writing this paper a new research is being carried out in Brazilian schools. The findings of these new interventions will allow us to state stronger conclusions regarding the effectiveness of the unplugged approach as a resource to develop CT skills, as well as to identify potential similarities and differences between countries."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "b0",
+        "title": "The locus of adult intelligence: Knowledge, abilities, and nonability traits",
+        "authors": [
+          "Ackerman, Phillip L",
+          "Rolfhus, Eric L"
+        ],
+        "doi": "10.1037/0882-7974.14.2.314",
+        "year": 1999,
+        "venue": "Psychology and Aging",
+        "pages": "314–330",
+        "identifiers": {
+          "doi": "10.1037/0882-7974.14.2.314"
+        }
+      },
+      {
+        "id": "b1",
+        "title": "Evaluating the Effect of Using Physical Manipulatives to Foster Computational Thinking in Elementary School",
+        "authors": [
+          "Aggarwal, Ashish",
+          "Gardner-Mccune, Christina",
+          "Touretzky, David S"
+        ],
+        "doi": "10.1145/3017680.3017791",
+        "year": 2017,
+        "venue": "",
+        "pages": "9–14",
+        "identifiers": {
+          "doi": "10.1145/3017680.3017791"
+        }
+      },
+      {
+        "id": "b2",
+        "title": "A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee",
+        "authors": [],
+        "doi": null,
+        "year": 2003,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b3",
+        "title": "Computing our future: Computer programming and coding -Priorities, school curricula and initiatives across Europe",
+        "authors": [
+          "Balanskat, Anja",
+          "Engelhardt, Katja"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b4",
+        "title": "Computer Science Unplugged... -Off-line activities and games",
+        "authors": [
+          "Bell, Tim",
+          "Witten, Ian H",
+          "Fellows, Mike"
+        ],
+        "doi": null,
+        "year": 1998,
+        "venue": "Computer Science Unplugged... -Off-line activities and games",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b5",
+        "title": "Developing Computational Thinking in Compulsory Education -Implications for policy and practice",
+        "authors": [
+          "Bocconi, Stefania",
+          "Chioccariello, Augusto",
+          "Dettori, Giuliana",
+          "Ferrari, Anusca",
+          "Engelhardt, Katja",
+          "Kampylis, Panagiotis",
+          "Punie, Yves"
+        ],
+        "doi": "10.2791/792158",
+        "year": 2016,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.2791/792158"
+        }
+      },
+      {
+        "id": "b6",
+        "title": "Computational thinking: Panorama of the Americas",
+        "authors": [
+          "Brackmann, Christian",
+          "Barone, Dante",
+          "Casali, Ana",
+          "Boucinha, Rafael",
+          "Munoz-Hernandez, Susana"
+        ],
+        "doi": "10.1109/SIIE.2016.7751839",
+        "year": 2016,
+        "venue": "IEEE",
+        "pages": "1–6",
+        "identifiers": {
+          "doi": "10.1109/SIIE.2016.7751839"
+        }
+      },
+      {
+        "id": "b7",
+        "title": "New frameworks for studying and assessing the development of computational thinking",
+        "authors": [
+          "Brennan, Karen",
+          "Resnick, Mitchel"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "1–25",
+        "identifiers": {}
+      },
+      {
+        "id": "b8",
+        "title": "Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental",
+        "authors": [
+          "Campos, Gleider",
+          "Cavalheiro, Simone",
+          "Foss, Luciana",
+          "Pernas, Ana",
+          "Piana, Clause",
+          "Aguiar, Marilton",
+          "Bois, André Du",
+          "Reiser, Renata"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b9",
+        "title": "Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates",
+        "authors": [
+          "Cohen, Jacob"
+        ],
+        "doi": null,
+        "year": 1988,
+        "venue": "",
+        "pages": "20–26",
+        "identifiers": {}
+      },
+      {
+        "id": "b10",
+        "title": "cs4fn and computational thinking unplugged",
+        "authors": [
+          "Curzon, Paul"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "",
+        "pages": "47–50",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "Introducing teachers to computational thinking using unplugged storytelling",
+        "authors": [
+          "Curzon, Paul",
+          "Peter W Mcowan, Nicola",
+          "Plant, Laura R",
+          "Meagher"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "89–92",
+        "identifiers": {}
+      },
+      {
+        "id": "b12",
+        "title": "Code Master Programming Logic Game",
+        "authors": [
+          "Engelberg, Mark"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons",
+        "authors": [
+          "Faber, Hylke",
+          "Wierdsma, Menno",
+          "Doornbos, Richard",
+          "Salvador Van Der Ven, Jan",
+          "De Vette, Kevin"
+        ],
+        "doi": null,
+        "year": 2017,
+        "venue": "Journal of the European Teacher Education Network",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b14",
+        "title": "Teaching CS unplugged in the high school (with limited success)",
+        "authors": [
+          "Feaster, Yvon",
+          "Segars, Luke",
+          "Wahba, Sally K",
+          "Hallstrom, Jason O"
+        ],
+        "doi": null,
+        "year": 2011,
+        "venue": "",
+        "pages": "248–252",
+        "identifiers": {}
+      },
+      {
+        "id": "b15",
+        "title": "Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining 'Unplugged' Activities with Visual Programming",
+        "authors": [
+          "Gardeli, Anna",
+          "Vosinakis, Spyros"
+        ],
+        "doi": "10.17471/2499-4324/910",
+        "year": 2017,
+        "venue": "Italian Journal of Educational Technology",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.17471/2499-4324/910"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "Computational Thinking in K-12: A Review of the State of the Field",
+        "authors": [
+          "Grover, S",
+          "Pea, R"
+        ],
+        "doi": "10.3102/0013189X12463051",
+        "year": 2013,
+        "venue": "Educational Researcher",
+        "pages": "38–43",
+        "identifiers": {
+          "doi": "10.3102/0013189X12463051"
+        }
+      },
+      {
+        "id": "b17",
+        "title": "A Framework for Computational Thinking Based on a Systematic Research Review",
+        "authors": [
+          "Kalelioglu, Filiz",
+          "Gülbahar, Yasemin",
+          "Kukul, Volkan"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "Baltic Journal of Modern Computing",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b18",
+        "title": "BRING-ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY",
+        "authors": [
+          "Lorenz Klopfenstein, Andiy",
+          "Fedosyeyev, Alessandro",
+          "Bogliolo"
+        ],
+        "doi": "10.21125/inted.2017.2327",
+        "year": 2017,
+        "venue": "",
+        "pages": "9800–9805",
+        "identifiers": {
+          "doi": "10.21125/inted.2017.2327"
+        }
+      },
+      {
+        "id": "b19",
+        "title": "Computer science outreach in an elementary school",
+        "authors": [
+          "Lambert, Lynn",
+          "Guiffre, Heather"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Journal of Computing Sciences in colleges",
+        "pages": "118–124",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "Hello Ruby: adventures in coding. Feiwel & Friends",
+        "authors": [
+          "Liukas, Linda"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b21",
+        "title": "Review on teaching and learning of computational thinking through programming: What is next for K-12?",
+        "authors": [
+          "Yee, Sze",
+          "Lye",
+          "Hwee, Joyce",
+          "Koh, Ling"
+        ],
+        "doi": "10.1016/j.chb.2014.09.012",
+        "year": 2014,
+        "venue": "Computers in Human Behavior",
+        "pages": "51–61",
+        "identifiers": {
+          "doi": "10.1016/j.chb.2014.09.012"
+        }
+      },
+      {
+        "id": "b22",
+        "title": "Estimating Effect Sizes From Pretest-Posttest-Control Group Designs",
+        "authors": [
+          "Scott, B",
+          "Morris"
+        ],
+        "doi": "10.1177/1094428106291059",
+        "year": 2008,
+        "venue": "Organizational Research Methods",
+        "pages": "364–386",
+        "identifiers": {
+          "doi": "10.1177/1094428106291059"
+        }
+      },
+      {
+        "id": "b23",
+        "title": "Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs",
+        "authors": [
+          "Morris, Scott B",
+          "Deshon, Richard P"
+        ],
+        "doi": "10.1037/1082-989X.7.1.105",
+        "year": 2002,
+        "venue": "Psychological Methods",
+        "pages": "105–125",
+        "identifiers": {
+          "doi": "10.1037/1082-989X.7.1.105"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "Assessing Computational Thinking in CS Unplugged Activities",
+        "authors": [
+          "Rodriguez, Brandon",
+          "Stephen, Kennicutt",
+          "Rader, Cyndi",
+          "Camp, Tracy",
+          "Marcos Román-González, ;",
+          "Moreno-León, Jesús",
+          "Robles, Gregorio"
+        ],
+        "doi": "10.1145/3017680.3017779",
+        "year": 2017,
+        "venue": "",
+        "pages": "154–159",
+        "identifiers": {
+          "doi": "10.1145/3017680.3017779"
+        }
+      },
+      {
+        "id": "b25",
+        "title": "Computational Thinking Test: Design Guidelines and Content Validation",
+        "authors": [
+          "Román-González, Marcos"
+        ],
+        "doi": "10.13140/RG.2.1.4203.4329",
+        "year": 2015,
+        "venue": "",
+        "pages": "2436–2444",
+        "identifiers": {
+          "doi": "10.13140/RG.2.1.4203.4329"
+        }
+      },
+      {
+        "id": "b26",
+        "title": "Codigoalfabetización y Pensamiento Computacional en Educación Primaria y Secundaria: Validación de un Instrumento y Evaluación de Programas",
+        "authors": [
+          "Román-González, Marcos"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b27",
+        "title": "Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test",
+        "authors": [
+          "Román-González, Marcos",
+          "Pérez-González, Juan-Carlos",
+          "Jiménez-Fernández, Carmen"
+        ],
+        "doi": "10.1016/j.chb.2016.08.047",
+        "year": 2017,
+        "venue": "Computers in Human Behavior",
+        "pages": "678–691",
+        "identifiers": {
+          "doi": "10.1016/j.chb.2016.08.047"
+        }
+      },
+      {
+        "id": "b28",
+        "title": "Teachers' perspectives on successful strategies for teaching Computing in school",
+        "authors": [
+          "Sentance, Sue",
+          "Csizmadia, Andrew"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "IFIP TCS 2015"
+        }
+      },
+      {
+        "id": "b29",
+        "title": "The effect of CS unplugged on middle-school students' views of CS",
+        "authors": [
+          "Taub, Rivka",
+          "Ben-Ari, Mordechai",
+          "Armoni, Michal"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "ACM SIGCSE Bulletin",
+        "pages": "99–103",
+        "identifiers": {}
+      },
+      {
+        "id": "b30",
+        "title": "On plugging \"unplugged\" into CS classes",
+        "authors": [
+          "Thies, Renate",
+          "Vahrenhold, Jan"
+        ],
+        "doi": "10.1145/2445196.2445303",
+        "year": 2013,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/2445196.2445303"
+        }
+      },
+      {
+        "id": "b31",
+        "title": "Of Elephants and Nested Loops: How to Introduce Computing to Youth in Rural India",
+        "authors": [
+          "Unnikrishnan, R",
+          "Amrita, N",
+          "Muir, Alexander",
+          "Rao, Bhavani"
+        ],
+        "doi": "10.1145/2930674.2930678",
+        "year": 2016,
+        "venue": "",
+        "pages": "137–146",
+        "identifiers": {
+          "doi": "10.1145/2930674.2930678"
+        }
+      },
+      {
+        "id": "b32",
+        "title": "ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia",
+        "authors": [
+          "Wallet, Peter"
+        ],
+        "doi": "10.15220/978-92-9189-148-1-en",
+        "year": 2014,
+        "venue": "UNESCO",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.15220/978-92-9189-148-1-en"
+        }
+      },
+      {
+        "id": "b33",
+        "title": "ICT in Education in Sub-Saharan Africa: A comparative analysis of basic e-readiness in schools",
+        "authors": [
+          "Wallet, Peter"
+        ],
+        "doi": "10.15220/978-92-9189-178-8-en",
+        "year": 2015,
+        "venue": "UNESCO",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.15220/978-92-9189-178-8-en"
+        }
+      },
+      {
+        "id": "b34",
+        "title": "Computational thinking",
+        "authors": [
+          "Wing, Jeannette M"
+        ],
+        "doi": "10.1145/1118178.1118215",
+        "year": 2006,
+        "venue": "Commun. ACM",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/1118178.1118215"
+        }
+      },
+      {
+        "id": "b35",
+        "title": "Computational thinking and thinking about computing. Philosophical",
+        "authors": [
+          "Wing, J M"
+        ],
+        "doi": "10.1098/rsta.2008.0118",
+        "year": 2008,
+        "venue": "Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences",
+        "pages": "3717–3725",
+        "identifiers": {
+          "doi": "10.1098/rsta.2008.0118"
+        }
+      }
+    ],
+    "inline_citations": [
+      {
+        "target_id": "b3",
+        "anchor_text": "[4,"
+      },
+      {
+        "target_id": "b6",
+        "anchor_text": "7]"
+      },
+      {
+        "target_id": "b5",
+        "anchor_text": "[6]"
+      },
+      {
+        "target_id": "b17",
+        "anchor_text": "[18]"
+      },
+      {
+        "target_id": "b31",
+        "anchor_text": "[33]"
+      },
+      {
+        "target_id": "b33",
+        "anchor_text": "[35]"
+      },
+      {
+        "target_id": "b32",
+        "anchor_text": "[34]"
+      },
+      {
+        "target_id": "b34",
+        "anchor_text": "[36]"
+      },
+      {
+        "target_id": "b35",
+        "anchor_text": "[37]"
+      },
+      {
+        "target_id": "b4",
+        "anchor_text": "[5]"
+      },
+      {
+        "target_id": "b2",
+        "anchor_text": "[3]"
+      },
+      {
+        "target_id": "b28",
+        "anchor_text": "[30]"
+      },
+      {
+        "target_id": "b21",
+        "anchor_text": "[22]"
+      },
+      {
+        "target_id": "b29",
+        "anchor_text": "[31]"
+      },
+      {
+        "target_id": "b14",
+        "anchor_text": "[15]"
+      },
+      {
+        "target_id": "b19",
+        "anchor_text": "[20]"
+      },
+      {
+        "target_id": "b13",
+        "anchor_text": "[14]"
+      },
+      {
+        "target_id": "b11",
+        "anchor_text": "[12]"
+      },
+      {
+        "target_id": "b10",
+        "anchor_text": "[11]"
+      },
+      {
+        "target_id": "b24",
+        "anchor_text": "[25]"
+      },
+      {
+        "target_id": "b30",
+        "anchor_text": "[32]"
+      },
+      {
+        "target_id": "b8",
+        "anchor_text": "[9]"
+      },
+      {
+        "target_id": "b25",
+        "anchor_text": "27,"
+      },
+      {
+        "target_id": "b27",
+        "anchor_text": "29]"
+      },
+      {
+        "target_id": "b16",
+        "anchor_text": "[17]"
+      },
+      {
+        "target_id": "b25",
+        "anchor_text": "[27]"
+      },
+      {
+        "target_id": "b27",
+        "anchor_text": "[29]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "[26]"
+      },
+      {
+        "target_id": "b20",
+        "anchor_text": "[21]"
+      },
+      {
+        "target_id": "b12",
+        "anchor_text": "[13]"
+      },
+      {
+        "target_id": "b23",
+        "anchor_text": "[24]"
+      },
+      {
+        "target_id": "b9",
+        "anchor_text": "[10]"
+      },
+      {
+        "target_id": "b22",
+        "anchor_text": "[23]"
+      },
+      {
+        "target_id": "b26",
+        "anchor_text": "[28]"
+      },
+      {
+        "target_id": "b0",
+        "anchor_text": "[1]"
+      },
+      {
+        "target_id": "b7",
+        "anchor_text": "[8]"
+      },
+      {
+        "target_id": "",
+        "anchor_text": "[36] [37]"
+      },
+      {
+        "target_id": "b15",
+        "anchor_text": "[16]"
+      },
+      {
+        "target_id": "b1",
+        "anchor_text": "[2]"
+      }
+    ],
+    "inline_citation_count": 39,
+    "reference_count": 36,
+    "_warnings": []
+  }
+}
