@@ -1,0 +1,154 @@
+{
+  "paper_slug": "education_12_00179_v3",
+  "pdf_name": "education-12-00179-v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\education-12-00179-v3.pdf",
+  "extractor": "citations.services.reader_data.extract_pdf_references",
+  "extractor_stats": {
+    "pages_total": 6,
+    "references_total": 11,
+    "dois_total": 0,
+    "references_numbered": true,
+    "references_header_found": true,
+    "citation_style": "numeric",
+    "max_reference_index": 11,
+    "bibliography_start_page": 6
+  },
+  "warnings": [],
+  "input_quality": {
+    "primary_bucket": "clean_input",
+    "active_issue_buckets": [],
+    "issue_flags": {
+      "numeric_noise": false,
+      "likely_fused_references": false,
+      "small_reference_set": false,
+      "low_alpha_or_short_noise": false,
+      "header_not_found_fallback": false
+    },
+    "paper_warning_count": 0,
+    "paper_warnings": [],
+    "reference_count": 11,
+    "extractor_references_total": 11,
+    "warning_counts": {
+      "empty_raw_reference": 0,
+      "very_short_reference": 0,
+      "very_long_reference": 0,
+      "starts_with_numeric_noise": 0,
+      "many_semicolon_segments": 0,
+      "low_alpha_content": 0
+    },
+    "warning_ratios": {
+      "empty_raw_reference": 0.0,
+      "very_short_reference": 0.0,
+      "very_long_reference": 0.0,
+      "starts_with_numeric_noise": 0.0,
+      "many_semicolon_segments": 0.0,
+      "low_alpha_content": 0.0,
+      "short_or_low_alpha_combined": 0.0
+    },
+    "quality_notes": [
+      "No strong degradation signals detected in raw reference input."
+    ],
+    "degraded_input": false
+  },
+  "raw_references": [
+    {
+      "index": 0,
+      "source_index": 1,
+      "raw_input": "Swacha, J. State of Research on Gamiﬁcation in Education: A Bibliometric Survey. Educ. Sci. 2021, 11, 69. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 1,
+      "source_index": 2,
+      "raw_input": "Lathwesen, C.; Belova, N. Escape Rooms in STEM Teaching and Learning—Prospective Field or Declining Trend? A Literature Review. Educ. Sci. 2021, 11, 308. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 2,
+      "source_index": 3,
+      "raw_input": "Hernández-Prados, M.; Belmonte, M.L.; Manzanares-Ruiz, J.C. How to Run Your Own Online Business: A Gamiﬁcation Experience in ESL. Educ. Sci. 2021, 11, 697. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 3,
+      "source_index": 4,
+      "raw_input": "Arboleya-García, E.; Miralles, L. ‘The Game of the Sea’: An Interdisciplinary Educational Board Game on the Marine Environment and Ocean Awareness for Primary and Secondary Students. Educ. Sci. 2022, 12, 57. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 4,
+      "source_index": 5,
+      "raw_input": "Quevedo Gutiérrez, E.; Llinares, A.Z. Assessment of Scratch Programming Language as a Didactic Tool to Teach Functions. Educ. Sci. 2021, 11, 499. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 5,
+      "source_index": 6,
+      "raw_input": "Fernández-Oliveras, A.; Espigares-Gámez, M.J.; Oliveras, M.L. Implementation of a Playful Microproject Based on Traditional Games for Working on Mathematical and Scientiﬁc Content. Educ. Sci. 2021, 11, 624. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 6,
+      "source_index": 7,
+      "raw_input": "Antequera-Barroso, J.A.; Revuelta-Domínguez, F.-I.; Guerra Antequera, J. Similarities in Procedures Used to Solve Mathematical Problems and Video Games. Educ. Sci. 2022, 12, 172. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 7,
+      "source_index": 8,
+      "raw_input": "Macías-Guillén, A.; Díez, R.M.; Serrano-Luján, L.; Borrás-Gené, O. Educational Hall Escape: Increasing Motivation and Raising Emotions in Higher Education Students. Educ. Sci. 2021, 11, 527. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 8,
+      "source_index": 9,
+      "raw_input": "Vázquez-Vílchez, M.; Garrido-Rosales, D.; Pérez-Fernández, B.; Fernández-Oliveras, A. Using a Cooperative Educational Game to Promote Pro-Environmental Engagement in Future Teachers. Educ. Sci. 2021, 11, 691. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 9,
+      "source_index": 10,
+      "raw_input": "Charlo, J.P.; García, P.O.; García, S.R. Formative Potential of the Development and Assessment of an Educational Escape Room Designed to Integrate Music-Mathematical Knowledge. Educ. Sci. 2021, 11, 131. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    },
+    {
+      "index": 10,
+      "source_index": 11,
+      "raw_input": "López, P.; Rodrigues-Silva, J.; Alsina, Á. Brazilian and Spanish Mathematics Teachers’ Predispositions towards Gamiﬁcation in STEAM Education. Educ. Sci. 2021, 11, 618. [CrossRef]",
+      "extractor_doi": null,
+      "extractor_confidence": 0.5,
+      "numbered": true,
+      "warnings": []
+    }
+  ]
+}

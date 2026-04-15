@@ -3582,3 +3582,18 @@
 {"timestamp": "2026-04-14 20:57:27,577", "level": "INFO", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 21864 chars.", "request_id": "-"}
 {"timestamp": "2026-04-14 20:57:27,581", "level": "INFO", "logger": "citations.grobid", "message": "Parseado (references): 32 referencias, 0 citas inline, 0 secciones.", "request_id": "-"}
 {"timestamp": "2026-04-14 20:57:27,595", "level": "DEBUG", "logger": "citations.grobid", "message": "Artefactos guardados en: /app/tmp/grobid_debug/20260414-185726_2103.02202v3", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:24,272", "level": "INFO", "logger": "citations.grobid", "message": "Iniciando extracci\u00f3n GROBID (references): 2103.02202v3.pdf", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:24,275", "level": "DEBUG", "logger": "citations.grobid", "message": "Enviando PDF a GROBID: 2103.02202v3.pdf -> http://host.docker.internal:8070/api/processReferences", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:25,772", "level": "DEBUG", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 21870 bytes", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:25,773", "level": "INFO", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 21864 chars.", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:25,777", "level": "INFO", "logger": "citations.grobid", "message": "Parseado (references): 32 referencias, 0 citas inline, 0 secciones.", "request_id": "-"}
+{"timestamp": "2026-04-14 20:58:25,789", "level": "DEBUG", "logger": "citations.grobid", "message": "Artefactos guardados en: /app/tmp/grobid_debug/20260414-185824_2103.02202v3", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:25,509", "level": "INFO", "logger": "citations.grobid", "message": "Iniciando extracci\u00f3n GROBID (references): 2103.02202v3.pdf", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:25,513", "level": "DEBUG", "logger": "citations.grobid", "message": "Enviando PDF a GROBID: 2103.02202v3.pdf -> http://host.docker.internal:8070/api/processReferences", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:27,076", "level": "DEBUG", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 21870 bytes", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:27,079", "level": "INFO", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 21864 chars.", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:27,083", "level": "INFO", "logger": "citations.grobid", "message": "Parseado (references): 32 referencias, 0 citas inline, 0 secciones.", "request_id": "-"}
+{"timestamp": "2026-04-14 20:59:27,101", "level": "DEBUG", "logger": "citations.grobid", "message": "Artefactos guardados en: /app/tmp/grobid_debug/20260414-185925_2103.02202v3", "request_id": "-"}
+{"timestamp": "2026-04-14 21:03:59,604", "level": "DEBUG", "logger": "citations.grobid", "message": "Enviando PDF a GROBID: 2017-CT-development-computational-thinking_RG.pdf -> http://localhost:8070/api/processFulltextDocument", "request_id": "-"}
+{"timestamp": "2026-04-14 21:04:05,645", "level": "DEBUG", "logger": "citations.grobid", "message": "TEI recibido de GROBID: 72588 bytes", "request_id": "-"}
+{"timestamp": "2026-04-14 21:04:05,647", "level": "DEBUG", "logger": "citations.grobid", "message": "TEI parseado: 36 referencias, 39 citas inline, 16 secciones.", "request_id": "-"}

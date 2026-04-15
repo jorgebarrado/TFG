@@ -1,0 +1,71 @@
+You are parsing already-segmented bibliographic references.
+Return JSON only. No markdown. No commentary.
+Output must be a JSON array with exactly one object per input reference in the same order.
+Each object must use this schema:
+{"index": <integer>, "raw_input": <string>, "title": <string|null>, "authors": <array of strings>, "year": <integer|null>, "doi": <string|null>, "venue": <string|null>, "pages": <string|null>, "type": <string|null>, "identifiers": <object>, "confidence": <number|null>, "notes": <array of strings>}
+Rules:
+- Do not invent data.
+- If a field is unclear, use null or an empty array/object.
+- Keep the DOI normalized without URL prefixes if present.
+- raw_input must exactly match the input string.
+- index must exactly match the provided index.
+- authors must contain plain strings, not objects.
+
+PDF source: a0e5d5ee6a06c0d9bd4b39ee64dd8b58e861.pdf
+References:
+0: Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]
+1: Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]
+2: Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]
+3: Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]
+4: Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16
+5: Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]
+6: Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]
+7: Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]
+8: Lawson, H.D.; Walton, S.P.; Chan, C. Metal–Organic Frameworks for Drug Delivery: A Design Perspective. ACS Appl. Mater. Interfaces 2021, 13, 7004–7020. [CrossRef]
+9: Chughtai, A.H.; Ahmad, N.; Younus, H.A.; Laypkov, A.; Verpoort, F. Metal-Organic Frameworks: Versatile Heterogeneous Catalysts for Efficient Catalytic Organic Transformations. Chem. Soc. Rev. 2015, 44, 6804–6849. [CrossRef]
+10: Al-Rowaili, F.N.; Zahid, U.; Onaizi, S.; Khaled, M.; Jamal, A.; AL-Mutairi, E.M. A Review for Metal-Organic Frameworks (MOFs) Utilization in Capture and Conversion of Carbon Dioxide into Valuable Products. J. CO2 Util. 2021, 53, 101715. [CrossRef]
+11: Rollin, P.; Soares, L.K.; Barcellos, A.M.; Araujo, D.R.; Lenardão, E.J.; Jacob, R.G.; Perin, G. Five-Membered Cyclic Carbonates: Versatility for Applications in Organic Synthesis, Pharmaceutical, and Materials Sciences. Appl. Sci. 2021, 11, 5024. [CrossRef]
+12: North, M.; Pasquale, R.; Young, C. Synthesis of Cyclic Carbonates from Epoxides and CO2. Green Chem. 2010, 12, 1514–1539. [CrossRef]
+13: Zhang, W.; Ping, R.; Lu, X.; Shi, H.; Liu, F.; Ma, J.; Liu, M. Rational Design of Lewis Acid-Base Bifunctional Nanopolymers with High Performance on CO2/Epoxide Cycloaddition without a Cocatalyst. Chem. Eng. J. 2023, 451, 138715. [CrossRef]
+14: Shiels, R.A.; Jones, C.W. Homogeneous and Heterogeneous 4-(N,N-Dialkylamino)Pyridines as Effective Single Component Catalysts in the Synthesis of Propylene Carbonate. J. Mol. Catal. A Chem. 2007, 261, 160–166. [CrossRef]
+15: Zhang, X.; Zhao, N.; Wei, W.; Sun, Y. Chemical Fixation of Carbon Dioxide to Propylene Carbonate over Amine-Functionalized Silica Catalysts. Catal. Today 2006, 115, 102–106. [CrossRef]
+16: Ramin, M.; Jutz, F.; Grunwaldt, J.D.; Baiker, A. Solventless Synthesis of Propylene Carbonate Catalysed by Chromium-Salen Complexes: Bridging Homogeneous and Heterogeneous Catalysis. J. Mol. Catal. A Chem. 2005, 242, 32–39. [CrossRef]
+17: Tapiador, J.; Leo, P.; Gándara, F.; Calleja, G.; Orcajo, G. Robust Cu-URJC-8 with Mixed Ligands for Mild CO2 Cycloaddition Reaction. J. CO2 Util. 2022, 64, 102166. [CrossRef]
+18: Tapiador, J.; García-Rojas, E.; Leo, P.; Martos, C.; Calleja, G.; Orcajo, G. Copper MOFs Performance in the Cycloaddition Reaction of CO2 and Epoxides. Microporous Mesoporous Mater. 2023, 361, 112741. [CrossRef]
+19: Tapiador, J.; Leo, P.; Rodríguez-Diéguez, A.; Choquesillo-Lazarte, D.; Calleja, G.; Orcajo, G. A Novel Zn-Based-MOF for Efficient CO2 Adsorption and Conversion under Mild Conditions. Catal. Today 2022, 390–391, 230–236. [CrossRef]
+20: Tapiador, J.; García-Rojas, E.; López-Patón, P.; Calleja, G.; Orcajo, G.; Martos, C.; Leo, P. Influence of Divalent Metal Ions on CO2 Valorization at Room Temperature by Isostructural MOF-74 Materials. J. Environ. Chem. Eng. 2023, 11, 109497. [CrossRef]
+21: Pal, T.K.; De, D.; Bharadwaj, P.K. Metal–Organic Frameworks for the Chemical Fixation of CO2 into Cyclic Carbonates. Coord. Chem. Rev. 2020, 408, 213173. [CrossRef]
+22: Tran, Y.B.N.; Nguyen, P.T.K.; Luong, Q.T.; Nguyen, K.D. Series of M-MOF-184 (M = Mg, Co, Ni, Zn, Cu, Fe) Metal-Organic Frameworks for Catalysis Cycloaddition of CO2. Inorg. Chem. 2020, 59, 16747–16759. [CrossRef] [PubMed]
+23: Li, S.; Zhang, Y.; Hu, Y.; Wang, B.; Sun, S.; Yang, X.; He, H. Predicting Metal-Organic Frameworks as Catalysts to Fix Carbon Dioxide to Cyclic Carbonate by Machine Learning. J. Mater. 2021, 7, 1029–1038. [CrossRef]
+24: Valverde-González, A.; Borrallo-Aniceto, M.C.; Díaz, U.; Maya, E.M.; Gándara, F.; Sánchez, F.; Iglesias, M. Nitrogen-Rich Cobalt (II) MOFs as Efficient Bifunctional Catalysts for Single or Tandem Oxidation and CO2 Conversion Reactions. J. CO2 Util. 2023, 67, 102298. [CrossRef]
+25: Shang, L.; Chen, X.-L.; Liu, L.; Cai, M.; Yan, R.-K.; Cui, H.-L.; Yang, H.; Wang, J.-J. Catalytic Performance of MOFs Containing Trinuclear Lanthanides Clusters in the Cycladdition Reaction of CO2 and Epoxide. J. CO2 Util. 2022, 65, 102235. [CrossRef]
+26: Guo, F. A Novel 2D Cu(II)-MOF as a Heterogeneous Catalyst for the Cycloaddition Reaction of Epoxides and CO2 into Cyclic Carbonates. J. Mol. Struct. 2019, 1184, 557–561. [CrossRef]
+27: Bhattacharyya, S.; Maji, T.K. Multi-Dimensional Metal-Organic Frameworks Based on Mixed Linkers: Interplay between Structural Flexibility and Functionality. Coord. Chem. Rev. 2022, 469, 214645. [CrossRef]
+28: Haldar, R.; Maji, T.K. Metal–Organic Frameworks (MOFs) Based on Mixed Linker Systems: Structural Diversities towards Functional Materials. CrystEngComm 2013, 15, 9276. [CrossRef]
+29: Dhakshinamoorthy, A.; Asiri, A.M.; Garcia, H. Mixed-Metal or Mixed-Linker Metal Organic Frameworks as Heterogeneous Catalysts. Catal. Sci. Technol. 2016, 6, 5238–5261. [CrossRef]
+30: Kleist, W.; Jutz, F.; Maciejewski, M.; Baiker, A. Mixed-Linker Metal-Organic Frameworks as Catalysts for the Synthesis of Propylene Carbonate from Propylene Oxide and CO2. Eur. J. Inorg. Chem. 2009, 2009, 3552–3561. [CrossRef] Nanomaterials 2025, 15, 1018 15 of 16
+31: Manna, K.; Zhang, T.; Greene, F.X.; Lin, W. Bipyridine- and Phenanthroline-Based Metal–Organic Frameworks for Highly Efficient and Tandem Catalytic Organic Transformations via Directed C–H Activation. J. Am. Chem. Soc. 2015, 137, 2665–2673. [CrossRef] [PubMed]
+32: Cheng, X.; Guo, L.; Wang, H.; Gu, J.; Yang, Y.; Kirillova, M.V.; Kirillov, A.M. Coordination Polymers Constructed from an Adaptable Pyridine-Dicarboxylic Acid Linker: Assembly, Diversity of Structures, and Catalysis. Inorg. Chem. 2022, 61, 17951–17962. [CrossRef] [PubMed]
+33: Le, H.T.N.; Tran, T.V.; Phan, N.T.S.; Truong, T. Efficient and Recyclable Cu2(BDC)2(BPY)-Catalyzed Oxidative Amidation of Terminal Alkynes: Role of Bipyridine Ligand. Catal. Sci. Technol. 2015, 5, 851–859. [CrossRef]
+34: Masoomi, M.Y.; Bagheri, M.; Morsali, A. Application of Two Cobalt-Based Metal–Organic Frameworks as Oxidative Desulfuriza- tion Catalysts. Inorg. Chem. 2015, 54, 11269–11275. [CrossRef]
+35: Payra, S.; Roy, S. CO2 Cycloaddition Reaction at Ambient Temperature and Pressure over Metal Organic Framework Catalysts. MRS Commun. 2023, 13, 1309–1314. [CrossRef]
+36: Luo, Z.; Wang, J.; He, Y.; Ao, Q.; Deng, Q.; Zeng, Z.; Wang, H.; Deng, S. A Stable Zn-Based Metal–Organic Framework as an Efficient Catalyst for Carbon Dioxide Cycloaddition and Alcoholysis at Mild Conditions. Catal. Lett. 2020, 150, 1408–1417. [CrossRef]
+37: Sheldrick, G.M. SHELXT—Integrated Space-Group and Crystal-Structure Determination. Acta Crystallogr. A Found. Adv. 2015, 71, 3–8. [CrossRef]
+38: Sheldrick, G.M. Crystal Structure Refinement with SHELXL. Acta Crystallogr. C Struct. Chem. 2015, 71, 3–8. [CrossRef]
+39: Dolomanov, O.V.; Bourhis, L.J.; Gildea, R.J.; Howard, J.A.K.; Puschmann, H. OLEX2: A Complete Structure Solution, Refinement and Analysis Program. J. Appl. Crystallogr. 2009, 42, 339–341. [CrossRef]
+40: Brunauer, S.; Emmett, P.H.; Teller, E. Adsorption of Gases in Multimolecular Layers. J. Am. Chem. Soc. 1938, 60, 309–319. [CrossRef]
+41: Yang, S.-Y.; Yuan, H.-B.; Xu, X.-B.; Huang, R.-B. Influential Factors on Assembly of First-Row Transition Metal Coordination Polymers. Inorg. Chim. Acta 2013, 403, 53–62. [CrossRef]
+42: Kongshaug, K.O.; Fjellvåg, H. Design of Novel Bilayer Compounds of the CPO-8 Type Containing 1D Channels. Inorg. Chem. 2006, 45, 2424–2429. [CrossRef]
+43: Zhang, J.-R.; Lee, J.-J.; Su, C.-H.; Tsai, M.-J.; Li, C.-Y.; Wu, J.-Y. From Lamellar Net to Bilayered-Lamella and to Porous Pillared- Bilayer: Reversible Crystal-to-Crystal Transformation, CO2 Adsorption, and Fluorescence Detection of Fe3+, Al3+, Cr3+, MnO4−, and Cr2O72−in Water. Dalton Trans. 2020, 49, 14201–14215. [CrossRef]
+44: Gao, Z.; Liang, L.; Zhang, X.; Xu, P.; Sun, J. Facile One-Pot Synthesis of Zn/Mg-MOF-74 with Unsaturated Coordination Metal Centers for Efficient CO2 Adsorption and Conversion to Cyclic Carbonates. ACS Appl. Mater. Interfaces 2021, 13, 61334–61345. [CrossRef]
+45: Castro-Gómez, F.; Salassa, G.; Kleij, A.W.; Bo, C. A DFT Study on the Mechanism of the Cycloaddition Reaction of CO2 to Epoxides Catalyzed by Zn(Salphen) Complexes. Chem. A Eur. J. 2013, 19, 6289–6298. [CrossRef]
+46: Li, P.-Z.; Wang, X.-J.; Liu, J.; Phang, H.S.; Li, Y.; Zhao, Y. Highly Effective Carbon Fixation via Catalytic Conversion of CO2 by an Acylamide-Containing Metal–Organic Framework. Chem. Mater. 2017, 29, 9256–9261. [CrossRef]
+47: Liang, J.; Xie, Y.-Q.; Wu, Q.; Wang, X.-Y.; Liu, T.-T.; Li, H.-F.; Huang, Y.-B.; Cao, R. Zinc Porphyrin/Imidazolium Integrated Multivariate Zirconium Metal–Organic Frameworks for Transformation of CO2 into Cyclic Carbonates. Inorg. Chem. 2018, 57, 2584–2593. [CrossRef]
+48: Miralda, C.M.; MacIas, E.E.; Zhu, M.; Ratnasamy, P.; Carreon, M.A. Zeolitic Imidazole Framework-8 Catalysts in the Conversion of CO2 to Chloropropene Carbonate. ACS Catal. 2012, 2, 180–183. [CrossRef]
+49: Ren, Y.; Shi, Y.; Chen, J.; Yang, S.; Qi, C.; Jiang, H. Ni(Salphen)-Based Metal-Organic Framework for the Synthesis of Cyclic Carbonates by Cycloaddition of CO2 to Epoxides. RSC Adv. 2013, 3, 2167–2170. [CrossRef]
+50: Zhou, X.; Zhang, Y.; Yang, X.; Zhao, L.; Wang, G. Functionalized IRMOF-3 as Efficient Heterogeneous Catalyst for the Synthesis of Cyclic Carbonates. J. Mol. Catal. A Chem. 2012, 361–362, 12–16. [CrossRef]
+51: Macias, E.E.; Ratnasamy, P.; Carreon, M.A. Catalytic Activity of Metal Organic Framework Cu3(BTC)2 in the Cycloaddition of CO2 to Epichlorohydrin Reaction. Catal. Today 2012, 198, 215–218. [CrossRef]
+52: Eskemech, A.; Chand, H.; Karmakar, A.; Krishnan, V.; Koner, R.R. Zn-MOF as a Single Catalyst with Dual Lewis Acidic and Basic Reaction Sites for CO2 Fixation. Inorg. Chem. 2024, 63, 3757–3768. [CrossRef] [PubMed]
+53: Khattak, Z.A.K.; Ahmad, N.; Younus, H.A.; Ullah, H.; Yu, B.; Munawar, K.S.; Ashfaq, M.; Yaseen, M.; Danish, M.; Al-Abri, M.; et al. Ambient Conversion of CO2 and Epoxides to Cyclic Carbonates Using 3D Amide-Functionalized MOFs. Catal. Sci. Technol. 2024, 14, 1888–1901. [CrossRef] Nanomaterials 2025, 15, 1018 16 of 16
+54: Tang, B.; Li, S.; Song, W.; Li, Y.; Yang, E.; Zhao, X.; Li, L. Hollow Zn−Co Based Zeolitic Imidazole Framework as a Robust Heterogeneous Catalyst for Enhanced CO2 Chemical Fixation. Chem. Asian J. 2019, 14, 4375–4382. [CrossRef]
+55: Xu, W.; Chen, H.; Jie, K.; Yang, Z.; Li, T.; Dai, S. Entropy-Driven Mechanochemical Synthesis of Polymetallic Zeolitic Imidazolate Frameworks for CO2 Fixation. Angew. Chem. Int. Ed. 2019, 58, 5018–5022. [CrossRef] Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to people or property resulting from any ideas, methods, instructions or products referred to in the content.

@@ -1,0 +1,109 @@
+{
+  "run_id": "smoke_bucket_check",
+  "bucket_order": [
+    "clean_input",
+    "numeric_noise",
+    "likely_fused_references",
+    "small_reference_set",
+    "low_alpha_or_short_noise",
+    "header_not_found_fallback",
+    "mixed_issues"
+  ],
+  "total_papers": 1,
+  "papers": [
+    {
+      "paper_slug": "2017_ct_development_computational_thinking_rg",
+      "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+      "primary_bucket": "clean_input",
+      "active_issue_buckets": [],
+      "reference_count": 37,
+      "paper_warnings": [],
+      "warning_counts": {
+        "empty_raw_reference": 0,
+        "very_short_reference": 0,
+        "very_long_reference": 0,
+        "starts_with_numeric_noise": 0,
+        "many_semicolon_segments": 0,
+        "low_alpha_content": 0
+      },
+      "warning_ratios": {
+        "empty_raw_reference": 0.0,
+        "very_short_reference": 0.0,
+        "very_long_reference": 0.0,
+        "starts_with_numeric_noise": 0.0,
+        "many_semicolon_segments": 0.0,
+        "low_alpha_content": 0.0,
+        "short_or_low_alpha_combined": 0.0
+      },
+      "quality_notes": [
+        "No strong degradation signals detected in raw reference input."
+      ]
+    }
+  ],
+  "buckets": {
+    "clean_input": {
+      "paper_count": 1,
+      "reference_count_total": 37,
+      "papers": [
+        {
+          "paper_slug": "2017_ct_development_computational_thinking_rg",
+          "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+          "primary_bucket": "clean_input",
+          "active_issue_buckets": [],
+          "reference_count": 37,
+          "paper_warnings": [],
+          "warning_counts": {
+            "empty_raw_reference": 0,
+            "very_short_reference": 0,
+            "very_long_reference": 0,
+            "starts_with_numeric_noise": 0,
+            "many_semicolon_segments": 0,
+            "low_alpha_content": 0
+          },
+          "warning_ratios": {
+            "empty_raw_reference": 0.0,
+            "very_short_reference": 0.0,
+            "very_long_reference": 0.0,
+            "starts_with_numeric_noise": 0.0,
+            "many_semicolon_segments": 0.0,
+            "low_alpha_content": 0.0,
+            "short_or_low_alpha_combined": 0.0
+          },
+          "quality_notes": [
+            "No strong degradation signals detected in raw reference input."
+          ]
+        }
+      ]
+    },
+    "numeric_noise": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    },
+    "likely_fused_references": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    },
+    "small_reference_set": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    },
+    "low_alpha_or_short_noise": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    },
+    "header_not_found_fallback": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    },
+    "mixed_issues": {
+      "paper_count": 0,
+      "reference_count_total": 0,
+      "papers": []
+    }
+  }
+}

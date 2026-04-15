@@ -1,0 +1,602 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">On the shoulders of giants</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bird</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hyatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Menzies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<publisher>FoSER</publisher>
+			<biblScope unit="page" from="23" to="28" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Building knowledge through families of experiments</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Basili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lanubile</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans Softw Eng</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="456" to="473" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">PROMISE repository of empirical software engineering data</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Boetticher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Menzies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ostrand</surname></persName>
+		</author>
+		<ptr target="http://escholarship.org/uc/item/9050x4r4" />
+		<imprint>
+			<date type="published" when="2001">2007. 2001</date>
+		</imprint>
+		<respStmt>
+			<orgName>Department of Computer Science, West Virginia University ; UC Los Angeles: Department of Statistics, UCLA</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Technical report</note>
+	<note>Reproducible research. The bottom line</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Reproducible research in computational harmonic analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Donoho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Maleki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">U</forename><surname>Rahman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shahram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Stodden</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput Sci Eng</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="8" to="18" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Knowledge discovery and data mining: towards a unifying framework</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fayyad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Piatetsky-Shapiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96</title>
+		<meeting>the 2nd international conference on knowledge discovery and data mining, KDD-96<address><addrLine>Portland (Oregon, USA; Menlo Park</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="1996">1996</date>
+			<biblScope unit="page" from="82" to="88" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Guest editors&apos; introduction: reproducible research</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fomel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Claerbout</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput Sci Eng</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="5" to="7" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Statistical analyses and reproducible research</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gentleman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Lang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J Comput Graph Stat</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Mining CVS repositories, the softChange experience</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Germán</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the international workshop on mining software repositories</title>
+		<meeting>the international workshop on mining software repositories<address><addrLine>Edinburghh, UK</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Replication, reproduction and re-analysis: three ways for verifying experimental findings</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">S</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S ;</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Michlmayr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Amor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Germán</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010)</title>
+		<meeting>the 1st international workshop on replication in empirical software engineering research (RESER 2010)<address><addrLine>Cape Town, South Africa González-Barahona JM</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009">2010. 2009</date>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="262" to="285" />
+		</imprint>
+	</monogr>
+	<note>Macro-level software evolution: a case study of a large software compilation</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Text mining for software engineering: how analyst feedback impacts final results</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Hayes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dekhtyar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sundaram</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the second international workshop on mining software repositories</title>
+		<meeting>the second international workshop on mining software repositories<address><addrLine>St. Louis, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Herraiz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Izquierdo-Cortazar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Rivas-Hernández</surname></persName>
+		</author>
+		<title level="m">FLOSSMetrics: Free/Libre/Open Source Software Metrics</title>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="281" to="284" />
+		</imprint>
+		<respStmt>
+			<orgName>CSMR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">FLOSSmole: a collaborative repository for FLOSS research data and analyses</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hothorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F ;</forename><surname>Leisch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bioinform Howison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Conklin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Crowston</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IJITWE</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="17" to="26" />
+			<date type="published" when="2006">2011. 2006</date>
+		</imprint>
+	</monogr>
+	<note>Case studies in reproducibility</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Knutson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Krein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Prechelt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010)</title>
+		<title level="s">SIGSOFT Softw Eng Notes</title>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="42" to="44" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">On reproducible econometric research</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Koenker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zeileis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J Appl Econ</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="833" to="847" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Replicating software engineering experiments: a poisoned chalice or the holy grail</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Miller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inf Softw Technol</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="233" to="244" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Predicting eclipse bug lifetimes</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>Panjer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fourth international workshop on mining software repositories, MSR &apos;07</title>
+		<meeting>the fourth international workshop on mining software repositories, MSR &apos;07</meeting>
+		<imprint>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="page">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2010 7th IEEE working conference on mining software repositories (MSR)</title>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<biblScope unit="page" from="171" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Beyond replication: an example of the potential benefits of replicability in the mining of software repositories community</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Germán</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st international workshop on replication in empirical software engineering sesearch</title>
+		<meeting>the 1st international workshop on replication in empirical software engineering sesearch</meeting>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note>RESER 2010</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Beyond source code: the importance of other artifacts in software development (a case study)</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>González-Barahona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Merelo-Guervós</forename><surname>Jj</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J Syst Softw</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1233" to="1248" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Knowledge-sharing issues in experimental software engineering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Mendonça</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Basili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Carver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Maldonado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scpf</forename><surname>Fabbri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Travassos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mcf</forename><surname>De Oliveira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Empir Software Eng</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="111" to="137" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The role of replications in empirical software engineering</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Carver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Empir Software Eng</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="211" to="218" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Experiences with reproducible research in various facets of signal processing research</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vandewalle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Barrenexea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Jovanovic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ridolfi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Vetterli</surname></persName>
+		</author>
+		<idno>IV-1253- IV-1256</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the international conference on acoustics, speech and signal processing</title>
+		<meeting>the international conference on acoustics, speech and signal processing</meeting>
+		<imprint>
+			<date type="published" when="2007">2007. 2007</date>
+			<biblScope unit="volume">4</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Analysis of the influence of communication between researchers on experiment replication</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moreno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Solari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Letelier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ISESE &apos;06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering</title>
+		<imprint>
+			<date type="published" when="2006">2006</date>
+			<biblScope unit="page" from="28" to="37" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jesús</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Universidad</forename><surname>González-Barahona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Juan</forename><surname>Rey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mostoles</forename><forename type="middle">(</forename><surname>Carlos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">)</forename><surname>Spain</surname></persName>
+		</author>
+		<ptr target="http://libresoft.urjc.es" />
+	</analytic>
+	<monogr>
+		<title level="m">this area, he has published several papers, and is participating in some international research projects</title>
+		<imprint/>
+	</monogr>
+	<note>He is also one of the promoters of the idea of a European masters program on libre software, and has specific. interest in education relating to that area</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

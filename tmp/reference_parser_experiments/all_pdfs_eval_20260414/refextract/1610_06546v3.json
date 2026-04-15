@@ -1,0 +1,4327 @@
+{
+  "parser": "refextract",
+  "status": "ok",
+  "availability": {
+    "available": true,
+    "shim_used": true,
+    "mode": "string"
+  },
+  "entries": [
+    {
+      "index": 0,
+      "raw_input": "S. Lloyd, “Universal Quantum Simulators,” Science 273, 1073 (1996).",
+      "title": "Universal Quantum Simulators",
+      "authors": [
+        "S. Lloyd"
+      ],
+      "year": 1996,
+      "doi": null,
+      "venue": "Science",
+      "pages": "1073",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "1"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "1"
+          ],
+          "raw_ref": [
+            "[1] S. Lloyd, “Universal Quantum Simulators,” Science 273, 1073 (1996)."
+          ],
+          "author": [
+            "S. Lloyd"
+          ],
+          "title": [
+            "Universal Quantum Simulators"
+          ],
+          "journal_title": [
+            "Science"
+          ],
+          "journal_volume": [
+            "273"
+          ],
+          "journal_year": [
+            "1996"
+          ],
+          "journal_page": [
+            "1073"
+          ],
+          "journal_reference": [
+            "Science 273 (1996) 1073"
+          ],
+          "year": [
+            "1996"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 1,
+      "raw_input": "D. Aharonov and A. Ta-Shma, “Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 20.",
+      "title": "Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge",
+      "authors": [
+        "D. Aharonov and A. Ta-Shma"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "2"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "2"
+          ],
+          "raw_ref": [
+            "[2] D. Aharonov and A. Ta-Shma, “Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 20."
+          ],
+          "author": [
+            "D. Aharonov and A. Ta-Shma"
+          ],
+          "title": [
+            "Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge"
+          ],
+          "misc": [
+            "in Proceedings of the thirty-fifth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA,) p. 20"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 2,
+      "raw_input": "A. M. Childs and N. Wiebe, “Hamiltonian Simulation Using Linear Combinations of Unitary Operations,” Quantum Information & Computation 12, 901 (2012).",
+      "title": "Hamiltonian Simulation Using Linear Combinations of Unitary Operations",
+      "authors": [
+        "A. M. Childs and N. Wiebe"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": "Quantum Inf. Comput.",
+      "pages": "901",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "3"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "3"
+          ],
+          "raw_ref": [
+            "[3] A. M. Childs and N. Wiebe, “Hamiltonian Simulation Using Linear Combinations of Unitary Operations,” Quantum Information & Computation 12, 901 (2012)."
+          ],
+          "author": [
+            "A. M. Childs and N. Wiebe"
+          ],
+          "title": [
+            "Hamiltonian Simulation Using Linear Combinations of Unitary Operations"
+          ],
+          "journal_title": [
+            "Quantum Inf. Comput."
+          ],
+          "journal_volume": [
+            "12"
+          ],
+          "journal_year": [
+            "2012"
+          ],
+          "journal_page": [
+            "901"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Comput. 12 (2012) 901"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 3,
+      "raw_input": "D. W. Berry and A. M. Childs, “Black-box Hamiltonian simulation and unitary implementation,” Quantum Information & Computation 12, 29 (2012).",
+      "title": "Black-box Hamiltonian simulation and unitary implementation",
+      "authors": [
+        "D. W. Berry and A. M. Childs"
+      ],
+      "year": 2012,
+      "doi": null,
+      "venue": "Quantum Inf. Comput.",
+      "pages": "29",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "4"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "4"
+          ],
+          "raw_ref": [
+            "[4] D. W. Berry and A. M. Childs, “Black-box Hamiltonian simulation and unitary implementation,” Quantum Information & Computation 12, 29 (2012)."
+          ],
+          "author": [
+            "D. W. Berry and A. M. Childs"
+          ],
+          "title": [
+            "Black-box Hamiltonian simulation and unitary implementation"
+          ],
+          "journal_title": [
+            "Quantum Inf. Comput."
+          ],
+          "journal_volume": [
+            "12"
+          ],
+          "journal_year": [
+            "2012"
+          ],
+          "journal_page": [
+            "29"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Comput. 12 (2012) 29"
+          ],
+          "year": [
+            "2012"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 4,
+      "raw_input": "S. Lloyd, M. Mohseni, and P. Rebentrost, “Quantum principal component analysis,” Nature Physics 10, 631 (2014).",
+      "title": "Quantum principal component analysis",
+      "authors": [
+        "S. Lloyd, M. Mohseni, and P. Rebentrost"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": "Nature Phys.",
+      "pages": "631",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "5"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "5"
+          ],
+          "raw_ref": [
+            "[5] S. Lloyd, M. Mohseni, and P. Rebentrost, “Quantum principal component analysis,” Nature Physics 10, 631 (2014)."
+          ],
+          "author": [
+            "S. Lloyd, M. Mohseni, and P. Rebentrost"
+          ],
+          "title": [
+            "Quantum principal component analysis"
+          ],
+          "journal_title": [
+            "Nature Phys."
+          ],
+          "journal_volume": [
+            "10"
+          ],
+          "journal_year": [
+            "2014"
+          ],
+          "journal_page": [
+            "631"
+          ],
+          "journal_reference": [
+            "Nature Phys. 10 (2014) 631"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 5,
+      "raw_input": "D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters,” in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS ’15 (IEEE, Washington, DC, USA, 2015) pp. 792–809.",
+      "title": "Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters",
+      "authors": [
+        "D. W. Berry, A. M. Childs, and R. Kothari"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "6"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "6"
+          ],
+          "raw_ref": [
+            "[6] D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters,” in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS ’15 (IEEE, Washington, DC, USA, 2015) pp. 792–809."
+          ],
+          "author": [
+            "D. W. Berry, A. M. Childs, and R. Kothari"
+          ],
+          "title": [
+            "Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters"
+          ],
+          "misc": [
+            "in"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2015"
+          ]
+        },
+        {
+          "linemarker": [
+            "6"
+          ],
+          "raw_ref": [
+            "[6] D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters,” in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS ’15 (IEEE, Washington, DC, USA, 2015) pp. 792–809."
+          ],
+          "author": [
+            "D. W. Berry, A. M. Childs, and R. Kothari"
+          ],
+          "misc": [
+            "56th Annual Symposium on Foundations of Computer Science, FOCS ’15",
+            "Washington, DC, USA,) pp. 792-809"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only",
+        "refextract_multiple_candidates_for_single_input:2"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 6,
+      "raw_input": "G. H. Low and I. L. Chuang, “Optimal Hamiltonian Simulation by Quantum Signal Processing,” Physical Review Letters 118, 010501 (2017).",
+      "title": "Optimal Hamiltonian Simulation by Quantum Signal Processing",
+      "authors": [
+        "G. H. Low and I. L. Chuang"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": "Phys. Rev. Lett.",
+      "pages": "010501",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "7"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "7"
+          ],
+          "raw_ref": [
+            "[7] G. H. Low and I. L. Chuang, “Optimal Hamiltonian Simulation by Quantum Signal Processing,” Physical Review Letters 118, 010501 (2017)."
+          ],
+          "author": [
+            "G. H. Low and I. L. Chuang"
+          ],
+          "title": [
+            "Optimal Hamiltonian Simulation by Quantum Signal Processing"
+          ],
+          "journal_title": [
+            "Phys. Rev. Lett."
+          ],
+          "journal_volume": [
+            "118"
+          ],
+          "journal_year": [
+            "2017"
+          ],
+          "journal_page": [
+            "010501"
+          ],
+          "journal_reference": [
+            "Phys. Rev. Lett. 118 (2017) 010501"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 7,
+      "raw_input": "A. W. Harrow, A. Hassidim, and S. Lloyd, “Quantum Algorithm for Linear Systems of Equations,” Physical Review Letters 103, 150502 (2009).",
+      "title": "Quantum Algorithm for Linear Systems of Equations",
+      "authors": [
+        "A. W. Harrow, A. Hassidim, and S. Lloyd"
+      ],
+      "year": 2009,
+      "doi": null,
+      "venue": "Phys. Rev. Lett.",
+      "pages": "150502",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "8"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "8"
+          ],
+          "raw_ref": [
+            "[8] A. W. Harrow, A. Hassidim, and S. Lloyd, “Quantum Algorithm for Linear Systems of Equations,” Physical Review Letters 103, 150502 (2009)."
+          ],
+          "author": [
+            "A. W. Harrow, A. Hassidim, and S. Lloyd"
+          ],
+          "title": [
+            "Quantum Algorithm for Linear Systems of Equations"
+          ],
+          "journal_title": [
+            "Phys. Rev. Lett."
+          ],
+          "journal_volume": [
+            "103"
+          ],
+          "journal_year": [
+            "2009"
+          ],
+          "journal_page": [
+            "150502"
+          ],
+          "journal_reference": [
+            "Phys. Rev. Lett. 103 (2009) 150502"
+          ],
+          "year": [
+            "2009"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 8,
+      "raw_input": "A. M. Childs, R. Kothari, and R. D. Somma, “Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision,” SIAM Journal on Computing 46, 1920 (2017).",
+      "title": "Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision",
+      "authors": [
+        "A. M. Childs, R. Kothari, and R. D. Somma"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": "SIAM J. Comput.",
+      "pages": "1920",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "9"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "9"
+          ],
+          "raw_ref": [
+            "[9] A. M. Childs, R. Kothari, and R. D. Somma, “Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision,” SIAM Journal on Computing 46, 1920 (2017)."
+          ],
+          "author": [
+            "A. M. Childs, R. Kothari, and R. D. Somma"
+          ],
+          "title": [
+            "Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision"
+          ],
+          "journal_title": [
+            "SIAM J. Comput."
+          ],
+          "journal_volume": [
+            "46"
+          ],
+          "journal_year": [
+            "2017"
+          ],
+          "journal_page": [
+            "1920"
+          ],
+          "journal_reference": [
+            "SIAM J. Comput. 46 (2017) 1920"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 9,
+      "raw_input": "A. N. Chowdhury and R. D. Somma, “Quantum algorithms for Gibbs sampling and hitting-time estimation,” Quantum Information & Computation 17, 41 (2017).",
+      "title": "Quantum algorithms for Gibbs sampling and hitting-time estimation",
+      "authors": [
+        "A. N. Chowdhury and R. D. Somma"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": "Quantum Inf. Comput.",
+      "pages": "41",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "10"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "10"
+          ],
+          "raw_ref": [
+            "[10] A. N. Chowdhury and R. D. Somma, “Quantum algorithms for Gibbs sampling and hitting-time estimation,” Quantum Information & Computation 17, 41 (2017)."
+          ],
+          "author": [
+            "A. N. Chowdhury and R. D. Somma"
+          ],
+          "title": [
+            "Quantum algorithms for Gibbs sampling and hitting-time estimation"
+          ],
+          "journal_title": [
+            "Quantum Inf. Comput."
+          ],
+          "journal_volume": [
+            "17"
+          ],
+          "journal_year": [
+            "2017"
+          ],
+          "journal_page": [
+            "41"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Comput. 17 (2017) 41"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 10,
+      "raw_input": "F. G. Brandao and K. M. Svore, “Quantum Speed-Ups for Solving Semideﬁnite Programs,” 2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS) , 415 (2017).",
+      "title": "Quantum Speed-Ups for Solving Semidefinite Programs",
+      "authors": [
+        "F. G. Brandao and K. M. Svore"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "11"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "11"
+          ],
+          "raw_ref": [
+            "[11] F. G. Brandao and K. M. Svore, “Quantum Speed-Ups for Solving Semideﬁnite Programs,” 2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS) , 415 (2017)."
+          ],
+          "author": [
+            "F. G. Brandao and K. M. Svore"
+          ],
+          "title": [
+            "Quantum Speed-Ups for Solving Semidefinite Programs"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "misc": [
+            "58th Annual Symposium on Foundations of Computer Science (FOCS), 415"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 11,
+      "raw_input": "M.-H. Yung, J. D. Whitﬁeld, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik, “Introduction to Quantum Algorithms for Physics and Chemistry,” in Quantum Information and Computation for Chemistry (John Wiley & Sons, Inc., 2014) pp. 67–106.",
+      "title": "Introduction to Quantum Algorithms for Physics and Chemistry",
+      "authors": [
+        "M.-H. Yung, J. D. Whitfield, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "12"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "12"
+          ],
+          "raw_ref": [
+            "[12] M.-H. Yung, J. D. Whitﬁeld, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik, “Introduction to Quantum Algorithms for Physics and Chemistry,” in Quantum Information and Computation for Chemistry (John Wiley & Sons, Inc., 2014) pp. 67–106."
+          ],
+          "author": [
+            "M.-H. Yung, J. D. Whitfield, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik"
+          ],
+          "title": [
+            "Introduction to Quantum Algorithms for Physics and Chemistry"
+          ],
+          "misc": [
+            "in Quantum Information and Computation for Chemistry (John",
+            "& Sons, Inc.,) pp. 67-106"
+          ],
+          "publisher": [
+            "Wiley"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 12,
+      "raw_input": "D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer, “Gate-count estimates for performing quantum chemistry on small quantum computers,” Physical Review A 90, 022305 (2014).",
+      "title": "Gate-count estimates for performing quantum chemistry on small quantum computers",
+      "authors": [
+        "D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": "Phys. Rev. A",
+      "pages": "022305",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "13"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "13"
+          ],
+          "raw_ref": [
+            "[13] D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer, “Gate-count estimates for performing quantum chemistry on small quantum computers,” Physical Review A 90, 022305 (2014)."
+          ],
+          "author": [
+            "D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer"
+          ],
+          "title": [
+            "Gate-count estimates for performing quantum chemistry on small quantum computers"
+          ],
+          "journal_title": [
+            "Phys. Rev. A"
+          ],
+          "journal_volume": [
+            "90"
+          ],
+          "journal_year": [
+            "2014"
+          ],
+          "journal_page": [
+            "022305"
+          ],
+          "journal_reference": [
+            "Phys. Rev. A 90 (2014) 022305"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 13,
+      "raw_input": "D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer, “The Trotter step size required for accurate quantum simulation of quantum chemistry,” Quantum Information & Computation 15, 361 (2015).",
+      "title": "The Trotter step size required for accurate quantum simulation of quantum chemistry",
+      "authors": [
+        "D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": "Quantum Inf. Comput.",
+      "pages": "361",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "14"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "14"
+          ],
+          "raw_ref": [
+            "[14] D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer, “The Trotter step size required for accurate quantum simulation of quantum chemistry,” Quantum Information & Computation 15, 361 (2015)."
+          ],
+          "author": [
+            "D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer"
+          ],
+          "title": [
+            "The Trotter step size required for accurate quantum simulation of quantum chemistry"
+          ],
+          "journal_title": [
+            "Quantum Inf. Comput."
+          ],
+          "journal_volume": [
+            "15"
+          ],
+          "journal_year": [
+            "2015"
+          ],
+          "journal_page": [
+            "361"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Comput. 15 (2015) 361"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 14,
+      "raw_input": "M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer, “Elucidating reaction mechanisms on quantum computers,” Proceedings of the National Academy of Sciences 114, 7555 (2017).",
+      "title": "Elucidating reaction mechanisms on quantum computers",
+      "authors": [
+        "M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": "Proc. Natl. Acad. Sci. U. S. A.",
+      "pages": "7555",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "15"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "15"
+          ],
+          "raw_ref": [
+            "[15] M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer, “Elucidating reaction mechanisms on quantum computers,” Proceedings of the National Academy of Sciences 114, 7555 (2017)."
+          ],
+          "author": [
+            "M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer"
+          ],
+          "title": [
+            "Elucidating reaction mechanisms on quantum computers"
+          ],
+          "journal_title": [
+            "Proc. Natl. Acad. Sci. U. S. A."
+          ],
+          "journal_volume": [
+            "114"
+          ],
+          "journal_year": [
+            "2017"
+          ],
+          "journal_page": [
+            "7555"
+          ],
+          "journal_reference": [
+            "Proc. Natl. Acad. Sci. U. S. A. 114 (2017) 7555"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 15,
+      "raw_input": "R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik, “Expo- nentially more precise quantum simulation of fermions in second quantization,” New Journal of Physics 18, 033032 (2016).",
+      "title": "Expo- nentially more precise quantum simulation of fermions in second quantization",
+      "authors": [
+        "R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "New J. Phys.",
+      "pages": "033032",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "16"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "16"
+          ],
+          "raw_ref": [
+            "[16] R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik, “Expo- nentially more precise quantum simulation of fermions in second quantization,” New Journal of Physics 18, 033032 (2016)."
+          ],
+          "author": [
+            "R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik"
+          ],
+          "title": [
+            "Expo- nentially more precise quantum simulation of fermions in second quantization"
+          ],
+          "journal_title": [
+            "New J. Phys."
+          ],
+          "journal_volume": [
+            "18"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "033032"
+          ],
+          "journal_reference": [
+            "New J. Phys. 18 (2016) 033032"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 16,
+      "raw_input": "I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik, “Bounding the costs of quan- tum simulation of many-body physics in real space,” Journal of Physics A: Mathematical and Theoretical 50, 305301 (2017).",
+      "title": "Bounding the costs of quan- tum simulation of many-body physics in real space",
+      "authors": [
+        "I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "17"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "17"
+          ],
+          "raw_ref": [
+            "[17] I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik, “Bounding the costs of quan- tum simulation of many-body physics in real space,” Journal of Physics A: Mathematical and Theoretical 50, 305301 (2017)."
+          ],
+          "author": [
+            "I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik"
+          ],
+          "title": [
+            "Bounding the costs of quan- tum simulation of many-body physics in real space"
+          ],
+          "misc": [
+            "Journal of Physics A: Mathematical and Theoretical 50, 305301"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 17,
+      "raw_input": "P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeﬀrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis, “Scalable Quantum Simulation of Molecular Energies,” Physical Review X 6, 031007 (2016).",
+      "title": "Scalable Quantum Simulation of Molecular Energies",
+      "authors": [
+        "P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeffrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "Phys. Rev.",
+      "pages": "031007",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "18"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "18"
+          ],
+          "raw_ref": [
+            "[18] P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeﬀrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis, “Scalable Quantum Simulation of Molecular Energies,” Physical Review X 6, 031007 (2016)."
+          ],
+          "author": [
+            "P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeffrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis"
+          ],
+          "title": [
+            "Scalable Quantum Simulation of Molecular Energies"
+          ],
+          "journal_title": [
+            "Phys. Rev."
+          ],
+          "journal_volume": [
+            "X6"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "031007"
+          ],
+          "journal_reference": [
+            "Phys. Rev. X6 (2016) 031007"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 18,
+      "raw_input": "R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeﬀrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis, “Superconducting quantum circuits at the surface code threshold for fault tolerance,” Nature 508, 500 (2014).",
+      "title": "Superconducting quantum circuits at the surface code threshold for fault tolerance",
+      "authors": [
+        "R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeffrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": "Nature",
+      "pages": "500",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "19"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "19"
+          ],
+          "raw_ref": [
+            "[19] R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeﬀrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis, “Superconducting quantum circuits at the surface code threshold for fault tolerance,” Nature 508, 500 (2014)."
+          ],
+          "author": [
+            "R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeffrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis"
+          ],
+          "title": [
+            "Superconducting quantum circuits at the surface code threshold for fault tolerance"
+          ],
+          "journal_title": [
+            "Nature"
+          ],
+          "journal_volume": [
+            "508"
+          ],
+          "journal_year": [
+            "2014"
+          ],
+          "journal_page": [
+            "500"
+          ],
+          "journal_reference": [
+            "Nature 508 (2014) 500"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 19,
+      "raw_input": "S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe, “Demonstration of a small programmable quantum computer with atomic qubits,” Nature 536, 63 (2016). Accepted in Quantum 2019-07-08, click title to verify 21",
+      "title": "Demonstration of a small programmable quantum computer with atomic qubits",
+      "authors": [
+        "S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "Nature",
+      "pages": "63",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "20"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "20"
+          ],
+          "raw_ref": [
+            "[20] S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe, “Demonstration of a small programmable quantum computer with atomic qubits,” Nature 536, 63 (2016). Accepted in Quantum 2019-07-08, click title to verify 21"
+          ],
+          "author": [
+            "S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe"
+          ],
+          "title": [
+            "Demonstration of a small programmable quantum computer with atomic qubits"
+          ],
+          "journal_title": [
+            "Nature"
+          ],
+          "journal_volume": [
+            "536"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "63"
+          ],
+          "journal_reference": [
+            "Nature 536 (2016) 63"
+          ],
+          "misc": [
+            "Accepted in Quantum 2019-07-08, click title to verify 21"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 20,
+      "raw_input": "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Exponential improvement in precision for simulating sparse Hamiltonians,” in Proceedings of the 46th Annual ACM Symposium on Theory of Computing - STOC ’14, STOC ’14 (ACM Press, New York, New York, USA, 2014) pp. 283–292.",
+      "title": "Exponential improvement in precision for simulating sparse Hamiltonians",
+      "authors": [
+        "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "21"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "21"
+          ],
+          "raw_ref": [
+            "[21] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Exponential improvement in precision for simulating sparse Hamiltonians,” in Proceedings of the 46th Annual ACM Symposium on Theory of Computing - STOC ’14, STOC ’14 (ACM Press, New York, New York, USA, 2014) pp. 283–292."
+          ],
+          "author": [
+            "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+          ],
+          "title": [
+            "Exponential improvement in precision for simulating sparse Hamiltonians"
+          ],
+          "misc": [
+            "in Proceedings of the 46th Annual ACM Symposium on Theory of Computing - STOC ’14, STOC ’14 (ACM Press, New York, New York, USA,) pp. 283-292"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 21,
+      "raw_input": "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Simulating Hamiltonian Dynamics with a Truncated Taylor Series,” Physical Review Letters 114, 090502 (2015).",
+      "title": "Simulating Hamiltonian Dynamics with a Truncated Taylor Series",
+      "authors": [
+        "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": "Phys. Rev. Lett.",
+      "pages": "090502",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "22"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "22"
+          ],
+          "raw_ref": [
+            "[22] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Simulating Hamiltonian Dynamics with a Truncated Taylor Series,” Physical Review Letters 114, 090502 (2015)."
+          ],
+          "author": [
+            "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+          ],
+          "title": [
+            "Simulating Hamiltonian Dynamics with a Truncated Taylor Series"
+          ],
+          "journal_title": [
+            "Phys. Rev. Lett."
+          ],
+          "journal_volume": [
+            "114"
+          ],
+          "journal_year": [
+            "2015"
+          ],
+          "journal_page": [
+            "090502"
+          ],
+          "journal_reference": [
+            "Phys. Rev. Lett. 114 (2015) 090502"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 22,
+      "raw_input": "A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman, “Exponential algorithmic speedup by a quantum walk,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 59.",
+      "title": "Exponential algorithmic speedup by a quantum walk",
+      "authors": [
+        "A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman"
+      ],
+      "year": 2003,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "23"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "23"
+          ],
+          "raw_ref": [
+            "[23] A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman, “Exponential algorithmic speedup by a quantum walk,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 59."
+          ],
+          "author": [
+            "A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman"
+          ],
+          "title": [
+            "Exponential algorithmic speedup by a quantum walk"
+          ],
+          "misc": [
+            "in Proceedings of the thirty-fifth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA,) p. 59"
+          ],
+          "year": [
+            "2003"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 23,
+      "raw_input": "A. M. Childs, “On the Relationship Between Continuous- and Discrete-Time Quantum Walk,” Communications in Mathematical Physics 294, 581 (2010).",
+      "title": "On the Relationship Between Continuous- and Discrete-Time Quantum Walk",
+      "authors": [
+        "A. M. Childs"
+      ],
+      "year": 2010,
+      "doi": null,
+      "venue": "Commun. Math. Phys.",
+      "pages": "581",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "24"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "24"
+          ],
+          "raw_ref": [
+            "[24] A. M. Childs, “On the Relationship Between Continuous- and Discrete-Time Quantum Walk,” Communications in Mathematical Physics 294, 581 (2010)."
+          ],
+          "author": [
+            "A. M. Childs"
+          ],
+          "title": [
+            "On the Relationship Between Continuous- and Discrete-Time Quantum Walk"
+          ],
+          "journal_title": [
+            "Commun. Math. Phys."
+          ],
+          "journal_volume": [
+            "294"
+          ],
+          "journal_year": [
+            "2010"
+          ],
+          "journal_page": [
+            "581"
+          ],
+          "journal_reference": [
+            "Commun. Math. Phys. 294 (2010) 581"
+          ],
+          "year": [
+            "2010"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 24,
+      "raw_input": "R. Kothari, Eﬃcient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo (2014).",
+      "title": "Efficient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo",
+      "authors": [
+        "R. Kothari"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "25"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "25"
+          ],
+          "raw_ref": [
+            "[25] R. Kothari, Eﬃcient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo (2014)."
+          ],
+          "author": [
+            "R. Kothari"
+          ],
+          "misc": [
+            "Efficient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc",
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 25,
+      "raw_input": "M. Szegedy, “Spectra of Quantized Walks and a √ δϵ rule,” arXiv preprint quant-ph/0401053 (2004).",
+      "title": "Spectra of Quantized Walks and a √ δϵ rule",
+      "authors": [
+        "M. Szegedy"
+      ],
+      "year": 2004,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "quant-ph/0401053"
+        ],
+        "linemarker": [
+          "26"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "26"
+          ],
+          "raw_ref": [
+            "[26] M. Szegedy, “Spectra of Quantized Walks and a √ δϵ rule,” arXiv preprint quant-ph/0401053 (2004)."
+          ],
+          "author": [
+            "M. Szegedy"
+          ],
+          "title": [
+            "Spectra of Quantized Walks and a √ δϵ rule"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "quant-ph/0401053"
+          ],
+          "year": [
+            "2004"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 26,
+      "raw_input": "D. W. Berry and L. Novo, “Corrected Quantum Walk for Optimal Hamiltonian Simulation,” Quantum Information & Computation 16, 1295 (2016).",
+      "title": "Corrected Quantum Walk for Optimal Hamiltonian Simulation",
+      "authors": [
+        "D. W. Berry and L. Novo"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "Quantum Inf. Comput.",
+      "pages": "1295",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "27"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "27"
+          ],
+          "raw_ref": [
+            "[27] D. W. Berry and L. Novo, “Corrected Quantum Walk for Optimal Hamiltonian Simulation,” Quantum Information & Computation 16, 1295 (2016)."
+          ],
+          "author": [
+            "D. W. Berry and L. Novo"
+          ],
+          "title": [
+            "Corrected Quantum Walk for Optimal Hamiltonian Simulation"
+          ],
+          "journal_title": [
+            "Quantum Inf. Comput."
+          ],
+          "journal_volume": [
+            "16"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "1295"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Comput. 16 (2016) 1295"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 27,
+      "raw_input": "S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder, “Hamiltonian simulation with optimal sample complexity,” npj Quantum Information 3, 13 (2017).",
+      "title": "Hamiltonian simulation with optimal sample complexity",
+      "authors": [
+        "S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "28"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "28"
+          ],
+          "raw_ref": [
+            "[28] S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder, “Hamiltonian simulation with optimal sample complexity,” npj Quantum Information 3, 13 (2017)."
+          ],
+          "author": [
+            "S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder"
+          ],
+          "title": [
+            "Hamiltonian simulation with optimal sample complexity"
+          ],
+          "misc": [
+            "npj Quantum Information 3, 13"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 28,
+      "raw_input": "S. Chakraborty, A. Gilyén, and S. Jeﬀery, “The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation,” arXiv preprint arXiv:1804.01973 (2018).",
+      "title": "The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation",
+      "authors": [
+        "S. Chakraborty, A. Gilyén, and S. Jeffery"
+      ],
+      "year": 2018,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "arXiv:1804.01973"
+        ],
+        "linemarker": [
+          "29"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "29"
+          ],
+          "raw_ref": [
+            "[29] S. Chakraborty, A. Gilyén, and S. Jeﬀery, “The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation,” arXiv preprint arXiv:1804.01973 (2018)."
+          ],
+          "author": [
+            "S. Chakraborty, A. Gilyén, and S. Jeffery"
+          ],
+          "title": [
+            "The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "arXiv:1804.01973"
+          ],
+          "year": [
+            "2018"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 29,
+      "raw_input": "R. D. Somma and S. Boixo, “Spectral Gap Ampliﬁcation,” SIAM Journal on Computing 42, 593 (2013).",
+      "title": "Spectral Gap Amplification",
+      "authors": [
+        "R. D. Somma and S. Boixo"
+      ],
+      "year": 2013,
+      "doi": null,
+      "venue": "SIAM J. Comput.",
+      "pages": "593",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "30"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "30"
+          ],
+          "raw_ref": [
+            "[30] R. D. Somma and S. Boixo, “Spectral Gap Ampliﬁcation,” SIAM Journal on Computing 42, 593 (2013)."
+          ],
+          "author": [
+            "R. D. Somma and S. Boixo"
+          ],
+          "title": [
+            "Spectral Gap Amplification"
+          ],
+          "journal_title": [
+            "SIAM J. Comput."
+          ],
+          "journal_volume": [
+            "42"
+          ],
+          "journal_year": [
+            "2013"
+          ],
+          "journal_page": [
+            "593"
+          ],
+          "journal_reference": [
+            "SIAM J. Comput. 42 (2013) 593"
+          ],
+          "year": [
+            "2013"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 30,
+      "raw_input": "M. Szegedy, “Quantum Speed-Up of Markov Chain Based Algorithms,” in 45th Annual IEEE Symposium on Foundations of Computer Science, FOCS ’04 (IEEE, Washington, DC, USA, 2004) pp. 32–41.",
+      "title": "Quantum Speed-Up of Markov Chain Based Algorithms",
+      "authors": [
+        "M. Szegedy"
+      ],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "31"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "31"
+          ],
+          "raw_ref": [
+            "[31] M. Szegedy, “Quantum Speed-Up of Markov Chain Based Algorithms,” in 45th Annual IEEE Symposium on Foundations of Computer Science, FOCS ’04 (IEEE, Washington, DC, USA, 2004) pp. 32–41."
+          ],
+          "author": [
+            "M. Szegedy"
+          ],
+          "title": [
+            "Quantum Speed-Up of Markov Chain Based Algorithms"
+          ],
+          "misc": [
+            "in 45th Annual"
+          ],
+          "publisher": [
+            "IEEE"
+          ]
+        },
+        {
+          "linemarker": [
+            "31"
+          ],
+          "raw_ref": [
+            "[31] M. Szegedy, “Quantum Speed-Up of Markov Chain Based Algorithms,” in 45th Annual IEEE Symposium on Foundations of Computer Science, FOCS ’04 (IEEE, Washington, DC, USA, 2004) pp. 32–41."
+          ],
+          "author": [
+            "M. Szegedy"
+          ],
+          "misc": [
+            "Symposium on Foundations of Computer Science, FOCS ’04",
+            "Washington, DC, USA,) pp. 32-41"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2004"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only",
+        "refextract_multiple_candidates_for_single_input:2"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 31,
+      "raw_input": "A. Daskin and S. Kais, “An ancilla-based quantum simulation framework for non-unitary matri- ces,” Quantum Information Processing 16, 33 (2017).",
+      "title": "An ancilla-based quantum simulation framework for non-unitary matri- ces",
+      "authors": [
+        "A. Daskin and S. Kais"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": "Quantum Inf. Process.",
+      "pages": "33",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "32"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "32"
+          ],
+          "raw_ref": [
+            "[32] A. Daskin and S. Kais, “An ancilla-based quantum simulation framework for non-unitary matri- ces,” Quantum Information Processing 16, 33 (2017)."
+          ],
+          "author": [
+            "A. Daskin and S. Kais"
+          ],
+          "title": [
+            "An ancilla-based quantum simulation framework for non-unitary matri- ces"
+          ],
+          "journal_title": [
+            "Quantum Inf. Process."
+          ],
+          "journal_volume": [
+            "16"
+          ],
+          "journal_year": [
+            "2017"
+          ],
+          "journal_page": [
+            "33"
+          ],
+          "journal_reference": [
+            "Quantum Inf. Process. 16 (2017) 33"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 32,
+      "raw_input": "G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer Tracts in Natural Philosophy, Vol. 13 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1967).",
+      "title": "Tracts in Natural Philosophy, Vol. 13",
+      "authors": [
+        "G. Meinardus"
+      ],
+      "year": 1967,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "33"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "33"
+          ],
+          "raw_ref": [
+            "[33] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer Tracts in Natural Philosophy, Vol. 13 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1967)."
+          ],
+          "author": [
+            "G. Meinardus"
+          ],
+          "misc": [
+            "Approximation of Functions: Theory and Numerical Methods"
+          ],
+          "publisher": [
+            "Springer"
+          ]
+        },
+        {
+          "linemarker": [
+            "33"
+          ],
+          "raw_ref": [
+            "[33] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer Tracts in Natural Philosophy, Vol. 13 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1967)."
+          ],
+          "author": [
+            "G. Meinardus"
+          ],
+          "misc": [
+            "Tracts in Natural Philosophy, Vol. 13",
+            "Berlin Heidelberg, Berlin, Heidelberg,)"
+          ],
+          "publisher": [
+            "Springer"
+          ],
+          "year": [
+            "1967"
+          ]
+        }
+      ],
+      "warnings": [
+        "title_inferred_from_misc",
+        "refextract_loaded_with_magic_shim_string_mode_only",
+        "refextract_multiple_candidates_for_single_input:2"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 33,
+      "raw_input": "L. K. Grover, “A fast quantum mechanical algorithm for database search,” Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC ’96 STOC ’96, 212 (1996).",
+      "title": "A fast quantum mechanical algorithm for database search",
+      "authors": [
+        "L. K. Grover"
+      ],
+      "year": 1996,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "34"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "34"
+          ],
+          "raw_ref": [
+            "[34] L. K. Grover, “A fast quantum mechanical algorithm for database search,” Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC ’96 STOC ’96, 212 (1996)."
+          ],
+          "author": [
+            "L. K. Grover"
+          ],
+          "title": [
+            "A fast quantum mechanical algorithm for database search"
+          ],
+          "misc": [
+            "Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC ’96 STOC ’96, 212"
+          ],
+          "year": [
+            "1996"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 34,
+      "raw_input": "T. J. Yoder, G. H. Low, and I. L. Chuang, “Fixed-Point Quantum Search with an Optimal Number of Queries,” Physical Review Letters 113, 210501 (2014).",
+      "title": "Fixed-Point Quantum Search with an Optimal Number of Queries",
+      "authors": [
+        "T. J. Yoder, G. H. Low, and I. L. Chuang"
+      ],
+      "year": 2014,
+      "doi": null,
+      "venue": "Phys. Rev. Lett.",
+      "pages": "210501",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "35"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "35"
+          ],
+          "raw_ref": [
+            "[35] T. J. Yoder, G. H. Low, and I. L. Chuang, “Fixed-Point Quantum Search with an Optimal Number of Queries,” Physical Review Letters 113, 210501 (2014)."
+          ],
+          "author": [
+            "T. J. Yoder, G. H. Low, and I. L. Chuang"
+          ],
+          "title": [
+            "Fixed-Point Quantum Search with an Optimal Number of Queries"
+          ],
+          "journal_title": [
+            "Phys. Rev. Lett."
+          ],
+          "journal_volume": [
+            "113"
+          ],
+          "journal_year": [
+            "2014"
+          ],
+          "journal_page": [
+            "210501"
+          ],
+          "journal_reference": [
+            "Phys. Rev. Lett. 113 (2014) 210501"
+          ],
+          "year": [
+            "2014"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 35,
+      "raw_input": "J. McClellan, T. Parks, and L. Rabiner, “A computer program for designing optimum FIR linear phase digital ﬁlters,” IEEE Transactions on Audio and Electroacoustics 21, 506 (1973).",
+      "title": "A computer program for designing optimum FIR linear phase digital filters",
+      "authors": [
+        "J. McClellan, T. Parks, and L. Rabiner"
+      ],
+      "year": 1973,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "36"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "36"
+          ],
+          "raw_ref": [
+            "[36] J. McClellan, T. Parks, and L. Rabiner, “A computer program for designing optimum FIR linear phase digital ﬁlters,” IEEE Transactions on Audio and Electroacoustics 21, 506 (1973)."
+          ],
+          "author": [
+            "J. McClellan, T. Parks, and L. Rabiner"
+          ],
+          "title": [
+            "A computer program for designing optimum FIR linear phase digital filters"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "misc": [
+            "Transactions on Audio and Electroacoustics 21, 506"
+          ],
+          "year": [
+            "1973"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 36,
+      "raw_input": "G. H. Low, T. J. Yoder, and I. L. Chuang, “Methodology of Resonant Equiangular Composite Quantum Gates,” Physical Review X 6, 041067 (2016).",
+      "title": "Methodology of Resonant Equiangular Composite Quantum Gates",
+      "authors": [
+        "G. H. Low, T. J. Yoder, and I. L. Chuang"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "Phys. Rev.",
+      "pages": "041067",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "37"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "37"
+          ],
+          "raw_ref": [
+            "[37] G. H. Low, T. J. Yoder, and I. L. Chuang, “Methodology of Resonant Equiangular Composite Quantum Gates,” Physical Review X 6, 041067 (2016)."
+          ],
+          "author": [
+            "G. H. Low, T. J. Yoder, and I. L. Chuang"
+          ],
+          "title": [
+            "Methodology of Resonant Equiangular Composite Quantum Gates"
+          ],
+          "journal_title": [
+            "Phys. Rev."
+          ],
+          "journal_volume": [
+            "X6"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "041067"
+          ],
+          "journal_reference": [
+            "Phys. Rev. X6 (2016) 041067"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 37,
+      "raw_input": "M. Abramowitz, I. A. Stegun, and Others, “Handbook of mathematical functions,” Applied mathematics series 55, 62 (1966).",
+      "title": "Handbook of mathematical functions",
+      "authors": [
+        "M. Abramowitz, I. A. Stegun"
+      ],
+      "year": 1966,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "38"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "38"
+          ],
+          "raw_ref": [
+            "[38] M. Abramowitz, I. A. Stegun, and Others, “Handbook of mathematical functions,” Applied mathematics series 55, 62 (1966)."
+          ],
+          "author": [
+            "M. Abramowitz, I. A. Stegun"
+          ],
+          "misc": [
+            "and Others",
+            "Applied mathematics series 55, 62"
+          ],
+          "title": [
+            "Handbook of mathematical functions"
+          ],
+          "year": [
+            "1966"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 38,
+      "raw_input": "J. P. Boyd, “Rootﬁnding for a transcendental equation without a ﬁrst guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine,” Applied Numerical Mathematics 57, 12 (2007).",
+      "title": "Rootfinding for a transcendental equation without a first guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine",
+      "authors": [
+        "J. P. Boyd"
+      ],
+      "year": 2007,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "39"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "39"
+          ],
+          "raw_ref": [
+            "[39] J. P. Boyd, “Rootﬁnding for a transcendental equation without a ﬁrst guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine,” Applied Numerical Mathematics 57, 12 (2007)."
+          ],
+          "author": [
+            "J. P. Boyd"
+          ],
+          "title": [
+            "Rootfinding for a transcendental equation without a first guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine"
+          ],
+          "misc": [
+            "Applied Numerical Mathematics 57, 12"
+          ],
+          "year": [
+            "2007"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 39,
+      "raw_input": "A. M. Childs and R. Kothari, “Limitations on the Simulation of Non-sparse Hamiltonians,” Quan- tum Information & Computation 10, 669 (2010).",
+      "title": "Limitations on the Simulation of Non-sparse Hamiltonians",
+      "authors": [
+        "A. M. Childs and R. Kothari"
+      ],
+      "year": 2010,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "40"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "40"
+          ],
+          "raw_ref": [
+            "[40] A. M. Childs and R. Kothari, “Limitations on the Simulation of Non-sparse Hamiltonians,” Quan- tum Information & Computation 10, 669 (2010)."
+          ],
+          "author": [
+            "A. M. Childs and R. Kothari"
+          ],
+          "title": [
+            "Limitations on the Simulation of Non-sparse Hamiltonians"
+          ],
+          "misc": [
+            "Quan- tum Information & Computation 10, 669"
+          ],
+          "year": [
+            "2010"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 40,
+      "raw_input": "R. D. Somma, “A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation,” Journal of Mathematical Physics 57, 062202 (2016).",
+      "title": "A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation",
+      "authors": [
+        "R. D. Somma"
+      ],
+      "year": 2016,
+      "doi": null,
+      "venue": "J. Math. Phys.",
+      "pages": "062202",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "41"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "41"
+          ],
+          "raw_ref": [
+            "[41] R. D. Somma, “A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation,” Journal of Mathematical Physics 57, 062202 (2016)."
+          ],
+          "author": [
+            "R. D. Somma"
+          ],
+          "title": [
+            "A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation"
+          ],
+          "journal_title": [
+            "J. Math. Phys."
+          ],
+          "journal_volume": [
+            "57"
+          ],
+          "journal_year": [
+            "2016"
+          ],
+          "journal_page": [
+            "062202"
+          ],
+          "journal_reference": [
+            "J. Math. Phys. 57 (2016) 062202"
+          ],
+          "year": [
+            "2016"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 41,
+      "raw_input": "G. H. Low, T. J. Yoder, and I. L. Chuang, “Quantum Imaging by Coherent Enhancement,” Physical Review Letters 114, 100801 (2015). Accepted in Quantum 2019-07-08, click title to verify 22",
+      "title": "Quantum Imaging by Coherent Enhancement",
+      "authors": [
+        "G. H. Low, T. J. Yoder, and I. L. Chuang"
+      ],
+      "year": 2015,
+      "doi": null,
+      "venue": "Phys. Rev. Lett.",
+      "pages": "100801",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "42"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "42"
+          ],
+          "raw_ref": [
+            "[42] G. H. Low, T. J. Yoder, and I. L. Chuang, “Quantum Imaging by Coherent Enhancement,” Physical Review Letters 114, 100801 (2015). Accepted in Quantum 2019-07-08, click title to verify 22"
+          ],
+          "author": [
+            "G. H. Low, T. J. Yoder, and I. L. Chuang"
+          ],
+          "title": [
+            "Quantum Imaging by Coherent Enhancement"
+          ],
+          "journal_title": [
+            "Phys. Rev. Lett."
+          ],
+          "journal_volume": [
+            "114"
+          ],
+          "journal_year": [
+            "2015"
+          ],
+          "journal_page": [
+            "100801"
+          ],
+          "journal_reference": [
+            "Phys. Rev. Lett. 114 (2015) 100801"
+          ],
+          "misc": [
+            "Accepted in Quantum 2019-07-08, click title to verify 22"
+          ],
+          "year": [
+            "2015"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 42,
+      "raw_input": "A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, “Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics,” in Proceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 193–204.",
+      "title": "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics",
+      "authors": [
+        "A. Gilyén, Y. Su, G. H. Low, and N. Wiebe"
+      ],
+      "year": 2019,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "43"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "43"
+          ],
+          "raw_ref": [
+            "[43] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, “Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics,” in Proceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 193–204."
+          ],
+          "author": [
+            "A. Gilyén, Y. Su, G. H. Low, and N. Wiebe"
+          ],
+          "title": [
+            "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics"
+          ],
+          "misc": [
+            "in Proceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA,) pp. 193-204"
+          ],
+          "year": [
+            "2019"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 43,
+      "raw_input": "J. Haah, M. Hastings, R. Kothari, and G. H. Low, “Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians,” in 2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18 (IEEE, Washington, DC, USA, 2018) pp. 350–360.",
+      "title": "Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians",
+      "authors": [
+        "J. Haah, M. Hastings, R. Kothari, and G. H. Low"
+      ],
+      "year": 2018,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "44"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "44"
+          ],
+          "raw_ref": [
+            "[44] J. Haah, M. Hastings, R. Kothari, and G. H. Low, “Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians,” in 2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18 (IEEE, Washington, DC, USA, 2018) pp. 350–360."
+          ],
+          "author": [
+            "J. Haah, M. Hastings, R. Kothari, and G. H. Low"
+          ],
+          "title": [
+            "Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians"
+          ],
+          "misc": [
+            "in"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2018"
+          ]
+        },
+        {
+          "linemarker": [
+            "44"
+          ],
+          "raw_ref": [
+            "[44] J. Haah, M. Hastings, R. Kothari, and G. H. Low, “Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians,” in 2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18 (IEEE, Washington, DC, USA, 2018) pp. 350–360."
+          ],
+          "author": [
+            "J. Haah, M. Hastings, R. Kothari, and G. H. Low"
+          ],
+          "misc": [
+            "59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18",
+            "Washington, DC, USA,) pp. 350-360"
+          ],
+          "publisher": [
+            "IEEE"
+          ],
+          "year": [
+            "2018"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only",
+        "refextract_multiple_candidates_for_single_input:2"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 44,
+      "raw_input": "A. M. Childs and Y. Su, “Nearly optimal lattice simulation by product formulas,” arXiv preprint arXiv:1901.00564 (2019).",
+      "title": "Nearly optimal lattice simulation by product formulas",
+      "authors": [
+        "A. M. Childs and Y. Su"
+      ],
+      "year": 2019,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "arXiv:1901.00564"
+        ],
+        "linemarker": [
+          "45"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "45"
+          ],
+          "raw_ref": [
+            "[45] A. M. Childs and Y. Su, “Nearly optimal lattice simulation by product formulas,” arXiv preprint arXiv:1901.00564 (2019)."
+          ],
+          "author": [
+            "A. M. Childs and Y. Su"
+          ],
+          "title": [
+            "Nearly optimal lattice simulation by product formulas"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "arXiv:1901.00564"
+          ],
+          "year": [
+            "2019"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 45,
+      "raw_input": "G. H. Low and I. L. Chuang, “Hamiltonian Simulation by Uniform Spectral Ampliﬁcation,” arXiv preprint arXiv:1707.05391 (2017).",
+      "title": "Hamiltonian Simulation by Uniform Spectral Amplification",
+      "authors": [
+        "G. H. Low and I. L. Chuang"
+      ],
+      "year": 2017,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "arXiv:1707.05391"
+        ],
+        "linemarker": [
+          "46"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "46"
+          ],
+          "raw_ref": [
+            "[46] G. H. Low and I. L. Chuang, “Hamiltonian Simulation by Uniform Spectral Ampliﬁcation,” arXiv preprint arXiv:1707.05391 (2017)."
+          ],
+          "author": [
+            "G. H. Low and I. L. Chuang"
+          ],
+          "title": [
+            "Hamiltonian Simulation by Uniform Spectral Amplification"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "arXiv:1707.05391"
+          ],
+          "year": [
+            "2017"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 46,
+      "raw_input": "G. H. Low, “Hamiltonian simulation with nearly optimal dependence on spectral norm,” in Pro- ceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 491–502.",
+      "title": "Hamiltonian simulation with nearly optimal dependence on spectral norm",
+      "authors": [
+        "G. H. Low"
+      ],
+      "year": 2019,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "linemarker": [
+          "47"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "47"
+          ],
+          "raw_ref": [
+            "[47] G. H. Low, “Hamiltonian simulation with nearly optimal dependence on spectral norm,” in Pro- ceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 491–502."
+          ],
+          "author": [
+            "G. H. Low"
+          ],
+          "title": [
+            "Hamiltonian simulation with nearly optimal dependence on spectral norm"
+          ],
+          "misc": [
+            "in Pro- ceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA,) pp. 491-502"
+          ],
+          "year": [
+            "2019"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 47,
+      "raw_input": "G. H. Low and N. Wiebe, “Hamiltonian Simulation in the Interaction Picture,” arXiv preprint arXiv:1805.00675 (2018).",
+      "title": "Hamiltonian Simulation in the Interaction Picture",
+      "authors": [
+        "G. H. Low and N. Wiebe"
+      ],
+      "year": 2018,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "arXiv:1805.00675"
+        ],
+        "linemarker": [
+          "48"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "48"
+          ],
+          "raw_ref": [
+            "[48] G. H. Low and N. Wiebe, “Hamiltonian Simulation in the Interaction Picture,” arXiv preprint arXiv:1805.00675 (2018)."
+          ],
+          "author": [
+            "G. H. Low and N. Wiebe"
+          ],
+          "title": [
+            "Hamiltonian Simulation in the Interaction Picture"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "arXiv:1805.00675"
+          ],
+          "year": [
+            "2018"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 48,
+      "raw_input": "A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su, “Toward the ﬁrst quantum simulation with quantum speedup,” Proceedings of the National Academy of Sciences 115, 9456 (2018).",
+      "title": "Toward the first quantum simulation with quantum speedup",
+      "authors": [
+        "A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su"
+      ],
+      "year": 2018,
+      "doi": null,
+      "venue": "Proc. Natl. Acad. Sci. U. S. A.",
+      "pages": "9456",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "49"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "49"
+          ],
+          "raw_ref": [
+            "[49] A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su, “Toward the ﬁrst quantum simulation with quantum speedup,” Proceedings of the National Academy of Sciences 115, 9456 (2018)."
+          ],
+          "author": [
+            "A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su"
+          ],
+          "title": [
+            "Toward the first quantum simulation with quantum speedup"
+          ],
+          "journal_title": [
+            "Proc. Natl. Acad. Sci. U. S. A."
+          ],
+          "journal_volume": [
+            "115"
+          ],
+          "journal_year": [
+            "2018"
+          ],
+          "journal_page": [
+            "9456"
+          ],
+          "journal_reference": [
+            "Proc. Natl. Acad. Sci. U. S. A. 115 (2018) 9456"
+          ],
+          "year": [
+            "2018"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 49,
+      "raw_input": "J. Haah, “Product Decomposition of Periodic Functions in Quantum Signal Processing,” arXiv preprint arXiv:1806.10236 (2018).",
+      "title": "Product Decomposition of Periodic Functions in Quantum Signal Processing",
+      "authors": [
+        "J. Haah"
+      ],
+      "year": 2018,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {
+        "reportnumber": [
+          "arXiv:1806.10236"
+        ],
+        "linemarker": [
+          "50"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "50"
+          ],
+          "raw_ref": [
+            "[50] J. Haah, “Product Decomposition of Periodic Functions in Quantum Signal Processing,” arXiv preprint arXiv:1806.10236 (2018)."
+          ],
+          "author": [
+            "J. Haah"
+          ],
+          "title": [
+            "Product Decomposition of Periodic Functions in Quantum Signal Processing"
+          ],
+          "misc": [
+            "arXiv preprint"
+          ],
+          "reportnumber": [
+            "arXiv:1806.10236"
+          ],
+          "year": [
+            "2018"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 50,
+      "raw_input": "L. J. Karam and J. H. McClellan, “Chebyshev digital FIR ﬁlter design,” Signal Processing 76, 17 (1999). Accepted in Quantum 2019-07-08, click title to verify 23",
+      "title": "Chebyshev digital FIR filter design",
+      "authors": [
+        "L. J. Karam and J. H. McClellan"
+      ],
+      "year": 1999,
+      "doi": null,
+      "venue": "Signal Process.",
+      "pages": "17",
+      "type": "journal",
+      "identifiers": {
+        "linemarker": [
+          "51"
+        ]
+      },
+      "parser": "refextract",
+      "raw_output": [
+        {
+          "linemarker": [
+            "51"
+          ],
+          "raw_ref": [
+            "[51] L. J. Karam and J. H. McClellan, “Chebyshev digital FIR ﬁlter design,” Signal Processing 76, 17 (1999). Accepted in Quantum 2019-07-08, click title to verify 23"
+          ],
+          "author": [
+            "L. J. Karam and J. H. McClellan"
+          ],
+          "title": [
+            "Chebyshev digital FIR filter design"
+          ],
+          "journal_title": [
+            "Signal Process."
+          ],
+          "journal_volume": [
+            "76"
+          ],
+          "journal_year": [
+            "1999"
+          ],
+          "journal_page": [
+            "17"
+          ],
+          "journal_reference": [
+            "Signal Process. 76 (1999) 17"
+          ],
+          "misc": [
+            "Accepted in Quantum 2019-07-08, click title to verify 23"
+          ],
+          "year": [
+            "1999"
+          ]
+        }
+      ],
+      "warnings": [
+        "refextract_loaded_with_magic_shim_string_mode_only"
+      ],
+      "confidence": null
+    }
+  ],
+  "notes": [
+    "Executed with refextract string mode over already segmented references.",
+    "Refextract required a local magic shim because libmagic is not installed on this Windows environment.",
+    "Refextract produced multiple candidate parses for 4 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+  ],
+  "raw_parser_output": [
+    [
+      {
+        "linemarker": [
+          "1"
+        ],
+        "raw_ref": [
+          "[1] S. Lloyd, “Universal Quantum Simulators,” Science 273, 1073 (1996)."
+        ],
+        "author": [
+          "S. Lloyd"
+        ],
+        "title": [
+          "Universal Quantum Simulators"
+        ],
+        "journal_title": [
+          "Science"
+        ],
+        "journal_volume": [
+          "273"
+        ],
+        "journal_year": [
+          "1996"
+        ],
+        "journal_page": [
+          "1073"
+        ],
+        "journal_reference": [
+          "Science 273 (1996) 1073"
+        ],
+        "year": [
+          "1996"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "2"
+        ],
+        "raw_ref": [
+          "[2] D. Aharonov and A. Ta-Shma, “Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 20."
+        ],
+        "author": [
+          "D. Aharonov and A. Ta-Shma"
+        ],
+        "title": [
+          "Adiabatic quantum state generation and statistical zero knowl- Accepted in Quantum 2019-07-08, click title to verify 20 edge"
+        ],
+        "misc": [
+          "in Proceedings of the thirty-fifth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA,) p. 20"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "3"
+        ],
+        "raw_ref": [
+          "[3] A. M. Childs and N. Wiebe, “Hamiltonian Simulation Using Linear Combinations of Unitary Operations,” Quantum Information & Computation 12, 901 (2012)."
+        ],
+        "author": [
+          "A. M. Childs and N. Wiebe"
+        ],
+        "title": [
+          "Hamiltonian Simulation Using Linear Combinations of Unitary Operations"
+        ],
+        "journal_title": [
+          "Quantum Inf. Comput."
+        ],
+        "journal_volume": [
+          "12"
+        ],
+        "journal_year": [
+          "2012"
+        ],
+        "journal_page": [
+          "901"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Comput. 12 (2012) 901"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "4"
+        ],
+        "raw_ref": [
+          "[4] D. W. Berry and A. M. Childs, “Black-box Hamiltonian simulation and unitary implementation,” Quantum Information & Computation 12, 29 (2012)."
+        ],
+        "author": [
+          "D. W. Berry and A. M. Childs"
+        ],
+        "title": [
+          "Black-box Hamiltonian simulation and unitary implementation"
+        ],
+        "journal_title": [
+          "Quantum Inf. Comput."
+        ],
+        "journal_volume": [
+          "12"
+        ],
+        "journal_year": [
+          "2012"
+        ],
+        "journal_page": [
+          "29"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Comput. 12 (2012) 29"
+        ],
+        "year": [
+          "2012"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "5"
+        ],
+        "raw_ref": [
+          "[5] S. Lloyd, M. Mohseni, and P. Rebentrost, “Quantum principal component analysis,” Nature Physics 10, 631 (2014)."
+        ],
+        "author": [
+          "S. Lloyd, M. Mohseni, and P. Rebentrost"
+        ],
+        "title": [
+          "Quantum principal component analysis"
+        ],
+        "journal_title": [
+          "Nature Phys."
+        ],
+        "journal_volume": [
+          "10"
+        ],
+        "journal_year": [
+          "2014"
+        ],
+        "journal_page": [
+          "631"
+        ],
+        "journal_reference": [
+          "Nature Phys. 10 (2014) 631"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "6"
+        ],
+        "raw_ref": [
+          "[6] D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters,” in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS ’15 (IEEE, Washington, DC, USA, 2015) pp. 792–809."
+        ],
+        "author": [
+          "D. W. Berry, A. M. Childs, and R. Kothari"
+        ],
+        "title": [
+          "Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters"
+        ],
+        "misc": [
+          "in"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2015"
+        ]
+      },
+      {
+        "linemarker": [
+          "6"
+        ],
+        "raw_ref": [
+          "[6] D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian Simulation with Nearly Optimal De- pendence on all Parameters,” in 2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS ’15 (IEEE, Washington, DC, USA, 2015) pp. 792–809."
+        ],
+        "author": [
+          "D. W. Berry, A. M. Childs, and R. Kothari"
+        ],
+        "misc": [
+          "56th Annual Symposium on Foundations of Computer Science, FOCS ’15",
+          "Washington, DC, USA,) pp. 792-809"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "7"
+        ],
+        "raw_ref": [
+          "[7] G. H. Low and I. L. Chuang, “Optimal Hamiltonian Simulation by Quantum Signal Processing,” Physical Review Letters 118, 010501 (2017)."
+        ],
+        "author": [
+          "G. H. Low and I. L. Chuang"
+        ],
+        "title": [
+          "Optimal Hamiltonian Simulation by Quantum Signal Processing"
+        ],
+        "journal_title": [
+          "Phys. Rev. Lett."
+        ],
+        "journal_volume": [
+          "118"
+        ],
+        "journal_year": [
+          "2017"
+        ],
+        "journal_page": [
+          "010501"
+        ],
+        "journal_reference": [
+          "Phys. Rev. Lett. 118 (2017) 010501"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "8"
+        ],
+        "raw_ref": [
+          "[8] A. W. Harrow, A. Hassidim, and S. Lloyd, “Quantum Algorithm for Linear Systems of Equations,” Physical Review Letters 103, 150502 (2009)."
+        ],
+        "author": [
+          "A. W. Harrow, A. Hassidim, and S. Lloyd"
+        ],
+        "title": [
+          "Quantum Algorithm for Linear Systems of Equations"
+        ],
+        "journal_title": [
+          "Phys. Rev. Lett."
+        ],
+        "journal_volume": [
+          "103"
+        ],
+        "journal_year": [
+          "2009"
+        ],
+        "journal_page": [
+          "150502"
+        ],
+        "journal_reference": [
+          "Phys. Rev. Lett. 103 (2009) 150502"
+        ],
+        "year": [
+          "2009"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "9"
+        ],
+        "raw_ref": [
+          "[9] A. M. Childs, R. Kothari, and R. D. Somma, “Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision,” SIAM Journal on Computing 46, 1920 (2017)."
+        ],
+        "author": [
+          "A. M. Childs, R. Kothari, and R. D. Somma"
+        ],
+        "title": [
+          "Quantum Algorithm for Systems of Linear Equa- tions with Exponentially Improved Dependence on Precision"
+        ],
+        "journal_title": [
+          "SIAM J. Comput."
+        ],
+        "journal_volume": [
+          "46"
+        ],
+        "journal_year": [
+          "2017"
+        ],
+        "journal_page": [
+          "1920"
+        ],
+        "journal_reference": [
+          "SIAM J. Comput. 46 (2017) 1920"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "10"
+        ],
+        "raw_ref": [
+          "[10] A. N. Chowdhury and R. D. Somma, “Quantum algorithms for Gibbs sampling and hitting-time estimation,” Quantum Information & Computation 17, 41 (2017)."
+        ],
+        "author": [
+          "A. N. Chowdhury and R. D. Somma"
+        ],
+        "title": [
+          "Quantum algorithms for Gibbs sampling and hitting-time estimation"
+        ],
+        "journal_title": [
+          "Quantum Inf. Comput."
+        ],
+        "journal_volume": [
+          "17"
+        ],
+        "journal_year": [
+          "2017"
+        ],
+        "journal_page": [
+          "41"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Comput. 17 (2017) 41"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "11"
+        ],
+        "raw_ref": [
+          "[11] F. G. Brandao and K. M. Svore, “Quantum Speed-Ups for Solving Semideﬁnite Programs,” 2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS) , 415 (2017)."
+        ],
+        "author": [
+          "F. G. Brandao and K. M. Svore"
+        ],
+        "title": [
+          "Quantum Speed-Ups for Solving Semidefinite Programs"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "misc": [
+          "58th Annual Symposium on Foundations of Computer Science (FOCS), 415"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "12"
+        ],
+        "raw_ref": [
+          "[12] M.-H. Yung, J. D. Whitﬁeld, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik, “Introduction to Quantum Algorithms for Physics and Chemistry,” in Quantum Information and Computation for Chemistry (John Wiley & Sons, Inc., 2014) pp. 67–106."
+        ],
+        "author": [
+          "M.-H. Yung, J. D. Whitfield, S. Boixo, D. G. Tempel, and A. Aspuru-Guzik"
+        ],
+        "title": [
+          "Introduction to Quantum Algorithms for Physics and Chemistry"
+        ],
+        "misc": [
+          "in Quantum Information and Computation for Chemistry (John",
+          "& Sons, Inc.,) pp. 67-106"
+        ],
+        "publisher": [
+          "Wiley"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "13"
+        ],
+        "raw_ref": [
+          "[13] D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer, “Gate-count estimates for performing quantum chemistry on small quantum computers,” Physical Review A 90, 022305 (2014)."
+        ],
+        "author": [
+          "D. Wecker, B. Bauer, B. K. Clark, M. B. Hastings, and M. Troyer"
+        ],
+        "title": [
+          "Gate-count estimates for performing quantum chemistry on small quantum computers"
+        ],
+        "journal_title": [
+          "Phys. Rev. A"
+        ],
+        "journal_volume": [
+          "90"
+        ],
+        "journal_year": [
+          "2014"
+        ],
+        "journal_page": [
+          "022305"
+        ],
+        "journal_reference": [
+          "Phys. Rev. A 90 (2014) 022305"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "14"
+        ],
+        "raw_ref": [
+          "[14] D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer, “The Trotter step size required for accurate quantum simulation of quantum chemistry,” Quantum Information & Computation 15, 361 (2015)."
+        ],
+        "author": [
+          "D. Poulin, M. B. Hastings, D. Wecker, N. Wiebe, A. C. Doherty, and M. Troyer"
+        ],
+        "title": [
+          "The Trotter step size required for accurate quantum simulation of quantum chemistry"
+        ],
+        "journal_title": [
+          "Quantum Inf. Comput."
+        ],
+        "journal_volume": [
+          "15"
+        ],
+        "journal_year": [
+          "2015"
+        ],
+        "journal_page": [
+          "361"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Comput. 15 (2015) 361"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "15"
+        ],
+        "raw_ref": [
+          "[15] M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer, “Elucidating reaction mechanisms on quantum computers,” Proceedings of the National Academy of Sciences 114, 7555 (2017)."
+        ],
+        "author": [
+          "M. Reiher, N. Wiebe, K. M. Svore, D. Wecker, and M. Troyer"
+        ],
+        "title": [
+          "Elucidating reaction mechanisms on quantum computers"
+        ],
+        "journal_title": [
+          "Proc. Natl. Acad. Sci. U. S. A."
+        ],
+        "journal_volume": [
+          "114"
+        ],
+        "journal_year": [
+          "2017"
+        ],
+        "journal_page": [
+          "7555"
+        ],
+        "journal_reference": [
+          "Proc. Natl. Acad. Sci. U. S. A. 114 (2017) 7555"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "16"
+        ],
+        "raw_ref": [
+          "[16] R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik, “Expo- nentially more precise quantum simulation of fermions in second quantization,” New Journal of Physics 18, 033032 (2016)."
+        ],
+        "author": [
+          "R. Babbush, D. W. Berry, I. D. Kivlichan, A. Y. Wei, P. J. Love, and A. Aspuru-Guzik"
+        ],
+        "title": [
+          "Expo- nentially more precise quantum simulation of fermions in second quantization"
+        ],
+        "journal_title": [
+          "New J. Phys."
+        ],
+        "journal_volume": [
+          "18"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "033032"
+        ],
+        "journal_reference": [
+          "New J. Phys. 18 (2016) 033032"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "17"
+        ],
+        "raw_ref": [
+          "[17] I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik, “Bounding the costs of quan- tum simulation of many-body physics in real space,” Journal of Physics A: Mathematical and Theoretical 50, 305301 (2017)."
+        ],
+        "author": [
+          "I. D. Kivlichan, N. Wiebe, R. Babbush, and A. Aspuru-Guzik"
+        ],
+        "title": [
+          "Bounding the costs of quan- tum simulation of many-body physics in real space"
+        ],
+        "misc": [
+          "Journal of Physics A: Mathematical and Theoretical 50, 305301"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "18"
+        ],
+        "raw_ref": [
+          "[18] P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeﬀrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis, “Scalable Quantum Simulation of Molecular Energies,” Physical Review X 6, 031007 (2016)."
+        ],
+        "author": [
+          "P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero, J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeffrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner, T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis"
+        ],
+        "title": [
+          "Scalable Quantum Simulation of Molecular Energies"
+        ],
+        "journal_title": [
+          "Phys. Rev."
+        ],
+        "journal_volume": [
+          "X6"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "031007"
+        ],
+        "journal_reference": [
+          "Phys. Rev. X6 (2016) 031007"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "19"
+        ],
+        "raw_ref": [
+          "[19] R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeﬀrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis, “Superconducting quantum circuits at the surface code threshold for fault tolerance,” Nature 508, 500 (2014)."
+        ],
+        "author": [
+          "R. Barends, J. Kelly, A. Megrant, A. Veitia, D. Sank, E. Jeffrey, T. C. White, J. Mutus, A. G. Fowler, B. Campbell, Y. Chen, Z. Chen, B. Chiaro, A. Dunsworth, C. Neill, P. O’Malley, P. Roushan, A. Vainsencher, J. Wenner, A. N. Korotkov, A. N. Cleland, and J. M. Martinis"
+        ],
+        "title": [
+          "Superconducting quantum circuits at the surface code threshold for fault tolerance"
+        ],
+        "journal_title": [
+          "Nature"
+        ],
+        "journal_volume": [
+          "508"
+        ],
+        "journal_year": [
+          "2014"
+        ],
+        "journal_page": [
+          "500"
+        ],
+        "journal_reference": [
+          "Nature 508 (2014) 500"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "20"
+        ],
+        "raw_ref": [
+          "[20] S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe, “Demonstration of a small programmable quantum computer with atomic qubits,” Nature 536, 63 (2016). Accepted in Quantum 2019-07-08, click title to verify 21"
+        ],
+        "author": [
+          "S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe"
+        ],
+        "title": [
+          "Demonstration of a small programmable quantum computer with atomic qubits"
+        ],
+        "journal_title": [
+          "Nature"
+        ],
+        "journal_volume": [
+          "536"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "63"
+        ],
+        "journal_reference": [
+          "Nature 536 (2016) 63"
+        ],
+        "misc": [
+          "Accepted in Quantum 2019-07-08, click title to verify 21"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "21"
+        ],
+        "raw_ref": [
+          "[21] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Exponential improvement in precision for simulating sparse Hamiltonians,” in Proceedings of the 46th Annual ACM Symposium on Theory of Computing - STOC ’14, STOC ’14 (ACM Press, New York, New York, USA, 2014) pp. 283–292."
+        ],
+        "author": [
+          "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+        ],
+        "title": [
+          "Exponential improvement in precision for simulating sparse Hamiltonians"
+        ],
+        "misc": [
+          "in Proceedings of the 46th Annual ACM Symposium on Theory of Computing - STOC ’14, STOC ’14 (ACM Press, New York, New York, USA,) pp. 283-292"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "22"
+        ],
+        "raw_ref": [
+          "[22] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma, “Simulating Hamiltonian Dynamics with a Truncated Taylor Series,” Physical Review Letters 114, 090502 (2015)."
+        ],
+        "author": [
+          "D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D. Somma"
+        ],
+        "title": [
+          "Simulating Hamiltonian Dynamics with a Truncated Taylor Series"
+        ],
+        "journal_title": [
+          "Phys. Rev. Lett."
+        ],
+        "journal_volume": [
+          "114"
+        ],
+        "journal_year": [
+          "2015"
+        ],
+        "journal_page": [
+          "090502"
+        ],
+        "journal_reference": [
+          "Phys. Rev. Lett. 114 (2015) 090502"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "23"
+        ],
+        "raw_ref": [
+          "[23] A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman, “Exponential algorithmic speedup by a quantum walk,” in Proceedings of the thirty-ﬁfth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA, 2003) p. 59."
+        ],
+        "author": [
+          "A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman"
+        ],
+        "title": [
+          "Exponential algorithmic speedup by a quantum walk"
+        ],
+        "misc": [
+          "in Proceedings of the thirty-fifth ACM symposium on Theory of computing - STOC ’03, STOC ’03 (ACM Press, New York, New York, USA,) p. 59"
+        ],
+        "year": [
+          "2003"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "24"
+        ],
+        "raw_ref": [
+          "[24] A. M. Childs, “On the Relationship Between Continuous- and Discrete-Time Quantum Walk,” Communications in Mathematical Physics 294, 581 (2010)."
+        ],
+        "author": [
+          "A. M. Childs"
+        ],
+        "title": [
+          "On the Relationship Between Continuous- and Discrete-Time Quantum Walk"
+        ],
+        "journal_title": [
+          "Commun. Math. Phys."
+        ],
+        "journal_volume": [
+          "294"
+        ],
+        "journal_year": [
+          "2010"
+        ],
+        "journal_page": [
+          "581"
+        ],
+        "journal_reference": [
+          "Commun. Math. Phys. 294 (2010) 581"
+        ],
+        "year": [
+          "2010"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "25"
+        ],
+        "raw_ref": [
+          "[25] R. Kothari, Eﬃcient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo (2014)."
+        ],
+        "author": [
+          "R. Kothari"
+        ],
+        "misc": [
+          "Efficient algorithms in quantum query complexity, Ph.D. thesis, University of Waterloo"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "26"
+        ],
+        "raw_ref": [
+          "[26] M. Szegedy, “Spectra of Quantized Walks and a √ δϵ rule,” arXiv preprint quant-ph/0401053 (2004)."
+        ],
+        "author": [
+          "M. Szegedy"
+        ],
+        "title": [
+          "Spectra of Quantized Walks and a √ δϵ rule"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "quant-ph/0401053"
+        ],
+        "year": [
+          "2004"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "27"
+        ],
+        "raw_ref": [
+          "[27] D. W. Berry and L. Novo, “Corrected Quantum Walk for Optimal Hamiltonian Simulation,” Quantum Information & Computation 16, 1295 (2016)."
+        ],
+        "author": [
+          "D. W. Berry and L. Novo"
+        ],
+        "title": [
+          "Corrected Quantum Walk for Optimal Hamiltonian Simulation"
+        ],
+        "journal_title": [
+          "Quantum Inf. Comput."
+        ],
+        "journal_volume": [
+          "16"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "1295"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Comput. 16 (2016) 1295"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "28"
+        ],
+        "raw_ref": [
+          "[28] S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder, “Hamiltonian simulation with optimal sample complexity,” npj Quantum Information 3, 13 (2017)."
+        ],
+        "author": [
+          "S. Kimmel, C. Y.-Y. Lin, G. H. Low, M. Ozols, and T. J. Yoder"
+        ],
+        "title": [
+          "Hamiltonian simulation with optimal sample complexity"
+        ],
+        "misc": [
+          "npj Quantum Information 3, 13"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "29"
+        ],
+        "raw_ref": [
+          "[29] S. Chakraborty, A. Gilyén, and S. Jeﬀery, “The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation,” arXiv preprint arXiv:1804.01973 (2018)."
+        ],
+        "author": [
+          "S. Chakraborty, A. Gilyén, and S. Jeffery"
+        ],
+        "title": [
+          "The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "arXiv:1804.01973"
+        ],
+        "year": [
+          "2018"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "30"
+        ],
+        "raw_ref": [
+          "[30] R. D. Somma and S. Boixo, “Spectral Gap Ampliﬁcation,” SIAM Journal on Computing 42, 593 (2013)."
+        ],
+        "author": [
+          "R. D. Somma and S. Boixo"
+        ],
+        "title": [
+          "Spectral Gap Amplification"
+        ],
+        "journal_title": [
+          "SIAM J. Comput."
+        ],
+        "journal_volume": [
+          "42"
+        ],
+        "journal_year": [
+          "2013"
+        ],
+        "journal_page": [
+          "593"
+        ],
+        "journal_reference": [
+          "SIAM J. Comput. 42 (2013) 593"
+        ],
+        "year": [
+          "2013"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "31"
+        ],
+        "raw_ref": [
+          "[31] M. Szegedy, “Quantum Speed-Up of Markov Chain Based Algorithms,” in 45th Annual IEEE Symposium on Foundations of Computer Science, FOCS ’04 (IEEE, Washington, DC, USA, 2004) pp. 32–41."
+        ],
+        "author": [
+          "M. Szegedy"
+        ],
+        "title": [
+          "Quantum Speed-Up of Markov Chain Based Algorithms"
+        ],
+        "misc": [
+          "in 45th Annual"
+        ],
+        "publisher": [
+          "IEEE"
+        ]
+      },
+      {
+        "linemarker": [
+          "31"
+        ],
+        "raw_ref": [
+          "[31] M. Szegedy, “Quantum Speed-Up of Markov Chain Based Algorithms,” in 45th Annual IEEE Symposium on Foundations of Computer Science, FOCS ’04 (IEEE, Washington, DC, USA, 2004) pp. 32–41."
+        ],
+        "author": [
+          "M. Szegedy"
+        ],
+        "misc": [
+          "Symposium on Foundations of Computer Science, FOCS ’04",
+          "Washington, DC, USA,) pp. 32-41"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2004"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "32"
+        ],
+        "raw_ref": [
+          "[32] A. Daskin and S. Kais, “An ancilla-based quantum simulation framework for non-unitary matri- ces,” Quantum Information Processing 16, 33 (2017)."
+        ],
+        "author": [
+          "A. Daskin and S. Kais"
+        ],
+        "title": [
+          "An ancilla-based quantum simulation framework for non-unitary matri- ces"
+        ],
+        "journal_title": [
+          "Quantum Inf. Process."
+        ],
+        "journal_volume": [
+          "16"
+        ],
+        "journal_year": [
+          "2017"
+        ],
+        "journal_page": [
+          "33"
+        ],
+        "journal_reference": [
+          "Quantum Inf. Process. 16 (2017) 33"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "33"
+        ],
+        "raw_ref": [
+          "[33] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer Tracts in Natural Philosophy, Vol. 13 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1967)."
+        ],
+        "author": [
+          "G. Meinardus"
+        ],
+        "misc": [
+          "Approximation of Functions: Theory and Numerical Methods"
+        ],
+        "publisher": [
+          "Springer"
+        ]
+      },
+      {
+        "linemarker": [
+          "33"
+        ],
+        "raw_ref": [
+          "[33] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer Tracts in Natural Philosophy, Vol. 13 (Springer Berlin Heidelberg, Berlin, Heidelberg, 1967)."
+        ],
+        "author": [
+          "G. Meinardus"
+        ],
+        "misc": [
+          "Tracts in Natural Philosophy, Vol. 13",
+          "Berlin Heidelberg, Berlin, Heidelberg,)"
+        ],
+        "publisher": [
+          "Springer"
+        ],
+        "year": [
+          "1967"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "34"
+        ],
+        "raw_ref": [
+          "[34] L. K. Grover, “A fast quantum mechanical algorithm for database search,” Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC ’96 STOC ’96, 212 (1996)."
+        ],
+        "author": [
+          "L. K. Grover"
+        ],
+        "title": [
+          "A fast quantum mechanical algorithm for database search"
+        ],
+        "misc": [
+          "Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC ’96 STOC ’96, 212"
+        ],
+        "year": [
+          "1996"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "35"
+        ],
+        "raw_ref": [
+          "[35] T. J. Yoder, G. H. Low, and I. L. Chuang, “Fixed-Point Quantum Search with an Optimal Number of Queries,” Physical Review Letters 113, 210501 (2014)."
+        ],
+        "author": [
+          "T. J. Yoder, G. H. Low, and I. L. Chuang"
+        ],
+        "title": [
+          "Fixed-Point Quantum Search with an Optimal Number of Queries"
+        ],
+        "journal_title": [
+          "Phys. Rev. Lett."
+        ],
+        "journal_volume": [
+          "113"
+        ],
+        "journal_year": [
+          "2014"
+        ],
+        "journal_page": [
+          "210501"
+        ],
+        "journal_reference": [
+          "Phys. Rev. Lett. 113 (2014) 210501"
+        ],
+        "year": [
+          "2014"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "36"
+        ],
+        "raw_ref": [
+          "[36] J. McClellan, T. Parks, and L. Rabiner, “A computer program for designing optimum FIR linear phase digital ﬁlters,” IEEE Transactions on Audio and Electroacoustics 21, 506 (1973)."
+        ],
+        "author": [
+          "J. McClellan, T. Parks, and L. Rabiner"
+        ],
+        "title": [
+          "A computer program for designing optimum FIR linear phase digital filters"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "misc": [
+          "Transactions on Audio and Electroacoustics 21, 506"
+        ],
+        "year": [
+          "1973"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "37"
+        ],
+        "raw_ref": [
+          "[37] G. H. Low, T. J. Yoder, and I. L. Chuang, “Methodology of Resonant Equiangular Composite Quantum Gates,” Physical Review X 6, 041067 (2016)."
+        ],
+        "author": [
+          "G. H. Low, T. J. Yoder, and I. L. Chuang"
+        ],
+        "title": [
+          "Methodology of Resonant Equiangular Composite Quantum Gates"
+        ],
+        "journal_title": [
+          "Phys. Rev."
+        ],
+        "journal_volume": [
+          "X6"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "041067"
+        ],
+        "journal_reference": [
+          "Phys. Rev. X6 (2016) 041067"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "38"
+        ],
+        "raw_ref": [
+          "[38] M. Abramowitz, I. A. Stegun, and Others, “Handbook of mathematical functions,” Applied mathematics series 55, 62 (1966)."
+        ],
+        "author": [
+          "M. Abramowitz, I. A. Stegun"
+        ],
+        "misc": [
+          "and Others",
+          "Applied mathematics series 55, 62"
+        ],
+        "title": [
+          "Handbook of mathematical functions"
+        ],
+        "year": [
+          "1966"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "39"
+        ],
+        "raw_ref": [
+          "[39] J. P. Boyd, “Rootﬁnding for a transcendental equation without a ﬁrst guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine,” Applied Numerical Mathematics 57, 12 (2007)."
+        ],
+        "author": [
+          "J. P. Boyd"
+        ],
+        "title": [
+          "Rootfinding for a transcendental equation without a first guess: Polynomialization of Kepler’s equation through Chebyshev polynomial expansion of the sine"
+        ],
+        "misc": [
+          "Applied Numerical Mathematics 57, 12"
+        ],
+        "year": [
+          "2007"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "40"
+        ],
+        "raw_ref": [
+          "[40] A. M. Childs and R. Kothari, “Limitations on the Simulation of Non-sparse Hamiltonians,” Quan- tum Information & Computation 10, 669 (2010)."
+        ],
+        "author": [
+          "A. M. Childs and R. Kothari"
+        ],
+        "title": [
+          "Limitations on the Simulation of Non-sparse Hamiltonians"
+        ],
+        "misc": [
+          "Quan- tum Information & Computation 10, 669"
+        ],
+        "year": [
+          "2010"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "41"
+        ],
+        "raw_ref": [
+          "[41] R. D. Somma, “A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation,” Journal of Mathematical Physics 57, 062202 (2016)."
+        ],
+        "author": [
+          "R. D. Somma"
+        ],
+        "title": [
+          "A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation"
+        ],
+        "journal_title": [
+          "J. Math. Phys."
+        ],
+        "journal_volume": [
+          "57"
+        ],
+        "journal_year": [
+          "2016"
+        ],
+        "journal_page": [
+          "062202"
+        ],
+        "journal_reference": [
+          "J. Math. Phys. 57 (2016) 062202"
+        ],
+        "year": [
+          "2016"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "42"
+        ],
+        "raw_ref": [
+          "[42] G. H. Low, T. J. Yoder, and I. L. Chuang, “Quantum Imaging by Coherent Enhancement,” Physical Review Letters 114, 100801 (2015). Accepted in Quantum 2019-07-08, click title to verify 22"
+        ],
+        "author": [
+          "G. H. Low, T. J. Yoder, and I. L. Chuang"
+        ],
+        "title": [
+          "Quantum Imaging by Coherent Enhancement"
+        ],
+        "journal_title": [
+          "Phys. Rev. Lett."
+        ],
+        "journal_volume": [
+          "114"
+        ],
+        "journal_year": [
+          "2015"
+        ],
+        "journal_page": [
+          "100801"
+        ],
+        "journal_reference": [
+          "Phys. Rev. Lett. 114 (2015) 100801"
+        ],
+        "misc": [
+          "Accepted in Quantum 2019-07-08, click title to verify 22"
+        ],
+        "year": [
+          "2015"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "43"
+        ],
+        "raw_ref": [
+          "[43] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, “Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics,” in Proceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 193–204."
+        ],
+        "author": [
+          "A. Gilyén, Y. Su, G. H. Low, and N. Wiebe"
+        ],
+        "title": [
+          "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics"
+        ],
+        "misc": [
+          "in Proceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA,) pp. 193-204"
+        ],
+        "year": [
+          "2019"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "44"
+        ],
+        "raw_ref": [
+          "[44] J. Haah, M. Hastings, R. Kothari, and G. H. Low, “Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians,” in 2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18 (IEEE, Washington, DC, USA, 2018) pp. 350–360."
+        ],
+        "author": [
+          "J. Haah, M. Hastings, R. Kothari, and G. H. Low"
+        ],
+        "title": [
+          "Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians"
+        ],
+        "misc": [
+          "in"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2018"
+        ]
+      },
+      {
+        "linemarker": [
+          "44"
+        ],
+        "raw_ref": [
+          "[44] J. Haah, M. Hastings, R. Kothari, and G. H. Low, “Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians,” in 2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18 (IEEE, Washington, DC, USA, 2018) pp. 350–360."
+        ],
+        "author": [
+          "J. Haah, M. Hastings, R. Kothari, and G. H. Low"
+        ],
+        "misc": [
+          "59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS ’18",
+          "Washington, DC, USA,) pp. 350-360"
+        ],
+        "publisher": [
+          "IEEE"
+        ],
+        "year": [
+          "2018"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "45"
+        ],
+        "raw_ref": [
+          "[45] A. M. Childs and Y. Su, “Nearly optimal lattice simulation by product formulas,” arXiv preprint arXiv:1901.00564 (2019)."
+        ],
+        "author": [
+          "A. M. Childs and Y. Su"
+        ],
+        "title": [
+          "Nearly optimal lattice simulation by product formulas"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "arXiv:1901.00564"
+        ],
+        "year": [
+          "2019"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "46"
+        ],
+        "raw_ref": [
+          "[46] G. H. Low and I. L. Chuang, “Hamiltonian Simulation by Uniform Spectral Ampliﬁcation,” arXiv preprint arXiv:1707.05391 (2017)."
+        ],
+        "author": [
+          "G. H. Low and I. L. Chuang"
+        ],
+        "title": [
+          "Hamiltonian Simulation by Uniform Spectral Amplification"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "arXiv:1707.05391"
+        ],
+        "year": [
+          "2017"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "47"
+        ],
+        "raw_ref": [
+          "[47] G. H. Low, “Hamiltonian simulation with nearly optimal dependence on spectral norm,” in Pro- ceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA, 2019) pp. 491–502."
+        ],
+        "author": [
+          "G. H. Low"
+        ],
+        "title": [
+          "Hamiltonian simulation with nearly optimal dependence on spectral norm"
+        ],
+        "misc": [
+          "in Pro- ceedings of the 51st Annual ACM Symposium on Theory of Computing - STOC ’19 (ACM Press, New York, New York, USA,) pp. 491-502"
+        ],
+        "year": [
+          "2019"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "48"
+        ],
+        "raw_ref": [
+          "[48] G. H. Low and N. Wiebe, “Hamiltonian Simulation in the Interaction Picture,” arXiv preprint arXiv:1805.00675 (2018)."
+        ],
+        "author": [
+          "G. H. Low and N. Wiebe"
+        ],
+        "title": [
+          "Hamiltonian Simulation in the Interaction Picture"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "arXiv:1805.00675"
+        ],
+        "year": [
+          "2018"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "49"
+        ],
+        "raw_ref": [
+          "[49] A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su, “Toward the ﬁrst quantum simulation with quantum speedup,” Proceedings of the National Academy of Sciences 115, 9456 (2018)."
+        ],
+        "author": [
+          "A. M. Childs, D. Maslov, Y. Nam, N. J. Ross, and Y. Su"
+        ],
+        "title": [
+          "Toward the first quantum simulation with quantum speedup"
+        ],
+        "journal_title": [
+          "Proc. Natl. Acad. Sci. U. S. A."
+        ],
+        "journal_volume": [
+          "115"
+        ],
+        "journal_year": [
+          "2018"
+        ],
+        "journal_page": [
+          "9456"
+        ],
+        "journal_reference": [
+          "Proc. Natl. Acad. Sci. U. S. A. 115 (2018) 9456"
+        ],
+        "year": [
+          "2018"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "50"
+        ],
+        "raw_ref": [
+          "[50] J. Haah, “Product Decomposition of Periodic Functions in Quantum Signal Processing,” arXiv preprint arXiv:1806.10236 (2018)."
+        ],
+        "author": [
+          "J. Haah"
+        ],
+        "title": [
+          "Product Decomposition of Periodic Functions in Quantum Signal Processing"
+        ],
+        "misc": [
+          "arXiv preprint"
+        ],
+        "reportnumber": [
+          "arXiv:1806.10236"
+        ],
+        "year": [
+          "2018"
+        ]
+      }
+    ],
+    [
+      {
+        "linemarker": [
+          "51"
+        ],
+        "raw_ref": [
+          "[51] L. J. Karam and J. H. McClellan, “Chebyshev digital FIR ﬁlter design,” Signal Processing 76, 17 (1999). Accepted in Quantum 2019-07-08, click title to verify 23"
+        ],
+        "author": [
+          "L. J. Karam and J. H. McClellan"
+        ],
+        "title": [
+          "Chebyshev digital FIR filter design"
+        ],
+        "journal_title": [
+          "Signal Process."
+        ],
+        "journal_volume": [
+          "76"
+        ],
+        "journal_year": [
+          "1999"
+        ],
+        "journal_page": [
+          "17"
+        ],
+        "journal_reference": [
+          "Signal Process. 76 (1999) 17"
+        ],
+        "misc": [
+          "Accepted in Quantum 2019-07-08, click title to verify 23"
+        ],
+        "year": [
+          "1999"
+        ]
+      }
+    ]
+  ]
+}

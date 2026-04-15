@@ -1,0 +1,1441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Hamiltonian Simulation by Qubitization</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2019-07-12">July 12, 2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Guang</forename><forename type="middle">Hao</forename><surname>Low</surname></persName>
+							<idno type="ORCID">0000-0002-6934-1052</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Physics</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Isaac</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Department of Electrical Engineering and Computer Science</orgName>
+								<orgName type="department" key="dep2">Department of Physics, Research Laboratory of Electronics</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Hamiltonian Simulation by Qubitization</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2019-07-12">July 12, 2019</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">3C84D757C0D7D8B7959957EC4B849E40</idno>
+					<idno type="arXiv">arXiv:1610.06546v3[quant-ph]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2026-04-14T20:05+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>We present the problem of approximating the time-evolution operator e -i Ĥt to error , where the Hamiltonian Ĥ = ( G|⊗ Î) Û (|G ⊗ Î) is the projection of a unitary oracle Û onto the state |G created by another unitary oracle. Our algorithm solves this with a query complexity O t + log(1/ ) to both oracles that is optimal with respect to all parameters in both the asymptotic and non-asymptotic regime, and also with low overhead, using at most two additional ancilla qubits. This approach to Hamiltonian simulation subsumes important prior art considering Hamiltonians which are d-sparse or a linear combination of unitaries, leading to significant improvements in space and gate complexity, such as a quadratic speed-up for precision simulations. It also motivates useful new instances, such as where Ĥ is a density matrix. A key technical result is 'qubitization', which uses the controlled version of these oracles to embed any Ĥ in an invariant SU(2) subspace. A large class of operator functions of Ĥ can then be computed with optimal query complexity, of which e -i Ĥt is a special case.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Quantum computers were originally envisioned as machines for efficiently simulating quantum Hamiltonian dynamics. As Hamiltonian simulation is BQP-complete, the problem is believed to be intractable by classical computers, and remains a strong primary motivation. The first explicit quantum algorithms for Hamiltonian simulation were discovered by Lloyd <ref type="bibr" target="#b0">[1]</ref> for local interactions, and then generalized by Aharonov and Ta-Shma <ref type="bibr" target="#b1">[2]</ref> to sparse Hamiltonians. Celebrated achievements over the years <ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref> have each ignited a flurry of activity in diverse applications from quantum algorithms <ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref> to quantum chemistry <ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref><ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref>. In this dawning era of the small quantum computer <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b19">20]</ref>, the relevance and necessity of space and gate efficient procedures for practical Hamiltonian simulation has intensified.</p><p>The cost of simulating the time-evolution operator e -i Ĥt depends on several factors: the number of system qubits n, evolution time t, target error , and how information on the Hamiltonian Ĥ is accessed by the quantum computer. This field has progressed rapidly following groundbreaking work in the fractional query model <ref type="bibr" target="#b20">[21]</ref>, which was the first to achieve query complexities that depend logarithmically on error. This was generalized by Berry, Childs, Cleve, Kothari, and Somma (BC-CKS) <ref type="bibr" target="#b21">[22]</ref> to the common case where Ĥ = d j=1 α j Ûj is a linear combination of d unitaries 1 with an algorithm using O log (d) log (τ / ) log log (τ / ) ancilla qubits and only O τ log (τ / ) log log (τ / ) queries, where τ ← α 1 t and α 1 = d j=1 |α j | is the usual L 1 norm. Subsequently, an extension was made to d-sparse Hamiltonians <ref type="bibr" target="#b5">[6]</ref> that have at most d non-zero elements per row, also using O τ log (τ / ) log log (τ / ) queries with τ ← dt H max . A prominent open question in all these works was whether the additive lower bound Ω τ + log (1/ )   log log (1/ ) 2 was achievable for any of these models.</p><p>Recently, we found for the d-sparse model <ref type="bibr" target="#b6">[7]</ref>, which is popular in algorithm design by quantum walks <ref type="bibr" target="#b22">[23]</ref>, a procedure achieving the optimal trade-off between all parameters up to constant factors, with query complexity O τ +log (1/ ) 3 . This strictly linear-time performance with additive complexity is a quadratic improvement over prior art for precision simulations when t = Θ(log (1/ )). Moreover, the number of ancilla qubits required is independent of τ and , which is another important practical improvement. The approach, based on Childs' <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b24">25]</ref> extension of Szegedy's quantum walk <ref type="bibr" target="#b25">[26]</ref>, required two quantum oracles: one accepting a row j and column k index to return the value of entry Ĥjk to m bits of precision, and another accepting a j row and l sparsity index to return in-place the l th non-zero entry in row j.</p><p>Unfortunately, the d-sparse model is less appealing in practical implementations for several reasons. First, it is exponentially slower than BCCKS when the Ûj are of high weight with sparsity O(2 n ). Second, its black-box oracles can be challenging to realize. Avoiding the exponential blowup by exploiting sparsity requires that positions of non-zero elements are both few in number and efficiently row-computable, which is not always the case. Third, the Childs quantum walk requires a doubling of the n system qubits, which is not required by BCCKS. It is unclear whether our methodology could be applied to other formulations of Hamiltonian simulation, in contrast to alternatives that seem more flexible <ref type="bibr" target="#b26">[27]</ref>.</p><p>Ideally, the best features of these two algorithms could be combined, such as in Table <ref type="table" target="#tab_2">1</ref>. For example, given the decomposition Ĥ = d j=1 α j Ûj , one would like the optimal additive complexity of sparse Hamiltonian simulation, but with the BCCKS oracles that are more straightforward to implement. Furthermore, one could wish for a constant ancilla overhead, of say log 2 (d) + 2, supe-1 A particularly interesting and general class of systems are k-local Hamiltonians with m terms. These are also m2 k -sparse, and can be expressed as a linear combination of ≤ m4 k Pauli operators, each of which are unitary. 2 A slightly tighter lower bound is Ω(q) queries, where q = min {q ∈ Z + : &lt; | sin(|τ |/q)| q = O((τ /q) q )} <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b20">21]</ref>. Note that q ∈ O(τ + log (1/ )) ∩ Ω τ + log(1/ ) log log (1/ ) . 3 In the respective limits τ = Θ(1) and = Θ(1), the query complexity is O log(1/ ) log log <ref type="bibr">(1/ )</ref> and O(τ ). Importantly, this does not imply a complexity of O τ + log(1/ ) log log <ref type="bibr">(1/ )</ref> . The precise form of the upper bound matches the lower bound with respect to all parameters up to constant factors and lies between Ω τ + log <ref type="bibr">(</ref> Varies n + poly(m) BCCKS <ref type="bibr" target="#b21">[22]</ref> j α j Ûj O( log (d) log ( α 1 t/ ) log log ( α 1 t/ ) ) α 1t log ( α 1 t/ ) log log ( α 1 t/ ) dC log (d) LMR <ref type="bibr" target="#b4">[5]</ref> Mixed   rior to either algorithm. These improvements would greatly enhance the potential of early practical applications of quantum computation.</p><p>We achieve precisely this optimistic fusion via an extremely general procedure, made possible by what we call 'qubitization', that subsumes both and motivates new formulations of Hamiltonian simulation, as captured by this main theorem: Theorem 1 (Optimal Hamiltonian simulation by Qubitization). Let ( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) = Ĥ ∈ C N ×N be Hermitian for some unitary Û ∈ C N d×N d and some state preparation unitary Ĝ|0 a = |G a ∈ C d . Then e -i Ĥt can be simulated for time t, error in spectral norm, and failure probability O( ), using at most log 2 (N ) + log 2 (d) + 2 qubits in total, Θ(Q) queries to controlled-Ĝ, controlled-Û , and their inverses, and O(Q log (d)) additional two-qubit quantum gates where</p><formula xml:id="formula_0">Q = min q ∈ Z + : ≥ 4|t| q q!2 q = O eτ 2q q = O(t + log (1/ )). (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>The optimality of the procedure follows by using oracles Ĝ and Û that implement the Childs quantum walk. Furthermore, the transparent Hamiltonian input model of Theorem 1 significantly expedites the development of new useful formulations of Hamiltonian simulation. For instance, we easily obtain a new result for the scenario where Ĥ is a density matrix ρ. Whereas ρ can be produced by discarding the ancilla of some output from a quantum circuit Ĝ, we instead keep this ancilla, leading to an unconditional quadratic improvement in time scaling, and an exponential improvement in error scaling over the sample-based Lloyd, Mohseni, and Rebentrost (LMR) model <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b27">28]</ref>, as summarized in Table <ref type="table" target="#tab_2">1</ref>. Though certainly a stronger model than was previously considered, the inputs to many quantum machine learning as well as quantum semidefinite programming <ref type="bibr" target="#b10">[11]</ref> applications are actually of this more restricted form, and are thus enhanced.</p><p>In fact, Hamiltonian simulation is just one application of our main innovation: an approach we call the 'quantum signal processor', where the equation ( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) = Ĥ in Theorem 1 is interpreted as a non-unitary signal operator Ĥ encoded in a subspace of an oracle Û flagged by |G a ⊗ Îs . This general encoding defined in Definition 1 4 unveils a systematic approach toward exponential quantum speedups with generic inputs, and is central to our results: Problem BCCKS <ref type="bibr" target="#b5">[6]</ref> d-sparse <ref type="bibr" target="#b6">[7]</ref> Evolution by ρ QPE QLSP <ref type="bibr" target="#b8">[9]</ref> Gibbs <ref type="bibr">[</ref> </p><formula xml:id="formula_2">( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) = Ĥ.</formula><p>We also assume query access to the inverses and controlled versions of Û , Ĝ.</p><p>The inputs to many problems, highlighted in Table <ref type="table" target="#tab_3">2</ref>, can be of this form. We introduce 'qubitization': the essential first step that converts this description of Ĥ into unitary evolution with properties that depend directly on Ĥ. When Ĥ is Hermitian, The oracles Ĝ and Û are queried to obtain a Grover-like search parallelized over all eigenvalues λ of Ĥ through the iterate, which is isomorphic to e -i Ŷ ⊗cos -1 [ Ĥ] in some subspace. Similar structures are of foundational importance to many quantum algorithms -the gap</p><formula xml:id="formula_3">∆ of eigenvalues λ = 1 -∆ of Ĥ is amplified to cos -1 (λ) = O( √ ∆)</formula><p>in the phase of the iterate, which resembles spectral gap amplification <ref type="bibr" target="#b29">[30]</ref>, the quantization of stochastic matrices <ref type="bibr" target="#b30">[31]</ref>, as well as Szegedy's <ref type="bibr" target="#b25">[26]</ref> and Childs' <ref type="bibr" target="#b23">[24]</ref> quantum walk. The key difference lies in the generalized encoding of the signal operator through any Ĝ and Û of Definition 1, instead of the more restrictive sparse Hamiltonian formulation.</p><p>Unlike Grover search, we do not seek to prepare some target state. Rather, we exploit a direct sum of Grover-like rotations that are each isomorphic to SU(2), to engineer arbitrary target functions f (λ) of its overlap λ. The quantum signal processor exploits this structure to attack the often-considered problem of designing a quantum circuit Q that queries Ĝ and Û such that in the standard-form,</p><formula xml:id="formula_4">( G| a ⊗ Îs ) Q(|G a ⊗ Îs ) = f [ Ĥ] for some target operator f [•].</formula><p>Though this is accomplished in prior art using the linear-combination-of-unitaries algorithm <ref type="bibr" target="#b24">[25]</ref>, that approach requires a case-by-case detailed analysis of f to obtain the L 1 norm of its coefficients in a Taylor expansion, and has a success probability that decays with the inverse square of this norm.</p><p>Our quantum signal processor computes f [ Ĥ] with no such restrictions and with an optimal query complexity that exactly matches polynomial lower bounds for a large class of functions. We call this 'quantum signal processing', which generalizes our previous results <ref type="bibr" target="#b6">[7]</ref> for d-sparse oracles to the standard-form and a larger class of functions. Thus generic improvements to all applications in Table 2 can be expected in query complexity, ancilla overhead, and scope of possible signal inputs. In particular, Theorem 1 follows directly from the query complexity of the choice f (λ) = e -iλt , which corresponds to applying -t sin (•) on eigenphases of the iterate.</p><p>In Section 2, we provide a detailed overview of the quantum signal processor, which uses the standard-form encoding of a matrix Ĥ in Definition 1 as an input. Our claim to the generality of this encoding is justified in Section 3, where we map a variety of other common input models describing matrices to the standard-form. The next key result is qubitization, which converts a standard-form encoding to a Grover-like iterate, is proven in Section 4. By creatively applying this iterate, we show in Section 5 how a large class of polynomials of Ĥ may be efficiently computed. Our final result on Hamiltonian simulation by qubitization is proven in Section 6 by a simple choice for this polynomial. Though we focus on qubitization of Hermitian matrices in the body of this paper, we also describe the extension to normal matrices in Appendix A.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Overview of the Quantum Signal Processor</head><p>Since coherent quantum computation is restricted to unitary operations, one commonly finds a situation such as in Table <ref type="table" target="#tab_3">2</ref>, where post-selection is required to accomplish some desired quantum state transformation. Consider some arbitrary input system quantum state |ψ s ∈ H s and suppose that it is transformed by some desired signal operator Ĥ like |ψ s → Ĥ|ψ s . In order to realize this operation, which is non-unitary in general, it is necessary to embed Ĥ in a larger Hilbert space. This is embedding accomplished through some given unitary signal oracle Û : H a ⊗ H s → H a ⊗ H s that acts jointly on H s and another Hilbert space H a . The signal oracle encodes Ĥ = ( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) in a subspace flagged by an ancilla signal state |G a ∈ H a . This is the standard-form of Definition 1, which applies Ĥ as follows.</p><formula xml:id="formula_5">Û |G a |ψ s = |G a Ĥ|ψ s + 1 -Ĥ|ψ 2 |G ⊥ ψ as , Û = Ĥ • • • , ( G| a ⊗ Îs )|G ⊥ ψ as = 0. (<label>2</label></formula><formula xml:id="formula_6">)</formula><p>The In the following, we consider the case where Ĥ is a Hermitian matrix. The case of normal Ĥ is discussed in Appendix A. Thus the action of Û on |G ψ in Eq. ( <ref type="formula" target="#formula_5">2</ref>) can be written more clearly in the eigenbasis of Ĥ|λ = λ|λ . For each eigenstate of Ĥ,</p><formula xml:id="formula_7">Û |G |λ = Û |G λ = λ|G λ + 1 -|λ| 2 |G ⊥ λ ,<label>(3)</label></formula><p>and we find it convenient to define the subspace H λ = span{|G λ , Û |G λ }. Note the trivial case λ = 1 where H λ is one-dimensional, which we will ignore. We also emphasize that the action of Û on states orthogonal to |G λ are generally not easily controlled by the user, and thus left undefined. Given any scalar function f , our goal is to find an optimal quantum circuit that transforms any standard-form encoding of Ĥ into a standard-form encoding of f [ Ĥ] ≡ λ f (λ)|λ λ|. We accomplish this with the quantum signal processor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Definition 2 (Quantum Signal Processor). A quantum signal processor solves the following.</head><p>Inputs:</p><formula xml:id="formula_8">• A Hermitian matrix Ĥ with bounded spectral norm Ĥ ≤ 1. • A function f : [-1, 1] → D, where D is the complex unit disc, i.e. ∀x ∈ [-1, 1], |f (x)| ≤ 1.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Resources: • An encoding of Ĥ = G| Û |G by the oracles of Definition 1.</head><p>• A constant number of additional qubits.</p><p>• Arbitrary single and two-qubit gates.</p><p>Outputs:</p><formula xml:id="formula_9">• A standard-form encoding of f [ Ĥ], i.e. a unitary Q where f [ Ĥ] = 0| Q|0 .</formula><p>In the simplest case, one might wish to apply Ĥ multiple times to generate higher moments. For instance, Ĥ2 would allow a direct estimate of variance. Unfortunately, the subspace H λ for each eigenstate |λ is not invariant under Û in general. As a result, repeated applications in this basis do not produce higher moments of Ĥ due to leakage out of H λ . The structure of this leakage depends on the undefined components of Û , must be analyzed on a case-by-case basis, and thus is of limited utility.</p><p>Order can be restored to this undefined behavior by stemming the leakage. The simplest possibility that preserves the signal operator of Eq. ( <ref type="formula" target="#formula_5">2</ref>) replaces Û with a unitary, the iterate Ŵ , that also encodes Ĥ = G| Ŵ |G , but for each eigenstate |λ , performs a rotation in SU(2) on disjoint two-dimensional subspaces</p><formula xml:id="formula_10">H λ = span{|G λ , Ŵ |G λ } = span{|G λ , |G ⊥ λ }.</formula><p>This defines the state |G ⊥ λ through Gram-Schmidt orthogonalization, and a set of Pauli operators Xλ , Ŷλ , Ẑλ for each subspace.</p><formula xml:id="formula_11">|G ⊥ λ = ( Ŵ -λ)|G λ 1 -|λ| 2 , Xλ |G λ = |G ⊥ λ , Ŷλ |G λ = i|G ⊥ λ , Ẑλ |G λ = |G λ . (<label>4</label></formula><formula xml:id="formula_12">)</formula><p>In this basis, the iterate for each eigenvalue of Ĥ is defined to be exactly</p><formula xml:id="formula_13">Ŵ = λ -1 -|λ| 2 1 -|λ| 2 λ λ = λ|G λ G λ | -1 -|λ| 2 |G λ G ⊥ λ | + 1 -|λ| 2 |G ⊥ λ G λ | +λ|G ⊥ λ G ⊥ λ | , (<label>5</label></formula><formula xml:id="formula_14">)</formula><p>On a general input |G λ a λ |λ ∈ H G , the iterate is represented by</p><formula xml:id="formula_15">Ŵ = λ λ -1 -|λ| 2 . 1 -|λ| 2 . λ λ = λ e -i Ŷλ θ λ , (<label>6</label></formula><formula xml:id="formula_16">)</formula><p>where θ λ is defined through the equality</p><formula xml:id="formula_17">∀λ ∈ [-1, 1], λ -i 1 -|λ| 2 = cos (θ λ ) -i sin (θ λ ) ⇒ θ λ = cos -1 (λ).<label>(7)</label></formula><p>In the following, the iterate will always be applied to states spanned by the subspace λ H λ . Thus its action on states outside this subspace need not be defined. The usefulness of this construct is evident. Due to its invariant subspace, multiple applications of the iterate result in highly structured behavior. However, implementing Ŵ appears difficult in general. One one hand, the function 1 -|λ| 2 must be computed for each eigenstate. In principle, this can be approximated using phase estimation with considerable overhead <ref type="bibr" target="#b31">[32]</ref>. On the other hand, it is not at all clear whether a unitary with the form of Ŵ can always be engineered from the standard-form encoding of Ĥ. 'Qubitization' is our solution to constructing this iterate with minimal overhead.</p><p>Theorem 2 (Qubitization). Given a Hermitian matrix Ĥ = G| a Û |G a encoded in standard-form as described in Definition 1, the iterate Ŵ of Eq. ( <ref type="formula" target="#formula_15">6</ref>) can be constructed using at most one query each to Ĝ, controlled-U , their inverses, at most one additional qubit, and O(log (dim (H a ))) quantum gates.</p><p>Using the oracles Ĝ, Û , and arbitrary unitary operations on only the ancilla register, we also provide necessary and sufficient conditions in Lemma 8, for when Ŵ can be implemented exactly using only one query to Û . As these conditions are somewhat restrictive, we then prove in Lemma 10 that qubitization is unconditionally possible by instead using the controlled-Û oracle in a quantum circuit that generates the same Ĥ and satisfies these conditions. We describe a similar construction for normal operators in Appendix. A.</p><p>Observe that Ŵ N efficiently produces Chebyshev polynomials T N [ Ĥ] <ref type="bibr" target="#b8">[9]</ref>. We call any function [•] of the signal Ĥ target operators when they occur in the top-left block and are thus automatically in standard-form. The fact that Chebyshev polynomials are the best polynomial basis for L ∞ function approximation on an finite interval <ref type="bibr" target="#b32">[33]</ref> suggests that the any target operator f</p><formula xml:id="formula_18">[ Ĥ] = A[ Ĥ] + iB[ Ĥ]</formula><p>could be approximated with a judicious choice of controls on the ancilla register. We present two implementation of the quantum signal processor described in Definition 2. The first does not require any additional qubits beyond that for qubitization, and realizes a broad class of target operators f . Theorem 3 (Ancilla-Free Quantum Signal Processing). A quantum signal processor can be implemented with the following properties. • Real polynomials A(λ), B(λ) of degree Q and equal parity satisfying all following.</p><p>• A(1) = 1;</p><formula xml:id="formula_19">• ∀λ ∈ [-1, 1], A 2 (λ) + B 2 (λ) ≤ 1; • ∀λ ≥ 1, A 2 (λ) + B 2 (λ) ≥ 1; • ∀Q even, λ ≥ 0, A 2 (iλ) + B 2 (iλ) ≥ 1.</formula><p>Output:</p><formula xml:id="formula_20">• A standard-form encoding of A[ Ĥ] + iB[ Ĥ]. Cost • Q queries to Ŵ . • Zero additional qubits beyond that for Ŵ . • O(Q log (dim (H a )</formula><p>)) arbitrary single and two-qubit gates.</p><p>Note that the two polynomials in our solution of ancilla-free quantum signal processing are of the same parity. At this point, we assume that all Û have been qubitized and so use the iterate Ŵ as our basic building block. A different basis set of functions with fewer restrictions on parity can be obtained by embedding Ŵ into yet another SU(2) invariant subspace by adding an ancilla qubit. This leads to the second implementation of the quantum signal processor of Definition 2.</p><p>Theorem 4 (Single-Ancilla Quantum Signal Processing). A quantum signal processor can be implemented with the following properties.</p><p>Inputs: • The iterate Ŵ obtained from the qubitization procedure of Theorem 2 on a Hermitian matrix Ĥ = G| Û |G encoded by the oracles of Definition 1.</p><p>• Real polynomials A(λ), C(λ) of degree Q/2 and opposite parity satisfying all following.</p><p>• A(0) = 1;</p><formula xml:id="formula_21">• ∀λ ∈ [-1, 1], A 2 (λ) + C 2 (λ) ≤ 1; Output: • A standard-form encoding of A[ Ĥ] + iC[ Ĥ].</formula><p>Cost: • Q queries to controlled-Ŵ .</p><p>• One additional qubit beyond that for Ŵ .</p><p>• O(Q log (dim (H a ))) arbitrary single and two-qubit gates.</p><p>These powerful tools for target operator processing, made possible by qubitization, are agnostic to the underlying oracles that describe the signal operator Ĥ. In many instances, converting this description to the standard-form of Definition 1 is straightforward and is indeed how our Hamiltonian simulation results for the varied input models of Table <ref type="table" target="#tab_2">1</ref> are proven.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Explicit Encodings of Ĥ = ( G| ⊗ Î) Û (|G ⊗ Î)</head><p>We now justify our motivation for encoding matrices Ĥ in the standard-form format of Ĥ = G| Û |G in Definition 1. A number of common techniques for encoding matrix problems on quantum computers map naturally to the standard-form with minimal overhead. Thus taking the standard-form as our starting point is without any loss of generality. This is demonstrated by the following three explicit implementation of the oracles Û and Ĝ|0 = |G for Hamiltonians represented as a linear combination of unitaries, d-sparse Hamiltonians, and a new input model where Hamiltonians are represented by a purified density matrix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Linear Combination of Unitaries</head><p>One option for implementing the standard-form encoding is provided by the Linear-Combination-of-Unitaries algorithm (LCU) <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b24">25]</ref>, which underlies the BCCKS simulation algorithm. LCU is based on the fact that any complex Ĥ is a linear combination of some d unitary operators:</p><formula xml:id="formula_22">Ĥ = d j=1 α j Ûj , Ĥ ≤ α 1 = d j=1 |α j |,<label>(8)</label></formula><p>where the upper bound on the spectral norm is α 1 . Note that this bound depends on the choice of decomposition, but is tight for the some choice. Without loss of generality, all α j ≥ 0 by absorbing complex phases into Ûj . The algorithm assumes that the α j are provided as a list of d numbers, and each Ûj is provided as a quantum circuit composed of constant number O(C) of primitive gates. With these inputs, the oracles </p><formula xml:id="formula_23">Ĝ = d j=1 α j α 1 |j 0| a + • • • , Û = d j=1 |j j| a ⊗ Ûj , G| Û |G = Ĥ α 1<label>(9</label></formula><formula xml:id="formula_24">G| Û |G = 1 α 1 d j=1 α j Ûj . Proof. Consider the computation ( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) = ( G| a ⊗ Îs )   d j=1 α j α 1 |j a ⊗ Ûj   = d j,k=1 √ α j α k α 1 k|j ⊗ Ûj = 1 α 1 d j=1 α j Ûj . (<label>10</label></formula><formula xml:id="formula_25">)</formula><p>Of course, the optimal decomposition that costs the fewest number of ancilla qubits and primitive gates may be difficult to find, and may not even fit naturally in this model, but LCU shows that implementing an encoding for any Ĥ is possible in principle.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">d-Sparse Hamiltonians</head><p>The model of d-sparse Hamiltonians is another paradigm for specifying matrices to quantum computers, and is particularly common in the design of quantum algorithms by quantum walks <ref type="bibr" target="#b1">[2]</ref>. Such Hamiltonians have at most d non-zero entries in any row, and information on their positions and matrix values Ĥjk are accessed through the following two standard unitary oracles <ref type="bibr" target="#b3">[4]</ref>.</p><formula xml:id="formula_26">ÔH |j |k |z = |j |k |z ⊕ Ĥjk , ÔF |j |l = |j |f (j, l) . (<label>11</label></formula><formula xml:id="formula_27">)</formula><p>Observe that ÔH accepts a row j and column k index and returns Ĥjk in some binary format. The other oracle ÔF accepts a row j index and a number l ∈ [d] to compute in-place the column index f (j, l) of the l th non-zero element in row j. Given this input, we now encode Ĥ in standard-form. Proof. Let |G = |0 a1 |0 a2 |0 a3 ≡ |0 a be a computational basis state, and let F j = {f (j, l)} l∈ <ref type="bibr">[d]</ref> be the set of column indices to all non-zero elements in row j. Ref. <ref type="bibr" target="#b3">[4]</ref> shows how each of the isometries</p><formula xml:id="formula_28">T1 = j |ψ j 0| a j| s , |ψ j = p∈Fj |p a3 √ d H pj Ĥ max |0 a1 + 1 - |H pj | Ĥ max |1 a1 |0 a2 |j s , (<label>12</label></formula><formula xml:id="formula_29">) T2 = k |χ k 0| a k| s , χ k | = p∈F k p| s √ d H kp Ĥ max 0| a2 + 1 - |H kp | Ĥ max 1| a2 0| a1 k| a3 ,</formula><p>can be implemented using using 2 queries to ÔH and 1 query to ÔF . By construction, the overlap of these states is</p><formula xml:id="formula_30">χ k |ψ j = H kj d Ĥ max . Now choose Û = T † 2 T1</formula><p>. By a direct computation,</p><formula xml:id="formula_31">( G| a ⊗ Îs ) Û (|G a ⊗ Îs ) = k,j |k s χ k |ψ j j| s = k,j H kj d Ĥ max |k j| s = Ĥ d Ĥ max . (<label>13</label></formula><formula xml:id="formula_32">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Purified Density Matrix</head><p>The simplicity of the standard-form encoding allows us to swiftly devise new input models for Hamiltonians. Here, we consider the case where a Hamiltonian Ĥ = Tr [|G G|] a1 is a density matrix ρ obtained by tracing out the ancilla register of a pure state prepared by some oracle Ĝ. That is, Proof. Let {|λ } be a complete basis on the system. By a direct computation,</p><formula xml:id="formula_33">Ĝ|0 a = |G a = j √ α j |j a1 |χ j a2 , ρ = Tr [|G G|] a1 = j α j |χ j χ j |.<label>(14)</label></formula><formula xml:id="formula_34">G| Û |G a λ |λ λ| s = λ j G| √ α j |j a1 |λ a2 |χ j λ| s = λ j |α j ||χ j s χ j |λ λ| s = ρ. (<label>15</label></formula><formula xml:id="formula_35">)</formula><p>4 Qubitization in a Quantum Signal Processor</p><p>This section describes qubitization in detail: the process for creating the iterate Ŵ given Ĥ encoded in standard-form, and an essential component in a systematic procedure for implementing operator transformations of Ĥ. In Lemma 8, we provide necessary and sufficient conditions on when Ŵ can be constructed from the oracles Ĝ, Û . Then in Lemma 10, we show that any Ĝ, Û not satisfying these conditions can be efficiently transformed into a Ĝ , Û that do, and encode the same signal operator Ĥ = G | Û |G . Together, these Lemmas in the remainder of this section complete the proof of Theorem 2 for the case of Hermitian Ĥ.</p><p>For now, we assume that |G is known. This soon proves to be unnecessary and only oracle access to Ĝ is required. Thus we must find a unitary Ŝ , acting only on the ancilla register such that the iterate Ŵ = Ŝ Û of Eq. ( <ref type="formula" target="#formula_15">6</ref>) is obtained. For the case of Hermitian Ĥ|λ = λ|λ , we now determine necessary and sufficient conditions on what Ŝ must be. As Ŝ is otherwise arbitrary, we use without loss of generality the ansatz of Ŝ being a product of a reflection about |G and another arbitrary unitary Ŝ on the ancilla:</p><formula xml:id="formula_36">Ŵ = ((2|G G| -Î) a ⊗ Îs ) Ŝ Û , |G λ = |G |λ ⇒ |G ⊥ λ = λ|G λ -Ŝ Û |G λ √ 1 -λ 2 . (<label>16</label></formula><formula xml:id="formula_37">)</formula><p>Lemma 8 (Conditions on Qubitization). For all signal oracles Û that implement the Hermitian signal operator Ĥ, the unitary Ŝ in Eq. ( <ref type="formula" target="#formula_36">16</ref>) creates a unitary iterate Ŵ with the same signal operator in the same basis, but in an SU <ref type="bibr" target="#b1">(2)</ref> invariant subspace containing |G if and only if</p><formula xml:id="formula_38">G| a Ŝ Û |G a = Ĥ and G| a Ŝ Û Ŝ Û |G a = Î. (<label>17</label></formula><formula xml:id="formula_39">)</formula><p>Proof. In the forward direction, we assume Eq. ( <ref type="formula" target="#formula_15">6</ref>), then compute and compare with Eq. ( <ref type="formula" target="#formula_36">16</ref>):</p><formula xml:id="formula_40">λ = G λ | Ŵ |G λ = G λ | Ŝ Û |G λ .</formula><p>By using this result repeatedly together with the fact that Ŝ Û is unitary, Gram-Schmidt orthonormalization of Ŵ |G λ furnishes the state</p><formula xml:id="formula_41">|G ⊥ λ = λ|G λ -Ŝ Û |G λ √ 1-λ 2</formula><p>which is orthogonal to |G λ . By similarly computing and comparing -√</p><formula xml:id="formula_42">1 -λ 2 = G λ | Ŵ |G ⊥ λ = λ 2 -G λ |( Ŝ Û ) 2 |G λ √ 1-λ 2 , we obtain G λ |( Ŝ Û ) 2 |G λ = 1.</formula><p>As these must be true for all eigenvectors |λ , the conditions in Eq. ( <ref type="formula" target="#formula_38">17</ref>) are necessary. That these are also sufficient follows from assuming Eq. ( <ref type="formula" target="#formula_38">17</ref>) and attempting to recover the components of Eq. ( <ref type="formula" target="#formula_15">6</ref>) using the definitions of Eq. <ref type="bibr" target="#b15">(16)</ref>. By applying</p><formula xml:id="formula_43">G| a Ŝ Û |G a = Ĥ, we compute Ŵ |G λ = 2|G a G| a Ŝ Û |G λ -Ŝ Û |G λ = 2λ|G λ -Ŝ Û |G λ . In the basis of |G λ and |G ⊥ λ , G λ | Ŵ |G λ = 2λ - G λ | Ŝ Û |G λ = λ and G ⊥ λ | Ŵ |G λ = G λ |λ-G λ |( Ŝ Û ) † √ 1-λ 2 (2λ|G λ -Ŝ Û |G λ ) = 2λ 2 -2λ 2 -λ 2 +1 √ 1-λ 2 = √ 1 -λ 2 .</formula><p>A similar calculation for the remaining components requires G| a Ŝ Û Ŝ Û |G a = Î and reveals that</p><formula xml:id="formula_44">G ⊥ λ | Ŵ |G ⊥ λ = λ and G λ | Ŵ |G ⊥ λ = - √ 1 -λ 2 .</formula><p>As this must be true for all λ, we may indeed</p><formula xml:id="formula_45">represent Ŵ = λ λ - √ 1-λ 2 √ 1-λ 2 λ λ</formula><p>.</p><p>In hindsight, these results are manifest. After all, G| Ŝ Û Ŝ Û |G = Î implies that Ŝ Û is a reflection when controlled by input state |G , and it is well-known that a Grover iterate <ref type="bibr" target="#b33">[34,</ref><ref type="bibr" target="#b34">35]</ref> is the product of two reflection about start and target subspaces. Nevertheless, the sufficiency of these conditions highlights that this is the simplest method to extract controllable and predictable behavior out of Û . In particular, these conditions are automatically satisfied in the trivial case with Ŝ = Îas when Û only has eigenvalues ±1, such as when it is a controlled-Pauli operator.</p><p>Corollary 9 (Qubitization of Reflections). For all signal oracles Û that satisfy Û 2 = Îas and implement the Hermitian signal operator G| a Û |G a = Ĥ, the unitary iterate Ŵ = ((2|G G| -Î) a ⊗ Îs ) Û implements the same signal operator in the same basis, but in an SU(2) invariant subspace containing |G .</p><p>Proof. Set Ŝ = Îas in Lemma 8, and verify that Eq. ( <ref type="formula" target="#formula_38">17</ref>) is satisfied.</p><p>Unfortunately, a solution to Eq. ( <ref type="formula" target="#formula_38">17</ref>) may not exist for more general Û . Lemma 8, amounts to choosing Ŝ such that Ŝ Û Ŝ is the inverse Û † whist preserving the signal operator G| Ŝ Û |G = Ĥ. Given that Ŝ only acts on the ancilla register, it is hard to see how this is always possible. Even if so, Ŝ may be difficult to implement as it is an arbitrary unitary acting on a potentially large ancilla register. The solution is to construct a different quantum circuit Û that contains Û but still implements the same signal operator, and crucially always has a extremely simple solution Ŝ. We now show how this can be done in all cases using only 1 query to controlled-Û and controlled-Û † .</p><p>Lemma 10 (Existence of Qubitization). For all signal unitaries Û that implement the Hermitian signal operator G| Û |G = Ĥ, there exists a quantum circuit Û , using one more qubit, that queries controlled-Û and controlled-Û † once to implements the same signal operator. Moreover, Û satisfies the conditions Eq. <ref type="bibr" target="#b16">(17)</ref> Proof. We prove this by an explicit construction. Let the controlled-Û operators be V1  <ref type="formula" target="#formula_38">17</ref>) is satisfied.</p><formula xml:id="formula_46">= |0 0| ⊗ Î + |1 1| ⊗ Û † , V2 = |0 0| ⊗ Û + |1 1| ⊗ Î.</formula><formula xml:id="formula_47">G | Ŝ Û |G = G | Û |G = 1 2 ( Ĥ + Ĥ † ) = Ĥ, G | Ŝ Û Ŝ Û |G = G | Û † Û |G = Î,<label>(18)</label></formula><p>where we have used the fact that Ŝ|G = |G is an eigenstate, and that Ŝ swaps the |0 , |1 ancilla states in Û , thus transforming it into its inverse.</p><p>Even if we are given Û for which there is no solution to Eq. ( <ref type="formula" target="#formula_38">17</ref>), we can always apply Lemma 10 to construct a Û that does with minimal overhead. Furthermore our proof uses no information about the detailed structure of |G . Thus without loss of generality, we can assume that any Ĝ, Û have already been qubitized.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Operator Function Design on a Quantum Signal Processor</head><p>The purpose of the quantum signal processor is to transform the signal Ĥ into any desired target operator f [ Ĥ]. We present a systematic framework that furnishes the optimal complexity and a concrete procedure for almost any f and show how an exact connection is made between query complexity and the theory of best function approximations with polynomials <ref type="bibr" target="#b32">[33,</ref><ref type="bibr" target="#b35">36]</ref>.</p><p>Qubitization in Section 4 is the essential first step that makes this endeavor plausible, as evidenced by the highly structured behavior of the iterate Ŵ in Eq. ( <ref type="formula" target="#formula_15">6</ref>), where for Hermitian Ĥ, multiple applications elegantly generate Chebyshev polynomials T L [ Ĥ] <ref type="bibr" target="#b8">[9]</ref>. To go further, additional control parameters on Ŵ are necessary, and in the following, we only consider Hermitian Ĥ. Thus we introduce the phased iterate Ŵφ with the same invariant subspace as Ŵ , and parameterized by φ ∈ R.</p><formula xml:id="formula_48">Ŵφ = λ λ -ie -iφ 1 -|λ| 2 -ie iφ 1 -|λ| 2 λ λ = λ e -i φλ θ λ , (<label>19</label></formula><formula xml:id="formula_49">)</formula><p>where φλ = cos (φ) Xλ + sin (φ) Ŷλ , and the eigenphase θ λ is defined similar to Eq. ( <ref type="formula" target="#formula_17">7</ref>).</p><p>Lemma 11. The phased iterate Ŵφ in Eq. ( <ref type="formula" target="#formula_48">19</ref>) is equal to Ŵφ = Ẑφ+π/2 Ŵ Ẑ-φ-π/2 , where Ẑφ = ((1 + e -iφ )|G G| -Î) is a partial reflection about |G by angle φ ∈ R and implements a relative phase between the |G λ and |G ⊥ λ subspaces. In block form,</p><formula xml:id="formula_50">Ẑφ = λ e -iφ 0 0 -1 λ . (<label>20</label></formula><formula xml:id="formula_51">)</formula><p>Proof. Let us compute the phase applied to states</p><formula xml:id="formula_52">|G λ , |G ⊥ λ : Ẑφ |G λ = ((1 + e -iφ ) -1)|G λ = e -iφ |G λ and Ẑφ |G ⊥ λ = -|G ⊥ λ .</formula><p>As this true for all λ, Eq. ( <ref type="formula" target="#formula_50">20</ref>) follows. Combining the representation of Ŵ from Eq. ( <ref type="formula" target="#formula_15">6</ref>) with this leads to Eq. ( <ref type="formula" target="#formula_48">19</ref>),</p><formula xml:id="formula_53">Ŵφ = Ẑφ-π/2 Ŵ Ẑ-φ+π/2 = λ -ie -iφ 0 0 -1 λ λ -1 -|λ| 2 1 -|λ| 2 λ λ ie iφ 0 0 -1 λ .</formula><p>We provide algorithms with different overheads for large classes of transformations. 'Ancilla-free quantum signal processing' in Section 5.1 implement target operators where the real and imaginary parts have the same parity with respect to Ĥ. Opposite parity is obtained by 'single-ancilla quantum signal processing' in Section 5.2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Ancilla-Free Quantum Signal Processing</head><p>Consider a sequence of Q of phased iterates, where the angle φ defining each may differ.</p><formula xml:id="formula_54">Ŵ φ = Ŵφ Q • • • Ŵφ2 Ŵφ1 = λ e -i φλ Q θ λ • • • e -iφ λ 2 θ λ e -i φλ 1 θ λ , φλ j = cos (φ j ) Xλ + sin (φ j ) Ŷλ . = λ A(2θ λ ) Îλ + iB(2θ λ ) Ẑλ + iC(2θ λ ) Xλ + iD(2θ λ ) Ŷλ . (<label>21</label></formula><formula xml:id="formula_55">)</formula><p>In each subspace H λ , this is a product of SU(2) rotations. As such, we may decompose this in the Pauli basis Îλ , Xλ , Ŷλ , Ẑλ with the real functions (A, B, C, D) as coefficients. As we can only prepare and measure in the basis of the state |G a , consider the component</p><formula xml:id="formula_56">G| a Ŵ φ |G a = λ (A(θ λ ) + iB(θ λ ))|λ λ| ≡ A[ Ĥ]+iB[ Ĥ]</formula><p>. Any choice of phases φ ∈ R Q generates sophisticated interference effects between elements of the sequence, leading to (A, B, C, D) with some non-trivial functional dependence on Ĥ. Though the dependence of the output on φ seems hard to intuit, they nevertheless specify a program for computing functions of Ĥ, similar to how a list of numbers might specify a polynomial.</p><p>To understand Eq. ( <ref type="formula" target="#formula_54">21</ref>), it suffices to study the following sequence of single-qubit rotations.</p><formula xml:id="formula_57">Û φ = e -i φQ θ/2 • • • e -i φ2θ/2 e -i φ1θ/2 = A(θ) Î + iB(θ) Ẑ + iC(θ) X + iD(θ) Ŷ , (<label>22</label></formula><formula xml:id="formula_58">)</formula><p>These functions previously characterized in Ref. <ref type="bibr" target="#b36">[37]</ref>, and found the following.</p><p>Lemma 12 (Achievable A, B -Thm. 2.3 of Ref. <ref type="bibr" target="#b36">[37]</ref>). For any integer Q &gt; 0, a choice of functions A(θ) ≡ A(x), B(θ) ≡ B(x) in Eq. ( <ref type="formula" target="#formula_57">22</ref>) is achievable by some φ ∈ R Q if and only if all the following are true:</p><p>(1) A(x) and B(x) are real parity-(Q mod 2) polynomials in x = cos (θ/2) of degree at most Q;</p><p>(2)</p><formula xml:id="formula_59">A(1) = 1; (3) ∀x ∈ [-1, 1], A 2 (x) + B 2 (x) ≤ 1; (4) ∀x ≥ 1, A 2 (x) + B 2 (x) ≥ 1; (5) ∀Q even, x ≥ 0, A 2 (ix) + B 2 (ix) ≥ 1. Moreover, φ ∈ R Q can be computed in classical O(poly(Q)) time.</formula><p>In other words, we may specify only the components A, B, independent of the others C, D that are of lesser interest. By mapping this result to Eq. ( <ref type="formula" target="#formula_54">21</ref>), we complete the proof of Theorem 3.</p><p>Proof of Theorem 3. The unitary operators in each subspace H λ of Ŵ φ are isomorphic to the product of single qubit rotations e -i φQ θ/2 • • • e -i φ2θ/2 e -i φ1θ/2 . We identify θ/2 = θ λ , where θ λ = cos -1 (λ) as defined in Eq. <ref type="bibr" target="#b6">(7)</ref>. Thus the result follows from Lemma 12 by substituting x = cos (θ λ ) = λ.</p><p>As polynomials form a complete basis on bounded real intervals, these results imply the query complexity of approximating any real function A[ Ĥ] with error is exactly that of its best polynomial -approximation satisfying the constraints of Theorem 3, and similarly for the complex case.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Single-Ancilla Quantum Signal Processing</head><p>Using no ancilla, Theorem 3 implements a target operator f [ Ĥ] where the real and complex parts are constrained to have the same parity. By introducing additional ancilla, other general classes of functions can be implemented, sometimes with looser constraints. In this section, we use a key observation from Ref. <ref type="bibr" target="#b6">[7]</ref>. Given any unitary V with eigenstates V |λ = e iθ </p><formula xml:id="formula_60">V ϕ = Q/2 k odd≥1 V † ϕ k+1 +π Vϕ k = V † ϕ Q +π • • • Vϕ3 V † ϕ2+π Vϕ1 , Vϕ = (e -iϕ Ẑ/2 ⊗ Îs ) V0 (e iϕ Ẑ/2 ⊗ Îs ). (<label>23</label></formula><formula xml:id="formula_61">)</formula><p>For each eigenstate |λ , we obtain a product of single qubit operators e -i φQ θ λ /2 • • • e -i φ1θλ/2 similar to Eq. ( <ref type="formula" target="#formula_54">21</ref>) but with a halved phased, and these only act on the ancilla b. Using the same reasoning as in Section 5.1, the choice of ϕ determines the effective single-qubit ancilla operator</p><formula xml:id="formula_62">V ϕ = λ Îb A(θ λ ) + i Ẑb B(θ λ ) + i Xb C(θ λ ) + i Ŷb D(θ λ ) ⊗ |λ λ| s . (<label>24</label></formula><formula xml:id="formula_63">)</formula><p>In the following, we focus on the functions A, C, which we also characterized fully in previous work.</p><p>Lemma 13 (Achievable (A, C) -Thm. 1 of Ref. <ref type="bibr" target="#b6">[7]</ref>). For any even integer Q &gt; 0, a choice of functions A(θ), C(θ) in Eq. ( <ref type="formula" target="#formula_57">22</ref>) is achievable by some φ ∈ R Q if and only if all the following are true:</p><p>(1)</p><formula xml:id="formula_64">A(θ) = Q/2 k=0 a k cos (kθ) is a real cosine Fourier series of degree at most Q/2; (2) C(θ) = Q/2 k=1 c k sin (kθ) is a real sine Fourier series of degree at most Q/2; (3) A(0) = 1; (4) ∀θ ∈ R, A 2 (θ) + C 2 (θ) ≤ 1. Moreover, φ ∈ R Q can be computed in classical O(poly(Q)) time.</formula><p>In some cases, one might be given target functions A, C that are only -close to being achievable, for instance, if A, C are the output of some numerical procedure. This poses no fundamental difficulty, as we prove in the following, which generalizes slightly a similar statement in Ref. <ref type="bibr" target="#b6">[7]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Lemma 14 (Stability of Achievable (A, C)). For any even integer</head><formula xml:id="formula_65">Q &gt; 0, let (1) Ã(θ) = Q/2</formula><p>k=0 a k cos (kθ) be a real cosine Fourier series of degree at most Q/2;</p><p>(2) C(θ) = Q/2 k=1 c k sin (kθ) be a real sine Fourier series of degree at most Q/2;</p><formula xml:id="formula_66">(3) Ã(0) = 1 + 1 , where 1 ≤ 1; (4) ∀θ ∈ R, Ã2 (θ) + C2 (θ) ≤ 1 + 2 , where 2 ∈ [0, 1].</formula><p>Then there exists Fourier series A, C that satisfy the conditions of Lemma 13, approximate</p><formula xml:id="formula_67">max θ∈R |(A + iC) -( Ã + i C)| = O( | 1 | + 2 ), (<label>25</label></formula><formula xml:id="formula_68">)</formula><p>and are computable in classical O(poly(Q)) time.</p><p>Proof. First, we satisfy condition (4) of Lemma 13 by rescaling</p><formula xml:id="formula_69">A 1 = Ã 1+ 2 , C = C 1+ 2 .</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Second, we use the polynomial sum-of-squares technique to compute real Fourier series</head><formula xml:id="formula_70">B 1 = Q/2 k=0 b k cos (kθ) and D 1 = Q/2 k=1 d k sin (kθ) such that A 2 1 + B 2 1 + C 2 + D 2 1 = 1. Following [37, Section C], this can be done in classical O(poly(Q)) time. By construction, A 2 1 (0) + B 2 1 (0) = 1 as C and D 1 are odd functions. Let us define sin (δ) ≡ B 1 (0). Hence, cos (δ) ≡ A 1 (0) = 1+ 1 1+ 2 . Third, let A(θ) = cos (δ)A 1 (θ) + sin (δ)B 1 (θ)</formula><p>. By definition, A(0) = cos 2 (δ) + sin 2 (δ) = 1. Thus A, C satisfy satisfy the conditions of Lemma 13.</p><p>Last, we bound the error of this approximation.</p><formula xml:id="formula_71">max θ∈R |(A + iC) -( Ã + i C)| ≤ max θ∈R |(A + iC) -(A 1 + iC)| + max θ∈R |(A 1 + iC) -( Ã + i C)| by a triangle inequality ≤ max θ∈R |(cos (δ) -1)A 1 (θ) + sin (δ)B 1 (θ)| + 2 ≤ (cos (δ) -1) 2 + sin 2 (δ) + 2 using A 2 1 (θ) + B 2 1 (θ) ≤ 1 ≤ √ 2 1 -cos (δ) + 2 = 2 2 -1 1 + 2 + 2 = O( | 1 | + 2 ). (<label>26</label></formula><formula xml:id="formula_72">)</formula><p>We now prove Theorem 4 by evaluating Eq. ( <ref type="formula" target="#formula_62">24</ref>) using Lemma 13 for the case where the arbitrary unitary V is replaced with the more structured iterate e iΦ Ŵ , and also where we have added a global phase Φ ∈ R.</p><p>Proof of Theorem 4. Observe from Eq. ( <ref type="formula" target="#formula_15">6</ref>) that e iΦ Ŵ can be diagonalized to obtain its eigenvalues θ λ± and eigenvectors |G λ± .</p><formula xml:id="formula_73">e iΦ Ŵ |G λ± = e i(Φ+θ λ± ) |G λ± , θ λ± = ∓ cos -1 (λ), |G λ± = |G λ ± i|G ⊥ λ √ 2 . (<label>27</label></formula><formula xml:id="formula_74">)</formula><p>With this substitution V ← e iΦ Ŵ , Eq. ( <ref type="formula" target="#formula_62">24</ref>) becomes</p><formula xml:id="formula_75">V ϕ = λ,± Îb A(Φ + θ λ± ) + i Xb C(Φ + θ λ± ) + • • • ⊗ |G λ± G λ± | as . (<label>28</label></formula><formula xml:id="formula_76">)</formula><p>Similar to Section 5.1, we are only allowed to prepare and measure in the subspace supported by signal state |G a . Recall that ( G| a ⊗ Îs )|G ⊥ λ = 0, so projecting the sequence Eq. ( <ref type="formula" target="#formula_75">28</ref>) onto</p><formula xml:id="formula_77">|+ b |G a results in G| a +| b V ϕ |+ b |G a = λ,± (A(Φ + θ λ± ) + iC(Φ + θ λ± )) ⊗ G| a |G λ± G λ± | as |G a = λ ± (A(Φ + θ λ± ) + iC(Φ + θ λ± )) 2 ⊗ |λ λ|. (<label>29</label></formula><formula xml:id="formula_78">)</formula><p>For this proof, it suffices to choose Φ = π/2, and set a k = 0 for all odd k, and c k = 0 for all even k. We then evaluate each component of Eq. ( <ref type="formula" target="#formula_77">29</ref>) using Lemma 13 and the Chebyshev polynomials</p><formula xml:id="formula_79">T k (x) ≡ cos (k cos -1 (x)). A(π/2 + θ λ± ) = Q/2 k even a k cos (k(π/2 + θ λ± )) = Q/2 k even a k i k T k (λ) = Q/2 k even a k T k (λ) = A(λ),<label>(30)</label></formula><formula xml:id="formula_80">C(π/2 + θ λ± ) = Q/2 k odd c k sin (k(π/2 + θ λ± )) = Q/2 k odd c k i k-1 T k (λ) = Q/2 k odd c k T k (λ) = C(λ).</formula><p>Thus Eq. ( <ref type="formula" target="#formula_77">29</ref>) simplifies to</p><formula xml:id="formula_81">G| a +| b V ϕ |+ b |G a = λ (A(λ) + iC(λ)) ⊗ |λ λ|. (<label>31</label></formula><formula xml:id="formula_82">)</formula><p>We now express the conditions of Lemma 13 in terms of polynomials. As T k (-x) = (-1) k T k (x), conditions (1) and (2) map to A(λ) being an even polynomial and C(λ) being an odd polynomial respectively. When θ λ± = -π/2, this implies that λ = cos (±π/2) = 0. Hence condition (3) maps to</p><formula xml:id="formula_83">A(π/2 + θ λ± = 0) = 1 ⇒ A(λ = 0) = 1. As λ ∈ [-1, 1] for all values of θ λ± , condition (4) maps to ∀λ ∈ [-1, 1], A 2 (λ) + C 2 (λ) ≤ 1.</formula><p>Of course, other choices of Φ, such as Φ = 0, π/3, π/4, ..., lead to different families of target functions. However, those are beyond the scope of this work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Application to Hamiltonian Simulation</head><p>With these results for qubitization and operator function design with a quantum signal processor, the application to Hamiltonian simulation follows easily. We complete the proof Theorem 1, and then apply these results to obtain our claims of improvements in Table <ref type="table" target="#tab_2">1</ref>. Given any Hamiltonian Ĥ encoded in the standard-form of Definition 1, Theorem 4 allows us to use 2Q queries to encode exactly any function A[ Ĥ] + iC[ Ĥ] where A(λ) and C(λ) are bounded polynomials of opposite parity and degree Q. Hamiltonian simulation is accomplished by choosing a good degree Q polynomial approximation to</p><formula xml:id="formula_84">A(λ) + iC(λ) = e -iλt .</formula><p>Proof of Theorem 1. Similar to previous approaches <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7]</ref>, we approximate e -iλt with the Jacobi-Anger expansion <ref type="bibr" target="#b37">[38]</ref>, where J k (t) are Bessel function of the first kind. By identifying cos (z) = λ, suitable polynomials A, C are obtained by a truncation and rescaling of</p><formula xml:id="formula_85">e i cos (z)t = ∞ k=-∞ i k J k (t)e ikz</formula><formula xml:id="formula_86">e -iλt = J 0 (t) + 2 ∞ k even&gt;0 (-1) k/2 J k (t)T k (λ) + i2 ∞ k odd&gt;0 (-1) (k-1)/2 J k (t)T k (λ). (<label>32</label></formula><formula xml:id="formula_87">)</formula><p>The error from truncating this expansion for k &gt; Q = q -1 is a sum of |J k (t)| that was bounded in <ref type="bibr" target="#b5">[6]</ref>:</p><formula xml:id="formula_88">= max λ∈[-1,1] 2 ∞ k=q (-1) k 2 J k (t)T k (λ) ≤ ∞ k=q 2|J k (t)| ≤ 4t q 2 q q! = O et q q (33) ⇒ log 1 = O q log 2q et ⇒ q = O(t + log (1/ )).</formula><p>The rapid converge by truncation arises as e -iλt is an entire analytic function <ref type="bibr" target="#b38">[39]</ref>. With the choice</p><formula xml:id="formula_89">Ã(λ) = J 0 (t) + 2 Q k even&gt;0 (-1) k/2 J k (t)T k (λ), C(λ) = 2 Q k odd&gt;0 (-1) (k-1)/2 J k (t)T k (λ)<label>(34)</label></formula><p>the error max λ∈[-1,1] | Ã(λ) + i C(λ) -e -iλt | ≤ . Though this choice satisfies conditions (1-2) of Theorem 4, it is only -close to satisfying conditions <ref type="bibr" target="#b2">(3)</ref><ref type="bibr" target="#b3">(4)</ref>. Fortunately, this is not a fundamental problem following the stability analysis of Lemma 14. One can perturb Ã(λ), C(λ) to construct approximations A(λ) + iC(λ) that are achievable, with error max λ∈[-1,1] |A(λ) + iC(λ) -e -iλt | = O( ). Thus the overall procedure constructs a unitary V ϕ that approximates the time-evolution operator with error</p><formula xml:id="formula_90">+| b G| a V ϕ |G |+ b -e -i Ĥt = O( √ ).</formula><p>The failure probability is O( ), and solving for Q furnishes stated the number of queries to Ŵ and hence the oracles encoding Ĥ = G| Û |G .</p><p>As we have already shown in Section 3 how a variety of matrix input models such as linearcombination-of-unitaries, d-sparse Hamiltonians, and purified density matrices map to the standardform encoding, their respective algorithms for simulating the time-evolution operators follow trivially.</p><p>Corollary 15 (Hamiltonian Simulation of a Sparse Hermitian Matrix). Given access to the oracle of Eq. ( <ref type="formula" target="#formula_26">11</ref>) specifying a d-sparse Hamiltonian Ĥ, time evolution by Ĥ can be simulated for time t and error with O(dt Ĥ max + log (1/ )) queries to ÔH , ÔF .</p><p>Proof. Follows from combining Theorem 1 with the standard-form encoding Lemma 6.</p><p>The query complexity in Eq. <ref type="bibr" target="#b32">(33)</ref> for this sparse case exactly matches a lower bound based on simulating a Hamiltonian that solves PARITY with unbounded error <ref type="bibr" target="#b20">[21]</ref>, valid for all parameter values, and not just in asymptotic limits <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7]</ref>. This completes the optimality proof of Theorem 1.</p><p>The case where Ĥ decomposes into a linear combination of unitaries is an immediate application:</p><p>Corollary 16 (Hamiltonian Simulation of a Linear Combination of Unitaries). Given access to the oracles of Eq. ( <ref type="formula" target="#formula_23">9</ref>) specifying a Hamiltonian Ĥ = d j=1 α j Ûj , time evolution by Ĥ can be simulated for time t and error with O(αt + log (1/ )) queries.</p><p>Proof. Follows from combining Theorem 1 with the standard-form encoding Lemma 5.</p><p>The intuitiveness of Theorem 1 allows us to swiftly devise new models of Hamiltonian simulation.</p><p>Corollary 17 (Hamiltonian Simulation of a Purified Density Matrix). Given access to the oracle Eq. ( <ref type="formula" target="#formula_33">14</ref>) specifying a Hamiltonian Ĥ = ρ that is a density matrix ρ, time evolution by Ĥ can be simulated for time t and error with O(t + log (1/ )) queries.</p><p>Proof. Follows from combining Theorem 1 with the standard-form encoding Lemma 7.</p><p>In all the above, the query complexity O(• • • t+log (1/ )) is an upper bound on the more precise form of Eq. <ref type="bibr" target="#b32">(33)</ref>. The exact the tradeoff between , t, Q in Eq. ( <ref type="formula">33</ref>) is studied numerically in Appendix B, together with example phases ϕ implementing V ϕ for the polynomials in Eq. <ref type="bibr" target="#b33">(34)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusion</head><p>Our general procedure for Hamiltonian simulation in Theorem 1 extends the scope of possible useful formulations of Hamiltonian simulation. As seen in Table <ref type="table" target="#tab_2">1</ref>, it encompasses any case where the Hamiltonian is embedded in a flagged subspace of the signal unitary. Given this, a simulation algorithm with query complexity optimal in all parameters, and also not just in asymptotic limits, is easily obtained with minimal overhead. While this procedure contains and significantly improves upon important models where the Hamiltonian is d-sparse or a linear combination of unitaries, its greater value lies in illuminating an intuitive and straightforward path to other as-yet undiscovered models of Hamiltonian simulation. In particular, our result for time-evolution by a purified density matrix is a quadratic improvement in time and an exponential improvement in error over the sample-based model -the proof of which consisted of just a few lines.</p><p>Many other exciting directions extend from this work. One example is how additional structural information about Ĥ [40] may be exploited. This is illustrated by when the spectral norm of Ĥ is significantly smaller than the sum of coefficients α 1 of a particular linear combination of unitaries decomposition. If this decomposition were to be used, simulation would take time O α 1 t + log (1/ ) -a factor α 1 / Ĥ slowdown. Unfortunately, an α 1 = O( Ĥ ) decomposition appears difficult to find in general. Furthermore, it is easy to construct pathological Ĥ with small but nevertheless decompose by naive methods into components with large spectral norms <ref type="bibr" target="#b40">[41]</ref>. Our approach offers a possible solution -one finds any encoding the Hamiltonian in the standard-form, rather than some specific decomposition into parts with properties dictated by the formulation. It remains an interesting challenge to identify the cases where, and determine how structural information may be incorporated.</p><p>These advances are special cases arising from our vision of the more general quantum signal processor. Through qubitization, structure is imposed onto any unitary process implementing some Hermitian signal operator. This structure allows for efficient processing of the signal by the techniques of quantum signal processing into some more desired form. As the query complexity of approximating any arbitrary target function of the signal exactly matches fundamental bounds lower in polynomial and Fourier approximation theory <ref type="bibr" target="#b32">[33]</ref>, we expect this to have numerous application in metrology <ref type="bibr" target="#b41">[42]</ref> and other quantum algorithms <ref type="bibr" target="#b34">[35]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Developments after preprint release</head><p>The preprint of this manuscript was released on October 2016. There have since been a number of developments building off, or relating to, the concepts of the standard-form encoding, qubitization, and quantum signal processing that could be of interest to the reader.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Singular value transformations:</head><p>The standard-form encoding, qubitization, and quantum signal processing of Hermitian or normal matrices has been extended to perform polynomial transformations on the singular value of arbitrary matrices <ref type="bibr" target="#b42">[43]</ref>. This generalization has proven to be surprisingly broad, and provides a unified framework for deriving and understanding many other quantum algorithms.</p><p>Structured Hamiltonian simulation: The Hamiltonian of many interesting systems possess additional structure that should be exploited to further reduce the cost of simulation. More refined simulation algorithms can exploit prior knowledge of geometric locality <ref type="bibr" target="#b43">[44,</ref><ref type="bibr" target="#b44">45]</ref>, Hamiltonian induced one-norm <ref type="bibr" target="#b45">[46]</ref>, spectral norm <ref type="bibr" target="#b46">[47]</ref>, and separation of energy scales <ref type="bibr" target="#b47">[48]</ref>. In particular, these algorithms are also optimal, up to sub-polynomial factors, with respect to their structural parameters.</p><p>Numerical Quantum signal processing: The numerical algorithm for decomposing target polynomials of degree Q into phases was originally claimed to be polynomial time <ref type="bibr" target="#b36">[37]</ref>, but only when counting arbitrary-precision arithmetical operations, and appeared to be ill-conditioned in case studies <ref type="bibr" target="#b48">[49]</ref>. A more thorough analysis <ref type="bibr" target="#b49">[50]</ref> proved that the algorithm had a runtime of O(Q 3 polylog(Q/ )) with finite-precision arithmetic, provided that some subtleties were carefully managed to control this ill-conditioned behavior. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Acknowledgments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Qubitization of Normal Operators</head><p>The results of Lemmas 8 and 10 for qubitization can be extended to normal operators. Let G| a Û |G a = Ĥ in Eq. ( <ref type="formula" target="#formula_5">2</ref>) encode a normal matrix Ĥ. It is well known that any normal matrix has a polar decomposition</p><formula xml:id="formula_91">Ĥ = ĤU • ĤH . (<label>35</label></formula><formula xml:id="formula_92">)</formula><p>where ĤU is unitary, ĤH is positive-semidefinite, [ ĤU ĤH ] = 0 commute. Thus the eigenvalues are Ĥ|λ = e iθ λ λ|λ , where λ ≥ 0, θ λ ∈ R, and</p><formula xml:id="formula_93">Û |G |λ = Û |G λ = λe iθ λ |G λ + 1 -|λ| 2 |G ⊥ λ ,<label>(36)</label></formula><p>This reduces to a Hermitian operator when ĤU has eigenvalues ±1, and reduces to a unitary operator when all ĤH has eigenvalues 1. The trivial approach to qubitization in fact applies to any complex matrix. We simply use the construction of Lemma 10 to implement the Hermitian signal operator 1  2 ( Ĥ + Ĥ † ). Another possibility uses two phased iterates in an alternating sequence on input state |G a |ψ s ,</p><formula xml:id="formula_94">Ŵφ± = Ẑφ-π/2 (2|G G| -Î) Û± Ẑ-φ+π/2 , Ŵ φ± = Ŵ φ = Ŵφ L + • • • Ŵφ3+ Ŵφ2-Ŵφ1+ , (<label>37</label></formula><formula xml:id="formula_95">)</formula><p>where Û+ = Û and Û-= Û † . We work through a minimal example in Appendix A. </p><formula xml:id="formula_96">|G ⊥± λ = (λe iθ λ -Ŵπ/2,± )|G λ 1 -|λ| 2 . (<label>38</label></formula><formula xml:id="formula_97">)</formula><p>Then these iterates have form</p><formula xml:id="formula_98">Ŵφ± = λe ±iθ λ |G λ G λ | -ie -iφ √ 1 -λ 2 |G λ G ⊥∓ λ | -ie iφ √ 1 -λ 2 |G ⊥± λ G λ | +λe ∓iθ λ |G ⊥± λ G ⊥∓ λ | . (<label>39</label></formula><formula xml:id="formula_99">)</formula><p>The subspace spanned by these states is only invariant in general under the action of iterates with alternating sign ±, such as the product Ŵφi-Ŵφj+ . In other words, they are not invariant under any repeated application of an iterate of the same sign. With the understanding that we only consider alternating sequences, each Ŵφ± has the representation</p><formula xml:id="formula_100">Ŵφ± = e ±iθ λ λ -ie -iφ √ 1 -λ 2 -ie iφ √ 1 -λ 2 e ∓iθ λ λ . (<label>40</label></formula><formula xml:id="formula_101">)</formula><p>Note that when all eigenvalues λ are identical and φ = π/2, this reduces to Oblivious amplitude amplification <ref type="bibr" target="#b3">[4]</ref>, and we recover Hermitian qubitization when all θ λ = 0. While this approach uses one less ancilla qubit than the construction of Lemma 10, quantum signal processing can only be performed on controlled block of even length Ŵ φ± , as only they have an invariant subspace. This limitation can be relevant in some cases, such as Hamiltonian simulation where quantum signal processing is applied to a single Ŵφ .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.1 Minimal example</head><p>A minimal example illustrating the phenomenon of normal qubitization is worked through in this section. For simplicity, let us drop the |λ state. Let us set the phase φ = π/2 in the Ẑ 2 q q! (blue), truncation</p><formula xml:id="formula_102">• operator. Let |G → |0 . Let R = 2|0 0| -1. Let us map the subspace spanned by {|G |λ , |G ⊥+ λ , |G ⊥- λ } → {|0 , -|1 , -|2 }. Then U |0 = λ|0 + 1 -|λ| 2 |1 , U † |0 = λ * |0 + 1 -|λ| 2 |2 , (<label>41</label></formula><formula xml:id="formula_103">)</formula><formula xml:id="formula_104">RU |0 = λ|0 -1 -|λ| 2 |1 , RU † |0 = λ * |0 -1 -|λ| 2 |2 .</formula><formula xml:id="formula_105">∞ k=q 2|J k [t]|<label>(</label></formula><p>black), and best possible <ref type="bibr" target="#b50">[51]</ref> (red), for Q = 2, 4, 8, 16, 32, 64, ∞ queries to the controlled iterate Ŵ , where q = 1+Q/2. (Right) Queries per unit of simulation time to unitary Û encoding Ĥ = G| Û |G at target error +| V ϕ |+e -i Ĥt = 10 -2,-4,-8,-16 for the BCCKS algorithm (thin), and this work using the truncated approximation to e it sin (θ) (thick).</p><p>Note that λ ∈ C. Note that 1|2 = 0 in general. Also note that 0|U RU † |0 = 0|U † RU |0 = 2|λ| 2 -1 by an explicit calculation.</p><p>By Gram-Schmidt orthoormalization,</p><formula xml:id="formula_106">|1 = (U -λ)|0 1 -|λ| 2 , |2 = (U † -λ * )|0 1 -|λ| 2<label>(42)</label></formula><p>Promised that the first input state is |0 , and we only consider sequences of the form (RU † RU ) k and RU (RU † RU ) k for integer k, we want to prove that any subsequent input to RU is in span{|0 , |2 }, and any input to RU † is in span{|0 , |1 }. Consider the projectors P j = |0 0| + |j j|. Then proving the first case requires showing that 1|U RP 2 RU † |1 = 1 and for the second case, 2|U † RP 1 RU |2 = 1.</p><p>In the first case,</p><formula xml:id="formula_107">1|U RP 2 RU † |1 = | 0|RU † (U -λ)|0 | 2 1 -|λ| 2 + | 0|(U -λ)RU † (U -λ)|0 | 2 (1 -|λ| 2 ) 2 (43) = |1 -|λ| 2 | 2 1 -|λ| 2 + |λ|λ| 2 -λ(2|λ| 2 -1) -λ + λ| 2 (1 -|λ| 2 ) 2 = |1 -λ 2 | 2 1 -λ 2 + λ 2 |1 -λ 2 | 2 (1 -λ 2 ) 2 = 1.</formula><p>By an identical calculation, the second case is also true. This means that RU maps any state in span{|0 , |2 } to a state in span{|0 , |1 }, and RU † maps any state in span{|0 , |1 } to a state in span{|0 , |2 }. Using the fact that 0|RU |2 = 2|U † |0 * = 1 -|λ| 2 , we know that the overlap | 1|RU |2 | = |λ|. With a more careful evaluation,</p><formula xml:id="formula_108">1|RU |2 = 0|(U † -λ * )RU (U † -λ * )|0 1 -|λ| 2 = λ * |λ| 2 -λ * (2|λ| 2 -1) -λ * + λ * 1 -|λ| 2 = λ * . (<label>44</label></formula><formula xml:id="formula_109">)</formula><p>This means that we can represent</p><formula xml:id="formula_110">RU = (λ|0 -1 -|λ| 2 |1 ) 0| + ( 1 -|λ| 2 |0 + λ * |1 ) 2|<label>(45)</label></formula><p>= λ|0 0| + 1 -|λ|  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B Practical Details for Implementing Hamiltonian Simulation</head><p>This appendix illustrates a specific application of the quantum signal approach to a signal unitary that encodes the Hamiltonian Ĥ as a signal operator. In particular, a comparison of performance with the BCCKS approach is made. The details will be useful to readers interested in implementing our procedure on a quantum computer. These include plots for the exact error scaling Eq. ( <ref type="formula">33</ref>) of the Q/2 term Fourier approximation to e it sin (θ) in Fig. <ref type="figure" target="#fig_7">1</ref>(Left), and the number of required queries per unit of simulated time in Fig. <ref type="figure" target="#fig_7">1</ref>(Right). Furthermore, a table of select phases ϕ computed using the algorithm in <ref type="bibr" target="#b36">[37]</ref> can be found in Table <ref type="table" target="#tab_8">3</ref>.</p><p>In the interests of a fair comparison, Fig. <ref type="figure" target="#fig_7">1</ref>(Right) counts the number of queries to the signal operator Û in the Ĥ = G| Û |G encoding. Û is not assumed to be qubitized, thus incurring a factor 2 additional cost from querying Û and Û † each over the asymptotic limit of 2 queries per unit of simulation time in Fig. <ref type="figure" target="#fig_7">1</ref>(Left). Similarly, the BCCKS algorithm <ref type="bibr" target="#b21">[22]</ref> incurs a factor 3 additional cost from querying Û twice and Û † in their use of oblivious amplitude amplification. As BCCKS is known to be optimal in the regime t = O( log (1/ )  log log (1/ ) ), the improvement of our approach is most dramatic outside of it. In particular, the queries per unit time of BCCKS scales like O( log (t/ ) log log (t/ ) ), whereas our approach approaches 4 in the limit t → ∞.</p><p>The number of queries to in the BCCKS model is 3Kr, where K is the queries per segment e -i Ĥ log 2/r , r = t/ log (2) is the number of segments, and 3 is for oblivious amplitude amplification on each segment. K is chosen such that ∞ k=K+1 log k 2 k! ≤ r . An analysis of the procedure <ref type="bibr" target="#b21">[22]</ref> shows that the error of its simulated evolution is a factor O(1) 2 larger than . Thus Fig. <ref type="figure" target="#fig_7">1</ref> slightly overestimates BCCKS performance as we take directly to be the error.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>d</head><label></label><figDesc>j=1 αj Ûj, and each Ûj is given a cost O(C). The LMR query complexity refers to samples of the density matrix ρ = Ĥ. This work generalizes the above with oracles Ĝ|0 = |G ∈ C d , Û ∈ C 2 n d×2 n d such that G| Û |G = Ĥ, where Ĥ ≤ 1. A new model where the oracle that outputs the purification |ρ = d j=1 αj|j a|ψj , Tra[|ρ ρ|] = ρ is provided.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Inputs•</head><label></label><figDesc>The iterate Ŵ obtained from the qubitization procedure of Theorem 2 on a Hermitian matrix Ĥ = G| Û |G encoded by the oracles of Definition 1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Lemma 6 (</head><label>6</label><figDesc>Standard-Form Encoding of a d-Sparse Hamiltonian). Let the oracles of Eq. (11) specify a d-sparse Hamiltonian Ĥ with max-norm H max . Then the oracles encoding G| Û |G = Ĥ d Ĥ max can be implemented using O(1) queries.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Lemma 7 (</head><label>7</label><figDesc>Standard-Form Encoding of a Purified Density Matrix). Let the oracle of Eq. (14) prepare a state Ĝ|0 a = |G a = j √ α j |j a1 |χ j a2 that is a purification of the density matrix ρ = j α j |χ j χ j | = Tr [|G G|] a1 . Let Û be a unitary that swaps the register a 2 with the system register s. These oracles encode the matrix G| Û |G = ρ.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>1 √ 2 (</head><label>12</label><figDesc>Thus the extra qubit states |0 , |1 , are flags that selects either Ûj or Û † j . By multiplying, Û = V1 V2 = |0 0| ⊗ Û + |1 1| ⊗ Û † . Now consider the ancilla state |G = |0 + |1 )|G , and choose Ŝ = (|0 1| + |1 0|) ⊗ Îas . It is easy to verify that the conditions of Eq. (</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>λ |λ and V0 = |+ +| b ⊗ Îs + |--| b ⊗ V controlled by the single-qubit ancilla register b where Xb |± b = ±|± b , consider the sequence</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>G</head><label></label><figDesc>.H.Low and I.L.Chuang thank Robin Kothari, Yuan Su, and Andrew Childs for insightful discussions, the excellent reviews by anonymous referees, and acknowledge funding by the ARO Quantum Algorithms Program and NSF RQCC Project No.1111337.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: (Left) Approximation error = max θ∈R |A[θ] -iC[θ] -e it sin (θ) |. (A[θ], C[θ]) are real Fourier series in (cos (kθ), sin (kθ)), k = 0, ..., Q/2, and is plotted for the upper bound 4t q2 q q! (blue), truncation</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 1 :</head><label>1</label><figDesc>Comparison of state-of-art with our new approaches (bottom three lines) for approximating e -i Ĥt of Ĥ ∈ C 2 n ×2 n with error . The d-sparse simulation oracle describes entries of Ĥ with maximum absolute value Ĥ max = 1 to m bits of precision. The BCCKS oracle provides the decomposition Ĥ =</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 :</head><label>2</label><figDesc>List of six example problems (top row), solvable using the quantum signal processor approach to compute an operator function f [•] of Hermitian Ĥ = G| Û |G . Through qubitization, the scope of inputs to the Quantum Linear Systems Problem (QLSP) and Gibbs Sampling (Gibbs) can be any Ĥ of this form, either indirectly through Hamiltonian simulation, or directly through quantum signal processing. Quantum Phase Estimation (QPE) here decides whether eigenphases θ of an implemented unitary satisfy some property e.g. f (θ) ≥ 1/2. Definition 1 (Standard-form). A signal operator Ĥ with spectral norm Ĥ ≤ 1 is encoded in the standard-form if we may query a unitary oracle Û : H a ⊗H s → H a ⊗H s and a unitary state preparation oracle Ĝ|0 a = |G a ∈ H a with the property</figDesc><table><row><cell>10]</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>signal state defines the measurement basis of the appended register H a , which naturally divides Û into two subspaces. First, H G = |G ⊗ H s where the measurement succeeds with probability Ĥ|ψ 2 and Û |G a |ψ s is projected onto |G a Ĥ|ψ s Ĥ|ψ . Second, the orthogonal complement H G ⊥ where the measurement fails. As probabilities are bounded by 1, the signal operator Ĥ must have spectral norm Ĥ ≤ 1. Whenever the context is clear, we drop the ancilla and system subscripts, and use |G a ⊗ Îs and |G interchangeably. We represent Û such that the top-left block is precisely Ĥ and acts on an input state |G ψ ≡ |G |ψ ∈ H G , whereas the undefined parts of Û transform |G ψ into some orthogonal state |G ⊥ ψ ∈ H G ⊥ of lesser interest.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc>1, from which it follows that for each eigenstate |λ , the iterates Ŵφ± maps states in the subspace spanned by {|G |λ , Ŵπ/2,± |G |λ } to a state in the span of {|G |λ , Ŵπ/2,∓ |G |λ }. Let us define the following states by Gram-Schmidt orthogonalization</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head></head><label></label><figDesc>2 |0 2| -1 -|λ| 2 |1 0| +λ , ϕ 2 , ..., ϕ Q ) for h(θ) = t sin (θ) 2 10 -2 0.0707 (-1.61, 1.67) 4 10 -2 0.311 (-1.03, 2.54, 1.36, -2.11) 8 10 -2 1.20 (-2.63, 1.66, -2.42, -1.79, 2.17, 1.43, -2.71), 16 10 -2 3.78 (0.23, 1.17, 3.07, -1.63, -1.78, 2.88, 1.71, 2.77, -1.95, 3.12, 1.97, -2.56, -2.87, 2.00, -2.29, 2.92, -0.51) 32 10 -2 10.1 (-2.94, 2.64, -2.32, 2.42, -2.86, -2.72, 2.4, -2.57, -2.96, 2.43, -2.53, -2.63, 2.33, 3.11, -2.17, 3.07, 2.24, -2.98, -1.99, -2.77, 2.22, 2.33, -2.62, -1.75, -2.15, 2.84, 1.68, 1.48, 2.46, -2.26, -0.92, -0.21) 2 10 -4 0.0070711 (-1.574, 1.5817) 4 10 -4 0.066948 (-0.6741, 2.5806, 0.7772, -2.4675) 8 10 -4 0.47498 (-0.0914, -1.2861, 2.1995, 0.995, -2.637, -1.5369, 1.9236, -3.0502) 16 10 -4 2.2164 (-0.5228, -2.9239, 1.3204, 2.6065, -1.73, -2.6191, 1.7225, 3.0121, -1.2286, -2.5276, 1.8058, -0.4605, 1.1563, -2.3492, 2.1623, -2.6188) 32 10 -4 7.3957 (1.3594, -2.7039, -1.5041, -1.0845, 2.4817, 2.5571, -3.0846, 1.0661, 2.6256, -2.0267, -2.0383, 3.0857, 1.9338, 2.6966, -2.1759, -2.562, 2.2839, 2.6493, -2.2281, -2.9435, 2.1726, -2.9934, -2.9327, 1.7167, -3.0853, -0.9383, -0.2802, -0.2376, -2.9556, 2.7875, -2.2875, 1.7822)</figDesc><table><row><cell>Q</cell><cell>t</cell><cell>ϕ = (ϕ 1</cell></row></table><note><p>* |1 2| , and similarly for RU † .</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head>Table 3 :</head><label>3</label><figDesc>Table of phases implementing target function h(θ) = t sin (θ) in quantum signal processing. Errors quoted refer to +| b V ϕ |+ b -e -i Ĥt ≤ .</figDesc><table /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Accepted in Quantum 2019-07-08, click title to verify</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4" xml:id="foot_1"><p>After the original preprint release of this manuscript, standard-form encoding has been replaced in the community by 'block-encoding'<ref type="bibr" target="#b28">[29]</ref>, which is a more informative description.Accepted in Quantum 2019-07-08, click title to verify</p></note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Universal Quantum Simulators</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lloyd</surname></persName>
+		</author>
+		<idno type="DOI">10.1126/science.273.5278.1073</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">273</biblScope>
+			<biblScope unit="page">1073</biblScope>
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Adiabatic quantum state generation and statistical zero knowl-edge</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Aharonov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ta-Shma</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/780542.780546</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the thirty-fifth ACM symposium on Theory of computing -STOC &apos;03 , STOC &apos;03</title>
+		<meeting>the thirty-fifth ACM symposium on Theory of computing -STOC &apos;03 , STOC &apos;03<address><addrLine>New York, New York, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2003">2003</date>
+			<biblScope unit="page">20</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Hamiltonian Simulation Using Linear Combinations of Unitary Operations</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">901</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Black-box Hamiltonian simulation and unitary implementation</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">29</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Quantum principal component analysis</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lloyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mohseni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rebentrost</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nphys3029</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Physics</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page">631</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Hamiltonian Simulation with Nearly Optimal Dependence on all Parameters</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/FOCS.2015.54</idno>
+	</analytic>
+	<monogr>
+		<title level="m">2015 IEEE 56th Annual Symposium on Foundations of Computer Science, FOCS &apos;15</title>
+		<meeting><address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="792" to="809" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Optimal Hamiltonian Simulation by Quantum Signal Processing</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevLett.118.010501</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">118</biblScope>
+			<biblScope unit="page">10501</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Quantum Algorithm for Linear Systems of Equations</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W</forename><surname>Harrow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hassidim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lloyd</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevLett.103.150502</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="page">150502</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Quantum Algorithm for Systems of Linear Equations with Exponentially Improved Dependence on Precision</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+		<idno type="DOI">10.1137/16M1087072</idno>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Journal on Computing</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page">1920</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Quantum algorithms for Gibbs sampling and hitting-time estimation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Chowdhury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page">41</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Quantum Speed-Ups for Solving Semidefinite Programs</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">G</forename><surname>Brandao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Svore</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/FOCS.2017.45</idno>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS)</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page">415</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Introduction to Quantum Algorithms for Physics and Chemistry</title>
+		<author>
+			<persName><forename type="first">M.-H</forename><surname>Yung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Whitfield</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Boixo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Tempel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Aspuru-Guzik</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/9781118742631.ch03</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Quantum Information and Computation for Chemistry</title>
+		<imprint>
+			<publisher>John Wiley &amp; Sons, Inc</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="67" to="106" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Gate-count estimates for performing quantum chemistry on small quantum computers</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wecker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">K</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">B</forename><surname>Hastings</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Troyer</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.90.022305</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review A</title>
+		<imprint>
+			<biblScope unit="volume">90</biblScope>
+			<biblScope unit="page">22305</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The Trotter step size required for accurate quantum simulation of quantum chemistry</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Poulin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">B</forename><surname>Hastings</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wecker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Doherty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Troyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page">361</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Elucidating reaction mechanisms on quantum computers</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reiher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Svore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wecker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Troyer</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.1619152114</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page">7555</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Exponentially more precise quantum simulation of fermions in second quantization</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Babbush</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Kivlichan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Love</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Aspuru-Guzik</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/1367-2630/18/3/033032</idno>
+	</analytic>
+	<monogr>
+		<title level="j">New Journal of Physics</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page">33032</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Bounding the costs of quantum simulation of many-body physics in real space</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Kivlichan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Babbush</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Aspuru-Guzik</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/1751-8121/aa77b8</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Physics A: Mathematical and Theoretical</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="page">305301</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Scalable Quantum Simulation of Molecular Energies</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J J</forename><surname>O'malley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Babbush</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Kivlichan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Mcclean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Barends</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Roushan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tranter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chiaro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dunsworth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Jeffrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Lucero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Megrant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Mutus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Neeley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Neill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Quintana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sank</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vainsencher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wenner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>White</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">V</forename><surname>Coveney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Love</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Neven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Aspuru-Guzik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Martinis</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevX.6.031007</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review X</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">31007</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Superconducting quantum circuits at the surface code threshold for fault tolerance</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Barends</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Megrant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Veitia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sank</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Jeffrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>White</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mutus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chiaro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dunsworth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Neill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>O'malley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Roushan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vainsencher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wenner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Korotkov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Cleland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Martinis</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nature13171</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">508</biblScope>
+			<biblScope unit="page">500</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Demonstration of a small programmable quantum computer with atomic qubits</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Debnath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">M</forename><surname>Linke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Figgatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Landsman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wright</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Monroe</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nature18648</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">536</biblScope>
+			<biblScope unit="page">63</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Exponential improvement in precision for simulating sparse Hamiltonians</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cleve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/2591796.2591854</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 46th Annual ACM Symposium on Theory of Computing -STOC &apos;14 , STOC &apos;14</title>
+		<meeting>the 46th Annual ACM Symposium on Theory of Computing -STOC &apos;14 , STOC &apos;14<address><addrLine>New York, New York, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="283" to="292" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Simulating Hamiltonian Dynamics with a Truncated Taylor Series</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cleve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevLett.114.090502</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page">90502</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Exponential algorithmic speedup by a quantum walk</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cleve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Deotto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Farhi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gutmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Spielman</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/780542.780552</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the thirty-fifth ACM symposium on Theory of computing -STOC &apos;03 , STOC &apos;03</title>
+		<meeting>the thirty-fifth ACM symposium on Theory of computing -STOC &apos;03 , STOC &apos;03<address><addrLine>New York, New York, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2003">2003</date>
+			<biblScope unit="page">59</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">On the Relationship Between Continuous-and Discrete-Time Quantum Walk</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00220-009-0930-1</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Communications in Mathematical Physics</title>
+		<imprint>
+			<biblScope unit="volume">294</biblScope>
+			<biblScope unit="page">581</biblScope>
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Efficient algorithms in quantum query complexity</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+		<respStmt>
+			<orgName>University of Waterloo</orgName>
+		</respStmt>
+	</monogr>
+	<note>Ph.D. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Szegedy</surname></persName>
+		</author>
+		<idno>quant-ph/0401053</idno>
+		<title level="m">Spectra of Quantized Walks and a √ δ rule</title>
+		<imprint/>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Corrected Quantum Walk for Optimal Hamiltonian Simulation</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Novo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page">1295</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Hamiltonian simulation with optimal sample complexity</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kimmel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>-Y. Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ozols</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Yoder</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41534-017-0013-7</idno>
+	</analytic>
+	<monogr>
+		<title level="j">npj Quantum Information</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">13</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">The power of block-encoded matrix powers: improved regression techniques via faster Hamiltonian simulation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chakraborty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gilyén</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jeffery</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.01973</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Spectral Gap Amplification</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Boixo</surname></persName>
+		</author>
+		<idno type="DOI">10.1137/120871997</idno>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Journal on Computing</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page">593</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Quantum Speed-Up of Markov Chain Based Algorithms</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Szegedy</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/FOCS.2004.53</idno>
+	</analytic>
+	<monogr>
+		<title level="m">45th Annual IEEE Symposium on Foundations of Computer Science, FOCS &apos;04</title>
+		<meeting><address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2004">2004</date>
+			<biblScope unit="page" from="32" to="41" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">An ancilla-based quantum simulation framework for non-unitary matrices</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Daskin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kais</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11128-016-1452-3</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Quantum Information Processing</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page">33</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Approximation of Functions: Theory and Numerical Methods</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Meinardus</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-85643-3</idno>
+	</analytic>
+	<monogr>
+		<title level="s">Springer Tracts in Natural Philosophy</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<date type="published" when="1967">1967</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Berlin Heidelberg, Berlin, Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A fast quantum mechanical algorithm for database search</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Grover</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/237814.237866</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the twenty-eighth annual ACM symposium on Theory of computing -STOC &apos;96 STOC &apos;96</title>
+		<meeting>the twenty-eighth annual ACM symposium on Theory of computing -STOC &apos;96 STOC &apos;96</meeting>
+		<imprint>
+			<date type="published" when="1996">1996</date>
+			<biblScope unit="page">212</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Fixed-Point Quantum Search with an Optimal Number of Queries</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Yoder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevLett.113.210501</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page">210501</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">A computer program for designing optimum FIR linear phase digital filters</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mcclellan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Parks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Rabiner</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TAU.1973.1162525</idno>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Audio and Electroacoustics</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page">506</biblScope>
+			<date type="published" when="1973">1973</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Methodology of Resonant Equiangular Composite Quantum Gates</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Yoder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevX.6.041067</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review X</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">41067</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Handbook of mathematical functions</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abramowitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Stegun</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Others</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Applied mathematics series</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="page">62</biblScope>
+			<date type="published" when="1966">1966</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Rootfinding for a transcendental equation without a first guess: Polynomialization of Kepler&apos;s equation through Chebyshev polynomial expansion of the sine</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Boyd</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.apnum.2005.11.010</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Applied Numerical Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page">12</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Limitations on the Simulation of Non-sparse Hamiltonians</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum Information &amp; Computation</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page">669</biblScope>
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">A Trotter-Suzuki approximation for Lie groups with applications to Hamiltonian simulation</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Somma</surname></persName>
+		</author>
+		<idno type="DOI">10.1063/1.4952761</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mathematical Physics</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page">62202</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Quantum Imaging by Coherent Enhancement</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Yoder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevLett.114.100801</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page">100801</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gilyén</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3313276.3316366</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 51st Annual ACM Symposium on Theory of Computing -STOC &apos;19</title>
+		<meeting>the 51st Annual ACM Symposium on Theory of Computing -STOC &apos;19<address><addrLine>New York, New York, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="193" to="204" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Quantum Algorithm for Simulating Real Time Evolution of Lattice Hamiltonians</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Haah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hastings</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kothari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/FOCS.2018.00041</idno>
+	</analytic>
+	<monogr>
+		<title level="m">2018 IEEE 59th Annual Symposium on Foundations of Computer Science (FOCS), FOCS &apos;18</title>
+		<meeting><address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="350" to="360" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Nearly optimal lattice simulation by product formulas</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Su</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1901.00564</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Hamiltonian Simulation by Uniform Spectral Amplification</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Chuang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1707.05391</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Hamiltonian simulation with nearly optimal dependence on spectral norm</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3313276.3316386</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 51st Annual ACM Symposium on Theory of Computing -STOC &apos;19</title>
+		<meeting>the 51st Annual ACM Symposium on Theory of Computing -STOC &apos;19<address><addrLine>New York, New York, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="491" to="502" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">Hamiltonian Simulation in the Interaction Picture</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Low</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wiebe</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1805.00675</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Toward the first quantum simulation with quantum speedup</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Childs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Maslov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Nam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Ross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Su</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.1801723115</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page">9456</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Product Decomposition of Periodic Functions in Quantum Signal Processing</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Haah</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1806.10236</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Chebyshev digital FIR filter design</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Karam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Mcclellan</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0165-1684(98)00244-8</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Signal Processing</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">17</biblScope>
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

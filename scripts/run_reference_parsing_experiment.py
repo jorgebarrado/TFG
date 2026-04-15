@@ -11,6 +11,7 @@ sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
 
 from citations.services.reference_parsing_experiments import (  # noqa: E402
     DEFAULT_PDFS,
+    discover_all_pdf_paths,
     run_reference_parsing_experiment,
 )
 
@@ -24,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         dest="pdfs",
         help="PDF filename from tfg_project/citations/static/citations/PDFs-Reales or an absolute path. Repeat for multiple PDFs.",
+    )
+    parser.add_argument(
+        "--all-pdfs",
+        action="store_true",
+        help="Run the experiment over all PDFs discovered under tfg_project/citations/static/citations/PDFs-Reales.",
     )
     parser.add_argument(
         "--run-id",
@@ -50,6 +56,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the curated default PDF sample and exit.",
     )
+    parser.add_argument(
+        "--list-all-pdfs",
+        action="store_true",
+        help="Print all discovered PDFs under the fixture directory and exit.",
+    )
     return parser
 
 
@@ -61,8 +72,22 @@ def main() -> int:
         print(json.dumps(DEFAULT_PDFS, indent=2, ensure_ascii=False))
         return 0
 
+    if args.list_all_pdfs:
+        print(
+            json.dumps(
+                [path.name for path in discover_all_pdf_paths()],
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if args.all_pdfs and args.pdfs:
+        parser.error("Use either --all-pdfs or --pdf, not both.")
+
     summary = run_reference_parsing_experiment(
-        pdf_names=args.pdfs or DEFAULT_PDFS,
+        pdf_names=args.pdfs,
+        all_pdfs=bool(args.all_pdfs),
         output_root=args.output_root,
         run_id=args.run_id,
         comparison_limit=args.comparison_limit,

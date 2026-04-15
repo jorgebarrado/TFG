@@ -1,0 +1,49 @@
+{
+  "parser": "anystyle",
+  "status": "unavailable",
+  "availability": {
+    "available": false,
+    "reason": "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+  },
+  "entries": [
+    {
+      "index": 0,
+      "raw_input": "Barr ET, Bird C, Hyatt E, Menzies T, Robles G (2010) On the shoulders of giants. In: FoSER, pp 23– 28 Basili VR, Shull F, Lanubile F (1999) Building knowledge through families of experiments. IEEE Trans Softw Eng 25(4):456–473 Boetticher G, Menzies T, Ostrand T (2007) PROMISE repository of empirical software engineering data. Department of Computer Science, West Virginia University. http://promisedata.org/ de Leeuw J (2001) Reproducible research. The bottom line. Technical report, UC Los Angeles: Department of Statistics, UCLA. http://escholarship.org/uc/item/9050x4r4 Donoho DL, Maleki A, Rahman IU, Shahram M, Stodden V (2009) Reproducible research in computational harmonic analysis. Comput Sci Eng 11:8–18 Fayyad U, Piatetsky-Shapiro G, Smyth P (1996) Knowledge discovery and data mining: towards a unifying framework. In: Proceedings of the 2nd international conference on knowledge discovery and data mining, KDD-96, Portland (Oregon, USA). AAAI Press, Menlo Park, pp 82–88 Fomel S, Claerbout JF (2009) Guest editors’ introduction: reproducible research. Comput Sci Eng 11:5–7 Gentleman R, Lang DT (2007) Statistical analyses and reproducible research. J Comput Graph Stat 16(1):1–23 Germán DM (2004) Mining CVS repositories, the softChange experience. In: Proceedings of the international workshop on mining software repositories, Edinburghh, UK Gomez OS, Juristo N, Vegas S (2010) Replication, reproduction and re-analysis: three ways for verifying experimental findings. In: Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010), Cape Town, South Africa González-Barahona JM, Robles G, Michlmayr M, Amor JJ, Germán DM (2009) Macro-level soft- ware evolution: a case study of a large software compilation. Empir Software Eng 14(3):262–285 Hayes JH, Dekhtyar A, Sundaram S (2005) Text mining for software engineering: how analyst feedback impacts final results. In: Proceedings of the second international workshop on mining software repositories, St. Louis, USA Herraiz I, Izquierdo-Cortazar D, Rivas-Hernández F (2009) FLOSSMetrics: Free/Libre/Open Source Software Metrics. In: CSMR, pp 281–284 Hothorn T, Leisch F (2011) Case studies in reproducibility. Brief Bioinform Howison J, Conklin M, Crowston K (2006) FLOSSmole: a collaborative repository for FLOSS research data and analyses. IJITWE 1(3):17–26 88 Empir Software Eng (2012) 17:75–89 Knutson CD, Krein JL , Prechelt L, Juristo N (2010) Report from the 1st international workshop on replication in empirical software engineering research (RESER 2010). SIGSOFT Softw Eng Notes 35:42–44 Koenker R, Zeileis A (2009) On reproducible econometric research. J Appl Econ 24(5):833–847 Miller J (2005) Replicating software engineering experiments: a poisoned chalice or the holy grail. Inf Softw Technol 47:233–244 Panjer LD (2007) Predicting eclipse bug lifetimes. In: Proceedings of the fourth international work- shop on mining software repositories, MSR ’07, p 29 Robles G (2010) Replicating MSR: A study of the potential replicability of papers published in the mining software repositories proceedings. In: 2010 7th IEEE working conference on mining software repositories (MSR), pp 171–180 Robles G, Germán DM (2010) Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community. In: Proceedings of the 1st international workshop on replication in empirical software engineering sesearch (RESER 2010) Robles G, González-Barahona JM, Merelo-Guervós JJ (2006) Beyond source code: the importance of other artifacts in software development (a case study). J Syst Softw 79(9):1233–1248 Shull F, Mendonça MG, Basili VR, Carver J, Maldonado JC, Fabbri SCPF, Travassos GH, de Oliveira MCF (2004) Knowledge-sharing issues in experimental software engineering. Empir Software Eng 9(1–2):111–137 Shull FJ, Carver JC, Vegas S, Juristo N (2008) The role of replications in empirical software engi- neering. Empir Software Eng 13(2):211–218 Vandewalle P, Barrenexea G, Jovanovic I, RidolﬁA, Vetterli M (2007) Experiences with repro- ducible research in various facets of signal processing research. In: Proceedings of the interna- tional conference on acoustics, speech and signal processing. ICASSP 2007, vol 4, pp IV-1253– IV-1256 Vegas S, Juristo N, Moreno A, Solari M, Letelier P (2006) Analysis of the influence of communi- cation between researchers on experiment replication. In: ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering, pp 28–37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at http://libresoft.urjc.es). He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "anystyle",
+      "raw_output": null,
+      "warnings": [
+        "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+      ],
+      "confidence": null
+    },
+    {
+      "index": 1,
+      "raw_input": "Empir Software Eng (2012) 17:75–89 89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning, which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues.",
+      "title": null,
+      "authors": [],
+      "year": null,
+      "doi": null,
+      "venue": null,
+      "pages": null,
+      "type": null,
+      "identifiers": {},
+      "parser": "anystyle",
+      "raw_output": null,
+      "warnings": [
+        "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+      ],
+      "confidence": null
+    }
+  ],
+  "notes": [
+    "AnyStyle was not executed because Ruby/anystyle-cli is absent."
+  ]
+}

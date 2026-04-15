@@ -1,0 +1,808 @@
+{
+  "paper_slug": "icgse2017",
+  "pdf_name": "ICGSE2017.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\ICGSE2017.pdf",
+  "input_bucket": "header_not_found_fallback",
+  "extractor_summary": {
+    "total_references": 54,
+    "likely_valid": 54,
+    "likely_garbage": 0,
+    "doi_non_empty": 0,
+    "references_header_found": false,
+    "references_numbered": true,
+    "citation_style": "numeric",
+    "max_reference_index": 54,
+    "input_warnings": [
+      "reference_header_not_found_fallback_tail_used"
+    ]
+  },
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 54,
+    "title_non_empty": 53,
+    "authors_non_empty": 54,
+    "year_non_empty": 54,
+    "doi_non_empty": 0,
+    "likely_valid": 53,
+    "likely_garbage": 1,
+    "usable_bibliography": true
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "",
+        "authors": [
+          "Beck, K",
+          "Beedle, M",
+          "Van Bennekum, A",
+          "Cockburn, A",
+          "Cunningham, W",
+          "Fowler, M",
+          "Grenning, J",
+          "Highsmith, J",
+          "Hunt, A",
+          "Jeffries, R"
+        ],
+        "doi": null,
+        "year": 2001,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b1",
+        "title": "Evolutionary success of open source software: an investigation into exogenous drivers",
+        "authors": [
+          "Beecher, K",
+          "Boldyreff, C",
+          "Capiluppi, A",
+          "Rank, S"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "",
+        "pages": "",
+        "identifiers": {},
+        "raw_citation": "Electronic communications of the EASST"
+      },
+      {
+        "id": "b2",
+        "title": "Open borders? Immigration in Open Source projects",
+        "authors": [
+          "Bird, C",
+          "Gourley, A",
+          "Devanbu, P",
+          "Swaminathan, A",
+          "Hsu, G"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "",
+        "pages": "6–11",
+        "identifiers": {}
+      },
+      {
+        "id": "b3",
+        "title": "Socio-technical evolution of the Ruby ecosystem in GitHub",
+        "authors": [
+          "Constantinou, E",
+          "Mens, T"
+        ],
+        "doi": null,
+        "year": 2017,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b4",
+        "title": "Explaining variations in client extra costs between software projects offshored to India",
+        "authors": [
+          "Dibbern, J",
+          "Winkler, J",
+          "Heinzl, A"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "MIS quarterly",
+        "pages": "333–366",
+        "identifiers": {}
+      },
+      {
+        "id": "b5",
+        "title": "Surviving Global Software Development",
+        "authors": [
+          "Ebert, C",
+          "Neve, P De"
+        ],
+        "doi": null,
+        "year": 2001,
+        "venue": "IEEE Software",
+        "pages": "62–69",
+        "identifiers": {}
+      },
+      {
+        "id": "b6",
+        "title": "Managing risks in Global Software Engineering: Principles and practices",
+        "authors": [
+          "Ebert, C",
+          "Murthy, B K",
+          "Jha, N N"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "",
+        "pages": "131–140",
+        "identifiers": {}
+      },
+      {
+        "id": "b7",
+        "title": "Impact of developer turnover on quality in Open-Source Software",
+        "authors": [
+          "Foucault, M",
+          "Palyart, M",
+          "Blanc, X",
+          "Murphy, G C",
+          "Falleri, J.-R"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "829–841",
+        "identifiers": {}
+      },
+      {
+        "id": "b8",
+        "title": "The GNOME project: A case study of Open Source",
+        "authors": [
+          "German, D M"
+        ],
+        "doi": null,
+        "year": 2003,
+        "venue": "Global Software Development. Software Process: Improvement and Practice",
+        "pages": "201–215",
+        "identifiers": {}
+      },
+      {
+        "id": "b9",
+        "title": "Towards a survival analysis of database framework usage in Java projects",
+        "authors": [
+          "Goeminne, M",
+          "Mens, T"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "In ICSME",
+        "pages": "551–555",
+        "identifiers": {}
+      },
+      {
+        "id": "b10",
+        "title": "What do we know about developer motivation?",
+        "authors": [
+          "Hall, T",
+          "Sharp, H",
+          "Beecham, S",
+          "Baddoo, N",
+          "Robinson, H"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "IEEE Software",
+        "pages": "92–94",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "Global Software Development",
+        "authors": [
+          "Herbsleb, J D",
+          "Moitra, D"
+        ],
+        "doi": null,
+        "year": 2001,
+        "venue": "IEEE Software",
+        "pages": "16–20",
+        "identifiers": {}
+      },
+      {
+        "id": "b12",
+        "title": "The processes of joining in Global Distributed Software projects",
+        "authors": [
+          "Herraiz, I",
+          "Robles, G",
+          "Amor, J J",
+          "Romera, T",
+          "González Barahona, J M"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "",
+        "pages": "27–33",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Motivation of software developers in Open Source projects: an Internetbased survey of contributors to the Linux kernel",
+        "authors": [
+          "Hertel, G",
+          "Niedner, S",
+          "Herrmann, S"
+        ],
+        "doi": null,
+        "year": 2003,
+        "venue": "Research Policy",
+        "pages": "1159–1177",
+        "identifiers": {}
+      },
+      {
+        "id": "b14",
+        "title": "Data Structured Software Maintenance: The Warnier/Orr Approach",
+        "authors": [
+          "Higgins, D A"
+        ],
+        "doi": null,
+        "year": 1986,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b15",
+        "title": "Global Software Development challenges: A case study on temporal, geographical and socio-cultural distance",
+        "authors": [
+          "Holmstrom, H",
+          "Conchúir, E Ó",
+          "Agerfalk, J",
+          "Fitzgerald, B"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "",
+        "pages": "3–11",
+        "identifiers": {}
+      },
+      {
+        "id": "b16",
+        "title": "Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study of Apache Projects",
+        "authors": [
+          "A"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "ISRN Software Engineering",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b17",
+        "title": "Using software archaeology to measure knowledge loss in software projects due to developer turnover",
+        "authors": [
+          "Izquierdo-Cortazar, D",
+          "Robles, G",
+          "Ortega, F",
+          "González-Barahona, J M"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "1–10",
+        "identifiers": {}
+      },
+      {
+        "id": "b18",
+        "title": "Nonparametric estimation from incomplete observations",
+        "authors": [
+          "Kaplan, E L",
+          "Meier, P"
+        ],
+        "doi": null,
+        "year": 1958,
+        "venue": "Journal of the American statistical association",
+        "pages": "457–481",
+        "identifiers": {}
+      },
+      {
+        "id": "b19",
+        "title": "Who's who in gnome: Using LSA to merge software repository identities",
+        "authors": [
+          "Kouters, E",
+          "Vasilescu, B",
+          "Serebrenik, A",
+          "Van Den, M G J",
+          "Brand"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "592–595",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects",
+        "authors": [
+          "Lakhani, K",
+          "Wolf, R G"
+        ],
+        "doi": null,
+        "year": 2003,
+        "venue": "Social Science Research Network",
+        "pages": "1–27",
+        "identifiers": {}
+      },
+      {
+        "id": "b21",
+        "title": "The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers",
+        "authors": [
+          "Lambert, E G",
+          "Hogan, N L",
+          "Barton, S M"
+        ],
+        "doi": null,
+        "year": 2001,
+        "venue": "The Social Science Journal",
+        "pages": "233–250",
+        "identifiers": {}
+      },
+      {
+        "id": "b22",
+        "title": "Leadership characteristics and developers' motivation in Open Source Software development",
+        "authors": [
+          "Li, Y",
+          "Tan, C.-H",
+          "Teo, H.-H"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "Information & Management",
+        "pages": "257–267",
+        "identifiers": {}
+      },
+      {
+        "id": "b23",
+        "title": "Internal marketing: a study of employee loyalty, its determinants and consequences",
+        "authors": [
+          "Martensen, A",
+          "Grønholdt, L"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "Innovative Marketing",
+        "pages": "92–116",
+        "identifiers": {}
+      },
+      {
+        "id": "b24",
+        "title": "Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications",
+        "authors": [
+          "Mehlenbacher, B"
+        ],
+        "doi": null,
+        "year": 2003,
+        "venue": "",
+        "pages": "527–543",
+        "identifiers": {}
+      },
+      {
+        "id": "b25",
+        "title": "Evolving software ecosystems A historical and ecological perspective",
+        "authors": [
+          "Mens, T"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "170–192",
+        "identifiers": {},
+        "raw_citation": "Dependable Software Systems Engineering"
+      },
+      {
+        "id": "b26",
+        "title": "Studying evolving software ecosystems based on ecological models",
+        "authors": [
+          "Mens, T",
+          "Claes, M",
+          "Grosjean, P",
+          "Serebrenik, A"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "297–326",
+        "identifiers": {}
+      },
+      {
+        "id": "b27",
+        "title": "Retention and quality in Open Source Software projects",
+        "authors": [
+          "Midha, V",
+          "Palvia, P"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b28",
+        "title": "Improving open source software maintenance",
+        "authors": [
+          "Midha, V",
+          "Singh, R",
+          "Palvia, P",
+          "Kshetri, N"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "Journal of Computer Information Systems",
+        "pages": "81–90",
+        "identifiers": {}
+      },
+      {
+        "id": "b29",
+        "title": "Diversity in software engineering research",
+        "authors": [
+          "Nagappan, M",
+          "Zimmermann, T",
+          "Bird, C"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "",
+        "pages": "466–476",
+        "identifiers": {}
+      },
+      {
+        "id": "b30",
+        "title": "Survival analysis in open development projects",
+        "authors": [
+          "Ortega, F",
+          "Izquierdo-Cortazar, D"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "7–12",
+        "identifiers": {}
+      },
+      {
+        "id": "b31",
+        "title": "A practical guide to understanding Kaplan-Meier curves",
+        "authors": [
+          "Rich, J T",
+          "Neely, J G",
+          "Paniello, R C",
+          "Voelker, C C",
+          "Nussenbaum, B",
+          "Wang, E W"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "Otolaryngology-Head and Neck Surgery",
+        "pages": "331–336",
+        "identifiers": {}
+      },
+      {
+        "id": "b32",
+        "title": "How Open Source is changing the software developer's career",
+        "authors": [
+          "Riehle, D"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "IEEE Computer",
+        "pages": "51–57",
+        "identifiers": {}
+      },
+      {
+        "id": "b33",
+        "title": "Paid vs. volunteer work in Open Source",
+        "authors": [
+          "Riehle, D",
+          "Riemer, P",
+          "Kolassa, C",
+          "Schmidt, M"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "3286–3295",
+        "identifiers": {}
+      },
+      {
+        "id": "b34",
+        "title": "Beyond source code: The importance of other artifacts in software development (a case study)",
+        "authors": [
+          "Robles, G",
+          "Gonzalez-Barahona, J M",
+          "Merelo, J J"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "Journal of Systems and Software",
+        "pages": "1233–1248",
+        "identifiers": {}
+      },
+      {
+        "id": "b35",
+        "title": "Guidelines for conducting and reporting case study research in software engineering",
+        "authors": [
+          "Runeson, P",
+          "Höst, M"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Empirical Software Engineering",
+        "pages": "131–164",
+        "identifiers": {}
+      },
+      {
+        "id": "b36",
+        "title": "Survival analysis on the duration of Open Source projects",
+        "authors": [
+          "Samoladas, I",
+          "Angelis, L",
+          "Stamelos, I"
+        ],
+        "doi": null,
+        "year": 2010,
+        "venue": "Information and Software Technology",
+        "pages": "902–922",
+        "identifiers": {}
+      },
+      {
+        "id": "b37",
+        "title": "Who Will Remain? An Evaluation of Actual Person-Job and Person-Team Fit to Predict Developer Retention in FLOSS Projects",
+        "authors": [
+          "Schilling, A",
+          "Laumer, S",
+          "Weitzel, T"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "3446–3455",
+        "identifiers": {}
+      },
+      {
+        "id": "b38",
+        "title": "Together but apart: How spatial, temporal and cultural distances affect FLOSS developers' project retention",
+        "authors": [
+          "Schilling, A",
+          "Laumer, S",
+          "Weitzel, T"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "",
+        "pages": "167–172",
+        "identifiers": {}
+      },
+      {
+        "id": "b39",
+        "title": "Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach",
+        "authors": [
+          "Sharma, P N",
+          "Hulland, J",
+          "Daniel, S"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "331–337",
+        "identifiers": {}
+      },
+      {
+        "id": "b40",
+        "title": "Understanding the process of participating in Open Source communities",
+        "authors": [
+          "Shibuya, B",
+          "Tamai, T"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "1–6",
+        "identifiers": {}
+      },
+      {
+        "id": "b41",
+        "title": "Global Software Development in the FreeBSD project",
+        "authors": [
+          "Spinellis, D"
+        ],
+        "doi": null,
+        "year": 2006,
+        "venue": "",
+        "pages": "73–79",
+        "identifiers": {}
+      },
+      {
+        "id": "b42",
+        "title": "Attracting, onboarding, and retaining newcomer developers in Open Source Software projects",
+        "authors": [
+          "Steinmacher, I",
+          "Gerosa, M A",
+          "Redmiles, D"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b43",
+        "title": "Understanding coopetition in the open-source arena: The cases of webkit and openstack",
+        "authors": [
+          "Teixeira, J"
+        ],
+        "doi": null,
+        "year": 2014,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b44",
+        "title": "Gender and Tenure Diversity in GitHub Teams",
+        "authors": [
+          "Vasilescu, B",
+          "Posnett, D",
+          "Ray, B",
+          "Van Den Brand, M G",
+          "Serebrenik, A",
+          "Devanbu, P",
+          "Filkov, V"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "",
+        "pages": "3789–3798",
+        "identifiers": {}
+      },
+      {
+        "id": "b45",
+        "title": "On the variation and specialisation of workload -A case study of the GNOME ecosystem community",
+        "authors": [
+          "Vasilescu, B",
+          "Serebrenik, A",
+          "Goeminne, M",
+          "Mens, T"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "Empirical Software Engineering",
+        "pages": "955–1008",
+        "identifiers": {}
+      },
+      {
+        "id": "b46",
+        "title": "A log-rank test for equivalence of two survivor functions",
+        "authors": [
+          "Wellek, S"
+        ],
+        "doi": null,
+        "year": 1993,
+        "venue": "Biometrics",
+        "pages": "877–881",
+        "identifiers": {}
+      },
+      {
+        "id": "b47",
+        "title": "Retaining talent: Assessing job satisfaction facets most significantly related to software developer turnover intentions",
+        "authors": [
+          "Westlund, S G",
+          "Hannon, J C"
+        ],
+        "doi": null,
+        "year": 2008,
+        "venue": "Journal of Information Technology Management",
+        "pages": "1–15",
+        "identifiers": {}
+      },
+      {
+        "id": "b48",
+        "title": "Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant",
+        "authors": [
+          "Wiese, I S",
+          "Teodoro, J",
+          "Da Silva, I S",
+          "Treude, C",
+          "Gerosa, M A"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "ICSME",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b49",
+        "title": "An Empirical Analysis of Open Source Software Developers' Motivations and Continuance Intentions",
+        "authors": [
+          "Wu, C.-G",
+          "Gerlach, J H",
+          "Young, C E"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "Information and Management",
+        "pages": "253–262",
+        "identifiers": {}
+      },
+      {
+        "id": "b50",
+        "title": "Magnet or sticky? Measuring project characteristics from the perspective of developer attraction and retention",
+        "authors": [
+          "Yamashita, K",
+          "Kamei, Y",
+          "Mcintosh, S",
+          "Hassan, A E",
+          "Ubayashi, N"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "Journal of Information Processing",
+        "pages": "339–348",
+        "identifiers": {}
+      },
+      {
+        "id": "b51",
+        "title": "Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses",
+        "authors": [
+          "Yang, D",
+          "Sinha, T",
+          "Adamson, D",
+          "Rose, C P"
+        ],
+        "doi": null,
+        "year": 2013,
+        "venue": "",
+        "pages": "13–20",
+        "identifiers": {}
+      },
+      {
+        "id": "b52",
+        "title": "Who will stay in the floss community? modeling participant's initial behavior",
+        "authors": [
+          "Zhou, M",
+          "Mockus, A"
+        ],
+        "doi": null,
+        "year": 2015,
+        "venue": "TSE",
+        "pages": "82–99",
+        "identifiers": {}
+      },
+      {
+        "id": "b53",
+        "title": "Inflow and retention in oss communities with commercial involvement: A case study of three hybrid projects",
+        "authors": [
+          "Zhou, M",
+          "Mockus, A",
+          "Ma, X",
+          "Zhang, L",
+          "Mei, H"
+        ],
+        "doi": null,
+        "year": 2016,
+        "venue": "TOSEM",
+        "pages": "1–13",
+        "identifiers": {}
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 54,
+    "_warnings": []
+  }
+}

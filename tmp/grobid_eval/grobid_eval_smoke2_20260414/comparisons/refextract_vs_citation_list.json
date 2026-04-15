@@ -1,0 +1,158 @@
+{
+  "run_id": "grobid_eval_smoke2_20260414",
+  "rows": [
+    {
+      "paper_slug": "2103_02202v3",
+      "pdf_name": "2103.02202v3.pdf",
+      "input_bucket": "explicit_override",
+      "refextract": {
+        "parser": "refextract",
+        "status": "ok",
+        "total_references": 29,
+        "title_non_empty": 29,
+        "authors_non_empty": 7,
+        "year_non_empty": 28,
+        "doi_non_empty": 13,
+        "almost_empty": 0,
+        "observations": [
+          "Executed with refextract string mode over already segmented references.",
+          "Refextract required a local magic shim because libmagic is not installed on this Windows environment.",
+          "Refextract produced multiple candidate parses for 4 segmented inputs, which usually indicates that the shared extractor fused more than one reference into a single raw string."
+        ]
+      },
+      "grobid_citation_list": {
+        "parser": "grobid_citation_list",
+        "status": "ok",
+        "total_references": 29,
+        "title_non_empty": 1,
+        "authors_non_empty": 1,
+        "year_non_empty": 1,
+        "doi_non_empty": 1,
+        "almost_empty": 28,
+        "observations": [
+          "processCitationList returned 1 parsed references for 29 inputs.",
+          "Title coverage is low.",
+          "A large share of entries remained close to raw text."
+        ]
+      },
+      "delta": {
+        "title_non_empty": -28,
+        "authors_non_empty": -6,
+        "year_non_empty": -27,
+        "doi_non_empty": -12,
+        "almost_empty": 28
+      }
+    }
+  ],
+  "aggregate": {
+    "paper_count": 1,
+    "metric_wins": {
+      "title_non_empty": 0,
+      "authors_non_empty": 0,
+      "year_non_empty": 0,
+      "doi_non_empty": 0,
+      "almost_empty_lower_is_better": 0
+    },
+    "delta_sums": {
+      "title_non_empty": -28,
+      "authors_non_empty": -6,
+      "year_non_empty": -27,
+      "doi_non_empty": -12,
+      "almost_empty": 28
+    }
+  },
+  "difficult_reference_examples": {
+    "2103_02202v3": [
+      {
+        "index": 1,
+        "raw_input": "Thomas Alexander, Lev Bishop, Andrew Cross, Jay Gambetta, Ali Javadi-Abhari, Blake Johnson, and John Smolin. \"a new openqasm for a new era of dynamic circuits\". https://medium.com/ qiskit/a-new-openqasm-for-a-new-era-of-dynamic-circuits-87f031cac49, 2020. Ac- cessed: 2021-01-26.",
+        "refextract": {
+          "score": 2,
+          "title": "a new openqasm for a new era of dynamic circuits",
+          "authors": [],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 2,
+        "raw_input": "Simon Anders and Hans J Briegel. Fast simulation of stabilizer circuits using a graph-state representation. Physical Review A, 73(2):022334, 2006. DOI: 10.1103/PhysRevA.73.022334. Accepted in Quantum 2021-06-16, click title to verify 23",
+        "refextract": {
+          "score": 4,
+          "title": "Simon Anders and Hans J Briegel. Fast simulation of stabilizer circuits using a graph-state representation",
+          "authors": [],
+          "year": 2006,
+          "doi": "10.1103/physreva.73.022334"
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 3,
+        "raw_input": "Dave Bacon. Operator quantum error-correcting subsystems for self-correcting quantum memo- ries. Physical Review A, 73(1):012340, 2006. DOI: 10.1103/PhysRevA.73.012340.",
+        "refextract": {
+          "score": 4,
+          "title": "Dave Bacon. Operator quantum error-correcting subsystems for self-correcting quantum memo- ries",
+          "authors": [],
+          "year": 2006,
+          "doi": "10.1103/physreva.73.012340"
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 4,
+        "raw_input": "Sergey Bravyi and Dmitri Maslov. Hadamard-free circuits expose the structure of the cliﬀord group. arXiv preprint arXiv:2003.09412, 2020. URL https://arxiv.org/abs/2003.09412.",
+        "refextract": {
+          "score": 2,
+          "title": "Sergey Bravyi and Dmitri Maslov. Hadamard-free circuits expose the structure of the clifford group. arXiv preprint",
+          "authors": [],
+          "year": 2020,
+          "doi": null
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      },
+      {
+        "index": 5,
+        "raw_input": "Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard. Simulation of quantum circuits by low-rank stabilizer decompositions. Quantum, 3:181, 2019. DOI: 10.22331/q-2019-09-02-181.",
+        "refextract": {
+          "score": 3,
+          "title": "Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard. Simulation of quantum circuits by low-rank stabilizer decompositions. Quantum, 3:181",
+          "authors": [],
+          "year": 2019,
+          "doi": "10.22331/q-2019-09-02-181"
+        },
+        "grobid_citation_list": {
+          "score": 0,
+          "title": null,
+          "authors": [],
+          "year": null,
+          "doi": null
+        }
+      }
+    ]
+  }
+}

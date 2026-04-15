@@ -1,0 +1,742 @@
+{
+  "paper_slug": "jscientometres_14_3_838",
+  "pdf_name": "JScientometRes-14-3-838.pdf",
+  "rows": [
+    {
+      "index": 0,
+      "raw_input": "Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060.",
+      "refextract": {
+        "index": 0,
+        "raw_input": "Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060.",
+        "title": "transplantation: A bibliometric review of six-decade study fromto 2024. Acta Obstet Gynecol Scand. 2024",
+        "authors": [
+          "Akbari R, Ghaemi M, Panahi Z. Uterus"
+        ],
+        "year": 1960,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "1"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060."
+            ],
+            "author": [
+              "Akbari R, Ghaemi M, Panahi Z. Uterus"
+            ],
+            "misc": [
+              "transplantation: A bibliometric review of six-decade study fromto 2024. Acta Obstet Gynecol Scand. 2024"
+            ],
+            "year": [
+              "1960"
+            ]
+          },
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060."
+            ],
+            "author": [
+              "Akbari R, Ghaemi M, Panahi Z. Uterus"
+            ],
+            "misc": [
+              "104(3):437-51",
+              "PMID 39579060"
+            ],
+            "doi": [
+              "doi:10.1111/aogs.14977"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 0,
+        "raw_input": "Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 0,
+        "raw_input": "Akbari R, Ghaemi M, Panahi Z. Uterus transplantation: A bibliometric review of six-decade study from 1960 to 2024. Acta Obstet Gynecol Scand. 2024;104(3):437-51. doi: 10.1111/aogs.14977, PMID 39579060.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 1,
+      "raw_input": "Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034.",
+      "refextract": {
+        "index": 1,
+        "raw_input": "Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034.",
+        "title": "Ma’murov B, Akramova S",
+        "authors": [
+          "Akramova G"
+        ],
+        "year": 2024,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "2"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034."
+            ],
+            "author": [
+              "Akramova G"
+            ],
+            "misc": [
+              "Ma’murov B, Akramova S",
+              "of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf"
+            ],
+            "year": [
+              "2024"
+            ]
+          },
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034."
+            ],
+            "misc": [
+              "Qo’ldoshev R",
+              "538:05034"
+            ],
+            "author": [
+              "Shodmonova A. Methods"
+            ],
+            "doi": [
+              "doi:10.1051/e3sconf/202453805034"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 1,
+        "raw_input": "Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 1,
+        "raw_input": "Akramova G, Ma’murov B, Akramova S, Qo’ldoshev R, Shodmonova A. Methods of using STEAM technologies in the development of pupils’ computational thinking. E3S Web Conf. 2024;538:05034. doi: 10.1051/e3sconf/202453805034.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 2,
+      "raw_input": "Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:",
+      "refextract": {
+        "index": 2,
+        "raw_input": "Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:",
+        "title": "Khasseh AA. A co-word analysis of global research on knowledge organization:-2019. Knowl Organ. 2022",
+        "authors": [
+          "Alipour O, Soheili F"
+        ],
+        "year": 1900,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "3"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:"
+            ],
+            "author": [
+              "Alipour O, Soheili F"
+            ],
+            "misc": [
+              "Khasseh AA. A co-word analysis of global research on knowledge organization:-2019. Knowl Organ. 2022"
+            ],
+            "year": [
+              "1900"
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:"
+            ],
+            "author": [
+              "Alipour O, Soheili F"
+            ],
+            "misc": [
+              "49(5):303-15. doi:"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 2,
+        "raw_input": "Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 2,
+        "raw_input": "Alipour O, Soheili F, Khasseh AA. A co-word analysis of global research on knowledge organization: 1900-2019. Knowl Organ. 2022;49(5):303-15. doi:",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 3,
+      "raw_input": "5771/0943-7444-2022-5-303.",
+      "refextract": {
+        "index": 3,
+        "raw_input": "5771/0943-7444-2022-5-303.",
+        "title": "5771/0943-7444--5-303",
+        "authors": [],
+        "year": 2022,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "raw_ref": [
+              "5771/0943-7444-2022-5-303."
+            ],
+            "misc": [
+              "5771/0943-7444--5-303"
+            ],
+            "year": [
+              "2022"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 3,
+        "raw_input": "5771/0943-7444-2022-5-303.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 3,
+        "raw_input": "5771/0943-7444-2022-5-303.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 4,
+      "raw_input": "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84.",
+      "refextract": {
+        "index": 4,
+        "raw_input": "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84.",
+        "title": "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using",
+        "authors": [
+          "VOSviewer. J"
+        ],
+        "year": 2022,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "5"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84."
+            ],
+            "misc": [
+              "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using",
+              "J)"
+            ],
+            "author": [
+              "VOSviewer. J"
+            ],
+            "year": [
+              "2022"
+            ]
+          },
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84."
+            ],
+            "misc": [
+              "Kedokteran Diponegoro",
+              "11(6):275-84"
+            ],
+            "author": [
+              "Diponegoro Med"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 4,
+        "raw_input": "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 4,
+        "raw_input": "Ananda RK, Nandiyanto AB. Bibliometric analysis of publication on protein nanoparticle using VOSviewer. J Kedokteran Diponegoro (Diponegoro Med J). 2022;11(6):275-84.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 5,
+      "raw_input": "Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018.",
+      "refextract": {
+        "index": 5,
+        "raw_input": "Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018.",
+        "title": "young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav",
+        "authors": [
+          "Angeli C, Valanides N. Developing"
+        ],
+        "year": 2020,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "6"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018."
+            ],
+            "author": [
+              "Angeli C, Valanides N. Developing"
+            ],
+            "misc": [
+              "young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav"
+            ],
+            "year": [
+              "2020"
+            ]
+          },
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018."
+            ],
+            "author": [
+              "Angeli C, Valanides N. Developing"
+            ],
+            "misc": [
+              "105:105954"
+            ],
+            "doi": [
+              "doi:10.1016/j.chb.2019.03.018"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 5,
+        "raw_input": "Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 5,
+        "raw_input": "Angeli C, Valanides N. Developing young children’s computational thinking with educational robotics: an interaction effect between gender and scaffolding strategy. Comput Hum Behav. 2020;105:105954. doi: 10.1016/j.chb.2019.03.018.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 6,
+      "raw_input": "Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:",
+      "refextract": {
+        "index": 6,
+        "raw_input": "Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:",
+        "title": "effects of coding on children’s planning and inhibition skills. Comput Educ",
+        "authors": [
+          "Arfé B, Vardanega T, Ronconi L. The"
+        ],
+        "year": 2020,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "7"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:"
+            ],
+            "author": [
+              "Arfé B, Vardanega T, Ronconi L. The"
+            ],
+            "misc": [
+              "effects of coding on children’s planning and inhibition skills. Comput Educ"
+            ],
+            "year": [
+              "2020"
+            ]
+          },
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:"
+            ],
+            "author": [
+              "Arfé B, Vardanega T, Ronconi L. The"
+            ],
+            "misc": [
+              "148:103807. doi:"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 6,
+        "raw_input": "Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 6,
+        "raw_input": "Arfé B, Vardanega T, Ronconi L. The effects of coding on children’s planning and inhibition skills. Comput Educ. 2020;148:103807. doi:",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 7,
+      "raw_input": "1016/j. compedu.2020.103807.",
+      "refextract": {
+        "index": 7,
+        "raw_input": "1016/j. compedu.2020.103807.",
+        "title": "1016/j. compedu..103807",
+        "authors": [],
+        "year": 2020,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "raw_ref": [
+              "1016/j. compedu.2020.103807."
+            ],
+            "misc": [
+              "1016/j. compedu..103807"
+            ],
+            "year": [
+              "2020"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 7,
+        "raw_input": "1016/j. compedu.2020.103807.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 7,
+        "raw_input": "1016/j. compedu.2020.103807.",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    }
+  ]
+}

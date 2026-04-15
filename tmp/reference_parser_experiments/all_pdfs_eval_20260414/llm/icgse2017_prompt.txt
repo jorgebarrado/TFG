@@ -1,0 +1,69 @@
+You are parsing already-segmented bibliographic references.
+Return JSON only. No markdown. No commentary.
+Output must be a JSON array with exactly one object per input reference in the same order.
+Each object must use this schema:
+{"index": <integer>, "raw_input": <string>, "title": <string|null>, "authors": <array of strings>, "year": <integer|null>, "doi": <string|null>, "venue": <string|null>, "pages": <string|null>, "type": <string|null>, "identifiers": <object>, "confidence": <number|null>, "notes": <array of strings>}
+Rules:
+- Do not invent data.
+- If a field is unclear, use null or an empty array/object.
+- Keep the DOI normalized without URL prefixes if present.
+- raw_input must exactly match the input string.
+- index must exactly match the provided index.
+- authors must contain plain strings, not objects.
+
+PDF source: ICGSE2017.pdf
+References:
+0: K. Beck, M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler, J. Grenning, J. Highsmith, A. Hunt, R. Jeffries, et al. Manifesto for Agile Software Development, 2001.
+1: K. Beecher, C. Boldyreff, A. Capiluppi, and S. Rank. Evolutionary success of open source software: an investi- gation into exogenous drivers. Electronic communications of the EASST, 2008.
+2: C. Bird, A. Gourley, P. Devanbu, A. Swaminathan, and G. Hsu. Open borders? Immigration in Open Source projects. In MSR, pages 6–11. IEEE, 2007.
+3: E. Constantinou and T. Mens. Socio-technical evolution of the Ruby ecosystem in GitHub. In SANER. IEEE, 2017.
+4: J. Dibbern, J. Winkler, and A. Heinzl. Explaining variations in client extra costs between software projects offshored to India. MIS quarterly, 32(2):333–366, 2008.
+5: C. Ebert and P. De Neve. Surviving Global Software Development. IEEE Software, 18(2):62–69, 2001.
+6: C. Ebert, B. K. Murthy, and N. N. Jha. Managing risks in Global Software Engineering: Principles and practices. In ICGSE, pages 131–140. IEEE, 2008.
+7: M. Foucault, M. Palyart, X. Blanc, G. C. Murphy, and J.-R. Falleri. Impact of developer turnover on quality in Open-Source Software. In FSE, pages 829–841. ACM, 2015.
+8: D. M. German. The GNOME project: A case study of Open Source, Global Software Development. Software Process: Improvement and Practice, 8(4):201–215, 2003.
+9: M. Goeminne and T. Mens. Towards a survival analysis of database framework usage in Java projects. In ICSME, pages 551–555. IEEE, 2015.
+10: T. Hall, H. Sharp, S. Beecham, N. Baddoo, and H. Robin- son. What do we know about developer motivation? IEEE Software, 25(4):92–94, 2008.
+11: J. D. Herbsleb and D. Moitra. Global Software Develop- ment. IEEE Software, 18(2):16–20, 2001.
+12: I. Herraiz, G. Robles, J. J. Amor, T. Romera, and J. M. Gonz´alez Barahona. The processes of joining in Global Distributed Software projects. In International workshop on Global software development for the practitioner, pages 27–33. ACM, 2006.
+13: G. Hertel, S. Niedner, and S. Herrmann. Motivation of software developers in Open Source projects: an Internet- based survey of contributors to the Linux kernel. Research Policy, 32(7):1159–1177, 2003.
+14: D. A. Higgins. Data Structured Software Maintenance: The Warnier/Orr Approach. Dorset House Publishing Company, 1986.
+15: H. Holmstrom, E. ´O. Conch´uir, J. Agerfalk, and B. Fitzger- ald. Global Software Development challenges: A case study on temporal, geographical and socio-cultural dis- tance. In ICGSE, pages 3–11. IEEE, 2006.
+16: A. Iqbal. Understanding Contributor to Developer Turnover Patterns in OSS Projects: A Case Study of Apache Projects. ISRN Software Engineering, 2014, 2014.
+17: D. Izquierdo-Cortazar, G. Robles, F. Ortega, and J. M. Gonz´alez-Barahona. Using software archaeology to measure knowledge loss in software projects due to developer turnover. In HICSS, pages 1–10. IEEE, 2009.
+18: E. L. Kaplan and P. Meier. Nonparametric estimation from incomplete observations. Journal of the American statistical association, 53(282):457–481, 1958.
+19: E. Kouters, B. Vasilescu, A. Serebrenik, and M. G. J. van den Brand. Who’s who in gnome: Using LSA to merge software repository identities. In ICSM, pages 592–595, 2012.
+20: K. Lakhani and R. G. Wolf. Why Hackers Do What They Do: Understanding Motivation and Effort in Free/Open Source Software Projects. Social Science Research Network, 49(September):1–27, 2003.
+21: E. G. Lambert, N. L. Hogan, and S. M. Barton. The impact of job satisfaction on turnover intent: A test of a structural measurement model using a national sample of workers. The Social Science Journal, 38(2):233–250, 2001.
+22: Y. Li, C.-H. Tan, and H.-H. Teo. Leadership characteris- tics and developers’ motivation in Open Source Software development. Information & Management, 49(5):257– 267, 2012.
+23: A. Martensen and L. Grønholdt. Internal marketing: a study of employee loyalty, its determinants and conse- quences. Innovative Marketing, 2(4):92–116, 2006.
+24: B. Mehlenbacher. Documentation: not yet implemented, but coming soon. The HCI Handbook: Fundamentals, Evolving Technologies, and Emerging Applications, pages 527–543, 2003.
+25: T. Mens. Evolving software ecosystems A historical and ecological perspective. In M. Irlbeck, D. A. Peled, and A. Pretschner, editors, Dependable Software Systems Engineering, volume 40 of NATO Science for Peace and Security Series, D: Information and Communication Security, pages 170–192. IOS Press, 2015.
+26: T. Mens, M. Claes, P. Grosjean, and A. Serebrenik. Study- ing evolving software ecosystems based on ecological 9 models. In T. Mens, A. Serebrenik, and A. Cleve, editors, Evolving Software Systems, chapter 10, pages 297–326. Springer, 2014.
+27: V. Midha and P. Palvia. Retention and quality in Open Source Software projects. AMCIS 2007 Proceedings, page 25, 2007.
+28: V. Midha, R. Singh, P. Palvia, and N. Kshetri. Improving open source software maintenance. Journal of Computer Information Systems, 50(3):81–90, 2010.
+29: M. Nagappan, T. Zimmermann, and C. Bird. Diversity in software engineering research. In ESEC/FSE, pages 466–476, New York, NY, USA, 2013. ACM.
+30: F. Ortega and D. Izquierdo-Cortazar. Survival analysis in open development projects. In FLOSS, pages 7–12. IEEE, 2009.
+31: J. T. Rich, J. G. Neely, R. C. Paniello, C. C. Voelker, B. Nussenbaum, and E. W. Wang. A practical guide to understanding Kaplan-Meier curves. Otolaryngology- Head and Neck Surgery, 143(3):331–336, 2010.
+32: D. Riehle. How Open Source is changing the software developer’s career. IEEE Computer, 48(5):51–57, 2015.
+33: D. Riehle, P. Riemer, C. Kolassa, and M. Schmidt. Paid vs. volunteer work in Open Source. In HICSS, pages 3286–3295. IEEE, 2014.
+34: G. Robles, J. M. Gonzalez-Barahona, and J. J. Merelo. Beyond source code: The importance of other artifacts in software development (a case study). Journal of Systems and Software, 79(9):1233–1248, 2006.
+35: P. Runeson and M. H¨ost. Guidelines for conducting and reporting case study research in software engineering. Empirical Software Engineering, 14(2):131–164, 2009.
+36: I. Samoladas, L. Angelis, and I. Stamelos. Survival analy- sis on the duration of Open Source projects. Information and Software Technology, 52(9):902–922, 2010.
+37: A. Schilling, S. Laumer, and T. Weitzel. Who Will Remain? An Evaluation of Actual Person-Job and Person- Team Fit to Predict Developer Retention in FLOSS Projects. In HICSS, pages 3446–3455, 2012.
+38: A. Schilling, S. Laumer, and T. Weitzel. Together but apart: How spatial, temporal and cultural distances affect FLOSS developers’ project retention. In Proceedings of the 2013 annual conference on Computers and people research, pages 167–172. ACM, 2013.
+39: P. N. Sharma, J. Hulland, and S. Daniel. Examining Turnover in Open Source Software Projects Using a Logistic Hierarchical Linear Modeling Approach. In OSS, volume 378 of IFIP Advances in Information and Communication Technology, pages 331–337, 2012.
+40: B. Shibuya and T. Tamai. Understanding the process of participating in Open Source communities. In FLOSS, pages 1–6. IEEE Computer Society, 2009.
+41: D. Spinellis. Global Software Development in the FreeBSD project. In International workshop on Global software development for the practitioner, pages 73–79. ACM, 2006.
+42: I. Steinmacher, M. A. Gerosa, and D. Redmiles. Attract- ing, onboarding, and retaining newcomer developers in Open Source Software projects. In Workshop on Global Software Development in a CSCW Perspective, 2014.
+43: J. Teixeira. Understanding coopetition in the open-source arena: The cases of webkit and openstack. In Proceedings of The International Symposium on Open Collaboration, page 39. ACM, 2014.
+44: B. Vasilescu, D. Posnett, B. Ray, M. G. van den Brand, A. Serebrenik, P. Devanbu, and V. Filkov. Gender and Tenure Diversity in GitHub Teams. In CHI, pages 3789– 3798, 2015.
+45: B. Vasilescu, A. Serebrenik, M. Goeminne, and T. Mens. On the variation and specialisation of workload – A case study of the GNOME ecosystem community. Empirical Software Engineering, 19(4):955–1008, 2013.
+46: S. Wellek. A log-rank test for equivalence of two survivor functions. Biometrics, pages 877–881, 1993.
+47: S. G. Westlund and J. C. Hannon. Retaining talent: Assessing job satisfaction facets most signiﬁcantly related to software developer turnover intentions. Journal of Information Technology Management, 19(4):1–15, 2008.
+48: I. S. Wiese, J. Teodoro, I. S. da Silva, C. Treude, and M. A. Gerosa. Who is who in the mailing list? Comparing six disambiguation heuristics to identify multiple addresses of a participant. In ICSME, page 13. IEEE, 2016.
+49: C.-G. Wu, J. H. Gerlach, and C. E. Young. An Em- pirical Analysis of Open Source Software Developers’ Motivations and Continuance Intentions. Information and Management, 44(3):253–262, 2007.
+50: K. Yamashita, Y. Kamei, S. McIntosh, A. E. Hassan, and N. Ubayashi. Magnet or sticky? Measuring project charac- teristics from the perspective of developer attraction and retention. Journal of Information Processing, 24(2):339– 348, 2016.
+51: D. Yang, T. Sinha, D. Adamson, and C. P. Rose. Turn on, tune in, drop out: Anticipating student dropouts in massive open online courses. In NIPS Data-Driven Education Workshop, pages 13–20, Lake Tahoe, NV, USA, 2013.
+52: M. Zhou and A. Mockus. Who will stay in the ﬂoss community? modeling participant’s initial behavior. TSE, 41(1):82–99, Jan 2015.
+53: M. Zhou, A. Mockus, X. Ma, L. Zhang, and H. Mei. Inﬂow and retention in oss communities with commercial involvement: A case study of three hybrid projects. TOSEM, 25(2):13:1–13:29, Apr. 2016. 10

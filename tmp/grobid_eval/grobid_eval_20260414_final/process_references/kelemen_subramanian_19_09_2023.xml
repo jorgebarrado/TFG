@@ -1,0 +1,1595 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">References and recommended reading Papers of particular interest, published within the period of review, have been highlighted as: •• of special interest •• of outstanding interest</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bridgewater</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Schmeller</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10531-022-02500-y</idno>
+		<ptr target="https://doi.org/10.1007/s10531-022-02500-y" />
+	</analytic>
+	<monogr>
+		<title level="m">The Ninth Plenary of the Intergovernmental Platform on Biodiversity and Ecosystem Services (IPBES-9): sustainable use, values, and business (as usual)</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="1" to="6" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<idno type="DOI">10.5281/zenodo.4147317</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4147317" />
+		<title level="m">IPBES: Workshop Report on Biodiversity and Pandemics of the Intergovernmental Platform on Biodiversity and Ecosystem Services. IPBES Secretariat; 2020</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">COVID-19 Stimulus Measures Must Save Lives, Protect Livelihoods, and Safeguard Nature to Reduce the Risk of Future Pandemics</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Settele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Diaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Brondizio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Daszak</surname></persName>
+		</author>
+		<ptr target="〈https://ipbes.net/covid19stimulus〉" />
+	</analytic>
+	<monogr>
+		<title level="j">The Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title/>
+		<author>
+			<persName><surname>Ipbes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Global Assessment Report on Biodiversity and Ecosystem Services of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services. IPBES Secretariat</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Global Biodiversity Outlook 5. Secretariat of the Convention on Biological Diversity</title>
+		<author>
+			<persName><surname>Scbd</surname></persName>
+		</author>
+		<ptr target="https://www.cbd.int/gbo5" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Wwf</surname></persName>
+		</author>
+		<ptr target="〈https://livingplanet.panda.org/en-gb/〉" />
+		<imprint>
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">Living Planet Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bulkeley</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kok</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van Dijk</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Forsyth</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Nagy</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Villasante</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Eklipse Expert Working Group</orgName>
+			</affiliation>
+		</author>
+		<ptr target="〈https://www.eklipse-mechanism.eu/documents/13905/0/Moving+Towards+Transformative+Change/〉" />
+		<title level="m">Moving towards transformative change</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>Workshop consultation draft, Post2020 GBF</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<author>
+			<persName><forename type="first">S</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cya</forename><surname>Inoue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kalfagianni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Å</forename><surname>Persson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Gerlak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ishii</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Patterson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pickering</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Scobie</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.esg.2019.100006</idno>
+		<ptr target="https://doi.org/10.1016/j.esg.2019.100006" />
+	</analytic>
+	<monogr>
+		<title level="m">New directions in earth system governance research</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page">100006</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<author>
+			<persName><forename type="first">U</forename><surname>Ipbes ; Pascual</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Balvanera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Christie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Baptiste</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>González-Jiménez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Athayde</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chaplin-Kramer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jacobs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kelemen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Lazos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Mwampamba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Nakangu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>Farrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Raymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Termansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Noordwijk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Vatn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.6522392</idno>
+		<ptr target="〈https://doi.org/10.5281/zenodo.6522392〉" />
+	</analytic>
+	<monogr>
+		<title level="m">Summary for Policymakers of the Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services</title>
+		<meeting><address><addrLine>Bonn, Germany</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">An inclusive values typology for navigating transformations toward a just and sustainable future</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Raymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Athayde</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vatn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arias</forename><surname>Arévalo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Christie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cantú-Fernández</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gould</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Himes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kenter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Lenzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Muraca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Murali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>Connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pascual</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Sachdeva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Samakov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr Opin Environ Sustain</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jacobs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kelemen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>Farrel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Martin</forename><forename type="middle">A</forename><surname>Schaafsma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dendoncker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Pandit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mwampamba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Palomo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Castro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Huambachano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Filyushkina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gunimeda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The pitfalls of plural valuation</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Chapter 6: policy options and capacity development to operationalize the inclusion of diverse values of nature in decision-making</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kelemen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Nakangu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kosmus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Nuesiri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Porter-Bolland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">De</forename><surname>Vos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amaruzaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arroyo-Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.6522359</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.6522359" />
+	</analytic>
+	<monogr>
+		<title level="m">Methodological Assessment Report on the Diverse Values and Valuation of Nature of the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services</title>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Balvanera</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Pascual</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Christie</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Baptiste</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>González-Jiménez D. IPBES Secretariat</publisher>
+			<biblScope unit="volume">2022</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Transformative environmental governance</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Chaffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Garmestani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Gunderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Benson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Angeler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arnold</forename><forename type="middle">(</forename><surname>Tony</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">)</forename><surname>Ca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cosens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Craig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Ruhl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Allen</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-environ-110615-085817</idno>
+		<ptr target="https://doi.org/10.1146/annurev-environ-110615-085817" />
+	</analytic>
+	<monogr>
+		<title level="j">Annu Rev Environ Resour</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="399" to="423" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Exploring the governance and politics of transformations towards sustainability</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Patterson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schulz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vervoort</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Van Der Hel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Widerberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Adler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hurlbert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Anderton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sethi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barau</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.eist.2016.09.001</idno>
+		<ptr target="https://doi.org/10.1016/j.eist.2016.09.001" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Innov Soc Transit</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Who gets to imagine transformative change? Participation and representation in biodiversity assessments</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Beck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Forsyth</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/S0376892920000272</idno>
+		<ptr target="https://doi.org/10.1017/S0376892920000272" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Conserv</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="1" to="4" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">The paper reviews scientific literature on governance and transformative change to conceptualize the notion of transformative governance. It defines four main aspects of transformative governance: being integrative, inclusive, adaptive, and pluralist. It also highlights that transformative governance is radically different from business-as-usual because it addresses the indirect drivers of biodiversity loss and induces a multifaceted process of societal</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">J</forename><surname>Visseren-Hamakers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Razzaque</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mcelwee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Turnhout</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kelemen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Rusch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Á</forename><surname>Fernández-Llamazares</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islar</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cosust.2021.06.002</idno>
+		<ptr target="https://doi.org/10.1016/j.cosust.2021.06.002" />
+	</analytic>
+	<monogr>
+		<title level="j">Curr Opin Environ Sustain</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="page" from="20" to="28" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note>Transformative governance of biodiversity: insights for sustainable development. transition where changes in different realms are reinforcing each other</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Resilience thinking: integrating resilience, adaptability and transformability</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Folke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Carpenter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Walker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Scheffer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chapin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rockström</surname></persName>
+		</author>
+		<idno type="DOI">10.5751/ES-03610-150420</idno>
+		<ptr target="https://doi.org/10.5751/ES-03610-150420" />
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<publisher>Ecol Soc</publisher>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page">20</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Exploring criteria for transformative policy capacity in the context of South Africa&apos;s biodiversity economy</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Förster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Downsborough</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Biber-Freudenberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kelboro</forename><surname>Mensuro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Börner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename></persName>
+		</author>
+		<idno type="DOI">10.1007/s11077-020-09385-0</idno>
+		<idno>11077-020- 09385-0</idno>
+		<ptr target="https://doi.org/10.1007/s" />
+	</analytic>
+	<monogr>
+		<title level="j">Policy Sci</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="209" to="237" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Values as leverage points for sustainability transformation: two pathways for transformation research</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">I</forename><surname>Horcea-Milcu</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cosust.2022.101205</idno>
+		<ptr target="https://doi.org/10.1016/j.cosust.2022.101205" />
+	</analytic>
+	<monogr>
+		<title level="j">Curr Opin Environ Sustain</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page">101205</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Leveraging biodiversity action from plural values: transformations of governance systems</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Leventon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Duşe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">I</forename><surname>Horcea-Milcu</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fevo.2021.609853</idno>
+		<ptr target="https://doi.org/10.3389/fevo.2021.609853" />
+	</analytic>
+	<monogr>
+		<title level="j">Front Ecol Evol</title>
+		<imprint>
+			<biblScope unit="volume">2021</biblScope>
+			<biblScope unit="page">326</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">The transformative potential of the Sustainable Development Goals (SDGs)</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stevens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kanie</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10784-016-9324-y</idno>
+		<ptr target="https://doi.org/10.1007/s10784-016-9324-y" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="393" to="396" />
+		</imprint>
+	</monogr>
+	<note>Int Environ Agreem: Politcs Law Econ</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Unravelling persistent problems to transformative marine governance</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ellis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Flannery</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fmars.2019.00213</idno>
+		<ptr target="https://doi.org/10.3389/fmars.2019.00213" />
+		<imprint>
+			<date type="published" when="2019-03">Mar Sci 2019</date>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">213</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Transformative governance for public health: a scoping review</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schreurs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mpm</forename><surname>Bekker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Helderman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ruwaard</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/eurpub/ckz186.706</idno>
+		<ptr target="https://doi.org/10.1093/eurpub/ckz186.706" />
+	</analytic>
+	<monogr>
+		<title level="j">Eur J Public Health</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="186" to="705" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">The Great Mindshift: How a New Economic Paradigm and Sustainability Transformations Go Hand in Hand</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Göpel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-43766-8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-43766-8" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>Springer International Publishing</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Cooperation Management for Practitioners Managing Social Change with Capacity WORKS</title>
+		<author>
+			<persName><surname>Giz Gmbh</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>Springer Gabler</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><surname>Giz Gmbh</surname></persName>
+		</author>
+		<ptr target="http://www.aboutvalues.net/data/trainings/3_manual_principlesesav_low.pdf" />
+		<title level="m">Principles for Ecosystem Services Assessment: Elements, Methods, Tools and Tips, Manual for Trainers (ValuES Project Integrating Ecosystem Services into Policy, Planning and Practice). GIZ; 2018</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<author>
+			<persName><forename type="first">M</forename><surname>Borie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Gustafsson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Obermeister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Turnhout</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bridgewater</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.envsci.2020.05.005</idno>
+		<ptr target="https://doi.org/10.1016/j.envsci.2020.05.005" />
+	</analytic>
+	<monogr>
+		<title level="m">Institutionalising reflexivity? Transformative learning and the Intergovernmental science-policy Platform on Biodiversity and Ecosystem Services (IPBES)</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">110</biblScope>
+			<biblScope unit="page" from="71" to="76" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<idno type="DOI">10.4324/9781315081748</idno>
+		<ptr target="https://doi.org/10.4324/9781315081748" />
+	</analytic>
+	<monogr>
+		<title level="m">Carrots, Sticks, and Sermons: Policy Instruments and Their Evaluation</title>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Bemelmans-Videc</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Rist</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="1998">1998</date>
+			<biblScope unit="volume">1</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Policy Support Gateway</title>
+		<author>
+			<persName><surname>Ipbes</surname></persName>
+		</author>
+		<ptr target="https://ipbes.net/policy-3917support" />
+	</analytic>
+	<monogr>
+		<title level="j">IPBES Secretariat</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Buen vivir and changes in education in Ecuador</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Echavarría</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Orosz</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0094582X211009270</idno>
+		<ptr target="https://doi.org/10.1177/0094582X211009270" />
+	</analytic>
+	<monogr>
+		<title level="j">Lat Am Perspect</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="119" to="135" />
+			<date type="published" when="2006">2006-2016. 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The monetized economy versus care and the environment: degrowth perspectives on reconciling an antagonism</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Dengler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Strunk</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/13545701.2017.1383620</idno>
+		<ptr target="https://doi.org/10.1080/13545701.2017.1383620" />
+	</analytic>
+	<monogr>
+		<title level="j">Fem Econ</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="160" to="183" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">New Transitions from Human Rights to the Environment to the Rights of Nature</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Borràs</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/S204710251500028X</idno>
+		<ptr target="https://doi.org/10.1017/S204710251500028X" />
+	</analytic>
+	<monogr>
+		<title level="j">Transnational Environmental Law</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="113" to="143" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Local perceptions as a guide for the sustainable management of natural resources: empirical evidence from a small-scale society in Bolivian Amazonia</title>
+		<author>
+			<persName><forename type="first">Á</forename><surname>Fernández-Llamazares</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Díaz-Reviriego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Guèze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cabeza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pyhälä</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Reyes-García</surname></persName>
+		</author>
+		<idno type="DOI">10.5751/ES-08092-210102</idno>
+		<ptr target="https://doi.org/10.5751/ES-08092-210102" />
+	</analytic>
+	<monogr>
+		<title level="j">Ecol Soc</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Considering the needs of indigenous and local populations in conservation programs: needs of local populations</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Kohler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Brondizio</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/cobi.12843</idno>
+		<ptr target="https://doi.org/10.1111/cobi.12843" />
+	</analytic>
+	<monogr>
+		<title level="j">Conserv Biol</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="245" to="251" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">How do biosphere stewards actively shape trajectories of social-ecological change?</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Plummer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Baird</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Farhad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Witkowski</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jenvman.2020.110139</idno>
+		<ptr target="https://doi.org/10.1016/j.jenvman.2020.110139" />
+	</analytic>
+	<monogr>
+		<title level="j">J Environ Manag</title>
+		<imprint>
+			<biblScope unit="volume">261</biblScope>
+			<biblScope unit="page">110139</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Community Marine Monitoring Toolkit: a tool developed in the Pacific to inform communitybased marine resource management</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hooper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Welch</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.marpolbul.2020.111498</idno>
+		<ptr target="https://doi.org/10.1016/j.marpolbul.2020.111498" />
+	</analytic>
+	<monogr>
+		<title level="j">Mar Pollut Bull</title>
+		<imprint>
+			<biblScope unit="volume">159</biblScope>
+			<biblScope unit="page">111498</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title level="m" type="main">Tale of two cities: how nature-based solutions help create adaptive and resilient urban water management practices in Singapore and Lisbon. Sustainability 2021</title>
+		<author>
+			<persName><surname>•• 39</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ferreira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">K</forename><surname>Fung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Matos</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/su131810427</idno>
+		<ptr target="https://doi.org/10.3390/su131810427" />
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page">10427</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">The Singapore Green Plan 2030: analysing its implications on law and the legal industry in Singapore</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>Ong</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/14614529211052597</idno>
+		<ptr target="https://doi.org/10.1177/14614529211052597" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Law Rev</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="336" to="343" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Organizational path dependence: opening the black box</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sydow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Schreyögg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Koch</surname></persName>
+		</author>
+		<idno type="DOI">10.5465/amr.34.4.zok689</idno>
+		<ptr target="https://doi.org/10.5465/amr.34.4.zok689" />
+	</analytic>
+	<monogr>
+		<title level="j">Acad Manag Rev</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="689" to="709" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Policy mixes for sustainability transitions: new approaches and insights through bridging innovation and policy studies</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Kern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Rogge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Howlett</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.respol.2019.103832</idno>
+		<ptr target="https://doi.org/10.1016/j.respol.2019.103832" />
+	</analytic>
+	<monogr>
+		<title level="j">Res Policy</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page">103832</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title level="m" type="main">Making Policy in a Complex World</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cairney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Heikkila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wood</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/9781108679053</idno>
+		<ptr target="https://doi.org/10.1017/9781108679053" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<publisher>Cambridge University Press</publisher>
+			<biblScope unit="page">86</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Five principles for the practice of knowledge exchange in environmental management</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Stringer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Fazey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Evely</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jhj</forename><surname>Kruijsen</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jenvman.2014.07.021</idno>
+		<ptr target="https://doi.org/10.1016/j.jenvman.2014.07.021" />
+	</analytic>
+	<monogr>
+		<title level="j">J Environ Manag</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<biblScope unit="page" from="337" to="345" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">The paper emphasizes the need to weave different knowledge systems, including indigenous and traditional with others to ensure more sustainability-oriented governance and management of socio-ecological systems. Involving indigenous peoples and local communities in the process of colearning and coproduction of knowledge and solutions requires sensitive mobilization of different actors, translating the different knowledge across different systems, negotiating and deliberating on consequences, and further synthesizing and applying in decisionmaking</title>
+		<author>
+			<persName><forename type="first">••</forename><surname>Tengö</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Malmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Raymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Spierenburg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Danielsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Elmqvist</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Folke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cosust.2016.12.005</idno>
+		<ptr target="https://doi.org/10.1016/j.cosust.2016.12.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Curr Opin Environ Sustain</title>
+		<imprint>
+			<biblScope unit="page" from="26" to="27" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note>Weaving knowledge systems in IPBES, CBD and beyond-lessons learned for sustainability</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Doing Science Differently: Co-Producing Conservation Outcomes</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wyborn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Leith</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>Luc Hoffmann Institute</publisher>
+			<biblScope unit="page">24</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Knowledge brokerage designs and practices in four european climate services: a role model for biodiversity policies?</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Reinecke</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.envsci.2015.08.007</idno>
+		<ptr target="https://doi.org/10.1016/j.envsci.2015.08.007" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Sci Policy</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="513" to="521" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Challenges to and opportunities for biodiversity science-policy interfaces</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rodela</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Reinecke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bregt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kilham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Lapeyre</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.envsci.2015.08.010</idno>
+		<ptr target="https://doi.org/10.1016/j.envsci.2015.08.010" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Sci Policy</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="483" to="486" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Decision-making, now in 3D: exploring three dimensions of decision-making processes and their consequences for biodiversity research</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Laurans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Leflaive</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rankovic</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.envsci.2020.06.007</idno>
+		<ptr target="https://doi.org/10.1016/j.envsci.2020.06.007" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Sci Policy</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="31" to="38" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The adaptive capacity wheel: a method to assess the inherent characteristics of institutions to enable the adaptive capacity of society</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Termeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Klostermann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Meijerink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Den Brink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nooteboom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Bergsma</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.envsci.2010.05.006</idno>
+		<ptr target="https://doi.org/10.1016/j.envsci.2010.05.006" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Sci Policy</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="459" to="471" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Preface: building social capacities for natural hazards: an emerging field for research and practice in Europe</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kuhlicke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Steinführer</surname></persName>
+		</author>
+		<idno type="DOI">10.5194/nhess-15-2359-2015</idno>
+		<ptr target="https://doi.org/10.5194/nhess-15-2359-2015" />
+	</analytic>
+	<monogr>
+		<title level="j">Nat Hazards Earth Syst Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="2359" to="2367" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Adaptive capacity to climate change: a synthesis of concepts, methods, and findings in a fragmented field</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Siders</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/wcc.573</idno>
+		<ptr target="https://doi.org/10.1002/wcc.573" />
+	</analytic>
+	<monogr>
+		<title level="j">Wiley Interdiscip Rev: Clim Change</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page">573</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Adaptive capacity beyond the household: a systematic review of empirical social-ecological research</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vallury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Chaffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nesbitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lohani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gulab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Floyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Metcalf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Metcalf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Twidwell</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/1748-9326/ac68fb</idno>
+		<ptr target="https://doi.org/10.1088/1748-9326/ac68fb" />
+	</analytic>
+	<monogr>
+		<title level="j">Environ Res Lett</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">The paper assesses the outputs and wider impacts of capacity development in nature conservation through an evidence map built by reviewing scientific and gray literature since 2000. It highlights that enhancing knowledge, changing individual behavior, and altering attitudes are the most frequently reported outcomes of capacity development, while evidence is scarce on wider positive outcomes for nature conservation at systems level. This gap is partly due to the lack of longterm follow-up of capacity development initiatives and quests for more flexible, bottom-up, and systemic approaches to capacity development</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Sterling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sigouin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Betley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Z</forename><surname>Cheek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Solomon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Landrigan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Porzecanski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bynum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cadena</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">R</forename><surname>Clements</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/S0030605321000570</idno>
+		<ptr target="https://doi.org/10.1017/S0030605321000570" />
+	</analytic>
+	<monogr>
+		<title level="j">Oryx</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="728" to="739" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note>The state of capacity development evaluation in biodiversity conservation and natural resource management. which target diverse actors and enable co-ownership over the process</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">A review of assertions about the processes and outcomes of social learning in natural resource management</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cundill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rodela</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jenvman.2012.08.021</idno>
+		<ptr target="https://doi.org/10.1016/j.jenvman.2012.08.021" />
+	</analytic>
+	<monogr>
+		<title level="j">J Environ Manag</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="7" to="14" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

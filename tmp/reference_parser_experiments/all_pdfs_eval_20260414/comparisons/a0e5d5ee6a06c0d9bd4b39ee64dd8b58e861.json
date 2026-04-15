@@ -1,0 +1,1041 @@
+{
+  "paper_slug": "a0e5d5ee6a06c0d9bd4b39ee64dd8b58e861",
+  "pdf_name": "a0e5d5ee6a06c0d9bd4b39ee64dd8b58e861.pdf",
+  "rows": [
+    {
+      "index": 0,
+      "raw_input": "Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]",
+      "refextract": {
+        "index": 0,
+        "raw_input": "Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]",
+        "title": "Review on Metal-Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega, 7, 44507-44531. [CrossRef] [PubMed]",
+        "authors": [
+          "Kailasa, S.K."
+        ],
+        "year": 2022,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "1"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]"
+            ],
+            "author": [
+              "Yusuf, V.F."
+            ]
+          },
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Malek, N.I."
+            ]
+          },
+          {
+            "linemarker": [
+              "1"
+            ],
+            "raw_ref": [
+              "[1] Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]"
+            ],
+            "misc": [
+              ";",
+              "Review on Metal-Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega, 7, 44507-44531. [CrossRef] [PubMed]"
+            ],
+            "author": [
+              "Kailasa, S.K."
+            ],
+            "year": [
+              "2022"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:3"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 0,
+        "raw_input": "Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 0,
+        "raw_input": "Yusuf, V.F.; Malek, N.I.; Kailasa, S.K. Review on Metal–Organic Framework Classification, Synthetic Approaches, and Influencing Factors: Applications in Energy, Drug Delivery, and Wastewater Treatment. ACS Omega 2022, 7, 44507–44531. [CrossRef] [PubMed]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 1,
+      "raw_input": "Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]",
+      "refextract": {
+        "index": 1,
+        "raw_input": "Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]",
+        "title": "; Hu, T.L.; Bu",
+        "authors": [
+          "X.H. Metal-Organic"
+        ],
+        "year": 2019,
+        "doi": null,
+        "venue": "Chem. Rev.",
+        "pages": "79-120",
+        "type": "journal",
+        "identifiers": {
+          "linemarker": [
+            "2"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]"
+            ],
+            "author": [
+              "Cui, W.G."
+            ]
+          },
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Zhang, G.Y."
+            ]
+          },
+          {
+            "linemarker": [
+              "2"
+            ],
+            "raw_ref": [
+              "[2] Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]"
+            ],
+            "misc": [
+              "; Hu, T.L.; Bu",
+              "Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord",
+              "[CrossRef]"
+            ],
+            "author": [
+              "X.H. Metal-Organic"
+            ],
+            "journal_title": [
+              "Chem. Rev."
+            ],
+            "journal_volume": [
+              "387"
+            ],
+            "journal_year": [
+              "2019"
+            ],
+            "journal_page": [
+              "79-120"
+            ],
+            "journal_reference": [
+              "Chem. Rev. 387 (2019) 79-120"
+            ],
+            "year": [
+              "2019"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:3"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 1,
+        "raw_input": "Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 1,
+        "raw_input": "Cui, W.G.; Zhang, G.Y.; Hu, T.L.; Bu, X.H. Metal-Organic Framework-Based Heterogeneous Catalysts for the Conversion of C1 Chemistry: CO, CO2 and CH4. Coord. Chem. Rev. 2019, 387, 79–120. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 2,
+      "raw_input": "Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]",
+      "refextract": {
+        "index": 2,
+        "raw_input": "Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]",
+        "title": "Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends",
+        "authors": [
+          "Khatami, M. A"
+        ],
+        "year": 2019,
+        "doi": null,
+        "venue": "Anal. Chem.",
+        "pages": "401-425",
+        "type": "journal",
+        "identifiers": {
+          "linemarker": [
+            "3"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "author": [
+              "Safaei, M."
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Foroughi, M.M."
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Ebrahimpoor, N."
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Jahani, S."
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Omidi, A."
+            ]
+          },
+          {
+            "linemarker": [
+              "3"
+            ],
+            "raw_ref": [
+              "[3] Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]"
+            ],
+            "misc": [
+              ";",
+              "Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends",
+              "[CrossRef]"
+            ],
+            "author": [
+              "Khatami, M. A"
+            ],
+            "journal_title": [
+              "Anal. Chem."
+            ],
+            "journal_volume": [
+              "118"
+            ],
+            "journal_year": [
+              "2019"
+            ],
+            "journal_page": [
+              "401-425"
+            ],
+            "journal_reference": [
+              "Anal. Chem. 118 (2019) 401-425"
+            ],
+            "year": [
+              "2019"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:6"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 2,
+        "raw_input": "Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 2,
+        "raw_input": "Safaei, M.; Foroughi, M.M.; Ebrahimpoor, N.; Jahani, S.; Omidi, A.; Khatami, M. A Review on Metal-Organic Frameworks: Synthesis and Applications. TrAC Trends Anal. Chem. 2019, 118, 401–425. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 3,
+      "raw_input": "Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]",
+      "refextract": {
+        "index": 3,
+        "raw_input": "Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]",
+        "title": "Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal-Organic Framework. Chem. Eng. J",
+        "authors": [
+          "Kim, S. A"
+        ],
+        "year": 2020,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "4"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]"
+            ],
+            "author": [
+              "Atinafu, D.G."
+            ]
+          },
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Chang, S.J."
+            ]
+          },
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Kim, K.-H."
+            ]
+          },
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Dong, W."
+            ]
+          },
+          {
+            "linemarker": [
+              "4"
+            ],
+            "raw_ref": [
+              "[4] Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]"
+            ],
+            "misc": [
+              ";",
+              "Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal-Organic Framework. Chem. Eng. J",
+              "389, 124430. [CrossRef]"
+            ],
+            "author": [
+              "Kim, S. A"
+            ],
+            "year": [
+              "2020"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:5"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 3,
+        "raw_input": "Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 3,
+        "raw_input": "Atinafu, D.G.; Chang, S.J.; Kim, K.-H.; Dong, W.; Kim, S. A Novel Enhancement of Shape/Thermal Stability and Energy-Storage Capacity of Phase Change Materials through the Formation of Composites with 3D Porous (3,6)-Connected Metal–Organic Framework. Chem. Eng. J. 2020, 389, 124430. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 4,
+      "raw_input": "Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16",
+      "refextract": {
+        "index": 4,
+        "raw_input": "Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16",
+        "title": "Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J",
+        "authors": [
+          "L. A Novel Metal-Organic"
+        ],
+        "year": 2023,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "5"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "misc": [
+              "Hu, T"
+            ]
+          },
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "misc": [
+              "Wu, Z.;"
+            ],
+            "author": [
+              "Fang, Y."
+            ]
+          },
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Niu, J."
+            ]
+          },
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Yuan, W."
+            ]
+          },
+          {
+            "linemarker": [
+              "5"
+            ],
+            "raw_ref": [
+              "[5] Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "misc": [
+              "; Li",
+              "Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J",
+              "Energy Storage, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16"
+            ],
+            "author": [
+              "L. A Novel Metal-Organic"
+            ],
+            "year": [
+              "2023"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:5"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 4,
+        "raw_input": "Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 4,
+        "raw_input": "Hu, T.; Wu, Z.; Fang, Y.; Niu, J.; Yuan, W.; Li, L. A Novel Metal-Organic Framework Aerogel Based Hydrated Salt Composite Phase Change Material for Enhanced Solar Thermal Utilization. J. Energy Storage 2023, 58, 106354. [CrossRef] Nanomaterials 2025, 15, 1018 14 of 16",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 5,
+      "raw_input": "Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]",
+      "refextract": {
+        "index": 5,
+        "raw_input": "Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]",
+        "title": "Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today, 428, 114442. [CrossRef]",
+        "authors": [
+          "Orcajo, G."
+        ],
+        "year": 2024,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "6"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]"
+            ],
+            "author": [
+              "Tapiador, J."
+            ]
+          },
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Leo, P."
+            ]
+          },
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Calleja, G."
+            ]
+          },
+          {
+            "linemarker": [
+              "6"
+            ],
+            "raw_ref": [
+              "[6] Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]"
+            ],
+            "misc": [
+              ";",
+              "Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today, 428, 114442. [CrossRef]"
+            ],
+            "author": [
+              "Orcajo, G."
+            ],
+            "year": [
+              "2024"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:4"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 5,
+        "raw_input": "Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 5,
+        "raw_input": "Tapiador, J.; Leo, P.; Calleja, G.; Orcajo, G. Open Zn-URJC-13 Efficient Catalyst for Mild CO2 Transformation Using Bulky Epoxides. Catal. Today 2024, 428, 114442. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 6,
+      "raw_input": "Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]",
+      "refextract": {
+        "index": 6,
+        "raw_input": "Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]",
+        "title": "Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev., 47, 533-557. [CrossRef]",
+        "authors": [
+          "Coronado, E."
+        ],
+        "year": 2018,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "7"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]"
+            ],
+            "misc": [
+              "Mínguez"
+            ],
+            "author": [
+              "Espallargas, G."
+            ]
+          },
+          {
+            "linemarker": [
+              "7"
+            ],
+            "raw_ref": [
+              "[7] Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]"
+            ],
+            "misc": [
+              ";",
+              "Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev., 47, 533-557. [CrossRef]"
+            ],
+            "author": [
+              "Coronado, E."
+            ],
+            "year": [
+              "2018"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:2"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 6,
+        "raw_input": "Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 6,
+        "raw_input": "Mínguez Espallargas, G.; Coronado, E. Magnetic Functionalities in MOFs: From the Framework to the Pore. Chem. Soc. Rev. 2018, 47, 533–557. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "index": 7,
+      "raw_input": "Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]",
+      "refextract": {
+        "index": 7,
+        "raw_input": "Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]",
+        "title": "Luminescent Metal-Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front., 7, 1801-1821. [CrossRef]",
+        "authors": [
+          "Ghosh, S.K."
+        ],
+        "year": 2020,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {
+          "linemarker": [
+            "8"
+          ]
+        },
+        "parser": "refextract",
+        "raw_output": [
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]"
+            ],
+            "author": [
+              "Samanta, P."
+            ]
+          },
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Let, S."
+            ]
+          },
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Mandal, W."
+            ]
+          },
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]"
+            ],
+            "misc": [
+              ";"
+            ],
+            "author": [
+              "Dutta, S."
+            ]
+          },
+          {
+            "linemarker": [
+              "8"
+            ],
+            "raw_ref": [
+              "[8] Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]"
+            ],
+            "misc": [
+              ";",
+              "Luminescent Metal-Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front., 7, 1801-1821. [CrossRef]"
+            ],
+            "author": [
+              "Ghosh, S.K."
+            ],
+            "year": [
+              "2020"
+            ]
+          }
+        ],
+        "warnings": [
+          "title_inferred_from_misc",
+          "refextract_multiple_candidates_for_single_input:5"
+        ],
+        "confidence": null
+      },
+      "anystyle": {
+        "index": 7,
+        "raw_input": "Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "anystyle",
+        "raw_output": null,
+        "warnings": [
+          "anystyle command not found; AnyStyle requires Ruby/anystyle-cli and is not installed in this environment"
+        ],
+        "confidence": null
+      },
+      "llm": {
+        "index": 7,
+        "raw_input": "Samanta, P.; Let, S.; Mandal, W.; Dutta, S.; Ghosh, S.K. Luminescent Metal–Organic Frameworks (LMOFs) as Potential Probes for the Recognition of Cationic Water Pollutants. Inorg. Chem. Front. 2020, 7, 1801–1821. [CrossRef]",
+        "title": null,
+        "authors": [],
+        "year": null,
+        "doi": null,
+        "venue": null,
+        "pages": null,
+        "type": null,
+        "identifiers": {},
+        "parser": "llm",
+        "raw_output": null,
+        "warnings": [
+          "OPENAI_API_KEY is not set; LLM parser was wired but not executed"
+        ],
+        "confidence": null
+      }
+    }
+  ]
+}

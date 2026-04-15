@@ -1,0 +1,36 @@
+{
+  "base_url": "http://localhost:8070",
+  "timeout_seconds": 240,
+  "created_at": "2026-04-14T22:00:29.143870",
+  "checks": {
+    "/api/version": {
+      "url": "http://localhost:8070/api/version",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 10,
+      "body_preview": "0.8.1",
+      "error": ""
+    },
+    "/api/isalive": {
+      "url": "http://localhost:8070/api/isalive",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 28,
+      "body_preview": "true",
+      "error": "",
+      "isalive_true": true
+    },
+    "/api/health": {
+      "url": "http://localhost:8070/api/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 5,
+      "body_preview": "",
+      "error": ""
+    }
+  },
+  "summary": {
+    "isalive_true": true,
+    "all_http_ok": true
+  }
+}

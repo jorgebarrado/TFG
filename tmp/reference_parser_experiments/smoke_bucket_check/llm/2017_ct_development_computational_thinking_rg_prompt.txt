@@ -1,0 +1,52 @@
+You are parsing already-segmented bibliographic references.
+Return JSON only. No markdown. No commentary.
+Output must be a JSON array with exactly one object per input reference in the same order.
+Each object must use this schema:
+{"index": <integer>, "raw_input": <string>, "title": <string|null>, "authors": <array of strings>, "year": <integer|null>, "doi": <string|null>, "venue": <string|null>, "pages": <string|null>, "type": <string|null>, "identifiers": <object>, "confidence": <number|null>, "notes": <array of strings>}
+Rules:
+- Do not invent data.
+- If a field is unclear, use null or an empty array/object.
+- Keep the DOI normalized without URL prefixes if present.
+- raw_input must exactly match the input string.
+- index must exactly match the provided index.
+- authors must contain plain strings, not objects.
+
+PDF source: 2017-CT-development-computational-thinking_RG.pdf
+References:
+0: Phillip L. Ackerman and Eric L. Rolfhus. 1999. The locus of adult intelligence: Knowledge, abilities, and nonability traits. Psychology and Aging 14, 2 (1999), 314–330. https://doi.org/10.1037/0882-7974.14.2.314 WiPSCE ’17, November 8–10, 2017, Nijmegen, Netherlands Brackmann, Román-González, Robles, Moreno-León, Casali and Barone
+1: Ashish Aggarwal, Christina Gardner-McCune, and David S. Touretzky. 2017. Eval- uating the Effect of Using Physical Manipulatives to Foster Computational Think- ing in Elementary School. ACM Press, 9–14. https://doi.org/10.1145/3017680. 3017791
+2: Association for Computing Machinery. 2003. A Model Curriculum for K-12 Computer Science: Final Report of the ACM K-12 Task Force Curriculum Committee. ACM, New York. OCLC: 907036381.
+3: Anja Balanskat and Katja Engelhardt. 2015. Computing our future: Computer programming and coding - Priorities, school curricula and initiatives across Europe. (Oct. 2015). http://www.eun.org/c/document_library/get_file?uuid= 3596b121-941c-4296-a760-0f4e4795d6fa&groupId=43887
+4: Tim Bell, Ian H. Witten, and Mike Fellows. 1998. Computer Science Unplugged... - Off-line activities and games for all ages (draft) (1 ed.).
+5: Stefania Bocconi, Augusto Chioccariello, Giuliana Dettori, Anusca Ferrari, Katja Engelhardt, Panagiotis Kampylis, and Yves Punie. 2016. Developing Computational Thinking in Compulsory Education - Implications for policy and practice. Technical Report. Publications Office of the European Union. https://doi.org/10.2791/ 792158
+6: Christian Brackmann, Dante Barone, Ana Casali, Rafael Boucinha, and Susana Munoz-Hernandez. 2016. Computational thinking: Panorama of the Americas. IEEE, 1–6. https://doi.org/10.1109/SIIE.2016.7751839
+7: Karen Brennan and Mitchel Resnick. 2012. New frameworks for studying and assessing the development of computational thinking. In Proceedings of the 2012 annual meeting of the American Educational Research Association. Vancouver, Canada, 1–25. http://scratched.gse.harvard.edu/ct/files/AERA2012.pdf
+8: Gleider Campos, Simone Cavalheiro, Luciana Foss, Ana Pernas, Clause Piana, Marilton Aguiar, André Du Bois, and Renata Reiser. 2014. Organização de Informações via Pensamento Computacional: Relato de Atividade Aplicada no Ensino Fundamental. 20o. Workshop de Informática na Escola (WIE 2014) (2014).
+9: Jacob Cohen. 1988. Statistical power analysis for the behavioral sciences Lawrence Earlbaum Associates. Hillsdale, NJ (1988), 20–26.
+10: Paul Curzon. 2013. cs4fn and computational thinking unplugged. In Proceedings of the 8th Workshop in Primary and Secondary Computing Education. ACM, 47–50.
+11: Paul Curzon, Peter W McOwan, Nicola Plant, and Laura R Meagher. 2014. In- troducing teachers to computational thinking using unplugged storytelling. In Proceedings of the 9th Workshop in Primary and Secondary Computing Education. ACM, 89–92.
+12: Mark Engelberg. 2015. Code Master Programming Logic Game, Thinkfun Inc. (2015).
+13: Hylke Faber, Menno Wierdsma, Richard Doornbos, Jan Salvador van der Ven, and Kevin de Vette. 2017. Teaching Computational Thinking to Primary School Students via Unplugged Programming Lessons. Journal of the European Teacher Education Network 12 (2017).
+14: Yvon Feaster, Luke Segars, Sally K Wahba, and Jason O Hallstrom. 2011. Teaching CS unplugged in the high school (with limited success). In Proceedings of the 16th annual joint conference on Innovation and technology in computer science education. ACM, 248–252.
+15: Anna Gardeli and Spyros Vosinakis. 2017. Creating the Computer Player: An Engaging and Collaborative Approach to Introduce Computational Thinking by Combining ’Unplugged’ Activities with Visual Programming. Italian Journal of Educational Technology 1 (July 2017). https://doi.org/10.17471/2499-4324/910
+16: S. Grover and R. Pea. 2013. Computational Thinking in K-12: A Review of the State of the Field. Educational Researcher 42, 1 (Jan. 2013), 38–43. https: //doi.org/10.3102/0013189X12463051
+17: Filiz Kalelioglu, Yasemin Gülbahar, and Volkan Kukul. 2016. A Framework for Computational Thinking Based on a Systematic Research Review. Baltic Journal of Modern Computing 4, 3 (2016), 583.
+18: Lorenz Klopfenstein, Andiy Fedosyeyev, and Alessandro Bogliolo. 2017. BRING- ING AN UNPLUGGED CODING CARD GAME TO AUGMENTED REALITY. 9800–9805. https://doi.org/10.21125/inted.2017.2327
+19: Lynn Lambert and Heather Guiffre. 2009. Computer science outreach in an elementary school. Journal of Computing Sciences in colleges 24, 3 (2009), 118–
+20: Linda Liukas. 2015. Hello Ruby: adventures in coding. Feiwel & Friends.
+21: Sze Yee Lye and Joyce Hwee Ling Koh. 2014. Review on teaching and learning of computational thinking through programming: What is next for K-12? Computers in Human Behavior 41 (2014), 51 – 61. https://doi.org/10.1016/j.chb.2014.09.012
+22: Scott B. Morris. 2008. Estimating Effect Sizes From Pretest-Posttest-Control Group Designs. Organizational Research Methods 11, 2 (April 2008), 364–386. https://doi.org/10.1177/1094428106291059
+23: Scott B. Morris and Richard P. DeShon. 2002. Combining effect size estimates in meta-analysis with repeated measures and independent-groups designs. Psycho- logical Methods 7, 1 (2002), 105–125. https://doi.org/10.1037/1082-989X.7.1.105
+24: Brandon Rodriguez, Kennicutt Stephen, Cyndi Rader, and Tracy Camp. 2017. Assessing Computational Thinking in CS Unplugged Activities. In Proceedings of the 2017 ACM SIGCSE Technical Symposium on Computer Science Education. ACM, Seattle, Washington, USA, 501–506. https://doi.org/10.1145/3017680.3017779
+25: Marcos Román-González, Jesús Moreno-León, and Gregorio Robles. 2017. Com- plementary Tools for Computational Thinking Assessment. In Proceedings of International Conference on Computational Thinking Education (CTE 2017), S. C Kong, J Sheldon, and K. Y Li (Eds.). The Education University of Hong Kong, 154–159. http://www.eduhk.hk/cte2017/doc/CTE2017Proceedings.pdf
+26: Marcos Román-González. 2015. Computational Thinking Test: Design Guidelines and Content Validation. In Proceedings of the 7th Annual International Conference on Education and New Learning Technologies (EDULEARN 2015). IATED, Barcelona, Spain, 2436–2444. https://doi.org/10.13140/RG.2.1.4203.4329
+27: Marcos Román-González. 2016. Codigoalfabetización y Pensamiento Computa- cional en Educación Primaria y Secundaria: Validación de un Instrumento y Evalu- ación de Programas. Ph.D. Dissertation. Universidad Nacional de Educación a Distancia, Madrid, Spain.
+28: Marcos Román-González, Juan-Carlos Pérez-González, and Carmen Jiménez- Fernández. 2017. Which cognitive abilities underlie computational thinking? Criterion validity of the Computational Thinking Test. Computers in Human Behavior 72 (July 2017), 678–691. https://doi.org/10.1016/j.chb.2016.08.047
+29: Sue Sentance and Andrew Csizmadia. 2015. Teachers’ perspectives on successful strategies for teaching Computing in school. Paper presented at IFIP TCS 2015 (2015).
+30: Rivka Taub, Mordechai Ben-Ari, and Michal Armoni. 2009. The effect of CS unplugged on middle-school students’ views of CS. ACM SIGCSE Bulletin 41, 3 (2009), 99–103.
+31: Renate Thies and Jan Vahrenhold. 2013. On plugging "unplugged" into CS classes. ACM Press, 365. https://doi.org/10.1145/2445196.2445303
+32: R. Unnikrishnan, N. Amrita, Alexander Muir, and Bhavani Rao. 2016. Of Elephants and Nested Loops: How to Introduce Computing to Youth in Rural India. ACM Press, 137–146. https://doi.org/10.1145/2930674.2930678
+33: Peter Wallet. 2014. ICT in Education in Asia: A comparative analysis of ICT integration and e-readiness in schools across Asia. Technical Report. UNESCO. https://doi.org/10.15220/978-92-9189-148-1-en
+34: Peter Wallet. 2015. ICT in Education in Sub-Saharan Africa: A comparative analysis of basic e-readiness in schools. Technical Report. UNESCO. https://doi.org/10. 15220/978-92-9189-178-8-en
+35: Jeannette M. Wing. 2006. Computational thinking. Commun. ACM 49, 3 (March 2006), 33. https://doi.org/10.1145/1118178.1118215
+36: J. M Wing. 2008. Computational thinking and thinking about computing. Philo- sophical Transactions of the Royal Society A: Mathematical, Physical and Engineer- ing Sciences 366, 1881 (Oct. 2008), 3717–3725. https://doi.org/10.1098/rsta.2008. 0118 View publication stats View publication stats

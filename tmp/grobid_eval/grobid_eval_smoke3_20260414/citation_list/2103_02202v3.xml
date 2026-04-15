@@ -1,0 +1,601 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Improved simulation of stabilizer circuits</title>
+		<author>
+			<persName><forename type="first">Scott</forename><surname>Aaronson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Gottesman</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.70.052328</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review A</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">52328</biblScope>
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">a new openqasm for a new era of dynamic circuits</title>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Alexander</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lev</forename><surname>Bishop</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><surname>Cross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jay</forename><surname>Gambetta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ali</forename><surname>Javadi-Abhari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Blake</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Smolin</surname></persName>
+		</author>
+		<ptr target="https://medium.com/qiskit/a-new-openqasm-" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2021" to="2021" />
+		</imprint>
+	</monogr>
+	<note>for-a-new-era-of-dynamic-circuits-87f031cac49</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Fast simulation of stabilizer circuits using a graph-state representation</title>
+		<author>
+			<persName><forename type="first">Simon</forename><surname>Anders</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hans</forename><forename type="middle">J</forename><surname>Briegel</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.73.022334</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review A</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">22334</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note>Accepted in Quantum 2021-06-16, click title to verify 23</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Operator quantum error-correcting subsystems for self-correcting quantum memo- ries</title>
+		<author>
+			<persName><forename type="first">Dave</forename><surname>Bacon</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.73.012340</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review A</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">12340</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Hadamard-free circuits expose the structure of the cliﬀord group</title>
+		<author>
+			<persName><forename type="first">Sergey</forename><surname>Bravyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dmitri</forename><surname>Maslov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2003.09412</idno>
+		<ptr target="https://arxiv.org/abs/2003.09412" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Simulation of quantum circuits by low-rank stabilizer decompositions</title>
+		<author>
+			<persName><forename type="first">Sergey</forename><surname>Bravyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dan</forename><surname>Browne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Padraic</forename><surname>Calpin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Earl</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Gosset</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Howard</surname></persName>
+		</author>
+		<idno type="DOI">10.22331/q-2019-09-02-181</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">181</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Eﬃcient classical simulation of cliﬀord circuits with non- stabilizer input states</title>
+		<author>
+			<persName><forename type="first">Kaifeng</forename><surname>Bu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dax</forename><surname>Enshan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Koh</forename></persName>
+		</author>
+		<idno type="DOI">10.1103/Phys-RevLett.123.170502</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Physical review letters</title>
+		<imprint>
+			<biblScope unit="volume">123</biblScope>
+			<biblScope unit="issue">17</biblScope>
+			<biblScope unit="page">170502</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Optimization of the surface code design for majorana-based qubits</title>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Chao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">E</forename><surname>Beverland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicolas</forename><surname>Delfosse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeongwan</forename><surname>Haah</surname></persName>
+		</author>
+		<idno type="DOI">10.22331/q-2020-10-28-352</idno>
+		<imprint/>
+	</monogr>
+	<note>Quantum, 4:352, 2020</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Qiskit: An open-source framework for quantum computing</title>
+		<author>
+			<persName><forename type="first">Qiskit</forename><surname>Contributors</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title/>
+		<idno>5281/zenodo.2562110</idno>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Surface codes: Towards practical large-scale quantum computation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mariantoni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Martinis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Cleland</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.86.032324</idno>
+		<idno type="arXiv">arXiv:1208.0928</idno>
+		<ptr target="https://doi.org/10.1103/PhysRevA.86.032324" />
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. A</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page">32324</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Eﬃcient magic state factories with a catalyzed |ccz⟩to 2|t⟩ transformation</title>
+		<author>
+			<persName><forename type="first">Craig</forename><surname>Gidney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Austin</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<idno type="DOI">10.22331/q-2019-04-30-135</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Quantum</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">135</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Informal private conversations about simu- lation bottlenecks</title>
+		<author>
+			<persName><forename type="first">Craig</forename><surname>Gidney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Austin</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Newman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Gottesman</surname></persName>
+		</author>
+		<idno>quant- ph/9705052</idno>
+		<ptr target="https://arxiv.org/abs/quant-ph/9705052" />
+		<title level="m">Stabilizer codes and quantum error correction</title>
+		<imprint>
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Hudson’s theorem for ﬁnite-dimensional quantum systems</title>
+		<author>
+			<persName><forename type="first">David</forename><surname>Gross</surname></persName>
+		</author>
+		<idno type="DOI">10.1063/1.2393152</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of mathematical physics</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page">122107</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Surface code quantum computing by lattice surgery</title>
+		<author>
+			<persName><forename type="first">Clare</forename><surname>Horsman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Austin</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Simon</forename><surname>Devitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rodney</forename><surname>Van Meter</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/1367-2630/14/12/123011</idno>
+	</analytic>
+	<monogr>
+		<title level="j">New Journal of Physics</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page">123011</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">response times: The 3 important limits</title>
+		<author>
+			<persName><forename type="first">Jakob</forename><surname>Nielsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hořeňovský</forename></persName>
+		</author>
+		<ptr target="https://www.nngroup.com/articles/response-times-3-important-limits/" />
+		<imprint>
+			<date type="published" when="1993">1993</date>
+			<biblScope unit="page" from="2021" to="2021" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">generating random numbers using c++ standard library: the problems</title>
+		<author>
+			<persName><forename type="first">Martin</forename><surname>Hořeňovský</surname></persName>
+		</author>
+		<ptr target="https://codingnest.com/generating-random-numbers-using-c-standard-library-the-problems/" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2021" to="2021" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">An- swer to &quot;how many n-qubit stabilizer states are there?</title>
+		<ptr target="https://quantumcomputing.stackexchange.com/a/11781/119" />
+	</analytic>
+	<monogr>
+		<title level="m">Quantum Stack Ex- change</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>Yack. version: 2021-01-27</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Feynman-path-type simulation using stabilizer projector decomposi- tion of unitaries</title>
+		<author>
+			<persName><forename type="first">Yifei</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Love</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/physreva.103.022428</idno>
+		<ptr target="https://doi.org/10.1103/physreva.103.022428" />
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review A</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2021-02">February 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Intel intrinsics guide (_mm256_and_si256</title>
+		<author>
+			<persName><surname>Intel</surname></persName>
+		</author>
+		<ptr target="https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2021" to="2021" />
+		</imprint>
+	</monogr>
+	<note>256_and_si256&amp;expand=301</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Contextuality bounds the eﬃciency of classical simulation of quantum processes</title>
+		<author>
+			<persName><forename type="first">Angela</forename><surname>Karanjai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joel</forename><forename type="middle">J</forename><surname>Wallman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephen</forename><forename type="middle">D</forename><surname>Bartlett</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1802.07744</idno>
+		<ptr target="https://arxiv.org/abs/1802.07744" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Quantum computing with realistically noisy devices</title>
+		<author>
+			<persName><forename type="first">Emanuel</forename><surname>Knill</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nature03350</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">434</biblScope>
+			<biblScope unit="issue">7029</biblScope>
+			<biblScope unit="page" from="39" to="44" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note>Accepted in Quantum 2021-06-16, click title to verify 24</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Surface code error correction on a defective lattice</title>
+		<author>
+			<persName><forename type="first">Shota</forename><surname>Nagayama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Austin</forename><forename type="middle">G</forename><surname>Fowler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dominic</forename><surname>Horsman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Simon</forename><forename type="middle">J</forename><surname>Devitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rodney</forename><surname>Van Meter</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/1367-2630/aa5918</idno>
+	</analytic>
+	<monogr>
+		<title level="j">New Journal of Physics</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">23050</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Usability engineering</title>
+		<author>
+			<persName><forename type="first">Jakob</forename><surname>Nielsen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994">1994</date>
+			<publisher>Morgan Kaufmann</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">approximate timing for various operations on a typical pc</title>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Norvig</surname></persName>
+		</author>
+		<ptr target="http://norvig.com/21-days.html#answers" />
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="2021" to="2021" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Quantum AI team and collaborators. Cirq</title>
+		<idno type="DOI">10.5281/zenodo.4062499</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4062499" />
+		<imprint>
+			<date type="published" when="2020-10">October 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Experimental pauli-frame randomization on a superconducting qubit</title>
+		<author>
+			<persName><forename type="first">Matthew</forename><surname>Ware</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guilhem</forename><surname>Ribeill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Diego</forename><surname>Riste</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Colm</forename><surname>Ryan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Blake</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marcus P Da</forename><surname>Silva</surname></persName>
+		</author>
+		<idno type="DOI">10.1103/PhysRevA.103.042604</idno>
+	</analytic>
+	<monogr>
+		<title level="m">APS March Meeting Abstracts</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">2017</biblScope>
+			<biblScope unit="page" from="46" to="50" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">]) c *= rounds # Collect and print samples. sampler = c.compile_sampler() samples = sampler.sample(1024) for sample in samples: print(sample) A.3 (Python) Interactive quantum teleportation Accepted in Quantum 2021-06-16, click title to verify 25 import stim s = stim.TableauSimulator() # Share EPR pair. s.h(1) s.cnot(1, 9) # Prepare state to teleport. s.h(0) s.s(0) # Alice measurements. s.cnot(0, 1) s.h(0) x, z = s.measure_many(1, 0) # Bob corrections</title>
+		<author>
+			<persName><surname>Wikipedia</surname></persName>
+		</author>
+		<idno>qubits[1::2</idno>
+		<ptr target="http://en.wikipedia.org/w/index.php?title=Advanced%20Vector%20" />
+	</analytic>
+	<monogr>
+		<title level="m">Tableau.random(10) t_inverse = t**-1 assert t * t_inverse == stim.Tableau(10) assert (t**1000000) * (t_inverse**500000)**2 == stim</title>
+		<imprint>
+			<date type="published" when="2021-05">Extensions&amp;oldid=1021841294, 2021. May-2021. 1 2 3 4 5 6 7 8 9 10\n CNOT 0 1 2 3 4 5 6 7 8 9\n CNOT 10 9 8 7 6 5 4 3 2</date>
+		</imprint>
+	</monogr>
+	<note>A Short Usage Examples A.1 (Command Line) Sample a noisy repetition code 1024 times. Tableau(10) x5: stim.PauliString = t.x_output(5) z6: stim.PauliString = t.z_output(6) assert t_inverse(x5 * z6) == stim.PauliString(&quot;+_____XZ___&quot;) s = stim.TableauSimulator() s.set_inverse_tableau(t) stabilizers = s.canonical_stabilizers(. assert stabilizers[0].commutes(stabilizers[1. Accepted in Quantum 2021-06-16, click title to verify 26</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

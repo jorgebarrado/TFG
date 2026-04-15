@@ -1,0 +1,400 @@
+{
+  "run_id": "grobid_eval_20260414_final",
+  "rows": [
+    {
+      "paper_slug": "1904_02703v3",
+      "pdf_name": "1904.02703v3.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "extractor": {
+        "total_references": 54,
+        "likely_valid": 45,
+        "likely_garbage": 9,
+        "doi_non_empty": 28,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 97,
+        "input_warnings": [
+          "raw_references_contain_many_short_or_low_alpha_entries"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 45,
+        "title_non_empty": 45,
+        "authors_non_empty": 45,
+        "year_non_empty": 45,
+        "doi_non_empty": 44,
+        "likely_valid": 45,
+        "likely_garbage": 0,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": -9,
+        "likely_valid": 0,
+        "likely_garbage": -9
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "similar"
+      }
+    },
+    {
+      "paper_slug": "icgse2017",
+      "pdf_name": "ICGSE2017.pdf",
+      "input_bucket": "header_not_found_fallback",
+      "extractor": {
+        "total_references": 54,
+        "likely_valid": 54,
+        "likely_garbage": 0,
+        "doi_non_empty": 0,
+        "references_header_found": false,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 54,
+        "input_warnings": [
+          "reference_header_not_found_fallback_tail_used"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 54,
+        "title_non_empty": 53,
+        "authors_non_empty": 54,
+        "year_non_empty": 54,
+        "doi_non_empty": 0,
+        "likely_valid": 53,
+        "likely_garbage": 1,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": 0,
+        "likely_valid": -1,
+        "likely_garbage": 1
+      },
+      "rescue": {
+        "is_rescue": true,
+        "rescue_header_case": true,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "worse"
+      }
+    },
+    {
+      "paper_slug": "jscientometres_14_3_838",
+      "pdf_name": "JScientometRes-14-3-838.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "extractor": {
+        "total_references": 180,
+        "likely_valid": 103,
+        "likely_garbage": 77,
+        "doi_non_empty": 48,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 72,
+        "input_warnings": [
+          "raw_references_contain_many_short_or_low_alpha_entries"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 75,
+        "title_non_empty": 73,
+        "authors_non_empty": 74,
+        "year_non_empty": 72,
+        "doi_non_empty": 66,
+        "likely_valid": 74,
+        "likely_garbage": 1,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": -105,
+        "likely_valid": -29,
+        "likely_garbage": -76
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "similar"
+      }
+    },
+    {
+      "paper_slug": "kelemen_subramanian_19_09_2023",
+      "pdf_name": "Kelemen_Subramanian_19.09.2023.pdf",
+      "input_bucket": "low_alpha_or_short_noise",
+      "extractor": {
+        "total_references": 66,
+        "likely_valid": 56,
+        "likely_garbage": 10,
+        "doi_non_empty": 31,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 82,
+        "input_warnings": [
+          "raw_references_contain_many_short_or_low_alpha_entries"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 54,
+        "title_non_empty": 53,
+        "authors_non_empty": 51,
+        "year_non_empty": 48,
+        "doi_non_empty": 42,
+        "likely_valid": 52,
+        "likely_garbage": 2,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": -12,
+        "likely_valid": -4,
+        "likely_garbage": -8
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "similar"
+      }
+    },
+    {
+      "paper_slug": "s10664_011_9181_9",
+      "pdf_name": "s10664-011-9181-9.pdf",
+      "input_bucket": "small_reference_set",
+      "extractor": {
+        "total_references": 2,
+        "likely_valid": 2,
+        "likely_garbage": 0,
+        "doi_non_empty": 0,
+        "references_header_found": true,
+        "references_numbered": false,
+        "citation_style": "non_numeric",
+        "max_reference_index": 2,
+        "input_warnings": [
+          "very_small_reference_set"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 24,
+        "title_non_empty": 24,
+        "authors_non_empty": 24,
+        "year_non_empty": 23,
+        "doi_non_empty": 0,
+        "likely_valid": 24,
+        "likely_garbage": 0,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": 22,
+        "likely_valid": 22,
+        "likely_garbage": 0
+      },
+      "rescue": {
+        "is_rescue": true,
+        "rescue_header_case": false,
+        "rescue_small_set": true,
+        "rescue_general": true,
+        "segmentation_assessment": "better"
+      }
+    },
+    {
+      "paper_slug": "s41979_020_00044_w",
+      "pdf_name": "s41979-020-00044-w.pdf",
+      "input_bucket": "small_reference_set",
+      "extractor": {
+        "total_references": 4,
+        "likely_valid": 4,
+        "likely_garbage": 0,
+        "doi_non_empty": 3,
+        "references_header_found": true,
+        "references_numbered": false,
+        "citation_style": "non_numeric",
+        "max_reference_index": 4,
+        "input_warnings": [
+          "very_small_reference_set"
+        ]
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 78,
+        "title_non_empty": 78,
+        "authors_non_empty": 73,
+        "year_non_empty": 76,
+        "doi_non_empty": 12,
+        "likely_valid": 77,
+        "likely_garbage": 1,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": 74,
+        "likely_valid": 73,
+        "likely_garbage": 1
+      },
+      "rescue": {
+        "is_rescue": true,
+        "rescue_header_case": false,
+        "rescue_small_set": true,
+        "rescue_general": true,
+        "segmentation_assessment": "similar"
+      }
+    },
+    {
+      "paper_slug": "1610_06546v3",
+      "pdf_name": "1610.06546v3.pdf",
+      "input_bucket": "clean_input",
+      "extractor": {
+        "total_references": 51,
+        "likely_valid": 51,
+        "likely_garbage": 0,
+        "doi_non_empty": 0,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 51,
+        "input_warnings": []
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 51,
+        "title_non_empty": 51,
+        "authors_non_empty": 51,
+        "year_non_empty": 50,
+        "doi_non_empty": 37,
+        "likely_valid": 51,
+        "likely_garbage": 0,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": 0,
+        "likely_valid": 0,
+        "likely_garbage": 0
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "similar"
+      }
+    },
+    {
+      "paper_slug": "2002_12508v3",
+      "pdf_name": "2002.12508v3.pdf",
+      "input_bucket": "clean_input",
+      "extractor": {
+        "total_references": 45,
+        "likely_valid": 42,
+        "likely_garbage": 3,
+        "doi_non_empty": 23,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 44,
+        "input_warnings": []
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 44,
+        "title_non_empty": 44,
+        "authors_non_empty": 44,
+        "year_non_empty": 43,
+        "doi_non_empty": 31,
+        "likely_valid": 44,
+        "likely_garbage": 0,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": -1,
+        "likely_valid": 2,
+        "likely_garbage": -3
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "better"
+      }
+    },
+    {
+      "paper_slug": "2017_ct_development_computational_thinking_rg",
+      "pdf_name": "2017-CT-development-computational-thinking_RG.pdf",
+      "input_bucket": "clean_input",
+      "extractor": {
+        "total_references": 37,
+        "likely_valid": 37,
+        "likely_garbage": 0,
+        "doi_non_empty": 19,
+        "references_header_found": true,
+        "references_numbered": true,
+        "citation_style": "numeric",
+        "max_reference_index": 37,
+        "input_warnings": []
+      },
+      "process_references": {
+        "status": "ok",
+        "error_type": null,
+        "error": null,
+        "total_references": 36,
+        "title_non_empty": 36,
+        "authors_non_empty": 35,
+        "year_non_empty": 36,
+        "doi_non_empty": 19,
+        "likely_valid": 36,
+        "likely_garbage": 0,
+        "usable_bibliography": true
+      },
+      "delta": {
+        "references_total": -1,
+        "likely_valid": -1,
+        "likely_garbage": 0
+      },
+      "rescue": {
+        "is_rescue": false,
+        "rescue_header_case": false,
+        "rescue_small_set": false,
+        "rescue_general": false,
+        "segmentation_assessment": "worse"
+      }
+    }
+  ],
+  "aggregate": {
+    "paper_count": 9,
+    "ok_count": 9,
+    "error_count": 0,
+    "problematic_paper_count": 6,
+    "rescued_problematic_paper_count": 3,
+    "rescued_problematic_papers": [
+      "ICGSE2017.pdf",
+      "s10664-011-9181-9.pdf",
+      "s41979-020-00044-w.pdf"
+    ],
+    "avg_delta_total_refs": -3.5555555555555554,
+    "avg_delta_valid_refs": 6.888888888888889
+  }
+}

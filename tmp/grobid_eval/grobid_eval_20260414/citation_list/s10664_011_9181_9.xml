@@ -1,0 +1,272 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Beyond replication: an example of the potential benefits of replica- bility in the mining of software repositories community</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bird</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hyatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Menzies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G ;</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Basili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F ;</forename><surname>Lanubile</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Boetticher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Menzies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T ;</forename><surname>Ostrand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Donoho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Maleki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">U</forename><surname>Rahman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shahram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V ;</forename><surname>Stodden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fayyad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Piatetsky-</forename><surname>Shapiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P ;</forename><surname>Fomel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Claerbout</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Gentleman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dt ;</forename><surname>Edinburghh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">S</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S ;</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Michlmayr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Amor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dm ;</forename><surname>Germán</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Hayes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dekhtyar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S ;</forename><surname>Sundaram</surname></persName>
+		</author>
+		<author>
+			<persName><surname>St</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Louis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Herraiz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Izquierdo-Cortazar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Rivas-Hernández F ; Hothorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F ;</forename><surname>Leisch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Knutson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Krein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Prechelt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N ;</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Koenker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A ;</forename><surname>Zeileis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dm ;</forename><surname>Germán</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Robles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>González-Barahona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Merelo-Guervós Jj ;</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mendonça</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Basili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Carver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Maldonado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Fabbri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scpf</forename><surname>Travassos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>De Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mcf ;</forename><surname>Shull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Carver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N ;</forename><surname>Vandewalle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Barrenexea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jovanovic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ridolﬁa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M ;</forename><surname>Vetterli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vegas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Juristo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moreno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Solari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Letelier</surname></persName>
+		</author>
+		<idno>IV-1253- IV-1256</idno>
+		<ptr target="http://libresoft.urjc.es" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st international workshop on replication in empirical software engineering research (RESER 2010)</title>
+		<title level="s">SIGSOFT Softw Eng Notes</title>
+		<meeting>the 1st international workshop on replication in empirical software engineering research (RESER 2010)<address><addrLine>Portland (Oregon, USA; Menlo Park</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="1996">2010. 1999. 2007. 2001. 2009. 1996. 2009. 2007. 2004. 2010. 2009. 2005. 2009. 2011. 2006. 2012. 2010. 2009. 2005. 2007. 2010. 2010. 2006. 2004. 2008. 2007. 2007. 2006</date>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="211" to="218" />
+		</imprint>
+		<respStmt>
+			<orgName>Department of Computer Science, West Virginia University ; UC Los Angeles: Department of Statistics, UCLA ; CSMR</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Technical report</note>
+	<note>ISESE ’06: Proceedings of the 2006 ACM/IEEE international symposium on empirical software engineering. pp 28-37 Jesús M. González-Barahona teaches and researches at Universidad Rey Juan Carlos, Mostoles (Spain). His research interests include libre software engineering, and in particular quantitative measures of libre software development and distributed tools for collaboration in libre software projects. In this area, he has published several papers, and is participating in some international research projects (more info at. He is also one of the promoters of the idea of a European masters program on libre software, and has speciﬁc interest in education relating to that area</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">He earned his PhD in 2006 and currently has mainly teaching duties in the ﬁeld of computer networks, although he teaches in a master on libre software as well introductory computer courses to journalism students. Regarding research, he works in two ﬁelds: a) technology enhanced learning</title>
+		<author>
+			<persName><forename type="first">Empir</forename><surname>Software</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eng</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="75" to="89" />
+		</imprint>
+	</monogr>
+	<note>89 Gregorio Robles is Associate Professor at the Universidad Rey Juan Carlos, which has several campi distributed in the region of Madrid (Spain). which means that he tries to use technology to improve the learning processes, and b) software engineering research on Free/Libre/Open Source Software systems with special focus on empirical issues</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

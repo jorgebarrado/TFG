@@ -1,0 +1,762 @@
+{
+  "paper_slug": "2002_12508v3",
+  "pdf_name": "2002.12508v3.pdf",
+  "pdf_path": "C:\\Users\\jbarr\\Documents\\TFG\\tfg_project\\citations\\static\\citations\\PDFs-Reales\\2002.12508v3.pdf",
+  "input_bucket": "clean_input",
+  "extractor_summary": {
+    "total_references": 45,
+    "likely_valid": 42,
+    "likely_garbage": 3,
+    "doi_non_empty": 23,
+    "references_header_found": true,
+    "references_numbered": true,
+    "citation_style": "numeric",
+    "max_reference_index": 44,
+    "input_warnings": []
+  },
+  "status": "ok",
+  "error_type": null,
+  "error": null,
+  "metrics": {
+    "total_references": 44,
+    "title_non_empty": 44,
+    "authors_non_empty": 44,
+    "year_non_empty": 43,
+    "doi_non_empty": 31,
+    "likely_valid": 44,
+    "likely_garbage": 0,
+    "usable_bibliography": true
+  },
+  "parsed": {
+    "mode": "references",
+    "metadata": {},
+    "sections": [],
+    "references": [
+      {
+        "id": "b0",
+        "title": "The power of quantum systems on a line",
+        "authors": [
+          "Aharonov, D",
+          "Gottesman, D",
+          "Irani, S",
+          "Kempe, J"
+        ],
+        "doi": "10.1007/s00220-008-0710-3",
+        "year": 2009,
+        "venue": "Comm. Math. Phys",
+        "pages": "41–65",
+        "identifiers": {
+          "doi": "10.1007/s00220-008-0710-3"
+        }
+      },
+      {
+        "id": "b1",
+        "title": "Variable time amplitude amplification and quantum algorithms for linear algebra problems",
+        "authors": [
+          "Ambainis, A"
+        ],
+        "doi": null,
+        "year": 2012,
+        "venue": "",
+        "pages": "636–647",
+        "identifiers": {}
+      },
+      {
+        "id": "b2",
+        "title": "On physical problems that are slightly more difficult than QMA",
+        "authors": [
+          "Ambainis, A"
+        ],
+        "doi": "10.1109/CCC.2014.12",
+        "year": 2014,
+        "venue": "",
+        "pages": "32–43",
+        "identifiers": {
+          "doi": "10.1109/CCC.2014.12"
+        }
+      },
+      {
+        "id": "b3",
+        "title": "Low-depth quantum simulation of materials",
+        "authors": [
+          "Babbush, R",
+          "Wiebe, N",
+          "Mcclean, J",
+          "Mcclain, J",
+          "Neven, H",
+          "G K",
+          "Chan, L"
+        ],
+        "doi": "10.1103/PhysRevX.8.011044",
+        "year": 2018,
+        "venue": "Phys. Rev. X",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.8.011044"
+        }
+      },
+      {
+        "id": "b4",
+        "title": "Undecidability of the spectral gap in one dimension",
+        "authors": [
+          "Bausch, J",
+          "Cubitt, T",
+          "Lucia, A",
+          "Perez-Garcia, D"
+        ],
+        "doi": "10.1103/PhysRevX.10.031038",
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.10.031038",
+          "arxiv": "arXiv:1810.01858"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b5",
+        "title": "Strengths and weaknesses of quantum computing",
+        "authors": [
+          "Bennett, C H",
+          "Bernstein, E",
+          "Brassard, G",
+          "Vazirani, U"
+        ],
+        "doi": "10.1137/S0097539796300933",
+        "year": 1997,
+        "venue": "SIAM J. Comput",
+        "pages": "1510–1523",
+        "identifiers": {
+          "doi": "10.1137/S0097539796300933"
+        }
+      },
+      {
+        "id": "b6",
+        "title": "Black-box hamiltonian simulation and unitary implementation",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:0910.4157"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b7",
+        "title": "Simulating Hamiltonian dynamics with a truncated taylor series",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M",
+          "Cleve, R",
+          "Kothari, R",
+          "Somma, R D"
+        ],
+        "doi": "10.1103/PhysRevLett.114.090502",
+        "year": 2015,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.114.090502"
+        }
+      },
+      {
+        "id": "b8",
+        "title": "Hamiltonian simulation with nearly optimal dependence on all parameters",
+        "authors": [
+          "Berry, D W",
+          "Childs, A M",
+          "Kothari, R"
+        ],
+        "doi": "10.1109/FOCS.2015.54",
+        "year": 2015,
+        "venue": "",
+        "pages": "792–809",
+        "identifiers": {
+          "doi": "10.1109/FOCS.2015.54"
+        }
+      },
+      {
+        "id": "b9",
+        "title": "Lower bound for quantum phase estimation",
+        "authors": [
+          "Bessen, A J"
+        ],
+        "doi": "10.1103/PhysRevA.71.042313",
+        "year": 2005,
+        "venue": "Phys. Rev. A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.71.042313"
+        }
+      },
+      {
+        "id": "b10",
+        "title": "Eigenpath traversal by phase randomization",
+        "authors": [
+          "Boixo, S",
+          "Knill, E",
+          "Somma, R D"
+        ],
+        "doi": null,
+        "year": 2009,
+        "venue": "Quantum Info. Comput",
+        "pages": "833–855",
+        "identifiers": {}
+      },
+      {
+        "id": "b11",
+        "title": "Quantum amplitude amplification and estimation",
+        "authors": [
+          "Brassard, G",
+          "Hoyer, P",
+          "Mosca, M",
+          "Tapp, A"
+        ],
+        "doi": "10.1090/conm/305/05215",
+        "year": 2002,
+        "venue": "Contemp. Math",
+        "pages": "53–74",
+        "identifiers": {
+          "doi": "10.1090/conm/305/05215"
+        }
+      },
+      {
+        "id": "b12",
+        "title": "Finding Angles for Quantum Signal Processing with Machine Precision",
+        "authors": [
+          "Chao, R",
+          "Ding, D",
+          "Gilyén, A",
+          "Huang, C",
+          "Szegedy, M"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {}
+      },
+      {
+        "id": "b13",
+        "title": "Quantum search by measurement",
+        "authors": [
+          "Childs, A M",
+          "Deotto, E",
+          "Farhi, E",
+          "Goldstone, J",
+          "Gutmann, S",
+          "Landahl, A J"
+        ],
+        "doi": "10.1103/PhysRevA.66.032314",
+        "year": 2002,
+        "venue": "Phys. Rev. A",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevA.66.032314"
+        }
+      },
+      {
+        "id": "b14",
+        "title": "Quantum algorithm for systems of linear equations with exponentially improved dependence on precision",
+        "authors": [
+          "Childs, A M",
+          "Kothari, R",
+          "Somma, R D"
+        ],
+        "doi": "10.1137/16M1087072",
+        "year": 1920,
+        "venue": "SIAM J. Comput",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1137/16M1087072"
+        }
+      },
+      {
+        "id": "b15",
+        "title": "Toward the first quantum simulation with quantum speedup",
+        "authors": [
+          "Childs, A M",
+          "Maslov, D",
+          "Nam, Y",
+          "Ross, N J",
+          "Su, Y"
+        ],
+        "doi": "10.1073/pnas.1801723115",
+        "year": 2018,
+        "venue": "Proc. Natl. Acad. Sci",
+        "pages": "9456–9461",
+        "identifiers": {
+          "doi": "10.1073/pnas.1801723115"
+        }
+      },
+      {
+        "id": "b16",
+        "title": "A theory of Trotter error",
+        "authors": [
+          "Childs, A M",
+          "Su, Y",
+          "Tran, M C",
+          "Wiebe, N",
+          "Zhu, S"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1912.08854"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b17",
+        "title": "Undecidability of the spectral gap",
+        "authors": [
+          "Cubitt, T S",
+          "Perez-Garcia, D",
+          "Wolf, M M"
+        ],
+        "doi": "10.1038/nature16059",
+        "year": 2015,
+        "venue": "Nature",
+        "pages": "207–211",
+        "identifiers": {
+          "doi": "10.1038/nature16059"
+        }
+      },
+      {
+        "id": "b18",
+        "title": "Efficient phase factor evaluation in quantum signal processing",
+        "authors": [
+          "Dong, Y",
+          "Meng, X",
+          "Whaley, K B",
+          "Lin, L"
+        ],
+        "doi": null,
+        "year": 2020,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:2002.11649"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b19",
+        "title": "Uniform approximation of sgn(x) by polynomials and entire functions",
+        "authors": [
+          "Eremenko, A",
+          "Yuditskii, P"
+        ],
+        "doi": null,
+        "year": 2007,
+        "venue": "Journal d'Analyse Mathématique",
+        "pages": "313–324",
+        "identifiers": {}
+      },
+      {
+        "id": "b20",
+        "title": "Faster ground state preparation and high-precision ground energy estimation with fewer qubits",
+        "authors": [
+          "Ge, Y",
+          "Tura, J",
+          "Cirac, J I"
+        ],
+        "doi": "10.1063/1.5027484",
+        "year": 2019,
+        "venue": "J. Math. Phys",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1063/1.5027484"
+        }
+      },
+      {
+        "id": "b21",
+        "title": "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics",
+        "authors": [
+          "Gilyén, A",
+          "Su, Y",
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": "10.1145/3313276.3316366",
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1145/3313276.3316366",
+          "arxiv": "arXiv:1806.01838"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b22",
+        "title": "Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics",
+        "authors": [
+          "Gilyén, A",
+          "Su, Y",
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": "10.1145/3313276.3316366",
+        "year": 2019,
+        "venue": "",
+        "pages": "193–204",
+        "identifiers": {
+          "doi": "10.1145/3313276.3316366"
+        }
+      },
+      {
+        "id": "b23",
+        "title": "A fast quantum mechanical algorithm for database search",
+        "authors": [
+          "Grover, L K"
+        ],
+        "doi": "10.1145/237814.237866",
+        "year": 1996,
+        "venue": "",
+        "pages": "212–219",
+        "identifiers": {
+          "doi": "10.1145/237814.237866"
+        }
+      },
+      {
+        "id": "b24",
+        "title": "Product decomposition of periodic functions in quantum signal processing",
+        "authors": [
+          "Haah, J"
+        ],
+        "doi": "10.22331/q-2019-10-07-190",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-10-07-190"
+        }
+      },
+      {
+        "id": "b25",
+        "title": "Quantum algorithms to simulate many-body physics of correlated fermions",
+        "authors": [
+          "Jiang, Z",
+          "Sung, K J",
+          "Kechedzhi, K",
+          "Smelyanskiy, V N",
+          "Boixo, S"
+        ],
+        "doi": "10.1103/PhysRevApplied.9.044036",
+        "year": 2018,
+        "venue": "Phys. Rev. Applied",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevApplied.9.044036"
+        }
+      },
+      {
+        "id": "b26",
+        "title": "The complexity of the local Hamiltonian problem",
+        "authors": [
+          "Kempe, J",
+          "Kitaev, A",
+          "Regev, O"
+        ],
+        "doi": "10.1007/978-3-540-30538-5_31",
+        "year": 2006,
+        "venue": "SIAM J. Comput",
+        "pages": "1070–1097",
+        "identifiers": {
+          "doi": "10.1007/978-3-540-30538-5_31"
+        }
+      },
+      {
+        "id": "b27",
+        "title": "Quantum measurements and the abelian stabilizer problem",
+        "authors": [
+          "Kitaev, A Y"
+        ],
+        "doi": null,
+        "year": 1995,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "quant-ph/9511026"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b28",
+        "title": "Classical and quantum computation. Number 47",
+        "authors": [
+          "Kitaev, A Y",
+          "Shen, A",
+          "Vyalyi, M N"
+        ],
+        "doi": "10.1090/gsm/047",
+        "year": 2002,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1090/gsm/047"
+        }
+      },
+      {
+        "id": "b29",
+        "title": "Quantum simulation of electronic structure with linear depth and connectivity",
+        "authors": [
+          "Kivlichan, I D",
+          "Mcclean, J",
+          "Wiebe, N",
+          "Gidney, C",
+          "Aspuru-Guzik, A",
+          "-L. Chan, G K",
+          "Babbush, R"
+        ],
+        "doi": "10.1103/PhysRevLett.120.110501",
+        "year": 2018,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.120.110501"
+        }
+      },
+      {
+        "id": "b30",
+        "title": "Optimal polynomial based quantum eigenstate filtering with application to solving quantum linear systems",
+        "authors": [
+          "Lin, L",
+          "Tong, Y"
+        ],
+        "doi": "10.22331/q-2020-11-11-361",
+        "year": null,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2020-11-11-361"
+        },
+        "raw_citation": "Quantum, 4:361, 2020"
+      },
+      {
+        "id": "b31",
+        "title": "Universal quantum simulators",
+        "authors": [
+          "Lloyd, S"
+        ],
+        "doi": "10.1126/science.273.5278.1073",
+        "year": 1996,
+        "venue": "Science",
+        "pages": "1073–1078",
+        "identifiers": {
+          "doi": "10.1126/science.273.5278.1073"
+        }
+      },
+      {
+        "id": "b32",
+        "title": "Optimal Hamiltonian simulation by quantum signal processing",
+        "authors": [
+          "Low, G H",
+          "Chuang, I L"
+        ],
+        "doi": "10.1103/PhysRevLett.118.010501",
+        "year": 2017,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.118.010501"
+        }
+      },
+      {
+        "id": "b33",
+        "title": "Hamiltonian simulation by qubitization",
+        "authors": [
+          "Low, G H",
+          "Chuang, I L"
+        ],
+        "doi": "10.22331/q-2019-07-12-163",
+        "year": 2019,
+        "venue": "Quantum",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.22331/q-2019-07-12-163"
+        }
+      },
+      {
+        "id": "b34",
+        "title": "Hamiltonian simulation in the interaction picture",
+        "authors": [
+          "Low, G H",
+          "Wiebe, N"
+        ],
+        "doi": null,
+        "year": 2018,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1805.00675"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b35",
+        "title": "Methodology of resonant equiangular composite quantum gates",
+        "authors": [
+          "Low, G H",
+          "Yoder, T J",
+          "Chuang, I L"
+        ],
+        "doi": "10.1103/PhysRevX.6.041067",
+        "year": 2016,
+        "venue": "Phys. Rev. X",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevX.6.041067"
+        }
+      },
+      {
+        "id": "b36",
+        "title": "Quantum imaginary time evolution, quantum lanczos, and quantum thermal averaging",
+        "authors": [
+          "Motta, M",
+          "Sun, C",
+          "Tan, A T K",
+          "O'rourke, M J",
+          "Ye, E",
+          "Minnich, A J",
+          "Brandao, F G",
+          "Chan, G K"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1901.07653"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b37",
+        "title": "The quantum query complexity of approximating the median and related statistics",
+        "authors": [
+          "Nayak, A",
+          "Wu, F"
+        ],
+        "doi": "10.1145/301250.301349",
+        "year": 1999,
+        "venue": "",
+        "pages": "384–393",
+        "identifiers": {
+          "doi": "10.1145/301250.301349"
+        }
+      },
+      {
+        "id": "b38",
+        "title": "The complexity of quantum spin systems on a twodimensional square lattice",
+        "authors": [
+          "Oliveira, R",
+          "B M"
+        ],
+        "doi": null,
+        "year": 2005,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "": "quant-ph/0504050"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b39",
+        "title": "Quantum filter diagonalization: Quantum eigendecomposition without full quantum phase estimation",
+        "authors": [
+          "Parrish, R M",
+          "Mcmahon, P L"
+        ],
+        "doi": null,
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "arxiv": "arXiv:1909.08925"
+        },
+        "raw_citation": "arXiv preprint"
+      },
+      {
+        "id": "b40",
+        "title": "A variational eigenvalue solver on a photonic quantum processor",
+        "authors": [
+          "Peruzzo, A",
+          "Mcclean, J",
+          "Shadbolt, P",
+          "Yung, M.-H",
+          "Zhou, X.-Q",
+          "Love, P J",
+          "Aspuru-Guzik, A",
+          "O'brien, J L"
+        ],
+        "doi": "10.1038/ncomms5213",
+        "year": 2014,
+        "venue": "Nat. Commun",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1038/ncomms5213"
+        }
+      },
+      {
+        "id": "b41",
+        "title": "Preparing ground states of quantum many-body systems on a quantum computer",
+        "authors": [
+          "Poulin, D",
+          "Wocjan, P"
+        ],
+        "doi": "10.1103/PhysRevLett.102.130503",
+        "year": 2009,
+        "venue": "Phys. Rev. Lett",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1103/PhysRevLett.102.130503"
+        }
+      },
+      {
+        "id": "b42",
+        "title": "Sur le calcul effectif des polynomes d'approximation de tchebichef",
+        "authors": [
+          "Remes, E"
+        ],
+        "doi": null,
+        "year": 1934,
+        "venue": "C. R. Acad. Sci",
+        "pages": "337–340",
+        "identifiers": {}
+      },
+      {
+        "id": "b43",
+        "title": "A multireference quantum Krylov algorithm for strongly correlated electrons",
+        "authors": [
+          "Stair, N H",
+          "Huang, R",
+          "Evangelista, F A"
+        ],
+        "doi": "10.1021/acs.jctc.9b01125",
+        "year": 2019,
+        "venue": "",
+        "pages": "",
+        "identifiers": {
+          "doi": "10.1021/acs.jctc.9b01125",
+          "arxiv": "arXiv:1911.05163"
+        },
+        "raw_citation": "arXiv preprint"
+      }
+    ],
+    "inline_citations": [],
+    "inline_citation_count": 0,
+    "reference_count": 44,
+    "_warnings": []
+  }
+}
