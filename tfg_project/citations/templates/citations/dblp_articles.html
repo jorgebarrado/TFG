@@ -46,13 +46,23 @@
               | DOI: <a href="{{ article.doi }}" target="_blank">{{ article.doi }}</a>
             {% endif %}
           </small>
-          {% if article.has_citations %}
-            <a href="{% url 'semantic_citations' %}?doi={{ article.doi }}" class="btn btn-sm btn-outline-primary mt-2">
-              Ver citas en Semantic Scholar
-            </a>
-          {% else %}
-            <span class="badge bg-secondary mt-2">Sin citas</span>
-          {% endif %}
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            {% if article.has_citations %}
+              <a href="{% url 'semantic_citations' %}?doi={{ article.doi }}" class="btn btn-sm btn-outline-primary">
+                Ver citas en Semantic Scholar
+              </a>
+            {% else %}
+              <span class="badge bg-secondary">Sin citas</span>
+            {% endif %}
+
+            {% if article.can_review_citers %}
+              <a href="{% url 'citation_review_citers' article.paper_id %}" class="btn btn-sm btn-outline-success">
+                Revisar citantes
+              </a>
+            {% else %}
+              <span class="badge bg-light text-dark border">Sin DOI</span>
+            {% endif %}
+          </div>
 
         </li>
       {% endfor %}
