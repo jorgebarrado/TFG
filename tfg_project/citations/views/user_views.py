@@ -180,13 +180,15 @@ def dblp_articles_view(request):
 
     tipo = request.GET.get("tipo", "").strip()
     busqueda = request.GET.get("q", "").strip().lower()
-    tipos_disponibles = sorted(set(a["type"] for a in all_articles))
+    tipos_disponibles = sorted({a.get("type") for a in all_articles if a.get("type")})
 
     articles = all_articles
     if tipo:
-        articles = [a for a in articles if a["type"] == tipo]
+        articles = [a for a in articles if a.get("type") == tipo]
     if busqueda:
-        articles = [a for a in articles if busqueda in a["title"].lower()]
+        articles = [
+            a for a in articles if busqueda in (a.get("title") or "").lower()
+        ]
 
     paginator = Paginator(articles, 10)
     page_number = request.GET.get("page")
