@@ -186,6 +186,42 @@ def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
     return work
 
 
+def get_paper_metadata_by_doi(doi: str, timeout: int = 15) -> Optional[Dict[str, Any]]:
+    """Devuelve solo los metadatos básicos de un paper (sin referencias ni citas)."""
+    normalized_doi = _normalize_doi(doi)
+    if not normalized_doi:
+        return None
+
+    url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/DOI:{normalized_doi}"
+    try:
+        response = requests.get(
+            url,
+            headers=_build_headers(),
+            params={"fields": "title,year,venue,externalIds,authors.name,url,citationCount"},
+            timeout=timeout,
+        )
+    except requests.RequestException as exc:
+        raise SemanticScholarError(f"Error de conexión con Semantic Scholar: {exc}") from exc
+
+    if response.status_code == 404:
+        return None
+    if response.status_code == 429:
+        raise SemanticScholarError("Rate limit en Semantic Scholar. Espera unos segundos e inténtalo de nuevo.")
+    if response.status_code != 200:
+        raise SemanticScholarError(
+            f"Error en la API de Semantic Scholar (HTTP {response.status_code})."
+        )
+
+    data = response.json() if response.content else {}
+    if not isinstance(data, dict):
+        return None
+
+    paper = _normalize_paper_item(data, source="semantic_scholar")
+    paper["doi"] = paper.get("doi") or normalized_doi
+    paper["citation_count"] = data.get("citationCount", 0)
+    return paper
+
+
 def get_citing_papers_for_doi_paginated(
     doi: str, limit: int = 10, offset: int = 0
 ) -> tuple[List[CitingPaper], int]:
@@ -227,7 +263,8 @@ def get_citing_papers_for_doi_paginated(
         "citingPaper.year,"
         "citingPaper.externalIds,"
         "citingPaper.authors,"
-        "citingPaper.url"
+        "citingPaper.url,"
+        "contexts"
     )
     params = {
         "fields": fields,
@@ -254,13 +291,15 @@ def get_citing_papers_for_doi_paginated(
 
     data = response.json() or {}
     items = data.get("data") or []
-    total = int(data.get("total") or 0)
+    # La API devuelve "next" (offset siguiente) en lugar de "total"
+    next_page_offset: Optional[int] = data.get("next")
 
     citing_papers: List[CitingPaper] = []
     for row in items:
         cp = row.get("citingPaper") or {}
         external_ids = cp.get("externalIds") or {}
         authors = ", ".join(a.get("name", "") for a in (cp.get("authors") or []))
+        contexts = [c for c in (row.get("contexts") or []) if isinstance(c, str) and c.strip()]
         citing_papers.append(
             {
                 "title": cp.get("title") or "",
@@ -269,7 +308,8 @@ def get_citing_papers_for_doi_paginated(
                 "authors": authors or None,
                 "url": cp.get("url"),
                 "open_access_pdf_url": None,
+                "contexts": contexts,
             }
         )
 
-    return citing_papers, total
+    return citing_papers, next_page_offset

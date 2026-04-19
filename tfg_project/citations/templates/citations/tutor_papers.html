@@ -15,6 +15,11 @@
         </p>
       </div>
       <div class="d-flex flex-wrap gap-2">
+        {% if dblp_url %}
+          <a href="{% url 'citation_review_random' %}" class="btn btn-success">
+            <i class="bi bi-shuffle"></i> {% trans "Artículo aleatorio" %}
+          </a>
+        {% endif %}
         <a href="{% url 'account_settings' %}#section-extended" class="btn btn-outline-primary">
           <i class="bi bi-gear"></i> {% trans "Configurar DBLP" %}
         </a>
@@ -28,13 +33,26 @@
   {% if not dblp_url %}
     <div class="card glass-card mb-4">
       <div class="card-body">
-        <h4 class="card-title">{% trans "Configura tu DBLP" %}</h4>
+        <h4 class="card-title">{% trans "Introduce tu perfil DBLP" %}</h4>
         <p class="text-muted mb-3">
-          {% trans "Necesitamos la URL de tu perfil de DBLP para cargar tus articulos." %}
+          {% trans "Introduce la URL de tu perfil DBLP para cargar tus artículos." %}
         </p>
-        <a href="{% url 'account_settings' %}#section-extended" class="btn btn-primary">
-          {% trans "Ir a ajustes" %}
-        </a>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+          <input
+            type="url"
+            name="dblp_url"
+            class="form-control"
+            style="max-width: 480px;"
+            placeholder="https://dblp.org/pid/r/GregorioRobles.html"
+            autofocus
+          >
+          <button class="btn btn-primary" type="submit">{% trans "Cargar artículos" %}</button>
+        </form>
+        {% if user.is_authenticated %}
+          <p class="text-muted small mt-2">
+            O <a href="{% url 'account_settings' %}#section-extended">guarda tu URL en tu perfil</a> para no tener que introducirla cada vez.
+          </p>
+        {% endif %}
       </div>
     </div>
   {% endif %}
@@ -73,7 +91,7 @@
               </div>
               <div class="d-flex flex-column gap-2 text-md-end">
                 {% if paper.doi %}
-                  <a href="{% url 'citation_review_citers' paper.paper_id %}" class="btn btn-primary">
+                  <a href="{% url 'citation_review_citers' paper.paper_id %}?dblp_url={{ dblp_url|urlencode }}" class="btn btn-primary">
                     {% trans "Revisar citantes" %}
                   </a>
                 {% else %}
@@ -91,12 +109,12 @@
     {% if papers.has_other_pages %}
       <div class="d-flex justify-content-center mt-4">
         {% if papers.has_previous %}
-          <a class="btn btn-outline-secondary me-2" href="?page={{ papers.previous_page_number }}">
+          <a class="btn btn-outline-secondary me-2" href="?dblp_url={{ dblp_url|urlencode }}&page={{ papers.previous_page_number }}">
             {% trans "Anterior" %}
           </a>
         {% endif %}
         {% if papers.has_next %}
-          <a class="btn btn-outline-primary" href="?page={{ papers.next_page_number }}">
+          <a class="btn btn-outline-primary" href="?dblp_url={{ dblp_url|urlencode }}&page={{ papers.next_page_number }}">
             {% trans "Ver mas" %}
           </a>
         {% endif %}

@@ -19,7 +19,12 @@ from ..models import (
     Vote,
 )
 from ..services.dblp_client import DBLPClientError, get_author_papers
-from ..utils import check_doi_has_citations
+from ..services.semantic_scholar_client import (
+    SemanticScholarError,
+    get_citing_papers_for_doi_paginated,
+    get_paper_metadata_by_doi,
+)
+from ..utils import get_citation_count
 
 User = get_user_model()
 
@@ -157,7 +162,6 @@ def my_saved(request):
     return render(request, "citations/my_saved.html", {"saved": saved})
 
 
-@login_required
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
@@ -166,11 +170,16 @@ def dblp_articles_view(request):
     que el paper_id sea consistente y podamos lanzar la revisión directamente
     desde la búsqueda en DBLP.
     """
-    user = request.user
-    profile, _ = UserProfile.objects.get_or_create(user=user)
+    dblp_url = request.GET.get("dblp_url", "").strip()
+    if not dblp_url and request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        dblp_url = profile.dblp_url or ""
+
+    if not dblp_url:
+        return render(request, "citations/dblp_articles.html", {"dblp_url": "", "show_dblp_form": True})
 
     try:
-        all_articles = get_author_papers(profile.dblp_url) if profile.dblp_url else []
+        all_articles = get_author_papers(dblp_url)
     except DBLPClientError as exc:
         messages.error(request, str(exc))
         all_articles = []
@@ -196,19 +205,72 @@ def dblp_articles_view(request):
 
     for article in page:
         article["can_review_citers"] = bool(article.get("doi"))
-        if article.get("doi"):
-            article["has_citations"] = check_doi_has_citations(article["doi"])
-        else:
-            article["has_citations"] = False
+        article["citation_count"] = get_citation_count(article["doi"]) if article.get("doi") else 0
 
     context = {
         "articles": page,
-        "dblp_url": profile.dblp_url,
+        "dblp_url": dblp_url,
         "tipo_actual": tipo,
         "tipos_disponibles": tipos_disponibles,
         "busqueda": busqueda,
     }
     return render(request, "citations/dblp_articles.html", context)
+
+
+def doi_search_view(request):
+    """Busca citadores de un artículo introducido por DOI."""
+    doi = request.GET.get("doi", "").strip()
+
+    if not doi:
+        return render(request, "citations/doi_search.html", {"doi": ""})
+
+    paper = None
+    citing_papers = []
+    next_page_offset = None
+    error_message = None
+    limit = 10
+    offset = 0
+    offset_raw = request.GET.get("offset")
+    if offset_raw and offset_raw.isdigit():
+        offset = int(offset_raw)
+
+    import json as _json
+    paper_metadata_json = ""
+    try:
+        paper = get_paper_metadata_by_doi(doi)
+        if paper is None:
+            error_message = f"No se encontró ningún artículo con DOI '{doi}' en Semantic Scholar."
+        else:
+            paper_metadata_json = _json.dumps({
+                "title": paper.get("title"),
+                "doi": paper.get("doi") or doi,
+                "year": paper.get("year"),
+                "authors": paper.get("authors"),
+                "venue": paper.get("venue"),
+                "source": "semantic_scholar",
+            }, ensure_ascii=True)
+            citing_papers, next_page_offset = get_citing_papers_for_doi_paginated(
+                paper.get("doi") or doi, limit=limit, offset=offset
+            )
+    except SemanticScholarError as exc:
+        error_message = str(exc)
+
+    range_start = offset + 1 if citing_papers else 0
+    range_end = offset + len(citing_papers)
+
+    context = {
+        "doi": doi,
+        "paper": paper,
+        "paper_metadata_json": paper_metadata_json,
+        "citing_papers": citing_papers,
+        "error_message": error_message,
+        "offset": offset,
+        "limit": limit,
+        "next_offset": next_page_offset,
+        "range_start": range_start,
+        "range_end": range_end,
+    }
+    return render(request, "citations/doi_search.html", context)
 
 
 @login_required

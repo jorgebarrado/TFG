@@ -68,6 +68,11 @@ urlpatterns = [
         user_views.dblp_articles_view,
         name="dblp_articles",
     ),
+    path(
+        "buscar-doi/",
+        user_views.doi_search_view,
+        name="doi_search",
+    ),
     path("perfil/mis-reportes/", user_views.my_reports, name="my_reports"),
     path("perfil/mis-comentarios/", user_views.my_comments, name="my_comments"),
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
@@ -87,6 +92,11 @@ urlpatterns = [
         "revision-citas/create-report/",
         tutor_views.citation_review_create_report,
         name="citation_review_create_report",
+    ),
+    path(
+        "revision-citas/aleatorio/",
+        tutor_views.citation_review_random,
+        name="citation_review_random",
     ),
     path(
         "reader/preview/",
