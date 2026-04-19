@@ -18,7 +18,8 @@ from ..models import (
     UserProfile,
     Vote,
 )
-from ..utils import check_doi_has_citations, get_articles_from_dblp
+from ..services.dblp_client import DBLPClientError, get_author_papers
+from ..utils import check_doi_has_citations
 
 User = get_user_model()
 
@@ -160,10 +161,22 @@ def my_saved(request):
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Este flujo usa la misma fuente de datos que la revisión de citantes para
+    que el paper_id sea consistente y podamos lanzar la revisión directamente
+    desde la búsqueda en DBLP.
     """
     user = request.user
-    profile = UserProfile.objects.get(user=user)
-    all_articles = get_articles_from_dblp(profile.dblp_url) if profile.dblp_url else []
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    try:
+        all_articles = get_author_papers(profile.dblp_url) if profile.dblp_url else []
+    except DBLPClientError as exc:
+        messages.error(request, str(exc))
+        all_articles = []
+
+    for idx, article in enumerate(all_articles):
+        article["paper_id"] = idx
 
     tipo = request.GET.get("tipo", "").strip()
     busqueda = request.GET.get("q", "").strip().lower()
@@ -180,6 +193,7 @@ def dblp_articles_view(request):
     page = paginator.get_page(page_number)
 
     for article in page:
+        article["can_review_citers"] = bool(article.get("doi"))
         if article.get("doi"):
             article["has_citations"] = check_doi_has_citations(article["doi"])
         else:
