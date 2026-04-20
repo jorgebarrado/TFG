@@ -1,24 +1,44 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
 {% block content %}
 <div class="container py-4">
-  <h2>Artículos publicados (DBLP)</h2>
+  <h2>Articulos publicados (DBLP)</h2>
 
   {% if show_dblp_form or not dblp_url %}
     <div class="card glass-card mb-4">
       <div class="card-body">
-        <p class="text-muted mb-3">Introduce la URL de tu perfil DBLP para ver tus artículos.</p>
-        <form method="get" class="d-flex gap-2 flex-wrap">
+        <p class="text-muted mb-3">Introduce la URL de tu perfil DBLP para ver tus articulos.</p>
+        <form method="get" class="d-flex flex-wrap align-items-end gap-2" data-dblp-load-form>
           <input
             type="url"
             name="dblp_url"
             class="form-control"
             style="max-width: 480px;"
             placeholder="https://dblp.org/pid/r/GregorioRobles.html"
+            value="{{ dblp_url }}"
+            required
             autofocus
           >
-          <button class="btn btn-primary" type="submit">Cargar artículos</button>
+          <input type="hidden" name="include_without_citations" value="0">
+          <div class="form-check form-switch mb-2">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="include-without-citations"
+              name="include_without_citations"
+              value="1"
+              {% if include_without_citations %}checked{% endif %}
+            >
+            <label class="form-check-label" for="include-without-citations">
+              Incluir articulos sin citas
+            </label>
+          </div>
+          <button class="btn btn-primary" type="submit">Cargar articulos</button>
         </form>
+        <div class="mt-3">
+          {% include "citations/partials/dblp_loading_progress.html" %}
+        </div>
       </div>
     </div>
   {% else %}
@@ -30,6 +50,7 @@
 
     <form method="get" class="mb-3 d-flex" role="search">
       <input type="hidden" name="dblp_url" value="{{ dblp_url }}">
+      <input type="hidden" name="include_without_citations" value="{{ include_without_citations|yesno:'1,0' }}">
       {% if tipo_actual %}
         <input type="hidden" name="tipo" value="{{ tipo_actual }}">
       {% endif %}
@@ -38,20 +59,28 @@
         name="q"
         value="{{ busqueda }}"
         class="form-control me-2"
-        placeholder="Buscar por título…"
+        placeholder="Buscar por titulo..."
       >
       <button class="btn btn-outline-secondary" type="submit">Buscar</button>
     </form>
+    <div class="mb-3">
+      {% include "citations/partials/dblp_loading_progress.html" %}
+    </div>
+    {% if citation_filter_error %}
+      <div class="alert alert-warning">
+        {{ citation_filter_error }}
+      </div>
+    {% endif %}
 
     {% if tipos_disponibles %}
       <div class="mb-3">
         <strong>Filtrar por tipo:</strong>
         <div class="btn-group" role="group">
-          <a href="?dblp_url={{ dblp_url|urlencode }}" class="btn btn-outline-primary {% if not tipo_actual %}active{% endif %}">
+          <a href="?dblp_url={{ dblp_url|urlencode }}&include_without_citations={{ include_without_citations|yesno:'1,0' }}" class="btn btn-outline-primary {% if not tipo_actual %}active{% endif %}">
             Todos
           </a>
           {% for tipo in tipos_disponibles %}
-            <a href="?dblp_url={{ dblp_url|urlencode }}&tipo={{ tipo }}" class="btn btn-outline-primary {% if tipo == tipo_actual %}active{% endif %}">
+            <a href="?dblp_url={{ dblp_url|urlencode }}&tipo={{ tipo }}&include_without_citations={{ include_without_citations|yesno:'1,0' }}" class="btn btn-outline-primary {% if tipo == tipo_actual %}active{% endif %}">
               {{ tipo|capfirst }}
             </a>
           {% endfor %}
@@ -93,21 +122,28 @@
 
       <div class="d-flex justify-content-between mt-4">
         {% if articles.has_previous %}
-          <a href="?dblp_url={{ dblp_url|urlencode }}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}&page={{ articles.previous_page_number }}" class="btn btn-outline-secondary">
-            ← Anterior
+          <a href="?dblp_url={{ dblp_url|urlencode }}&include_without_citations={{ include_without_citations|yesno:'1,0' }}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}&page={{ articles.previous_page_number }}" class="btn btn-outline-secondary">
+            &larr; Anterior
           </a>
         {% else %}
           <span></span>
         {% endif %}
         {% if articles.has_next %}
-          <a href="?dblp_url={{ dblp_url|urlencode }}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}&page={{ articles.next_page_number }}" class="btn btn-outline-primary">
-            Cargar más →
+          <a href="?dblp_url={{ dblp_url|urlencode }}&include_without_citations={{ include_without_citations|yesno:'1,0' }}{% if tipo_actual %}&tipo={{ tipo_actual }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}&page={{ articles.next_page_number }}" class="btn btn-outline-primary" data-dblp-load-more>
+            Cargar mas &rarr;
           </a>
         {% endif %}
       </div>
     {% else %}
-      <p class="text-muted">No se encontraron artículos para este perfil DBLP.</p>
+      {% if include_without_citations %}
+        <p class="text-muted">No se encontraron articulos para este perfil DBLP.</p>
+      {% else %}
+        <p class="text-muted">No se encontraron articulos con citas para este perfil DBLP.</p>
+      {% endif %}
     {% endif %}
   {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/dblp_loading.js' %}"></script>
 {% endblock %}

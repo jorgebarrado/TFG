@@ -52,18 +52,38 @@ def _resolve_dblp_url(request) -> str:
     return url
 
 
+def _saved_dblp_url(request) -> str:
+    if not request.user.is_authenticated:
+        return ""
+    profile = UserProfile.objects.filter(user=request.user).first()
+    return (profile.dblp_url or "") if profile else ""
+
+
 def citation_review_papers(request):
-    dblp_url = _resolve_dblp_url(request)
+    has_dblp_url_param = "dblp_url" in request.GET
+    dblp_url = request.GET.get("dblp_url", "").strip()
+    error_message = None
+
+    if not has_dblp_url_param:
+        return render(request, "citations/tutor_papers.html", {
+            "papers": None,
+            "dblp_url": _saved_dblp_url(request),
+            "show_dblp_form": True,
+            "error_message": None,
+        })
 
     if not dblp_url:
         return render(request, "citations/tutor_papers.html", {
             "papers": None,
             "dblp_url": None,
+            "show_dblp_form": True,
+            "error_message": None,
         })
 
     try:
         all_papers = get_author_papers(dblp_url)
     except DBLPClientError as exc:
+        error_message = str(exc)
         messages.error(request, str(exc))
         all_papers = []
 
@@ -76,6 +96,7 @@ def citation_review_papers(request):
     return render(request, "citations/tutor_papers.html", {
         "papers": page,
         "dblp_url": dblp_url,
+        "error_message": error_message,
     })
 
 
