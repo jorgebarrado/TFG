@@ -123,27 +123,12 @@
                     {% trans "Sube el documento completo. Extraeremos y analizaremos todas las referencias." %}
                   </p>
 
-                  <!-- Dropzone + CTA -->
+                  <!-- CTA -->
                   <div class="home-card-actions mt-auto">
-
-                    <div
-                      id="pdf-card-dropzone"
-                      class="home-card-panel w-100 rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/40
-                             py-2 text-xs text-purple-500 font-medium text-center position-relative">
-                      <span id="pdf-card-dropzone-text" class="d-block w-100">{% trans "Arrastra un PDF aqui o haz clic para seleccionarlo" %}</span>
-                      <button type="button"
-                              id="pdf-card-dropzone-clear"
-                              class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
-                              aria-label="{% trans 'Quitar PDF' %}">
-                        &times;
-                      </button>
-                    </div>
-                    <div id="pdf-card-file-summary" class="small text-muted mt-2 d-none"></div>
-
                     <button
                       type="button"
                       id="pdf-process-btn"
-                      class="home-card-btn home-card-btn--pdf-primary mt-3 w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
+                      class="home-card-btn home-card-btn--pdf-primary w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
                              d-flex align-items-center justify-content-center gap-2
                              transition-colors">
                       <span>{% trans "Extraer citas" %}</span>
@@ -180,8 +165,8 @@
                   </p>
 
                   <div class="home-card-actions w-100 mt-auto">
-                      <div class="home-card-panel border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
-                          {% if user.is_authenticated %}
+                      {% if user.is_authenticated %}
+                        <div class="home-card-panel border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
                             <form method="post" class="d-flex flex-column gap-2">
                               {% csrf_token %}
                               {{ dblp_form.dblp_url }}
@@ -192,15 +177,8 @@
                                 {% trans "Guardar DBLP" %}
                               </button>
                             </form>
-                          {% else %}
-                            <span class="text-xs text-slate-400 block">
-                              {% trans "Inicia sesión para añadir tu DBLP." %}
-                            </span>
-                            <button type="button" class="home-card-btn btn btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                              {% trans "Iniciar sesión" %}
-                            </button>
-                          {% endif %}
-                      </div>
+                        </div>
+                      {% endif %}
 
                       <div class="d-flex flex-column gap-2">
                           <a href="{% url 'dblp_articles' %}" class="home-card-btn w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
@@ -289,51 +267,17 @@
     const extractFileInput = document.getElementById('extract-file');
     const processBtn = document.getElementById('pdf-process-btn');
     const openReaderBtn = document.getElementById('pdf-open-reader-btn');
-    const cardSummary = document.getElementById('pdf-card-file-summary');
-    const cardDropzoneText = document.getElementById('pdf-card-dropzone-text');
-    const cardDropzoneClear = document.getElementById('pdf-card-dropzone-clear');
-    const cardDropzone = document.getElementById('pdf-card-dropzone');
     const READER_PREVIEW = '/citations/reader/preview/';
     const READER_PAYLOAD_DB = 'citecheck-reader-payloads';
     const READER_PAYLOAD_STORE = 'payloads';
     const READER_PAYLOAD_SESSION_KEY = 'citecheck.reader.payload';
     let pendingFile = null;
 
-    const pickerInput = document.createElement('input');
-    pickerInput.type = 'file';
-    pickerInput.accept = 'application/pdf';
-    pickerInput.className = 'd-none';
-    card.appendChild(pickerInput);
-
     function setHighlight(active) {
       if (!innerCard) return;
       innerCard.classList.toggle('border-2', active);
       innerCard.classList.toggle('border-purple-300', active);
       innerCard.classList.toggle('bg-purple-50/40', active);
-    }
-
-    function setCardSummary(file) {
-      if (!cardSummary) return;
-      if (!file) {
-        cardSummary.classList.add('d-none');
-        cardSummary.textContent = '';
-        if (cardDropzoneText) {
-          cardDropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo';
-        }
-        if (cardDropzoneClear) {
-          cardDropzoneClear.classList.add('d-none');
-        }
-        return;
-      }
-      const sizeKb = Math.round(file.size / 1024);
-      cardSummary.textContent = `${file.name} - ${sizeKb} KB`;
-      if (cardDropzoneText) {
-        cardDropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
-      }
-      if (cardDropzoneClear) {
-        cardDropzoneClear.classList.remove('d-none');
-      }
-      cardSummary.classList.add('d-none');
     }
 
     function clearModalSelection() {
@@ -432,38 +376,11 @@
       const file = event.dataTransfer?.files?.[0];
       if (!file) return;
       if (file.type !== 'application/pdf') {
-        setCardSummary(null);
-        return;
-      }
-      pendingFile = file;
-      setCardSummary(file);
-    });
-
-    if (cardDropzone) {
-      cardDropzone.addEventListener('click', () => {
-        pickerInput.click();
-      });
-    }
-
-    pickerInput.addEventListener('change', () => {
-      const file = pickerInput.files?.[0];
-      if (!file || file.type !== 'application/pdf') {
-        setCardSummary(null);
-        return;
-      }
-      pendingFile = file;
-      setCardSummary(file);
-    });
-
-    if (cardDropzoneClear) {
-      cardDropzoneClear.addEventListener('click', (event) => {
-        event.stopPropagation();
         pendingFile = null;
-        pickerInput.value = '';
-        setCardSummary(null);
-        clearModalSelection();
-      });
-    }
+        return;
+      }
+      pendingFile = file;
+    });
 
     if (processBtn) {
       processBtn.addEventListener('click', () => {

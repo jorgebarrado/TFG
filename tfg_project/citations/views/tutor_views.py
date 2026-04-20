@@ -14,6 +14,7 @@ from ..models import IncorrectCitation, UserProfile
 from ..services.dblp_client import DBLPClientError, get_author_papers
 from ..services.semantic_scholar_client import (
     SemanticScholarError,
+    get_citation_counts_for_dois,
     get_citing_papers_for_doi_paginated,
 )
 
@@ -59,6 +60,26 @@ def _saved_dblp_url(request) -> str:
     return (profile.dblp_url or "") if profile else ""
 
 
+def _assign_paper_ids(papers: list[dict]) -> None:
+    for idx, paper in enumerate(papers):
+        paper["paper_id"] = idx
+
+
+def _filter_papers_with_citers(papers: list[dict]) -> list[dict]:
+    citation_counts = get_citation_counts_for_dois(
+        [paper.get("doi") for paper in papers if paper.get("doi")]
+    )
+    papers_with_citers = []
+    for paper in papers:
+        doi = paper.get("doi")
+        paper["citation_count"] = (
+            citation_counts.get(str(doi).strip(), 0) if doi else 0
+        )
+        if paper["citation_count"] > 0:
+            papers_with_citers.append(paper)
+    return papers_with_citers
+
+
 def citation_review_papers(request):
     has_dblp_url_param = "dblp_url" in request.GET
     dblp_url = request.GET.get("dblp_url", "").strip()
@@ -87,8 +108,15 @@ def citation_review_papers(request):
         messages.error(request, str(exc))
         all_papers = []
 
-    for idx, paper in enumerate(all_papers):
-        paper["paper_id"] = idx
+    _assign_paper_ids(all_papers)
+
+    if all_papers:
+        try:
+            all_papers = _filter_papers_with_citers(all_papers)
+        except SemanticScholarError as exc:
+            error_message = str(exc)
+            messages.error(request, str(exc))
+            all_papers = []
 
     paginator = Paginator(all_papers, 10)
     page = paginator.get_page(request.GET.get("page"))
@@ -191,14 +219,20 @@ def citation_review_random(request):
         messages.error(request, str(exc))
         return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
 
-    papers_with_doi = [(idx, p) for idx, p in enumerate(all_papers) if p.get("doi")]
-    if not papers_with_doi:
-        messages.warning(request, "No hay artículos con DOI en este perfil DBLP.")
+    _assign_paper_ids(all_papers)
+    try:
+        papers_with_citers = _filter_papers_with_citers(all_papers)
+    except SemanticScholarError as exc:
+        messages.error(request, str(exc))
+        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+    if not papers_with_citers:
+        messages.warning(request, "No hay articulos con citantes en este perfil DBLP.")
         return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
 
-    idx, _ = random.choice(papers_with_doi)
+    paper = random.choice(papers_with_citers)
     return redirect(
-        reverse("citation_review_citers", args=[idx]) + f"?dblp_url={dblp_url}"
+        reverse("citation_review_citers", args=[paper["paper_id"]])
+        + f"?dblp_url={dblp_url}"
     )
 
 
