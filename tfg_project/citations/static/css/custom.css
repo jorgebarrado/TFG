@@ -253,14 +253,6 @@ a:hover { text-decoration: underline; }
   width: 100%;
 }
 
-.home-page #pdf-card-dropzone {
-  padding-left: 0.9rem;
-  padding-right: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .home-powered-section {
   margin-top: clamp(1rem, 2.2vh, 3rem) !important;
 }
@@ -361,11 +353,6 @@ a:hover { text-decoration: underline; }
     min-height: clamp(2.55rem, 4.4vh, 2.95rem);
     padding-top: clamp(0.5rem, 0.95vh, 0.72rem) !important;
     padding-bottom: clamp(0.5rem, 0.95vh, 0.72rem) !important;
-  }
-
-  .home-page #pdf-card-dropzone {
-    padding-top: clamp(0.4rem, 0.7vh, 0.65rem);
-    padding-bottom: clamp(0.4rem, 0.7vh, 0.65rem);
   }
 
   .home-page .home-powered-section .gap-10 {

@@ -41,6 +41,15 @@ class HomePageTests(SocialAppTestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
 
+    def test_home_cards_do_not_render_pdf_dropzone_or_dblp_login_prompt(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Extraer citas")
+        self.assertContains(response, "Explorar DBLP")
+        self.assertNotContains(response, "Arrastra un PDF")
+        self.assertNotContains(response, "Inicia sesión para añadir tu DBLP")
+
 
 class LoggedInTestCase(SocialAppTestCase):
     def setUp(self):

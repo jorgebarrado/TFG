@@ -109,6 +109,68 @@ class DBLPLoadingIndicatorTests(TestCase):
         self.assertContains(response, "No se pudo conectar con DBLP.")
         self.assertNotContains(response, "No hemos encontrado articulos en DBLP.")
 
+    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
+    @patch("citations.views.tutor_views.get_author_papers")
+    def test_citation_review_excludes_papers_without_citers(
+        self,
+        mock_get_author_papers,
+        mock_get_citation_counts_for_dois,
+    ):
+        mock_get_author_papers.return_value = [
+            {"title": "Without citers", "type": "article", "doi": "10.1000/none"},
+            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
+            {"title": "No DOI paper", "type": "article", "doi": ""},
+        ]
+        mock_get_citation_counts_for_dois.return_value = {
+            "10.1000/none": 0,
+            "10.1000/with": 3,
+        }
+
+        response = self.client.get(
+            reverse("citation_review_papers"),
+            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Has citers")
+        self.assertNotContains(response, "Without citers")
+        self.assertNotContains(response, "No DOI paper")
+        self.assertContains(response, reverse("citation_review_citers", args=[1]))
+        mock_get_citation_counts_for_dois.assert_called_once_with(
+            ["10.1000/none", "10.1000/with"]
+        )
+
+    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
+    @patch("citations.views.tutor_views.get_author_papers")
+    def test_citation_review_random_uses_only_papers_with_citers(
+        self,
+        mock_get_author_papers,
+        mock_get_citation_counts_for_dois,
+    ):
+        mock_get_author_papers.return_value = [
+            {"title": "Without citers", "type": "article", "doi": "10.1000/none"},
+            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
+        ]
+        mock_get_citation_counts_for_dois.return_value = {
+            "10.1000/none": 0,
+            "10.1000/with": 3,
+        }
+
+        response = self.client.get(
+            reverse("citation_review_random"),
+            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("citation_review_citers", args=[1])
+            + "?dblp_url=https://dblp.org/pid/t/TestAuthor.html",
+            fetch_redirect_response=False,
+        )
+        mock_get_citation_counts_for_dois.assert_called_once_with(
+            ["10.1000/none", "10.1000/with"]
+        )
+
     @patch("citations.views.user_views.get_citation_count")
     @patch("citations.views.user_views.get_author_papers")
     def test_switch_is_not_shown_after_articles_are_loaded(
