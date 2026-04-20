@@ -16,6 +16,10 @@ SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
 DOI_URL_RE = re.compile(r"^https?://(?:dx\.)?doi\.org/", re.IGNORECASE)
 CITATION_COUNT_CACHE_TIMEOUT = 24 * 60 * 60
 CITATION_COUNT_BATCH_SIZE = 100
+PAPER_ID_CACHE_TIMEOUT = 24 * 60 * 60
+PAPER_METADATA_CACHE_TIMEOUT = 24 * 60 * 60
+WORK_BY_DOI_CACHE_TIMEOUT = 24 * 60 * 60
+CITING_PAPERS_CACHE_TIMEOUT = 60 * 60
 
 
 class SemanticScholarError(RuntimeError):
@@ -65,6 +69,26 @@ def _response_error_detail(response: requests.Response) -> str:
 def _citation_count_cache_key(normalized_doi: str) -> str:
     digest = sha1(normalized_doi.encode("utf-8")).hexdigest()
     return f"semantic_scholar:citation_count:{digest}"
+
+
+def _paper_id_cache_key(normalized_doi: str) -> str:
+    digest = sha1(normalized_doi.encode("utf-8")).hexdigest()
+    return f"semantic_scholar:paper_id:{digest}"
+
+
+def _paper_metadata_cache_key(normalized_doi: str) -> str:
+    digest = sha1(normalized_doi.encode("utf-8")).hexdigest()
+    return f"semantic_scholar:paper_metadata:{digest}"
+
+
+def _work_by_doi_cache_key(normalized_doi: str) -> str:
+    digest = sha1(normalized_doi.encode("utf-8")).hexdigest()
+    return f"semantic_scholar:work_by_doi:{digest}"
+
+
+def _citing_papers_page_cache_key(paper_id: str, limit: int, offset: int) -> str:
+    digest = sha1(f"{paper_id}:{limit}:{offset}".encode("utf-8")).hexdigest()
+    return f"semantic_scholar:citing_papers:{digest}"
 
 
 def _normalize_authors(raw_authors: Any) -> List[str]:
@@ -264,6 +288,11 @@ def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
     if not normalized_doi:
         return None
 
+    cache_key = _work_by_doi_cache_key(normalized_doi)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_identifier}"
     fields = (
         "title,year,venue,externalIds,authors.name,url,"
@@ -313,6 +342,7 @@ def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
 
     work["references"] = references
     work["citations"] = citations
+    cache.set(cache_key, work, WORK_BY_DOI_CACHE_TIMEOUT)
     return work
 
 
@@ -321,6 +351,11 @@ def get_paper_metadata_by_doi(doi: str, timeout: int = 15) -> Optional[Dict[str,
     normalized_doi, paper_identifier = _doi_paper_identifier(doi)
     if not normalized_doi:
         return None
+
+    cache_key = _paper_metadata_cache_key(normalized_doi)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
 
     url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_identifier}"
     session = build_external_api_session()
@@ -352,6 +387,7 @@ def get_paper_metadata_by_doi(doi: str, timeout: int = 15) -> Optional[Dict[str,
     paper = _normalize_paper_item(data, source="semantic_scholar")
     paper["doi"] = paper.get("doi") or normalized_doi
     paper["citation_count"] = data.get("citationCount", 0)
+    cache.set(cache_key, paper, PAPER_METADATA_CACHE_TIMEOUT)
     return paper
 
 
@@ -365,38 +401,48 @@ def get_citing_papers_for_doi_paginated(
     if not normalized_doi:
         raise ValueError("El DOI no puede estar vacio.")
 
-    paper_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_identifier}"
+    paper_id_cache_key = _paper_id_cache_key(normalized_doi)
+    paper_id: Optional[str] = cache.get(paper_id_cache_key)
+
     session = build_external_api_session()
-    try:
-        paper_response = session.get(
-            paper_url,
-            headers=_build_headers(),
-            params={"fields": "paperId"},
-            timeout=15,
-        )
-    except requests.RequestException as exc:
-        raise SemanticScholarError(
-            f"Error de conexion con Semantic Scholar: {exc}"
-        ) from exc
-
-    if paper_response.status_code == 404:
-        raise SemanticScholarError(f"No se ha encontrado ningun paper con DOI '{normalized_doi}'.")
-    if paper_response.status_code == 429:
-        raise SemanticScholarError(
-            "Rate limit en Semantic Scholar al resolver el paper. Espera unos segundos e intentalo de nuevo."
-        )
-    if paper_response.status_code != 200:
-        detail = _response_error_detail(paper_response)
-        suffix = f": {detail}" if detail else "."
-        raise SemanticScholarError(
-            f"Error en la API de Semantic Scholar al resolver el paper (HTTP {paper_response.status_code}){suffix}"
-        )
-
-    paper_id = (paper_response.json() or {}).get("paperId")
     if not paper_id:
-        raise SemanticScholarError(
-            "No se pudo resolver el paperId en Semantic Scholar."
-        )
+        paper_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_identifier}"
+        try:
+            paper_response = session.get(
+                paper_url,
+                headers=_build_headers(),
+                params={"fields": "paperId"},
+                timeout=15,
+            )
+        except requests.RequestException as exc:
+            raise SemanticScholarError(
+                f"Error de conexion con Semantic Scholar: {exc}"
+            ) from exc
+
+        if paper_response.status_code == 404:
+            raise SemanticScholarError(f"No se ha encontrado ningun paper con DOI '{normalized_doi}'.")
+        if paper_response.status_code == 429:
+            raise SemanticScholarError(
+                "Rate limit en Semantic Scholar al resolver el paper. Espera unos segundos e intentalo de nuevo."
+            )
+        if paper_response.status_code != 200:
+            detail = _response_error_detail(paper_response)
+            suffix = f": {detail}" if detail else "."
+            raise SemanticScholarError(
+                f"Error en la API de Semantic Scholar al resolver el paper (HTTP {paper_response.status_code}){suffix}"
+            )
+
+        paper_id = (paper_response.json() or {}).get("paperId")
+        if not paper_id:
+            raise SemanticScholarError(
+                "No se pudo resolver el paperId en Semantic Scholar."
+            )
+        cache.set(paper_id_cache_key, paper_id, PAPER_ID_CACHE_TIMEOUT)
+
+    page_cache_key = _citing_papers_page_cache_key(paper_id, limit, offset)
+    cached_page = cache.get(page_cache_key)
+    if cached_page is not None:
+        return cached_page
 
     citations_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_id}/citations"
     fields = (
@@ -459,4 +505,6 @@ def get_citing_papers_for_doi_paginated(
             }
         )
 
-    return citing_papers, next_page_offset
+    result = (citing_papers, next_page_offset)
+    cache.set(page_cache_key, result, CITING_PAPERS_CACHE_TIMEOUT)
+    return result
