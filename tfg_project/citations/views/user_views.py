@@ -21,6 +21,7 @@ from ..models import (
 from ..services.dblp_client import DBLPClientError, get_author_papers
 from ..services.semantic_scholar_client import (
     SemanticScholarError,
+    get_citation_counts_for_dois,
     get_citing_papers_for_doi_paginated,
     get_paper_metadata_by_doi,
 )
@@ -170,13 +171,45 @@ def dblp_articles_view(request):
     que el paper_id sea consistente y podamos lanzar la revisión directamente
     desde la búsqueda en DBLP.
     """
+    has_dblp_url_param = "dblp_url" in request.GET
     dblp_url = request.GET.get("dblp_url", "").strip()
-    if not dblp_url and request.user.is_authenticated:
+    include_without_citations_raw = request.GET.get("include_without_citations")
+    if include_without_citations_raw is None:
+        include_without_citations = True
+    else:
+        include_without_citations = include_without_citations_raw.lower() in {
+            "1",
+            "true",
+            "on",
+            "yes",
+        }
+
+    saved_dblp_url = ""
+    if request.user.is_authenticated:
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        dblp_url = profile.dblp_url or ""
+        saved_dblp_url = profile.dblp_url or ""
+
+    if not has_dblp_url_param:
+        return render(
+            request,
+            "citations/dblp_articles.html",
+            {
+                "dblp_url": saved_dblp_url,
+                "show_dblp_form": True,
+                "include_without_citations": include_without_citations,
+            },
+        )
 
     if not dblp_url:
-        return render(request, "citations/dblp_articles.html", {"dblp_url": "", "show_dblp_form": True})
+        return render(
+            request,
+            "citations/dblp_articles.html",
+            {
+                "dblp_url": "",
+                "show_dblp_form": True,
+                "include_without_citations": include_without_citations,
+            },
+        )
 
     try:
         all_articles = get_author_papers(dblp_url)
@@ -191,6 +224,18 @@ def dblp_articles_view(request):
     busqueda = request.GET.get("q", "").strip().lower()
     tipos_disponibles = sorted({a.get("type") for a in all_articles if a.get("type")})
 
+    citation_filter_error = None
+
+    def _attach_citation_data(article, citation_counts=None):
+        doi = article.get("doi")
+        article["can_review_citers"] = bool(doi)
+        if not doi:
+            article["citation_count"] = 0
+        elif citation_counts is not None:
+            article["citation_count"] = citation_counts.get(str(doi).strip(), 0)
+        else:
+            article["citation_count"] = get_citation_count(doi)
+
     articles = all_articles
     if tipo:
         articles = [a for a in articles if a.get("type") == tipo]
@@ -198,14 +243,29 @@ def dblp_articles_view(request):
         articles = [
             a for a in articles if busqueda in (a.get("title") or "").lower()
         ]
+    if not include_without_citations:
+        citation_counts = {}
+        try:
+            citation_counts = get_citation_counts_for_dois(
+                [a.get("doi") for a in articles if a.get("doi")]
+            )
+        except SemanticScholarError as exc:
+            citation_filter_error = str(exc)
+
+        filtered_articles = []
+        for article in articles:
+            _attach_citation_data(article, citation_counts)
+            if article["citation_count"] > 0:
+                filtered_articles.append(article)
+        articles = filtered_articles
 
     paginator = Paginator(articles, 10)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
 
     for article in page:
-        article["can_review_citers"] = bool(article.get("doi"))
-        article["citation_count"] = get_citation_count(article["doi"]) if article.get("doi") else 0
+        if "citation_count" not in article or "can_review_citers" not in article:
+            _attach_citation_data(article)
 
     context = {
         "articles": page,
@@ -213,6 +273,8 @@ def dblp_articles_view(request):
         "tipo_actual": tipo,
         "tipos_disponibles": tipos_disponibles,
         "busqueda": busqueda,
+        "include_without_citations": include_without_citations,
+        "citation_filter_error": citation_filter_error,
     }
     return render(request, "citations/dblp_articles.html", context)
 

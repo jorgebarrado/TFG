@@ -2,6 +2,12 @@ import xml.etree.ElementTree as ET
 
 import requests
 
+from .services.external_api import build_external_api_session
+from .services.semantic_scholar_client import (
+    SemanticScholarError,
+    get_citation_counts_for_dois,
+)
+
 
 def get_articles_from_dblp(dblp_url):
     """Obtiene la lista de publicaciones de un autor desde su perfil de DBLP.
@@ -16,6 +22,7 @@ def get_articles_from_dblp(dblp_url):
             Retorna una lista vacía si ocurre un error.
     """
     try:
+        session = build_external_api_session()
         # Convertir la URL HTML en URL XML
         if dblp_url.endswith(".html"):
             dblp_xml_url = dblp_url.replace(".html", ".xml")
@@ -24,7 +31,7 @@ def get_articles_from_dblp(dblp_url):
         else:
             return []
 
-        response = requests.get(dblp_xml_url, timeout=10)
+        response = session.get(dblp_xml_url, timeout=10)
         response.raise_for_status()
 
         root = ET.fromstring(response.content)
@@ -78,7 +85,8 @@ def get_citing_articles(doi):
             "citations.title,citations.authors,"
             "citations.year,citations.doi,citations.url"
         )
-        response = requests.get(url, headers=headers, timeout=10)
+        session = build_external_api_session()
+        response = session.get(url, headers=headers, timeout=10)
 
         if response.status_code != 200:
             return []
@@ -122,7 +130,8 @@ def check_doi_has_citations(doi):
             f"{doi}"
             "?fields=citationCount"
         )
-        response = requests.get(url, headers=headers, timeout=10)
+        session = build_external_api_session()
+        response = session.get(url, headers=headers, timeout=10)
 
         print("→ Consultando DOI:", doi)
         print("→ Código de estado:", response.status_code)
@@ -151,19 +160,7 @@ def get_citation_count(doi):
             artículo, no tiene citas o hay un error en la solicitud.
     """
     try:
-        headers = {"User-Agent": "Django-App"}
-        url = (
-            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
-            f"{doi}"
-            "?fields=citationCount"
-        )
-        response = requests.get(url, headers=headers, timeout=10)
-
-        if response.status_code != 200:
-            return 0
-
-        data = response.json()
-        return data.get("citationCount", 0)
-    except Exception as e:
+        return get_citation_counts_for_dois([doi]).get(str(doi or "").strip(), 0)
+    except (SemanticScholarError, ValueError, TypeError) as e:
         print(f"Error al obtener citationCount para {doi}: {e}")
         return 0
