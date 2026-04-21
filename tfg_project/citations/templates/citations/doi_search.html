@@ -115,7 +115,8 @@
                 </div>
                 <div class="d-flex flex-column gap-2 text-md-end">
                   <button type="button"
-                          class="btn btn-primary js-open-report"
+                          class="btn btn-primary js-open-report flex-shrink-0" 
+                          style="white-space:nowrap;"
                           data-original-doi="{{ doi }}"
                           data-incorrect-doi="{{ citing.doi|default:'' }}"
                           data-original-metadata="{{ paper_metadata_json|escapejs }}"
