@@ -8,11 +8,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
+    && apt-get install -y --no-install-recommends build-essential git \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/requirements.txt
+ARG TARGETARCH
 RUN python - <<'PY'
+import os
 from pathlib import Path
 
 raw = Path("/tmp/requirements.txt").read_bytes()
@@ -25,10 +27,18 @@ for enc in ("utf-8-sig", "utf-16", "utf-16-le"):
 else:
     text = raw.decode("latin-1")
 
-lines = [
-    line for line in text.splitlines()
-    if not line.strip().lower().startswith("pywin32==")
-]
+target_arch = os.environ.get("TARGETARCH", "")
+lines = []
+for line in text.splitlines():
+    stripped = line.strip()
+    lower = stripped.lower()
+    if lower.startswith("pywin32=="):
+        continue
+    # PyTorch's ARM Linux index omits the +cpu local tag for some companion wheels.
+    if target_arch == "arm64" and stripped.endswith("+cpu"):
+        if lower.startswith("torchaudio==") or lower.startswith("torchvision=="):
+            line = line.replace("+cpu", "")
+    lines.append(line)
 
 Path("/tmp/requirements.linux.txt").write_text(
     "\n".join(lines) + "\n",
