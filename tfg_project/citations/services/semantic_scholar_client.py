@@ -91,6 +91,13 @@ def _citing_papers_page_cache_key(paper_id: str, limit: int, offset: int) -> str
     return f"semantic_scholar:citing_papers:{digest}"
 
 
+def _citing_papers_doi_page_cache_key(
+    normalized_doi: str, limit: int, offset: int
+) -> str:
+    digest = sha1(f"{normalized_doi}:{limit}:{offset}".encode("utf-8")).hexdigest()
+    return f"semantic_scholar:citing_papers_by_doi:{digest}"
+
+
 def _normalize_authors(raw_authors: Any) -> List[str]:
     if not isinstance(raw_authors, list):
         return []
@@ -144,28 +151,42 @@ def get_citation_counts_for_dois(
         doi: _citation_count_cache_key(doi)
         for doi in normalized_dois
     }
+    paper_id_key_by_doi = {
+        doi: _paper_id_cache_key(doi)
+        for doi in normalized_dois
+    }
     cached_values = cache.get_many(key_by_doi.values())
+    cached_paper_ids = cache.get_many(paper_id_key_by_doi.values())
     counts_by_doi: Dict[str, int] = {}
-    missing_dois: List[str] = []
+    lookup_dois: List[str] = []
+    lookup_seen: set[str] = set()
+
+    def _add_lookup_doi(doi: str) -> None:
+        if doi not in lookup_seen:
+            lookup_dois.append(doi)
+            lookup_seen.add(doi)
 
     for doi in normalized_dois:
         cache_key = key_by_doi[doi]
         if cache_key in cached_values:
-            counts_by_doi[doi] = int(cached_values[cache_key] or 0)
+            citation_count = int(cached_values[cache_key] or 0)
+            counts_by_doi[doi] = citation_count
+            if citation_count > 0 and paper_id_key_by_doi[doi] not in cached_paper_ids:
+                _add_lookup_doi(doi)
         else:
-            missing_dois.append(doi)
+            _add_lookup_doi(doi)
 
-    if missing_dois:
+    if lookup_dois:
         session = build_external_api_session()
         url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/batch"
 
-        for start in range(0, len(missing_dois), CITATION_COUNT_BATCH_SIZE):
-            chunk = missing_dois[start:start + CITATION_COUNT_BATCH_SIZE]
+        for start in range(0, len(lookup_dois), CITATION_COUNT_BATCH_SIZE):
+            chunk = lookup_dois[start:start + CITATION_COUNT_BATCH_SIZE]
             try:
                 response = session.post(
                     url,
                     headers=_build_headers(),
-                    params={"fields": "externalIds,citationCount"},
+                    params={"fields": "paperId,externalIds,citationCount"},
                     json={"ids": [f"DOI:{doi}" for doi in chunk]},
                     timeout=timeout,
                 )
@@ -192,15 +213,20 @@ def get_citation_counts_for_dois(
             values_to_cache = {}
             for index, doi in enumerate(chunk):
                 item = items[index] if index < len(items) else None
-                citation_count = 0
+                has_cached_count = doi in counts_by_doi
+                citation_count = counts_by_doi.get(doi, 0)
                 if isinstance(item, dict):
                     try:
                         citation_count = int(item.get("citationCount") or 0)
                     except (TypeError, ValueError):
                         citation_count = 0
+                    paper_id = str(item.get("paperId") or "").strip()
+                    if paper_id:
+                        values_to_cache[_paper_id_cache_key(doi)] = paper_id
 
                 counts_by_doi[doi] = citation_count
-                values_to_cache[key_by_doi[doi]] = citation_count
+                if not has_cached_count or isinstance(item, dict):
+                    values_to_cache[key_by_doi[doi]] = citation_count
 
             if values_to_cache:
                 cache.set_many(values_to_cache, CITATION_COUNT_CACHE_TIMEOUT)
@@ -401,6 +427,9 @@ def get_citing_papers_for_doi_paginated(
     if not normalized_doi:
         raise ValueError("El DOI no puede estar vacio.")
 
+    doi_page_cache_key = _citing_papers_doi_page_cache_key(
+        normalized_doi, limit, offset
+    )
     paper_id_cache_key = _paper_id_cache_key(normalized_doi)
     paper_id: Optional[str] = cache.get(paper_id_cache_key)
 
@@ -422,6 +451,9 @@ def get_citing_papers_for_doi_paginated(
         if paper_response.status_code == 404:
             raise SemanticScholarError(f"No se ha encontrado ningun paper con DOI '{normalized_doi}'.")
         if paper_response.status_code == 429:
+            cached_page = cache.get(doi_page_cache_key)
+            if cached_page is not None:
+                return cached_page
             raise SemanticScholarError(
                 "Rate limit en Semantic Scholar al resolver el paper. Espera unos segundos e intentalo de nuevo."
             )
@@ -442,6 +474,7 @@ def get_citing_papers_for_doi_paginated(
     page_cache_key = _citing_papers_page_cache_key(paper_id, limit, offset)
     cached_page = cache.get(page_cache_key)
     if cached_page is not None:
+        cache.set(doi_page_cache_key, cached_page, CITING_PAPERS_CACHE_TIMEOUT)
         return cached_page
 
     citations_url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_id}/citations"
@@ -472,6 +505,9 @@ def get_citing_papers_for_doi_paginated(
         ) from exc
 
     if response.status_code == 429:
+        cached_page = cache.get(doi_page_cache_key)
+        if cached_page is not None:
+            return cached_page
         raise SemanticScholarError(
             "Rate limit en Semantic Scholar al cargar citantes. Espera unos segundos e intentalo de nuevo."
         )
@@ -506,5 +542,11 @@ def get_citing_papers_for_doi_paginated(
         )
 
     result = (citing_papers, next_page_offset)
-    cache.set(page_cache_key, result, CITING_PAPERS_CACHE_TIMEOUT)
+    cache.set_many(
+        {
+            page_cache_key: result,
+            doi_page_cache_key: result,
+        },
+        CITING_PAPERS_CACHE_TIMEOUT,
+    )
     return result

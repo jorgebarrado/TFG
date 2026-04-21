@@ -90,11 +90,62 @@ class SemanticScholarClientTests(SimpleTestCase):
         session.get.assert_called_once()
 
     @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_paginated_citations_uses_cached_doi_page_when_resolver_is_rate_limited(
+        self,
+        mock_session_factory,
+    ):
+        session = mock_session_factory.return_value
+        session.get.side_effect = [
+            _response(payload={"paperId": "abc123"}),
+            _response(
+                payload={
+                    "data": [
+                        {
+                            "citingPaper": {
+                                "title": "Cached citing paper",
+                                "year": 2024,
+                                "externalIds": {"DOI": "10.1000/citing"},
+                                "authors": [{"name": "Ada"}],
+                                "url": "https://www.semanticscholar.org/paper/cached",
+                            },
+                            "contexts": ["cached context"],
+                        }
+                    ],
+                    "next": None,
+                }
+            ),
+        ]
+        first_result = semantic_scholar_client.get_citing_papers_for_doi_paginated(
+            "10.1000/original",
+            limit=10,
+            offset=0,
+        )
+        cache.delete(semantic_scholar_client._paper_id_cache_key("10.1000/original"))
+
+        session.get.reset_mock()
+        session.get.side_effect = None
+        session.get.return_value = _response(status_code=429)
+
+        cached_result = semantic_scholar_client.get_citing_papers_for_doi_paginated(
+            "10.1000/original",
+            limit=10,
+            offset=0,
+        )
+
+        self.assertEqual(cached_result, first_result)
+        self.assertEqual(cached_result[0][0]["title"], "Cached citing paper")
+        session.get.assert_called_once()
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
     def test_citation_counts_use_batch_request_and_cache(self, mock_session_factory):
         session = mock_session_factory.return_value
         session.post.return_value = _response(
             payload=[
-                {"externalIds": {"DOI": "10.1000/with"}, "citationCount": 7},
+                {
+                    "paperId": "paper-with",
+                    "externalIds": {"DOI": "10.1000/with"},
+                    "citationCount": 7,
+                },
                 None,
             ]
         )
@@ -114,4 +165,96 @@ class SemanticScholarClientTests(SimpleTestCase):
         self.assertEqual(
             session.post.call_args.kwargs["json"],
             {"ids": ["DOI:10.1000/with", "DOI:10.1000/none"]},
+        )
+        self.assertEqual(
+            session.post.call_args.kwargs["params"],
+            {"fields": "paperId,externalIds,citationCount"},
+        )
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_citation_counts_cache_paper_id_for_paginated_citations(
+        self,
+        mock_session_factory,
+    ):
+        session = mock_session_factory.return_value
+        session.post.return_value = _response(
+            payload=[
+                {
+                    "paperId": "resolved-paper-id",
+                    "externalIds": {"DOI": "10.1000/with"},
+                    "citationCount": 7,
+                },
+            ]
+        )
+
+        semantic_scholar_client.get_citation_counts_for_dois(["10.1000/with"])
+
+        self.assertEqual(
+            cache.get(semantic_scholar_client._paper_id_cache_key("10.1000/with")),
+            "resolved-paper-id",
+        )
+
+        session.get.return_value = _response(
+            payload={
+                "data": [
+                    {
+                        "citingPaper": {
+                            "title": "Citing paper",
+                            "year": 2024,
+                            "externalIds": {"DOI": "10.1000/citing"},
+                            "authors": [{"name": "Ada"}],
+                            "url": "https://www.semanticscholar.org/paper/citing",
+                        },
+                        "contexts": ["cites the original paper"],
+                    }
+                ],
+                "next": None,
+            }
+        )
+
+        citing_papers, next_offset = (
+            semantic_scholar_client.get_citing_papers_for_doi_paginated(
+                "10.1000/with"
+            )
+        )
+
+        self.assertEqual(session.get.call_count, 1)
+        self.assertEqual(
+            session.get.call_args.args[0],
+            "https://api.semanticscholar.org/graph/v1/paper/resolved-paper-id/citations",
+        )
+        self.assertEqual(citing_papers[0]["title"], "Citing paper")
+        self.assertIsNone(next_offset)
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_citation_counts_backfill_missing_paper_id_when_count_is_cached(
+        self,
+        mock_session_factory,
+    ):
+        cache.set(
+            semantic_scholar_client._citation_count_cache_key("10.1000/with"),
+            7,
+        )
+        session = mock_session_factory.return_value
+        session.post.return_value = _response(
+            payload=[
+                {
+                    "paperId": "backfilled-paper-id",
+                    "externalIds": {"DOI": "10.1000/with"},
+                    "citationCount": 7,
+                },
+            ]
+        )
+
+        counts = semantic_scholar_client.get_citation_counts_for_dois(["10.1000/with"])
+
+        self.assertEqual(counts["10.1000/with"], 7)
+        self.assertEqual(
+            cache.get(semantic_scholar_client._paper_id_cache_key("10.1000/with")),
+            "backfilled-paper-id",
+        )
+        session.post.assert_called_once()
+        self.assertEqual(
+            session.post.call_args.kwargs["json"],
+            {"ids": ["DOI:10.1000/with"]},
         )
