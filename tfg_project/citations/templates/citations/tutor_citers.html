@@ -94,14 +94,14 @@
                   </div>
                 {% endif %}
               </div>
-              <div class="d-flex flex-column gap-2 text-md-end">
+              <div class="d-flex flex-column gap-2 text-md-end align-self-start">
                 {% if citing.is_reported %}
                   <a href="{% url 'citation_detail' citing.report_id %}" class="btn btn-outline-success">
                     {% trans "Ver reporte" %}
                   </a>
                 {% else %}
                   <button type="button"
-                          class="btn btn-primary js-open-report"
+                          class="btn btn-primary js-open-report flex-shrink-0" style="white-space:nowrap;"
                           data-original-doi="{{ paper.doi|default:'' }}"
                           data-incorrect-doi="{{ citing.doi|default:'' }}"
                           data-original-metadata="{{ paper.metadata_json|escapejs }}"
