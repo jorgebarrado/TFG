@@ -62,8 +62,13 @@ class LoggedInTestCase(SocialAppTestCase):
             author=self.user1,
             doi_original="10.1000/orig1",
             doi_incorrect="10.1000/inc1",
+            incorrect_reason="Motivo inicial user1",
             citation_type="misinterpretation",
             publication_area="CIS",
+            metadata_original={
+                "title_override": "Quantum citations report",
+                "author": [{"given": "Ada", "family": "Lovelace"}],
+            },
         )
         self.comment1 = Comment.objects.create(
             citation=self.report1, author=self.user1, content="Comentario de user1"
@@ -77,6 +82,7 @@ class LoggedInTestCase(SocialAppTestCase):
             author=self.user2,
             doi_original="10.1000/orig2",
             doi_incorrect="10.1000/inc2",
+            incorrect_reason="Motivo inicial user2",
             citation_type="not said",
             publication_area="ENG",
         )
@@ -86,6 +92,36 @@ class PageLoadTests(LoggedInTestCase):
     def test_citation_list_loads(self):
         response = self.client.get(reverse("citation_list"))
         self.assertEqual(response.status_code, 200)
+
+    def test_citation_list_filters_by_search_term(self):
+        response = self.client.get(reverse("citation_list"), {"q": "Quantum"})
+
+        self.assertEqual(response.status_code, 200)
+        citation_ids = {
+            citation.id for citation in response.context["citations"].object_list
+        }
+        self.assertIn(self.report1.id, citation_ids)
+        self.assertNotIn(self.report2.id, citation_ids)
+
+    def test_citation_list_filters_by_publication_area(self):
+        response = self.client.get(reverse("citation_list"), {"area": "CIS"})
+
+        self.assertEqual(response.status_code, 200)
+        citation_ids = {
+            citation.id for citation in response.context["citations"].object_list
+        }
+        self.assertEqual(citation_ids, {self.report1.id})
+
+    def test_citation_list_filters_by_citation_type(self):
+        response = self.client.get(
+            reverse("citation_list"), {"ctype": "misinterpretation"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        citation_ids = {
+            citation.id for citation in response.context["citations"].object_list
+        }
+        self.assertEqual(citation_ids, {self.report1.id})
 
     def test_citation_detail_loads(self):
         response = self.client.get(reverse("citation_detail", args=[self.report1.id]))
@@ -130,6 +166,7 @@ class ReportTests(TestCase):
                 "doi_original": "10.1000/xyz123",
                 "doi_incorrect": "10.1000/abc456",
                 "incorrect_reason": "Mal interpretación.",
+                "report_title": "Reporte de prueba",
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },
@@ -167,6 +204,7 @@ class ReportEditTests(LoggedInTestCase):
         response = self.client.post(
             reverse("citation_edit", args=[self.report1.id]),
             {
+                "report_title": "Titulo actualizado por el autor",
                 "doi_original": self.report1.doi_original,
                 "doi_incorrect": self.report1.doi_incorrect,
                 "incorrect_reason": "Motivo actualizado por el autor",
@@ -189,6 +227,7 @@ class ReportEditTests(LoggedInTestCase):
         response = self.client.post(
             reverse("citation_edit", args=[self.report1.id]),
             {
+                "report_title": "Titulo actualizado por admin",
                 "doi_original": self.report1.doi_original,
                 "doi_incorrect": self.report1.doi_incorrect,
                 "incorrect_reason": "Motivo actualizado por admin",
@@ -420,6 +459,7 @@ class ApiViewTests(LoggedInTestCase):
                 "doi_original": "10.1000/new_orig",
                 "doi_incorrect": "10.1000/new_inc",
                 "incorrect_reason": "Razón de prueba",
+                "report_title": "Reporte AJAX de prueba",
                 "citation_type": "misinterpretation",
                 "publication_area": "CIS",
             },

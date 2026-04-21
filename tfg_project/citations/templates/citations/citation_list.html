@@ -46,37 +46,45 @@
       <span class="pill"><i class="fa-solid fa-sliders"></i> {% trans "Filtros" %}</span>
       <small class="text-muted">{% trans "Refina la tabla en tiempo real" %}</small>
     </div>
-    <form class="row g-3" method="get">
-      <div class="col-lg-5">
+    <form id="reportFiltersForm" class="row g-3 align-items-end" method="get">
+      <div class="col-lg-4">
         <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, título o autor" %}</label>
         <input id="searchInput" type="text"
+              name="q"
               class="form-control"
+              value="{{ request.GET.q|default:'' }}"
               placeholder="{% trans 'Buscar DOI, título o autor' %}">
       </div>
 
-      <div class="col-lg-3">
+      <div class="col-lg-2">
         <label class="form-label small text-muted" for="areaFilter">{% trans "Área" %}</label>
-        <select id="areaFilter" class="form-select">
+        <select id="areaFilter" name="area" class="form-select">
           <option value="">{% trans "Todas" %}</option>
           {% for code,label in areas %}
-            <option value="{{ label }}">{{ label }}</option>
+            <option value="{{ code }}"
+                    {% if request.GET.area == code %}selected{% endif %}>
+              {{ label }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <div class="col-lg-2">
         <label class="form-label small text-muted" for="typeFilter">{% trans "Tipo" %}</label>
-        <select id="typeFilter" class="form-select">
+        <select id="typeFilter" name="ctype" class="form-select">
           <option value="">{% trans "Todos" %}</option>
           {% for code,label in citation_types %}
-            <option value="{{ label }}">{{ label }}</option>
+            <option value="{{ code }}"
+                    {% if request.GET.ctype == code %}selected{% endif %}>
+              {{ label }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <div class="col-lg-2">
         <label class="form-label small text-muted" for="yearFilter">{% trans "Año" %}</label>
-        <select id="yearFilter" class="form-select">
+        <select id="yearFilter" name="year" class="form-select">
           <option value=""
                   {% if not request.GET.year %}selected{% endif %}>
               {% trans "Todos" %}
@@ -91,101 +99,110 @@
         </select>
 
       </div>
+
+      <div class="col-lg-2">
+        <button id="clearReportFilters" type="button" class="btn btn-outline-secondary w-100">
+          <i class="fa-solid fa-filter-circle-xmark me-1"></i>
+          {% trans "Borrar filtros" %}
+        </button>
+      </div>
     </form>
   </div>
 
-  {% if citations %}
-  <div class="table-modern">
-    <table id="citationsTable" class="table align-middle mb-0 table-redesign">
-      <thead>
-        <tr>
-          <th style="width: 40%;">{% trans "Reporte" %}</th>
-          <th style="width: 18%;">{% trans "Tipo de error" %}</th>
-          <th style="width: 12%; text-align: center;">{% trans "Votos" %}</th>
-          <th style="width: 15%;">{% trans "Fecha" %}</th>
-          <th style="width: 15%; text-align: right;">{% trans "Acciones" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in citations %}
-          <tr
-            data-area="{{ c.get_publication_area_display }}"
-            data-type="{{ c.get_citation_type_display }}"
-            data-year="{{ c.created_at|date:'Y' }}"
-            data-search="{{ c.author.username|default:'' }} {{ c.doi_original|default:'' }} {{ c.doi_incorrect|default:'' }} {{ c.report_title_display|default:'' }}">
-            <td>
-              <a href="{% url 'citation_detail' c.id %}" class="report-title">
-                {{ c.report_title_display }}
-              </a>
-              <div class="report-meta">
-                {% trans "por" %}
-                {% if c.author %}
-                  <a href="{% url 'profile' c.author.username %}">{{ c.author.username }}</a>
-                {% else %}
-                  {% trans "Anónimo" %}
-                {% endif %}
-                · <span class="badge-area">{{ c.get_publication_area_display|default:"—" }}</span>
-              </div>
-              <a href="#" class="report-doi doi-link" data-doi="{{ c.doi_original }}" title="{{ c.doi_original }}">
-                {% if c.doi_original %}
-                  {{ c.doi_original|cut:"https://doi.org/" }}
-                {% else %}
-                  —
-                {% endif %}
-              </a>
-            </td>
-
-            <td>
-              {% if c.citation_type == "misinterpretation" %}
-                <span class="badge-error badge-misinterpretation">{{ c.get_citation_type_display }}</span>
-              {% elif c.citation_type == "contextual misattribution" %}
-                <span class="badge-error badge-contextual">{{ c.get_citation_type_display }}</span>
-              {% elif c.citation_type %}
-                <span class="badge-error badge-not-said">{{ c.get_citation_type_display }}</span>
-              {% else %}
-                <span class="badge-error badge-not-said">—</span>
-              {% endif %}
-            </td>
-
-            <td class="text-center">
-              <div
-                id="vote-net-{{ c.id }}"
-                class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
-                <i class="bi bi-arrow-up-short"></i>
-                {% if c.net_votes > 0 %}+{% endif %}{{ c.net_votes|default:"0" }}
-              </div>
-            </td>
-
-            <td>
-              <span class="date-relative">{{ c.created_at|timesince }} {% trans "atrás" %}</span>
-              <span class="date-exact">{{ c.created_at|date:"d/m/Y" }}</span>
-            </td>
-
-            <td class="text-end">
-              <div class="d-inline-flex align-items-center gap-2">
-                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved %}
-                <a href="{% url 'citation_detail' c.id %}"
-                  class="btn-ver-new"
-                  hx-get="{% url 'citation_preview' c.id %}"
-                  hx-target="#citationPreviewModalContent"
-                  hx-swap="innerHTML"
-                  data-bs-toggle="modal"
-                  data-bs-target="#citationPreviewModal">
-                    {% trans "Ver" %}
-                </a>
-              </div>
-            </td>
+  <div id="reportListResults">
+    {% if citations %}
+    <div class="table-modern">
+      <table id="citationsTable" class="table align-middle mb-0 table-redesign">
+        <thead>
+          <tr>
+            <th style="width: 40%;">{% trans "Reporte" %}</th>
+            <th style="width: 18%;">{% trans "Tipo de error" %}</th>
+            <th style="width: 12%; text-align: center;">{% trans "Votos" %}</th>
+            <th style="width: 15%;">{% trans "Fecha" %}</th>
+            <th style="width: 15%; text-align: right;">{% trans "Acciones" %}</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          {% for c in citations %}
+            <tr
+              data-area-values="{{ c.publication_area_filter_values }}"
+              data-type-values="{{ c.citation_type_filter_values }}"
+              data-year="{{ c.created_at|date:'Y' }}"
+              data-search="{{ c.report_search_text }}">
+              <td>
+                <a href="{% url 'citation_detail' c.id %}" class="report-title">
+                  {{ c.report_title_display }}
+                </a>
+                <div class="report-meta">
+                  {% trans "por" %}
+                  {% if c.author %}
+                    <a href="{% url 'profile' c.author.username %}">{{ c.author.username }}</a>
+                  {% else %}
+                    {% trans "Anónimo" %}
+                  {% endif %}
+                  · <span class="badge-area">{{ c.get_publication_area_display|default:"—" }}</span>
+                </div>
+                <a href="#" class="report-doi doi-link" data-doi="{{ c.doi_original }}" title="{{ c.doi_original }}">
+                  {% if c.doi_original %}
+                    {{ c.doi_original|cut:"https://doi.org/" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </a>
+              </td>
 
-  {% else %}
-    <div class="alert alert-info text-center">
-        {% trans "No hay reportes aún." %}
+              <td>
+                {% if c.citation_type == "misinterpretation" %}
+                  <span class="badge-error badge-misinterpretation">{{ c.get_citation_type_display }}</span>
+                {% elif c.citation_type == "contextual misattribution" %}
+                  <span class="badge-error badge-contextual">{{ c.get_citation_type_display }}</span>
+                {% elif c.citation_type %}
+                  <span class="badge-error badge-not-said">{{ c.get_citation_type_display }}</span>
+                {% else %}
+                  <span class="badge-error badge-not-said">—</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <div
+                  id="vote-net-{{ c.id }}"
+                  class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
+                  <i class="bi bi-arrow-up-short"></i>
+                  {% if c.net_votes > 0 %}+{% endif %}{{ c.net_votes|default:"0" }}
+                </div>
+              </td>
+
+              <td>
+                <span class="date-relative">{{ c.created_at|timesince }} {% trans "atrás" %}</span>
+                <span class="date-exact">{{ c.created_at|date:"d/m/Y" }}</span>
+              </td>
+
+              <td class="text-end">
+                <div class="d-inline-flex align-items-center gap-2">
+                  {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved %}
+                  <a href="{% url 'citation_detail' c.id %}"
+                    class="btn-ver-new"
+                    hx-get="{% url 'citation_preview' c.id %}"
+                    hx-target="#citationPreviewModalContent"
+                    hx-swap="innerHTML"
+                    data-bs-toggle="modal"
+                    data-bs-target="#citationPreviewModal">
+                      {% trans "Ver" %}
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  {% endif %}
+
+    {% else %}
+      <div class="alert alert-info text-center">
+          {% trans "No hay reportes aún." %}
+      </div>
+    {% endif %}
+  </div>
 </div>
 
 {% endblock %}
@@ -195,67 +212,129 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(function () {
+(() => {
+  const filterForm = document.getElementById('reportFiltersForm');
+  if (!filterForm) return;
+
   const languageMap = {
     es: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
     en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
   };
   const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
-  const $tableEl = $('#citationsTable');
-  let table = null;
+  const searchInput = document.getElementById('searchInput');
+  const areaFilter = document.getElementById('areaFilter');
+  const typeFilter = document.getElementById('typeFilter');
+  const yearFilter = document.getElementById('yearFilter');
+  const clearFiltersButton = document.getElementById('clearReportFilters');
+  const selectFilters = [
+    areaFilter,
+    typeFilter,
+    yearFilter,
+  ].filter(Boolean);
+  let filterTimer = null;
+  let dataTable = null;
+  let activeRequest = null;
 
-  const filterState = {
-    search: '',
-    area: '',
-    type: '',
-    year: '',
-  };
+  const buildFilterUrl = () => {
+    const params = new URLSearchParams();
+    const search = (searchInput?.value || '').trim();
 
-  const matchesFilters = (row) => {
-    const searchText = (row.dataset.search || '').toLowerCase();
-    return (!filterState.search || searchText.includes(filterState.search))
-      && (!filterState.area || row.dataset.area === filterState.area)
-      && (!filterState.type || row.dataset.type === filterState.type)
-      && (!filterState.year || row.dataset.year === filterState.year);
-  };
-
-  if ($tableEl.length && $.fn.DataTable) {
-    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-      if (settings.nTable !== $tableEl.get(0)) {
-        return true;
-      }
-      const row = settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
-      return row ? matchesFilters(row) : true;
+    if (search) params.set('q', search);
+    selectFilters.forEach((select) => {
+      if (select.value) params.set(select.name, select.value);
     });
 
-    table = $tableEl.DataTable({
+    const query = params.toString();
+    return `${window.location.pathname}${query ? `?${query}` : ''}`;
+  };
+
+  const syncFilterUrl = (nextUrl) => {
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl && window.history?.replaceState) {
+      window.history.replaceState(null, '', nextUrl);
+    }
+  };
+
+  const destroyDataTable = () => {
+    if (dataTable) {
+      dataTable.destroy();
+      dataTable = null;
+    }
+  };
+
+  const initDataTable = () => {
+    const tableEl = document.getElementById('citationsTable');
+    if (!tableEl || !window.jQuery?.fn?.DataTable) return;
+
+    dataTable = window.jQuery(tableEl).DataTable({
       language: { url: languageMap[userLang] || languageMap.en },
       order: [],
       dom: 'lrtip',
       pageLength: 10
     });
-  }
-
-  const applyFilters = () => {
-    filterState.search = ($('#searchInput').val() || '').toLowerCase().trim();
-    filterState.area = $('#areaFilter').val() || '';
-    filterState.type = $('#typeFilter').val() || '';
-    filterState.year = $('#yearFilter').val() || '';
-
-    if (table) {
-      table.draw();
-      return;
-    }
-
-    document.querySelectorAll('.table-redesign tbody tr').forEach((row) => {
-      row.style.display = matchesFilters(row) ? '' : 'none';
-    });
   };
 
-  $('#searchInput').on('input', applyFilters);
-  $('#areaFilter, #typeFilter, #yearFilter').on('change', applyFilters);
-  applyFilters();
+  const loadFilteredResults = () => {
+    const nextUrl = buildFilterUrl();
+    syncFilterUrl(nextUrl);
 
+    if (activeRequest) {
+      activeRequest.abort();
+    }
+    activeRequest = new AbortController();
+
+    fetch(nextUrl, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      signal: activeRequest.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const nextResults = doc.getElementById('reportListResults');
+        const currentResults = document.getElementById('reportListResults');
+        if (!nextResults || !currentResults) return;
+
+        destroyDataTable();
+        currentResults.innerHTML = nextResults.innerHTML;
+        window.htmx?.process(currentResults);
+        initDataTable();
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          console.error('No se pudieron actualizar los filtros de reportes.', error);
+        }
+      });
+  };
+
+  const scheduleFilter = (delay) => {
+    window.clearTimeout(filterTimer);
+    filterTimer = window.setTimeout(loadFilteredResults, delay);
+  };
+
+  filterForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    loadFilteredResults();
+  });
+  searchInput?.addEventListener('input', () => scheduleFilter(250));
+  selectFilters.forEach((select) => {
+    select.addEventListener('change', loadFilteredResults);
+  });
+  clearFiltersButton?.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    selectFilters.forEach((select) => {
+      select.value = '';
+    });
+    loadFilteredResults();
+  });
+  initDataTable();
+})();
+</script>
+
+<script>
+$(function () {
   $(document).on('click', '.doi-link', function (e) {
     e.preventDefault();
     const doi = $(this).data('doi');

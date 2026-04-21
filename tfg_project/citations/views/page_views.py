@@ -137,6 +137,24 @@ def _extract_report_title(citation) -> str:
     return str(title or "").strip()
 
 
+def _metadata_author_search_text(*metadata_items: dict) -> str:
+    authors_text = []
+    for metadata in metadata_items:
+        authors = metadata.get("author") if isinstance(metadata, dict) else None
+        if isinstance(authors, list):
+            for author in authors:
+                if isinstance(author, dict):
+                    parts = [author.get("given"), author.get("family")]
+                    authors_text.append(
+                        " ".join(str(part or "").strip() for part in parts)
+                    )
+                else:
+                    authors_text.append(str(author or ""))
+        elif authors:
+            authors_text.append(str(authors))
+    return " ".join(part.strip() for part in authors_text if part and part.strip())
+
+
 def _set_report_title(citation, title_value: str) -> None:
     metadata = (
         citation.metadata_original
@@ -402,18 +420,29 @@ def citation_list(request):
         qs = qs.filter(
             Q(doi_original__icontains=q)
             | Q(doi_incorrect__icontains=q)
-            | Q(metadata__title__icontains=q)
-            | Q(metadata__authors__icontains=q)
+            | Q(incorrect_reason__icontains=q)
+            | Q(author__username__icontains=q)
+            | Q(metadata_original__title__icontains=q)
+            | Q(metadata_original__title_override__icontains=q)
+            | Q(metadata_original__author__icontains=q)
+            | Q(metadata_incorrect__title__icontains=q)
+            | Q(metadata_incorrect__author__icontains=q)
         )
 
-    area = request.GET.get("area")
-    ctype = request.GET.get("ctype")
-    year = request.GET.get("year")
+    area = (request.GET.get("area") or "").strip()
+    ctype = (request.GET.get("ctype") or "").strip()
+    year = (request.GET.get("year") or "").strip()
 
-    if area:
-        qs = qs.filter(publication_area=area)
-    if ctype:
-        qs = qs.filter(citation_type=ctype)
+    if area and area in PUBLICATION_AREA_LABELS:
+        qs = qs.filter(
+            Q(publication_area=area)
+            | Q(metadata_original__publication_area_tags__icontains=f'"{area}"')
+        )
+    if ctype and ctype in dict(CITATION_TYPE_CHOICES):
+        qs = qs.filter(
+            Q(citation_type=ctype)
+            | Q(metadata_original__citation_type_tags__icontains=f'"{ctype}"')
+        )
     if year and year.isdigit():
         qs = qs.filter(created_at__year=year)
 
@@ -441,9 +470,31 @@ def citation_list(request):
             )
 
     for citation in page_obj.object_list:
+        metadata_original = (
+            citation.metadata_original
+            if isinstance(citation.metadata_original, dict)
+            else {}
+        )
+        metadata_incorrect = (
+            citation.metadata_incorrect
+            if isinstance(citation.metadata_incorrect, dict)
+            else {}
+        )
         report_title = _extract_report_title(citation)
+        type_values, area_values = extract_report_tag_values(citation)
         citation.report_title_display = report_title or f"Reporte #{citation.id}"
         citation.is_saved = citation.id in saved_citation_ids
+        citation.citation_type_filter_values = "|".join(type_values)
+        citation.publication_area_filter_values = "|".join(area_values)
+        citation.report_search_text = " ".join(
+            [
+                citation.author.username if citation.author else "",
+                citation.doi_original or "",
+                citation.doi_incorrect or "",
+                citation.report_title_display,
+                _metadata_author_search_text(metadata_original, metadata_incorrect),
+            ]
+        )
 
     context = {
         "citations": page_obj,
