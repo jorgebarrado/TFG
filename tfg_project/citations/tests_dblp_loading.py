@@ -142,6 +142,29 @@ class DBLPLoadingIndicatorTests(TestCase):
 
     @patch("citations.views.tutor_views.get_citation_counts_for_dois")
     @patch("citations.views.tutor_views.get_author_papers")
+    def test_citation_review_random_link_preserves_dblp_url_for_anonymous(
+        self,
+        mock_get_author_papers,
+        mock_get_citation_counts_for_dois,
+    ):
+        mock_get_author_papers.return_value = [
+            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
+        ]
+        mock_get_citation_counts_for_dois.return_value = {"10.1000/with": 3}
+
+        response = self.client.get(
+            reverse("citation_review_papers"),
+            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            f'href="{reverse("citation_review_random")}?dblp_url=https%3A//dblp.org/pid/t/TestAuthor.html"',
+        )
+
+    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
+    @patch("citations.views.tutor_views.get_author_papers")
     def test_citation_review_random_uses_only_papers_with_citers(
         self,
         mock_get_author_papers,

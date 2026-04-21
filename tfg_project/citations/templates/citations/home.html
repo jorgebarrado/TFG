@@ -165,21 +165,6 @@
                   </p>
 
                   <div class="home-card-actions w-100 mt-auto">
-                      {% if user.is_authenticated %}
-                        <div class="home-card-panel border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
-                            <form method="post" class="d-flex flex-column gap-2">
-                              {% csrf_token %}
-                              {{ dblp_form.dblp_url }}
-                              {% if dblp_form.dblp_url.errors %}
-                                <div class="text-danger small">{{ dblp_form.dblp_url.errors }}</div>
-                              {% endif %}
-                              <button type="submit" name="update_dblp_home" class="home-card-btn btn btn-outline-success">
-                                {% trans "Guardar DBLP" %}
-                              </button>
-                            </form>
-                        </div>
-                      {% endif %}
-
                       <div class="d-flex flex-column gap-2">
                           <a href="{% url 'dblp_articles' %}" class="home-card-btn w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
                               <span>{% trans "Explorar DBLP" %}</span>
