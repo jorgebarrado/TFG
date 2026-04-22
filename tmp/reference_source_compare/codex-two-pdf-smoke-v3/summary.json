@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "timestamp": "2026-04-22T13:39:57.753461+00:00",
+    "output_dir": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\codex-two-pdf-smoke-v3",
+    "pdf_count": 2,
+    "crossref_allowed": false
+  },
+  "classification_counts": {
+    "stable_match": 1,
+    "structured_better": 1
+  },
+  "results": [
+    {
+      "pdf": "2017-CT-development-computational-thinking_RG.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\codex-two-pdf-smoke-v3\\2017-CT-development-computational-thinking_RG.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 37,
+      "structured_total": 37,
+      "references_total_delta": 0,
+      "base_max_reference_index": 37,
+      "structured_max_reference_index": 37,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 1,
+      "structured_suspicious_count": 0,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 97.3
+    },
+    {
+      "pdf": "JScientometRes-14-3-838.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\codex-two-pdf-smoke-v3\\JScientometRes-14-3-838.json",
+      "classification": "structured_better",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices",
+        "low_text_overlap"
+      ],
+      "base_total": 180,
+      "structured_total": 180,
+      "references_total_delta": 0,
+      "base_max_reference_index": 72,
+      "structured_max_reference_index": 72,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 47,
+      "structured_suspicious_count": 3,
+      "structured_fallback_count": 3,
+      "overlap_base_coverage_pct": 37.22
+    }
+  ]
+}

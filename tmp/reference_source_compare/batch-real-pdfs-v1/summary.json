@@ -1,0 +1,324 @@
+{
+  "metadata": {
+    "timestamp": "2026-04-22T14:23:13.789469+00:00",
+    "output_dir": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1",
+    "pdf_count": 16,
+    "crossref_allowed": false
+  },
+  "classification_counts": {
+    "contaminated_structured_output": 7,
+    "needs_manual_review": 2,
+    "stable_match": 5,
+    "structured_better": 2
+  },
+  "results": [
+    {
+      "pdf": "1610.06546v3.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\1610.06546v3.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 51,
+      "structured_total": 51,
+      "references_total_delta": 0,
+      "base_max_reference_index": 51,
+      "structured_max_reference_index": 51,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 0,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 92.16
+    },
+    {
+      "pdf": "1904.02703v3.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\1904.02703v3.json",
+      "classification": "structured_better",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices"
+      ],
+      "base_total": 54,
+      "structured_total": 54,
+      "references_total_delta": 0,
+      "base_max_reference_index": 97,
+      "structured_max_reference_index": 97,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 10,
+      "structured_suspicious_count": 2,
+      "structured_fallback_count": 2,
+      "overlap_base_coverage_pct": 79.63
+    },
+    {
+      "pdf": "2002.12508v3.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\2002.12508v3.json",
+      "classification": "needs_manual_review",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices"
+      ],
+      "base_total": 45,
+      "structured_total": 45,
+      "references_total_delta": 0,
+      "base_max_reference_index": 44,
+      "structured_max_reference_index": 44,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 4,
+      "structured_suspicious_count": 2,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 82.22
+    },
+    {
+      "pdf": "2017-CT-development-computational-thinking_RG.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\2017-CT-development-computational-thinking_RG.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 37,
+      "structured_total": 37,
+      "references_total_delta": 0,
+      "base_max_reference_index": 37,
+      "structured_max_reference_index": 37,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 1,
+      "structured_suspicious_count": 0,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 97.3
+    },
+    {
+      "pdf": "2023.emnlp-demo.45.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\2023.emnlp-demo.45.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "index_sets_differ",
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 6,
+      "structured_total": 6,
+      "references_total_delta": 0,
+      "base_max_reference_index": 6,
+      "structured_max_reference_index": 6,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 6,
+      "structured_fallback_count": 6,
+      "overlap_base_coverage_pct": 100.0
+    },
+    {
+      "pdf": "2103.02202v3.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\2103.02202v3.json",
+      "classification": "needs_manual_review",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices",
+        "low_text_overlap"
+      ],
+      "base_total": 29,
+      "structured_total": 29,
+      "references_total_delta": 0,
+      "base_max_reference_index": 30,
+      "structured_max_reference_index": 30,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 2,
+      "structured_suspicious_count": 3,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 68.97
+    },
+    {
+      "pdf": "2107.02194v2.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\2107.02194v2.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 13,
+      "structured_total": 13,
+      "references_total_delta": 0,
+      "base_max_reference_index": 13,
+      "structured_max_reference_index": 13,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 0,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 92.31
+    },
+    {
+      "pdf": "3772318.3791667.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\3772318.3791667.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 85,
+      "structured_total": 85,
+      "references_total_delta": 0,
+      "base_max_reference_index": 85,
+      "structured_max_reference_index": 85,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 0,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 96.47
+    },
+    {
+      "pdf": "a0e5d5ee6a06c0d9bd4b39ee64dd8b58e861.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\a0e5d5ee6a06c0d9bd4b39ee64dd8b58e861.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 56,
+      "structured_total": 56,
+      "references_total_delta": 0,
+      "base_max_reference_index": 56,
+      "structured_max_reference_index": 56,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 56,
+      "structured_fallback_count": 56,
+      "overlap_base_coverage_pct": 100.0
+    },
+    {
+      "pdf": "education-12-00179-v3.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\education-12-00179-v3.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 11,
+      "structured_total": 11,
+      "references_total_delta": 0,
+      "base_max_reference_index": 11,
+      "structured_max_reference_index": 11,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 11,
+      "structured_fallback_count": 11,
+      "overlap_base_coverage_pct": 100.0
+    },
+    {
+      "pdf": "ICGSE2017.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\ICGSE2017.json",
+      "classification": "stable_match",
+      "classification_reasons": [
+        "no_material_differences"
+      ],
+      "base_total": 54,
+      "structured_total": 54,
+      "references_total_delta": 0,
+      "base_max_reference_index": 54,
+      "structured_max_reference_index": 54,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 1,
+      "structured_fallback_count": 0,
+      "overlap_base_coverage_pct": 92.59
+    },
+    {
+      "pdf": "JScientometRes-14-3-838.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\JScientometRes-14-3-838.json",
+      "classification": "structured_better",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices",
+        "low_text_overlap"
+      ],
+      "base_total": 180,
+      "structured_total": 180,
+      "references_total_delta": 0,
+      "base_max_reference_index": 72,
+      "structured_max_reference_index": 72,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 47,
+      "structured_suspicious_count": 3,
+      "structured_fallback_count": 3,
+      "overlap_base_coverage_pct": 37.22
+    },
+    {
+      "pdf": "Kelemen_Subramanian_19.09.2023.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\Kelemen_Subramanian_19.09.2023.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "base_duplicate_indices",
+        "structured_duplicate_indices",
+        "structured_fallbacks_high",
+        "structured_suspicious_high",
+        "low_text_overlap"
+      ],
+      "base_total": 66,
+      "structured_total": 66,
+      "references_total_delta": 0,
+      "base_max_reference_index": 82,
+      "structured_max_reference_index": 82,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 15,
+      "structured_suspicious_count": 23,
+      "structured_fallback_count": 23,
+      "overlap_base_coverage_pct": 60.61
+    },
+    {
+      "pdf": "qt5bm130vv.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\qt5bm130vv.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "index_sets_differ",
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 6,
+      "structured_total": 6,
+      "references_total_delta": 0,
+      "base_max_reference_index": 6,
+      "structured_max_reference_index": 6,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 6,
+      "structured_fallback_count": 6,
+      "overlap_base_coverage_pct": 100.0
+    },
+    {
+      "pdf": "s10664-011-9181-9.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\s10664-011-9181-9.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "index_sets_differ",
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 2,
+      "structured_total": 2,
+      "references_total_delta": 0,
+      "base_max_reference_index": 2,
+      "structured_max_reference_index": 2,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 2,
+      "structured_fallback_count": 2,
+      "overlap_base_coverage_pct": 100.0
+    },
+    {
+      "pdf": "s41979-020-00044-w.pdf",
+      "artifact": "C:\\Users\\jbarr\\Documents\\TFG\\tmp\\reference_source_compare\\batch-real-pdfs-v1\\s41979-020-00044-w.json",
+      "classification": "contaminated_structured_output",
+      "classification_reasons": [
+        "index_sets_differ",
+        "structured_fallbacks_high",
+        "structured_suspicious_high"
+      ],
+      "base_total": 4,
+      "structured_total": 4,
+      "references_total_delta": 0,
+      "base_max_reference_index": 4,
+      "structured_max_reference_index": 4,
+      "max_reference_index_delta": 0,
+      "base_suspicious_count": 0,
+      "structured_suspicious_count": 4,
+      "structured_fallback_count": 4,
+      "overlap_base_coverage_pct": 100.0
+    }
+  ]
+}
