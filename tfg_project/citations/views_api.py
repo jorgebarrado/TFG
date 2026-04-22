@@ -39,6 +39,7 @@ from .services.references_data import (
     finalize_reference_detection_debug_payload,
     write_reference_detection_debug_json,
 )
+from .services.reference_reconciliation import reconcile_reference_sources
 from .services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
 from .models import IncorrectCitation
 
@@ -518,55 +519,49 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 data["reference_debug_steps"] = (
                     references_data_payload.pop("reference_debug_steps", None) or []
                 )
-                structured_references = [
-                    item
-                    for item in (references_data_payload.get("references") or [])
-                    if isinstance(item, dict)
-                ]
-                if structured_references:
-                    structured_references.sort(
-                        key=lambda item: (
-                            int(item.get("index") or 10**9),
-                            str(item.get("ref_id") or ""),
-                        )
-                    )
-                    data["references"] = [
-                        {
-                            "index": (
-                                int(item.get("index"))
-                                if str(item.get("index") or "").isdigit()
-                                else None
-                            ),
-                            "raw": str(item.get("text") or "").strip(),
-                            "doi": str(item.get("doi") or "").strip() or None,
-                            "doi_source": "regex" if item.get("doi") else None,
-                            "confidence": 1.0 if item.get("text") else 0.0,
-                            "numbered": bool(item.get("index")),
-                            "structure_source": str(
-                                item.get("structure_source") or ""
-                            ).strip()
-                            or None,
-                        }
-                        for item in structured_references
-                        if str(item.get("text") or "").strip()
-                    ]
-                data["citation_style"] = (
-                    str(references_data_payload.get("citation_style") or citation_style)
-                    .strip()
-                    .lower()
+                reconciliation = reconcile_reference_sources(
+                    base_references=references,
+                    base_stats=stats_payload,
+                    structured_references_data=references_data_payload,
                 )
-                try:
-                    data["max_reference_index"] = int(
-                        references_data_payload.get("max_reference_index")
-                        or max_reference_index
-                        or 0
-                    )
-                except (TypeError, ValueError):
-                    data["max_reference_index"] = int(max_reference_index or 0)
+                reconciliation_summary = reconciliation.get(
+                    "reconciliation_summary",
+                    {},
+                )
+                references_data_payload["references"] = reconciliation.get(
+                    "final_structured_references",
+                    [],
+                )
+                references_data_payload["reconciliation_summary"] = (
+                    reconciliation_summary
+                )
+                references_data_payload["references_total"] = reconciliation.get(
+                    "final_references_total",
+                    0,
+                )
+                references_data_payload["citation_style"] = reconciliation.get(
+                    "final_citation_style",
+                    citation_style,
+                )
+                references_data_payload["max_reference_index"] = reconciliation.get(
+                    "final_max_reference_index",
+                    0,
+                )
+                data["reference_reconciliation"] = reconciliation_summary
+                data["references"] = reconciliation.get("final_references", [])
+                data["citation_style"] = str(
+                    reconciliation.get("final_citation_style") or citation_style
+                ).strip().lower()
+                data["max_reference_index"] = int(
+                    reconciliation.get("final_max_reference_index") or 0
+                )
                 data["bibliography_start_page"] = references_data_payload.get(
                     "bibliography_start_page"
                 )
                 data["article_doi"] = references_data_payload.get("article_doi")
+                data["stats"]["references_total"] = int(
+                    reconciliation.get("final_references_total") or 0
+                )
                 data["stats"]["citation_style"] = data["citation_style"]
                 data["stats"]["max_reference_index"] = data["max_reference_index"]
                 data["stats"]["bibliography_start_page"] = data[
@@ -661,6 +656,13 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 ),
             )
             if isinstance(data.get("stats"), dict):
+                data["stats"]["references_total"] = len(
+                    [
+                        ref
+                        for ref in (data.get("references") or [])
+                        if isinstance(ref, dict)
+                    ]
+                )
                 data["stats"]["dois_total"] = sum(
                     1
                     for ref in (data.get("references") or [])
