@@ -44,7 +44,7 @@
   <div class="surface-card p-4 mb-3">
     <div class="section-heading">
       <span class="pill"><i class="fa-solid fa-sliders"></i> {% trans "Filtros" %}</span>
-      <small class="text-muted">{% trans "Refina la tabla en tiempo real" %}</small>
+      <small class="text-muted">{% trans "Aplica filtros y navega entre paginas" %}</small>
     </div>
     <form id="reportFiltersForm" class="row g-3 align-items-end" method="get">
       <div class="col-lg-4">
@@ -101,10 +101,16 @@
       </div>
 
       <div class="col-lg-2">
-        <button id="clearReportFilters" type="button" class="btn btn-outline-secondary w-100">
-          <i class="fa-solid fa-filter-circle-xmark me-1"></i>
-          {% trans "Borrar filtros" %}
-        </button>
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-dark w-100">
+            <i class="fa-solid fa-filter me-1"></i>
+            {% trans "Aplicar filtros" %}
+          </button>
+          <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary w-100">
+            <i class="fa-solid fa-filter-circle-xmark me-1"></i>
+            {% trans "Borrar filtros" %}
+          </a>
+        </div>
       </div>
     </form>
   </div>
@@ -197,6 +203,33 @@
       </table>
     </div>
 
+    {% if citations.has_other_pages %}
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4">
+        <p class="text-muted mb-0">
+          {% blocktrans with start=citations.start_index end=citations.end_index total=citations.paginator.count %}
+            Mostrando {{ start }}-{{ end }} de {{ total }} reportes
+          {% endblocktrans %}
+        </p>
+        <div class="d-flex justify-content-center align-items-center gap-2">
+          {% if citations.has_previous %}
+            <a class="btn btn-outline-secondary" href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ citations.previous_page_number }}">
+              <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Anterior" %}
+            </a>
+          {% endif %}
+          <span class="btn btn-light disabled border">
+            {% blocktrans with current=citations.number total=citations.paginator.num_pages %}
+              Pagina {{ current }} de {{ total }}
+            {% endblocktrans %}
+          </span>
+          {% if citations.has_next %}
+            <a class="btn btn-outline-primary" href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ citations.next_page_number }}">
+              {% trans "Siguiente" %}<i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
     {% else %}
       <div class="alert alert-info text-center">
           {% trans "No hay reportes aún." %}
@@ -208,131 +241,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-(() => {
-  const filterForm = document.getElementById('reportFiltersForm');
-  if (!filterForm) return;
-
-  const languageMap = {
-    es: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
-    en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
-  };
-  const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
-  const searchInput = document.getElementById('searchInput');
-  const areaFilter = document.getElementById('areaFilter');
-  const typeFilter = document.getElementById('typeFilter');
-  const yearFilter = document.getElementById('yearFilter');
-  const clearFiltersButton = document.getElementById('clearReportFilters');
-  const selectFilters = [
-    areaFilter,
-    typeFilter,
-    yearFilter,
-  ].filter(Boolean);
-  let filterTimer = null;
-  let dataTable = null;
-  let activeRequest = null;
-
-  const buildFilterUrl = () => {
-    const params = new URLSearchParams();
-    const search = (searchInput?.value || '').trim();
-
-    if (search) params.set('q', search);
-    selectFilters.forEach((select) => {
-      if (select.value) params.set(select.name, select.value);
-    });
-
-    const query = params.toString();
-    return `${window.location.pathname}${query ? `?${query}` : ''}`;
-  };
-
-  const syncFilterUrl = (nextUrl) => {
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-    if (nextUrl !== currentUrl && window.history?.replaceState) {
-      window.history.replaceState(null, '', nextUrl);
-    }
-  };
-
-  const destroyDataTable = () => {
-    if (dataTable) {
-      dataTable.destroy();
-      dataTable = null;
-    }
-  };
-
-  const initDataTable = () => {
-    const tableEl = document.getElementById('citationsTable');
-    if (!tableEl || !window.jQuery?.fn?.DataTable) return;
-
-    dataTable = window.jQuery(tableEl).DataTable({
-      language: { url: languageMap[userLang] || languageMap.en },
-      order: [],
-      dom: 'lrtip',
-      pageLength: 10
-    });
-  };
-
-  const loadFilteredResults = () => {
-    const nextUrl = buildFilterUrl();
-    syncFilterUrl(nextUrl);
-
-    if (activeRequest) {
-      activeRequest.abort();
-    }
-    activeRequest = new AbortController();
-
-    fetch(nextUrl, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      signal: activeRequest.signal,
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.text();
-      })
-      .then((html) => {
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        const nextResults = doc.getElementById('reportListResults');
-        const currentResults = document.getElementById('reportListResults');
-        if (!nextResults || !currentResults) return;
-
-        destroyDataTable();
-        currentResults.innerHTML = nextResults.innerHTML;
-        window.htmx?.process(currentResults);
-        initDataTable();
-      })
-      .catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.error('No se pudieron actualizar los filtros de reportes.', error);
-        }
-      });
-  };
-
-  const scheduleFilter = (delay) => {
-    window.clearTimeout(filterTimer);
-    filterTimer = window.setTimeout(loadFilteredResults, delay);
-  };
-
-  filterForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    loadFilteredResults();
-  });
-  searchInput?.addEventListener('input', () => scheduleFilter(250));
-  selectFilters.forEach((select) => {
-    select.addEventListener('change', loadFilteredResults);
-  });
-  clearFiltersButton?.addEventListener('click', () => {
-    if (searchInput) searchInput.value = '';
-    selectFilters.forEach((select) => {
-      select.value = '';
-    });
-    loadFilteredResults();
-  });
-  initDataTable();
-})();
-</script>
-
 <script>
 $(function () {
   $(document).on('click', '.doi-link', function (e) {

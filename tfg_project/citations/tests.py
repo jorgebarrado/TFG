@@ -93,6 +93,40 @@ class PageLoadTests(LoggedInTestCase):
         response = self.client.get(reverse("citation_list"))
         self.assertEqual(response.status_code, 200)
 
+    def test_citation_list_shows_server_pagination_controls(self):
+        for idx in range(30):
+            IncorrectCitation.objects.create(
+                author=self.user1,
+                doi_original=f"10.1000/pag-orig-{idx}",
+                doi_incorrect=f"10.1000/pag-inc-{idx}",
+                incorrect_reason=f"Pagination case {idx}",
+                citation_type="misinterpretation",
+                publication_area="CIS",
+            )
+
+        response = self.client.get(reverse("citation_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["citations"].has_next())
+        self.assertContains(response, "?page=2")
+
+    def test_citation_list_preserves_filters_in_pagination_links(self):
+        for idx in range(30):
+            IncorrectCitation.objects.create(
+                author=self.user1,
+                doi_original=f"10.1000/filter-orig-{idx}",
+                doi_incorrect=f"10.1000/filter-inc-{idx}",
+                incorrect_reason=f"Filtered pagination case {idx}",
+                citation_type="misinterpretation",
+                publication_area="CIS",
+            )
+
+        response = self.client.get(reverse("citation_list"), {"area": "CIS"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["citations"].has_next())
+        self.assertContains(response, "?area=CIS&amp;page=2")
+
     def test_citation_list_filters_by_search_term(self):
         response = self.client.get(reverse("citation_list"), {"q": "Quantum"})
 
