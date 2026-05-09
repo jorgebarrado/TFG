@@ -34,6 +34,73 @@ const DOI_REGEX = /10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+/i;
 const DOI_URL_REGEX = /https?:\/\/(?:dx\.)?doi\.org\/([^\s]+)/i;
 const BRACKET_REGEX = /\[\s*(\d+)\s*\]/;
 const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]/g;
+
+// Patrones autor-anio y DOI (espejo de citation_patterns.py). Necesitan
+// soportar marcas combinantes (\u0300-\u036f) porque el texto del PDF se
+// normaliza a NFKD antes de matchear.
+const _NAME_TOKEN =
+  "[A-Z\\u00C0-\\u00DC\\u0100-\\u017F]" +
+  "[A-Za-z\\u00C0-\\u00FF\\u0100-\\u017F\\u0300-\\u036F'\\-]+";
+const _AUTHOR_GROUP =
+  `${_NAME_TOKEN}` +
+  `(?:` +
+  `\\s+et\\s+al\\.?` +
+  `|\\s+(?:and|&)\\s+${_NAME_TOKEN}` +
+  `|(?:,\\s+${_NAME_TOKEN}){1,3}(?:,?\\s+(?:and|&)\\s+${_NAME_TOKEN})?` +
+  `)?`;
+const _YEAR = "(?:1[5-9]|20)\\d{2}[a-z]?";
+const _YEAR_LIST = `${_YEAR}(?:\\s*,\\s*${_YEAR})*`;
+const NARRATIVE_AUTHOR_YEAR_REGEX = new RegExp(
+  `\\b${_AUTHOR_GROUP}\\s*\\(\\s*${_YEAR_LIST}\\s*\\)`,
+  "g"
+);
+const _PAREN_ITEM = `${_AUTHOR_GROUP}(?:\\s*,)?\\s+${_YEAR}`;
+const PARENTHETICAL_AUTHOR_YEAR_REGEX = new RegExp(
+  `\\(\\s*${_PAREN_ITEM}(?:\\s*[;]\\s*${_PAREN_ITEM})*\\s*\\)`,
+  "g"
+);
+const INLINE_DOI_REGEX = /10\.\d{4,9}\/[^\s"<>]+/gi;
+const AUTHOR_YEAR_FALSE_HEADS = new Set([
+  "figure", "fig", "figures", "figs",
+  "table", "tables", "tab",
+  "section", "sections", "sec",
+  "chapter", "chapters", "ch",
+  "page", "pages", "pg",
+  "equation", "equations", "eq", "eqs",
+  "theorem", "theorems",
+  "lemma", "lemmas",
+  "corollary", "corollaries",
+  "definition", "definitions",
+  "proposition", "propositions",
+  "algorithm", "algorithms", "alg",
+  "listing", "listings",
+  "appendix", "appendices", "app",
+  "volume", "volumes", "vol",
+  "issue", "no", "number", "numbers",
+  "part", "parts",
+  "step", "steps",
+  "phase", "phases",
+  "case", "cases",
+  "example", "examples", "ex",
+]);
+
+function looksLikeFalseAuthorHead(text) {
+  const head = String(text || "").trim().split(/\s+/)[0] || "";
+  return AUTHOR_YEAR_FALSE_HEADS.has(head.toLowerCase());
+}
+
+function stripDoiTrailing(value) {
+  let cleaned = String(value || "");
+  while (cleaned.length) {
+    const last = cleaned[cleaned.length - 1];
+    if (".,;:!?)]}>".indexOf(last) === -1) break;
+    if (last === ")" && (cleaned.match(/\(/g) || []).length > (cleaned.match(/\)/g) || []).length) {
+      break;
+    }
+    cleaned = cleaned.slice(0, -1);
+  }
+  return cleaned;
+}
 const EXTRACT_ENDPOINT = "/citations/api/extract-citations/";
 const DETECT_ARTICLE_DOI_ENDPOINT = "/citations/api/detect-article-doi/";
 const PREVIEW_EXTRACT_ENGINE = "papermage";
@@ -558,7 +625,6 @@ function collectCitationHitsForPage(pageEl, options = {}) {
     Number.isFinite(bibliographyStartPage) && bibliographyStartPage > 0;
   const pageNumber = Number(pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number"));
   if (
-    citationStyle === "numeric" &&
     hasBibliographyStartPage &&
     Number.isFinite(pageNumber) &&
     pageNumber >= bibliographyStartPage
@@ -567,25 +633,19 @@ function collectCitationHitsForPage(pageEl, options = {}) {
   }
 
   const pageRect = pageEl.getBoundingClientRect();
-  const hits = [];
   const { text: normalizedText, indexMap } = buildNormalizedMatchIndex(text);
   if (!normalizedText || !indexMap.length) return [];
-  const regex = new RegExp(INLINE_CITATION_REGEX.source, "g");
 
-  let match = regex.exec(normalizedText);
-  while (match) {
-    const parsedNumbers = parseCitationNumbers(match[0]).filter(
-      (value) => Number.isFinite(value) && value > 0
-    );
-    let acceptedNumbers = parsedNumbers;
-    if (citationStyle === "numeric" && hasMaxReferenceIndex) {
-      acceptedNumbers = acceptedNumbers.filter((value) => value <= maxReferenceIndex);
+  const spansTaken = [];
+  const overlaps = (start, end) => {
+    for (let i = 0; i < spansTaken.length; i += 1) {
+      const [s, e] = spansTaken[i];
+      if (start < e && end > s) return true;
     }
-    if (citationStyle === "numeric" && !acceptedNumbers.length) {
-      match = regex.exec(normalizedText);
-      continue;
-    }
+    return false;
+  };
 
+  const buildHitFromMatch = (match, kind, extra = {}) => {
     const startOffset = normalizedOffsetToRawOffset(indexMap, match.index, text.length);
     let endOffset = normalizedOffsetToRawOffset(
       indexMap,
@@ -595,42 +655,115 @@ function collectCitationHitsForPage(pageEl, options = {}) {
     if (endOffset <= startOffset) {
       endOffset = Math.min(text.length, startOffset + Math.max(1, match[0].length));
     }
+    if (overlaps(startOffset, endOffset)) return null;
     const startNode = findNodeAtOffset(nodes, startOffset);
     const endNode = findNodeAtOffset(nodes, endOffset);
+    if (!startNode || !endNode) return null;
+    const range = document.createRange();
+    range.setStart(startNode.node, Math.max(0, startOffset - startNode.start));
+    range.setEnd(endNode.node, Math.max(0, endOffset - endNode.start));
+    const rects = Array.from(range.getClientRects())
+      .filter((rect) => rect.width > 1 && rect.height > 1)
+      .map((rect) => ({
+        left: rect.left - pageRect.left,
+        top: rect.top - pageRect.top,
+        width: rect.width,
+        height: rect.height,
+      }));
+    if (!rects.length) return null;
     const snippetStart = Math.max(0, startOffset - 180);
     const snippetEnd = Math.min(text.length, endOffset + 180);
     const snippet = text
       .slice(snippetStart, snippetEnd)
       .replace(/\s+/g, " ")
       .trim();
-    if (startNode && endNode) {
-      const range = document.createRange();
-      range.setStart(startNode.node, Math.max(0, startOffset - startNode.start));
-      range.setEnd(endNode.node, Math.max(0, endOffset - endNode.start));
+    spansTaken.push([startOffset, endOffset]);
+    return {
+      id: `cite-${kind}-${pageNumber}-${startOffset}`,
+      page: Number.isFinite(pageNumber) ? pageNumber : null,
+      label: match[0],
+      kind,
+      numbers: Array.isArray(extra.numbers) ? extra.numbers : [],
+      snippet,
+      rects,
+      anchorRect: rects[0],
+      ...extra,
+    };
+  };
 
-      const rects = Array.from(range.getClientRects())
-        .filter((rect) => rect.width > 1 && rect.height > 1)
-        .map((rect) => ({
-          left: rect.left - pageRect.left,
-          top: rect.top - pageRect.top,
-          width: rect.width,
-          height: rect.height,
-        }));
+  const hits = [];
 
-      if (rects.length) {
-        hits.push({
-          id: `cite-${pageNumber}-${startOffset}`,
-          page: Number.isFinite(pageNumber) ? pageNumber : null,
-          label: match[0],
-          numbers: acceptedNumbers,
-          snippet,
-          rects,
-          anchorRect: rects[0],
-        });
-      }
+  // 1) Numericas: [12], [1, 2-3].
+  const numericRegex = new RegExp(INLINE_CITATION_REGEX.source, "g");
+  let nm = numericRegex.exec(normalizedText);
+  while (nm) {
+    const parsedNumbers = parseCitationNumbers(nm[0]).filter(
+      (value) => Number.isFinite(value) && value > 0
+    );
+    let acceptedNumbers = parsedNumbers;
+    if (citationStyle === "numeric" && hasMaxReferenceIndex) {
+      acceptedNumbers = acceptedNumbers.filter((value) => value <= maxReferenceIndex);
     }
-    match = regex.exec(normalizedText);
+    if (citationStyle === "numeric" && !acceptedNumbers.length) {
+      nm = numericRegex.exec(normalizedText);
+      continue;
+    }
+    if (acceptedNumbers.length) {
+      const hit = buildHitFromMatch(nm, "numeric", { numbers: acceptedNumbers });
+      if (hit) hits.push(hit);
+    }
+    nm = numericRegex.exec(normalizedText);
   }
+
+  // 2) DOI desnudos. Antes que autor-anio para que no se solapen.
+  const doiRegex = new RegExp(INLINE_DOI_REGEX.source, "gi");
+  let dm = doiRegex.exec(normalizedText);
+  while (dm) {
+    const cleaned = stripDoiTrailing(dm[0]);
+    if (cleaned.length >= "10.1/a".length) {
+      const fakeMatch = { 0: cleaned, index: dm.index };
+      const hit = buildHitFromMatch(fakeMatch, "doi", { doi: cleaned.toLowerCase() });
+      if (hit) hits.push(hit);
+    }
+    dm = doiRegex.exec(normalizedText);
+  }
+
+  // 3) Autor-anio narrativo: "Smith et al. (2020)".
+  const narrativeRegex = new RegExp(NARRATIVE_AUTHOR_YEAR_REGEX.source, "g");
+  let am = narrativeRegex.exec(normalizedText);
+  while (am) {
+    const head = am[0].split("(", 1)[0];
+    if (!looksLikeFalseAuthorHead(head)) {
+      const hit = buildHitFromMatch(am, "authoryear", {
+        authoryearStyle: "narrative",
+        authors: head.trim(),
+      });
+      if (hit) hits.push(hit);
+    }
+    am = narrativeRegex.exec(normalizedText);
+  }
+
+  // 4) Autor-anio parentetico: "(Smith, 2020; Jones, 2021)".
+  const parenRegex = new RegExp(PARENTHETICAL_AUTHOR_YEAR_REGEX.source, "g");
+  let pm = parenRegex.exec(normalizedText);
+  while (pm) {
+    const inner = pm[0].replace(/^[(\s]+|[)\s]+$/g, "");
+    if (!looksLikeFalseAuthorHead(inner)) {
+      const hit = buildHitFromMatch(pm, "authoryear", {
+        authoryearStyle: "parenthetical",
+        authors: inner,
+      });
+      if (hit) hits.push(hit);
+    }
+    pm = parenRegex.exec(normalizedText);
+  }
+
+  hits.sort((a, b) => {
+    const aTop = a.anchorRect?.top || 0;
+    const bTop = b.anchorRect?.top || 0;
+    if (aTop !== bTop) return aTop - bTop;
+    return (a.anchorRect?.left || 0) - (b.anchorRect?.left || 0);
+  });
   return hits;
 }
 
@@ -3569,7 +3702,8 @@ export default function ReaderApp({
               const hitEl = document.createElement("div");
               hitEl.className = "citation-hit";
               hitEl.dataset.citationId = hit.id;
-              hitEl.dataset.citationRefs = hit.numbers.join(",");
+              hitEl.dataset.citationKind = hit.kind || "numeric";
+              hitEl.dataset.citationRefs = (hit.numbers || []).join(",");
               hitEl.style.left = `${rect.left}px`;
               hitEl.style.top = `${rect.top}px`;
               hitEl.style.width = `${rect.width}px`;

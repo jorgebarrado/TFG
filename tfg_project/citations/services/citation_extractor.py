@@ -2,6 +2,17 @@ from __future__ import annotations
 from typing import Any, Dict, List, Sequence, Tuple
 import re
 from .engines import run_engine
+from .citation_patterns import (
+    DOI_REGEX as CIT_DOI,
+    NARRATIVE_AUTHOR_YEAR_REGEX as CIT_AUTHORYEAR,
+    NUMERIC_CITATION_REGEX as NUMERIC_CITATION_BLOCK,
+    PARENTHETICAL_AUTHOR_YEAR_REGEX,
+    expand_numeric_block as expand_numeric_citation_block,
+    find_citation_matches,
+    infer_numeric_style,
+    is_valid_numeric_citation,
+    max_reference_index as _max_reference_index,
+)
 
 try:
     from .papermage_extractor import pm_extract_paragraphs
@@ -29,15 +40,9 @@ except Exception:
     PyPDF2 = None
 
 # ====== Regex básicos: [n] y Autor (Año) ======
-NUMERIC_CITATION_BLOCK = re.compile(
-    r"\[\s*\d+(?:\s*(?:[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+))*\s*\]"
-)
-AUTHOR_YEAR = re.compile(
-    r"\b([A-Z][A-Za-z-]+(?:\s(?:and|&)\s[A-Z][A-Za-z-]+|(?:\s+et al\.)?)?)\s*\(((?:19|20)\d{2})\)"
-)
-
-CIT_AUTHORYEAR = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
-CIT_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
+# Alias historico del AUTHOR_YEAR original. La logica viva esta en
+# `citation_patterns.NARRATIVE_AUTHOR_YEAR_REGEX`.
+AUTHOR_YEAR = CIT_AUTHORYEAR
 
 
 def _make_snippet(text: str, start: int, end: int, padding: int = 80) -> str:
@@ -54,150 +59,22 @@ def find_numeric_citation_blocks(text: str) -> List[re.Match[str]]:
     return list(NUMERIC_CITATION_BLOCK.finditer(text))
 
 
-def expand_numeric_citation_block(block_text: str) -> List[int]:
-    if not block_text:
-        return []
-    inner = str(block_text).strip()
-    if inner.startswith("[") and inner.endswith("]"):
-        inner = inner[1:-1]
-
-    values: List[int] = []
-    for part in re.split(r"[,;]", inner):
-        token = part.replace("\u2013", "-").replace("\u2014", "-").strip()
-        if not token:
-            continue
-        if "-" in token:
-            bounds = [segment.strip() for segment in token.split("-", 1)]
-            if len(bounds) != 2:
-                continue
-            try:
-                start = int(bounds[0])
-                end = int(bounds[1])
-            except (TypeError, ValueError):
-                continue
-            step = 1 if start <= end else -1
-            span = min(abs(end - start) + 1, 50)
-            for idx in range(span):
-                number = start + idx * step
-                if number > 0:
-                    values.append(number)
-            continue
-        try:
-            number = int(token)
-        except (TypeError, ValueError):
-            continue
-        if number > 0:
-            values.append(number)
-
-    seen: set[int] = set()
-    ordered: List[int] = []
-    for value in values:
-        if value in seen:
-            continue
-        seen.add(value)
-        ordered.append(value)
-    return ordered
-
-
-def infer_numeric_style(references: Sequence[Dict[str, Any]] | None) -> bool:
-    if not references:
-        return False
-    numeric_labels: List[int] = []
-    for reference in references:
-        if not isinstance(reference, dict):
-            continue
-        raw_index = reference.get("index")
-        try:
-            index = int(raw_index)
-        except (TypeError, ValueError):
-            continue
-        if index > 0:
-            numeric_labels.append(index)
-    if len(numeric_labels) < 3:
-        return False
-    numeric_labels = sorted(set(numeric_labels))
-    return numeric_labels[0] == 1 and len(numeric_labels) >= 3
-
-
-def is_valid_numeric_citation(number, total_references):
-    try:
-        parsed_number = int(number)
-        parsed_total = int(total_references)
-    except (TypeError, ValueError):
-        return False
-    return 1 <= parsed_number <= parsed_total
-
-
-def _max_reference_index(references: Sequence[Dict[str, Any]] | None) -> int:
-    if not references:
-        return 0
-    max_index = 0
-    for reference in references:
-        if not isinstance(reference, dict):
-            continue
-        raw_index = reference.get("index")
-        try:
-            index = int(raw_index)
-        except (TypeError, ValueError):
-            continue
-        if index > max_index:
-            max_index = index
-    return max_index
-
-
 def _find_hits(
     paragraph: str,
     citation_style: str = "",
     total_references: int = 0,
 ) -> List[Dict[str, Any]]:
-    hits: List[Dict[str, Any]] = []
-    normalized_style = str(citation_style or "").strip().lower()
-    for m in find_numeric_citation_blocks(paragraph):
-        block = m.group(0)
-        expanded = expand_numeric_citation_block(block)
-        if normalized_style == "numeric":
-            expanded = [
-                number
-                for number in expanded
-                if is_valid_numeric_citation(number, total_references)
-            ]
-        if not expanded:
-            continue
-        hits.append(
-            {
-                "type": "numeric",
-                "match": block,
-                "start": m.start(),
-                "end": m.end(),
-                "snippet": _make_snippet(paragraph, m.start(), m.end()),
-                "confidence": 0.0,
-                "citation_block": block,
-                "citation_numbers": expanded,
-            }
-        )
-    for m in CIT_AUTHORYEAR.finditer(paragraph):
-        hits.append(
-            {
-                "type": "authoryear",
-                "match": m.group(0),
-                "start": m.start(),
-                "end": m.end(),
-                "snippet": _make_snippet(paragraph, m.start(), m.end()),
-                "confidence": 0.0,
-            }
-        )
-    for m in CIT_DOI.finditer(paragraph):
-        hits.append(
-            {
-                "type": "doi",
-                "match": m.group(0),
-                "start": m.start(),
-                "end": m.end(),
-                "snippet": _make_snippet(paragraph, m.start(), m.end()),
-                "confidence": 0.0,
-            }
-        )
-    return hits
+    """Devuelve todas las citas in-text de `paragraph`.
+
+    Delega en `citation_patterns.find_citation_matches`, que cubre numericas,
+    autor-anio (narrativo y parentetico, con et al., diacriticos, multi-cita
+    y sufijos de anio) y DOI desnudos.
+    """
+    return find_citation_matches(
+        paragraph,
+        citation_style=citation_style,
+        total_references=total_references,
+    )
 
 
 def _extract_text_from_pdf_generic(path: str) -> str:
@@ -285,45 +162,47 @@ def _find_citations_in_paragraph(
     citation_style: str = "",
     total_references: int = 0,
 ) -> list[dict]:
+    """Variante legacy con shape `{ref, pattern, ...}` para callers viejos.
+
+    Convierte la salida de `find_citation_matches` al formato historico que
+    usaba `_generic_extract_contexts` y `_pm_loose_extract`.
+    """
     out: list[dict] = []
-    normalized_style = str(citation_style or "").strip().lower()
-    # [n], [1,2], [23-25], [23–25], etc.
-    for m in find_numeric_citation_blocks(p):
-        s, e = m.span()
-        snippet = p[max(0, s - 80) : min(len(p), e + 80)]
-        block = m.group(0)
-        for ref_idx in expand_numeric_citation_block(block):
-            if normalized_style == "numeric" and not is_valid_numeric_citation(
-                ref_idx, total_references
-            ):
-                continue
+    for hit in find_citation_matches(
+        p,
+        citation_style=citation_style,
+        total_references=total_references,
+    ):
+        common = {
+            "snippet": hit["snippet"],
+            "paragraph": p,
+            "start": hit["start"],
+            "end": hit["end"],
+            "match": hit["match"],
+        }
+        if hit["type"] == "numeric":
+            for ref_idx in hit.get("citation_numbers", []) or []:
+                out.append({"ref": ref_idx, "pattern": "numeric", **common})
+        elif hit["type"] == "authoryear":
+            years = hit.get("years") or []
             out.append(
                 {
-                    "ref": ref_idx,
-                    "snippet": snippet,
-                    "paragraph": p,
-                    "start": s,
-                    "end": e,
-                    "pattern": "numeric",
-                    "match": block,
+                    "ref": 0,
+                    "pattern": "author-year",
+                    "author": hit.get("authors", ""),
+                    "year": years[0] if years else "",
+                    **common,
                 }
             )
-    # Autor (Año)
-    for m in AUTHOR_YEAR.finditer(p):
-        s, e = m.span()
-        snippet = p[max(0, s - 80) : min(len(p), e + 80)]
-        out.append(
-            {
-                "ref": 0,
-                "snippet": snippet,
-                "paragraph": p,
-                "start": s,
-                "end": e,
-                "pattern": "author-year",
-                "author": m.group(1),
-                "year": m.group(2),
-            }
-        )
+        elif hit["type"] == "doi":
+            out.append(
+                {
+                    "ref": 0,
+                    "pattern": "doi",
+                    "doi": hit.get("doi", ""),
+                    **common,
+                }
+            )
     return out
 
 
