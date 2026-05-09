@@ -458,6 +458,9 @@ def citation_list(request):
     paginator = Paginator(qs, 25)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    pagination_query = query_params.urlencode()
 
     saved_citation_ids = set()
     if request.user.is_authenticated:
@@ -502,6 +505,7 @@ def citation_list(request):
         "areas": areas,
         "citation_types": citation_types,
         "years": years,
+        "pagination_query": pagination_query,
     }
     return render(request, "citations/citation_list.html", context)
 
