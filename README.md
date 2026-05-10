@@ -28,3 +28,7 @@ La documentación completa del proyecto se encuentra en el directorio `docs/`:
 
 1.  **Iniciar servidor:** `python tfg_project/manage.py runserver`
 2.  **Acceder:** `http://127.0.0.1:8000/`
+
+## Configuración Opcional
+
+Para mejorar la estabilidad de las peticiones a Semantic Scholar puedes definir `SEMANTIC_SCHOLAR_API_KEY` en tu `.env` local. Es opcional para desarrollo: si no existe, la aplicación usa peticiones no autenticadas. No subas nunca una key real al repositorio; el plan actual de Semantic Scholar limita a 1 request/segundo.

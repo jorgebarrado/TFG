@@ -1,7 +1,12 @@
 import requests
 
-S2_BASE = "https://api.semanticscholar.org/graph/v1"
 CR_BASE = "https://api.crossref.org"
+
+from .semantic_scholar_client import (
+    SemanticScholarError,
+    get_paper_by_doi,
+    get_paper_citations,
+)
 
 
 def _safe_get(url, params=None, timeout=12):
@@ -36,9 +41,11 @@ def get_s2_paperid_and_count(doi: str) -> tuple[str | None, int]:
     Returns:
         tuple[str | None, int]: Una tupla con el paperId y el número de citas, o (None, 0) si no se encuentra.
     """
-    url = f"{S2_BASE}/paper/DOI:{doi}"
-    data = _safe_get(url, params={"fields": "paperId,citationCount"})
-    if not data:
+    try:
+        data = get_paper_by_doi(doi, fields="paperId,citationCount")
+    except SemanticScholarError:
+        return None, 0
+    if not isinstance(data, dict):
         return None, 0
     return data.get("paperId"), int(data.get("citationCount") or 0)
 
@@ -61,14 +68,20 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
     out: list[dict] = []
     offset = 0
     while True:
-        url = f"{S2_BASE}/paper/{paper_id}/citations"
+        page_limit = min(limit, 100)
         params = {
             "fields": "citingPaper.title,citingPaper.authors,"
             "citingPaper.year,citingPaper.externalIds,citingPaper.url",
-            "limit": min(limit, 100),
-            "offset": offset,
         }
-        data = _safe_get(url, params=params)
+        try:
+            data = get_paper_citations(
+                paper_id,
+                limit=page_limit,
+                offset=offset,
+                fields=params["fields"],
+            )
+        except SemanticScholarError:
+            break
         if not data or not data.get("data"):
             break
 
@@ -86,7 +99,7 @@ def get_s2_citations(doi: str, limit: int = 100) -> list[dict]:
                     "url": cp.get("url"),
                 }
             )
-        offset += params["limit"]
+        offset += page_limit
         if offset >= count or offset >= 1000:  # cota de seguridad
             break
     return out
