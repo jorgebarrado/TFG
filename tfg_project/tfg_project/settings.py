@@ -192,6 +192,9 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 GROBID_BASE_URL = os.getenv("GROBID_BASE_URL", "http://localhost:8070")
 GROBID_TIMEOUT = int(os.getenv("GROBID_TIMEOUT", "120"))
 
+# === Semantic Scholar ===
+SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

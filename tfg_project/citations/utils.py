@@ -1,3 +1,4 @@
+import logging
 import xml.etree.ElementTree as ET
 
 import requests
@@ -6,7 +7,11 @@ from .services.external_api import build_external_api_session
 from .services.semantic_scholar_client import (
     SemanticScholarError,
     get_citation_counts_for_dois,
+    get_paper_by_doi,
+    get_paper_citations,
 )
+
+logger = logging.getLogger("citations.semantic_scholar")
 
 
 def get_articles_from_dblp(dblp_url):
@@ -77,39 +82,40 @@ def get_citing_articles(doi):
             Retorna una lista vacía si la API falla o no hay citas.
     """
     try:
-        headers = {"User-Agent": "Django-App"}
-        url = (
-            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
-            f"{doi}"
-            "?fields=title,citationCount,"
-            "citations.title,citations.authors,"
-            "citations.year,citations.doi,citations.url"
-        )
-        session = build_external_api_session()
-        response = session.get(url, headers=headers, timeout=10)
-
-        if response.status_code != 200:
+        paper = get_paper_by_doi(doi, fields="paperId,citationCount")
+        if not paper:
             return []
-
-        data = response.json()
-        citations = data.get("citations", [])
+        paper_id = paper.get("paperId")
+        if not paper_id:
+            return []
+        data = get_paper_citations(
+            paper_id,
+            limit=100,
+            fields=(
+                "citingPaper.title,citingPaper.authors,"
+                "citingPaper.year,citingPaper.externalIds,citingPaper.url"
+            ),
+        )
+        citations = data.get("data", [])
 
         result = []
-        for c in citations:
+        for row in citations:
+            c = row.get("citingPaper") or {}
+            external_ids = c.get("externalIds") or {}
             result.append(
                 {
                     "title": c.get("title"),
                     "authors": ", ".join(a["name"] for a in c.get("authors", [])),
                     "year": c.get("year"),
-                    "doi": c.get("doi"),
+                    "doi": external_ids.get("DOI"),
                     "url": c.get("url"),
                 }
             )
 
         return result
 
-    except Exception as e:
-        print("Error en Semantic Scholar:", e)
+    except (SemanticScholarError, ValueError, TypeError) as exc:
+        logger.warning("Error en Semantic Scholar al obtener citantes doi=%s error=%s", doi, exc)
         return []
 
 
@@ -124,28 +130,10 @@ def check_doi_has_citations(doi):
             contrario o si ocurre un error.
     """
     try:
-        headers = {"User-Agent": "Django-App"}
-        url = (
-            "https://api.semanticscholar.org/graph/v1/paper/DOI:"
-            f"{doi}"
-            "?fields=citationCount"
-        )
-        session = build_external_api_session()
-        response = session.get(url, headers=headers, timeout=10)
-
-        print("→ Consultando DOI:", doi)
-        print("→ Código de estado:", response.status_code)
-
-        if response.status_code != 200:
-            return False
-
-        data = response.json()
-        print("→ citationCount =", data.get("citationCount"))
-
-        return data.get("citationCount", 0) > 0
-
-    except Exception as e:
-        print(f"Error consultando DOI {doi}: {e}")
+        data = get_paper_by_doi(doi, fields="citationCount")
+        return bool(data and data.get("citationCount", 0) > 0)
+    except (SemanticScholarError, ValueError, TypeError) as exc:
+        logger.warning("Error consultando DOI en Semantic Scholar doi=%s error=%s", doi, exc)
         return False
 
 
@@ -162,5 +150,5 @@ def get_citation_count(doi):
     try:
         return get_citation_counts_for_dois([doi]).get(str(doi or "").strip(), 0)
     except (SemanticScholarError, ValueError, TypeError) as e:
-        print(f"Error al obtener citationCount para {doi}: {e}")
+        logger.warning("Error al obtener citationCount en Semantic Scholar doi=%s error=%s", doi, e)
         return 0

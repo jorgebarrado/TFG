@@ -1,16 +1,17 @@
 from unittest.mock import Mock, patch
 
 from django.core.cache import cache
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from citations.services import semantic_scholar_client
 from citations.services.semantic_scholar_client import SemanticScholarError
 
 
-def _response(status_code=200, payload=None, text=""):
+def _response(status_code=200, payload=None, text="", headers=None):
     response = Mock()
     response.status_code = status_code
     response.text = text
+    response.headers = headers or {}
     response.json.return_value = payload or {}
     response.content = b"{}"
     return response
@@ -19,6 +20,142 @@ def _response(status_code=200, payload=None, text=""):
 class SemanticScholarClientTests(SimpleTestCase):
     def setUp(self):
         cache.clear()
+        reset_rate_limiter = getattr(
+            semantic_scholar_client, "_reset_rate_limiter_for_tests", None
+        )
+        if reset_rate_limiter:
+            reset_rate_limiter()
+        self.sleep_patcher = patch("time.sleep")
+        self.mock_sleep = self.sleep_patcher.start()
+
+    def tearDown(self):
+        self.sleep_patcher.stop()
+
+    @override_settings(SEMANTIC_SCHOLAR_API_KEY="test-semantic-key")
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_api_key_header_is_sent_when_configured(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.return_value = _response(payload={"paperId": "abc123"})
+
+        semantic_scholar_client.get_paper_by_id("abc123", fields="paperId")
+
+        headers = session.get.call_args.kwargs["headers"]
+        self.assertEqual(headers["x-api-key"], "test-semantic-key")
+        self.assertEqual(headers["Accept"], "application/json")
+
+    @override_settings(SEMANTIC_SCHOLAR_API_KEY="")
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_api_key_header_is_omitted_when_not_configured(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.return_value = _response(payload={"paperId": "abc123"})
+
+        semantic_scholar_client.get_paper_by_id("abc123", fields="paperId")
+
+        headers = session.get.call_args.kwargs["headers"]
+        self.assertNotIn("x-api-key", headers)
+        self.assertEqual(headers["Accept"], "application/json")
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_429_retries_with_retry_after(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.side_effect = [
+            _response(status_code=429, text="rate limited", headers={"Retry-After": "3"}),
+            _response(payload={"paperId": "abc123"}),
+        ]
+
+        data = semantic_scholar_client.get_paper_by_id("abc123", fields="paperId")
+
+        self.assertEqual(data["paperId"], "abc123")
+        self.assertEqual(session.get.call_count, 2)
+        self.mock_sleep.assert_any_call(3.0)
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_500_retries_with_exponential_backoff(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.side_effect = [
+            _response(status_code=500, text="server error"),
+            _response(payload={"paperId": "abc123"}),
+        ]
+
+        data = semantic_scholar_client.get_paper_by_id("abc123", fields="paperId")
+
+        self.assertEqual(data["paperId"], "abc123")
+        self.assertEqual(session.get.call_count, 2)
+        self.mock_sleep.assert_any_call(1.0)
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_404_does_not_retry(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.return_value = _response(status_code=404, text="not found")
+
+        with self.assertRaises(SemanticScholarError):
+            semantic_scholar_client.get_paper_by_id("missing", fields="paperId")
+
+        session.get.assert_called_once()
+
+    @override_settings(SEMANTIC_SCHOLAR_API_KEY="secret-value-that-must-not-leak")
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_api_key_is_not_logged_on_auth_error(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.return_value = _response(status_code=403, text="forbidden")
+
+        with self.assertLogs("citations.semantic_scholar", level="WARNING") as logs:
+            with self.assertRaises(SemanticScholarError):
+                semantic_scholar_client.get_paper_by_id("abc123", fields="paperId")
+
+        log_text = "\n".join(logs.output)
+        self.assertIn("API key", log_text)
+        self.assertNotIn("secret-value-that-must-not-leak", log_text)
+        self.assertNotIn("x-api-key", log_text)
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_public_get_endpoints_are_built_correctly(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.get.side_effect = [
+            _response(payload={"paperId": "doi-paper"}),
+            _response(payload={"data": []}),
+            _response(payload={"data": []}),
+            _response(payload={"data": []}),
+        ]
+
+        semantic_scholar_client.get_paper_by_doi("10.1145/123/456", fields="paperId")
+        semantic_scholar_client.search_papers("test query", fields="paperId")
+        semantic_scholar_client.get_paper_citations("paper123", fields="paperId")
+        semantic_scholar_client.get_paper_references("paper123", fields="paperId")
+
+        urls = [call.args[0] for call in session.get.call_args_list]
+        self.assertEqual(
+            urls[0],
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145%2F123%2F456",
+        )
+        self.assertEqual(
+            urls[1],
+            "https://api.semanticscholar.org/graph/v1/paper/search",
+        )
+        self.assertEqual(
+            urls[2],
+            "https://api.semanticscholar.org/graph/v1/paper/paper123/citations",
+        )
+        self.assertEqual(
+            urls[3],
+            "https://api.semanticscholar.org/graph/v1/paper/paper123/references",
+        )
+
+    @patch("citations.services.semantic_scholar_client.build_external_api_session")
+    def test_batch_request_uses_central_post_helper(self, mock_session_factory):
+        session = mock_session_factory.return_value
+        session.post.return_value = _response(
+            payload=[{"paperId": "abc123", "citationCount": 2}]
+        )
+
+        counts = semantic_scholar_client.get_citation_counts_for_dois(["10.1000/test"])
+
+        self.assertEqual(counts["10.1000/test"], 2)
+        session.post.assert_called_once()
+        self.assertEqual(
+            session.post.call_args.args[0],
+            "https://api.semanticscholar.org/graph/v1/paper/batch",
+        )
 
     @patch("citations.services.semantic_scholar_client.build_external_api_session")
     def test_paginated_citations_quotes_doi_identifier(self, mock_session_factory):
@@ -134,7 +271,7 @@ class SemanticScholarClientTests(SimpleTestCase):
 
         self.assertEqual(cached_result, first_result)
         self.assertEqual(cached_result[0][0]["title"], "Cached citing paper")
-        session.get.assert_called_once()
+        self.assertEqual(session.get.call_count, 4)
 
     @patch("citations.services.semantic_scholar_client.build_external_api_session")
     def test_citation_counts_use_batch_request_and_cache(self, mock_session_factory):

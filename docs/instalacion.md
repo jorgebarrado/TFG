@@ -45,6 +45,7 @@ Esta guía detalla los pasos necesarios para configurar el entorno de desarrollo
     *   `DJANGO_DEBUG`: `True` para desarrollo, `False` para producción.
     *   `ALLOWED_HOSTS`: Lista de hosts permitidos (ej. `localhost,127.0.0.1`).
     *   `LOG_CITATIONS`: `1` para activar logs detallados de extracción.
+    *   `SEMANTIC_SCHOLAR_API_KEY`: opcional para desarrollo. Si se configura, se envía a Semantic Scholar como `x-api-key` y mejora la estabilidad de las peticiones. No subas nunca una key real al repositorio; el plan actual limita a 1 request/segundo.
 
 5.  **Migrar la base de datos:**
 
@@ -105,4 +106,4 @@ El proyecto incluye un visor de PDF avanzado basado en React ubicado en `fronten
 ## Notas Adicionales
 
 *   **Logs:** Los logs de extracción de citas se guardan en `tfg_project/logs/citations_context.log`.
-*   **APIs Externas:** Algunas funcionalidades dependen de la disponibilidad de la API de Semantic Scholar. Asegúrate de tener conexión a internet.
+*   **APIs Externas:** Algunas funcionalidades dependen de la disponibilidad de la API de Semantic Scholar. Asegúrate de tener conexión a internet. Puedes configurar `SEMANTIC_SCHOLAR_API_KEY` en tu `.env` local, pero es opcional y la app funciona sin ella usando peticiones no autenticadas.

@@ -40,11 +40,14 @@ from citations.services.reference_parsing_experiments.runners import (  # noqa: 
     run_refextract_parser,
 )
 from citations.services.references_data import _detect_article_doi_from_rows  # noqa: E402
+from citations.services.semantic_scholar_client import (  # noqa: E402
+    SEMANTIC_SCHOLAR_API_URL,
+    SemanticScholarError,
+    get_paper_by_doi,
+)
 
 
 CROSSREF_API_BASE = "https://api.crossref.org"
-SEMANTIC_SCHOLAR_API_URL = "https://api.semanticscholar.org/graph/v1"
-SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
 SOURCE_ORDER = [
     "extractor",
     "grobid_processReferences",
@@ -166,13 +169,6 @@ def _http_error_payload(
             **(context or {}),
         },
     }
-
-
-def _semantic_scholar_headers() -> Dict[str, str]:
-    headers = {"Accept": "application/json"}
-    if SEMANTIC_SCHOLAR_API_KEY:
-        headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY
-    return headers
 
 
 def build_external_api_session() -> requests.Session:
@@ -633,7 +629,6 @@ def _fetch_semantic_scholar_artifacts(
     timeout: int,
     output_dir: Path,
 ) -> Dict[str, Any]:
-    session = build_external_api_session()
     notes: List[str] = []
     paper_payload: Dict[str, Any] = {}
     raw_references: List[Dict[str, Any]] = []
@@ -653,18 +648,10 @@ def _fetch_semantic_scholar_artifacts(
             "notes": notes,
         }
 
-    url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/DOI:{doi}"
-    params = {
-        "fields": build_semantic_scholar_fields()
-    }
+    url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/DOI:{quote(doi, safe='')}"
     try:
-        response = session.get(
-            url,
-            headers=_semantic_scholar_headers(),
-            params=params,
-            timeout=timeout,
-        )
-    except requests.RequestException as exc:
+        payload = get_paper_by_doi(doi, fields=build_semantic_scholar_fields())
+    except SemanticScholarError as exc:
         _write_json(output_dir / "semantic_scholar_paper.json", paper_payload)
         _write_json(output_dir / "semantic_scholar_references.json", raw_references)
         _write_json(
@@ -678,21 +665,25 @@ def _fetch_semantic_scholar_artifacts(
         )
         return {"status": "error", "references": normalized_references, "notes": notes}
 
-    if response.status_code != 200:
+    if not isinstance(payload, dict):
         _write_json(output_dir / "semantic_scholar_paper.json", paper_payload)
         _write_json(output_dir / "semantic_scholar_references.json", raw_references)
         _write_json(
             output_dir / "semantic_scholar_error.json",
-            _http_error_payload(response, url=url, context={"doi": doi}),
+            {
+                "status": "error",
+                "error_type": "invalid_response",
+                "error": "Semantic Scholar did not return a JSON object.",
+                "context": {"url": url, "doi": doi},
+            },
         )
-        notes.append(f"Semantic Scholar returned HTTP {response.status_code}.")
+        notes.append("Semantic Scholar returned an invalid response.")
         _write_json(
             output_dir / "semantic_scholar_notes.json",
             {"status": "error", "doi": doi, "reference_count": 0, "notes": notes},
         )
         return {"status": "error", "references": normalized_references, "notes": notes}
 
-    payload = response.json() if response.content else {}
     paper_payload = payload if isinstance(payload, dict) else {}
     raw_references = [
         item for item in (paper_payload.get("references") or []) if isinstance(item, dict)
