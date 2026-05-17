@@ -1,5 +1,7 @@
 import json
+import uuid
 
+from django.core.files.storage import default_storage
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -7,7 +9,9 @@ from django.views.decorators.http import require_POST
 # TODO: futuro flujo avanzado de reportes (CitationReport).
 # Ahora mismo no se usa en produccion; el flujo activo usa IncorrectCitation.
 
-from .models import CitationReport, IncorrectCitation
+from .models import IncorrectCitation
+from .services.evidence import normalize_evidence_items
+from .services.report_tags import CITATION_TYPE_CHOICES, PUBLICATION_AREA_LABELS
 
 
 def create_report_wizard(request):
@@ -31,7 +35,7 @@ def create_report_wizard(request):
 
 @require_POST
 def ajax_submit_report(request):
-    """Recibe el POST del wizard y crea un CitationReport."""
+    """Recibe el POST del wizard legacy y crea un IncorrectCitation."""
     original_doi = (request.POST.get("original_doi") or "").strip()
     citing_doi = (request.POST.get("citing_doi") or "").strip()
     error_type = (request.POST.get("error_type") or "other").strip()
@@ -51,32 +55,65 @@ def ajax_submit_report(request):
 
     original_metadata = parse_json_field("original_metadata_json", {})
     citing_metadata = parse_json_field("citing_metadata_json", {})
-    citing_paragraphs = parse_json_field("citing_paragraphs_json", [])
+    evidence_items = normalize_evidence_items(
+        request.POST.get("citation_contexts_json")
+        or request.POST.get("citing_paragraphs_json"),
+        default_source="pdf_extractor",
+        default_article="citing",
+        default_kind="pdf_extracted_context",
+        default_doi=citing_doi,
+    )
 
-    report = CitationReport(
-        original_doi=original_doi,
-        original_metadata=original_metadata,
-        citing_doi=citing_doi,
-        citing_metadata=citing_metadata,
-        citing_paragraphs=citing_paragraphs,
-        error_type=error_type,
-        user_explanation=user_explanation,
+    allowed_types = dict(CITATION_TYPE_CHOICES)
+    citation_type = error_type if error_type in allowed_types else "not said"
+    publication_area = (request.POST.get("publication_area") or "OTH").strip()
+    if publication_area not in PUBLICATION_AREA_LABELS:
+        publication_area = "OTH"
+
+    citation = IncorrectCitation(
+        doi_original=original_doi,
+        doi_incorrect=citing_doi,
+        incorrect_reason=user_explanation or "Pendiente de completar",
+        citation_type=citation_type,
+        publication_area=publication_area,
+        metadata_original=original_metadata,
+        metadata_incorrect=citing_metadata,
+        citation_contexts=evidence_items,
     )
 
     if request.user.is_authenticated:
-        report.created_by = request.user
+        citation.author = request.user
+
+    citation.save()
 
     original_pdf = request.FILES.get("original_pdf_uploaded")
     if original_pdf:
-        report.original_pdf_uploaded = original_pdf
+        upload_path = default_storage.save(
+            f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{original_pdf.name}",
+            original_pdf,
+        )
+        original_metadata = dict(original_metadata)
+        original_metadata["uploaded_pdf_path"] = upload_path
+        original_metadata["uploaded_pdf_path_original"] = upload_path
+        original_metadata["url"] = default_storage.url(upload_path)
+        citation.metadata_original = original_metadata
 
     citing_pdf = request.FILES.get("citing_pdf_uploaded")
     if citing_pdf:
-        report.citing_pdf_uploaded = citing_pdf
+        upload_path = default_storage.save(
+            f"incorrect_pdfs/{citation.id}/{uuid.uuid4().hex}_{citing_pdf.name}",
+            citing_pdf,
+        )
+        citing_metadata = dict(citing_metadata)
+        citing_metadata["uploaded_pdf_path"] = upload_path
+        citing_metadata["uploaded_pdf_path_incorrect"] = upload_path
+        citing_metadata["url"] = default_storage.url(upload_path)
+        citation.metadata_incorrect = citing_metadata
 
-    report.save()
+    if original_pdf or citing_pdf:
+        citation.save(update_fields=["metadata_original", "metadata_incorrect"])
 
-    detail_url = reverse("citation_detail", args=[report.pk])
+    detail_url = reverse("citation_detail", args=[citation.pk])
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"ok": True, "redirect_url": detail_url})

@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import json
 import random
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from ..models import IncorrectCitation, UserProfile
+from ..services.evidence import normalize_evidence_items
 from ..services.dblp_client import DBLPClientError, get_author_papers
 from ..services.semantic_scholar_client import (
     SemanticScholarError,
     get_citation_counts_for_dois,
-    get_citing_papers_for_doi_paginated,
 )
 
 
@@ -81,51 +81,13 @@ def _filter_papers_with_citers(papers: list[dict]) -> list[dict]:
 
 
 def citation_review_papers(request):
-    has_dblp_url_param = "dblp_url" in request.GET
-    dblp_url = request.GET.get("dblp_url", "").strip()
-    error_message = None
-
-    if not has_dblp_url_param:
-        return render(request, "citations/tutor_papers.html", {
-            "papers": None,
-            "dblp_url": _saved_dblp_url(request),
-            "show_dblp_form": True,
-            "error_message": None,
-        })
-
-    if not dblp_url:
-        return render(request, "citations/tutor_papers.html", {
-            "papers": None,
-            "dblp_url": None,
-            "show_dblp_form": True,
-            "error_message": None,
-        })
-
-    try:
-        all_papers = get_author_papers(dblp_url)
-    except DBLPClientError as exc:
-        error_message = str(exc)
-        messages.error(request, str(exc))
-        all_papers = []
-
-    _assign_paper_ids(all_papers)
-
-    if all_papers:
-        try:
-            all_papers = _filter_papers_with_citers(all_papers)
-        except SemanticScholarError as exc:
-            error_message = str(exc)
-            messages.error(request, str(exc))
-            all_papers = []
-
-    paginator = Paginator(all_papers, 10)
-    page = paginator.get_page(request.GET.get("page"))
-
-    return render(request, "citations/tutor_papers.html", {
-        "papers": page,
-        "dblp_url": dblp_url,
-        "error_message": error_message,
-    })
+    # Flujo legacy: la revisión DBLP ya no es una pantalla oficial. DBLP actua
+    # como selector y el resultado unificado vive en doi_search_view.
+    query = request.GET.urlencode()
+    target = reverse("dblp_articles")
+    if query:
+        target = f"{target}?{query}"
+    return redirect(target)
 
 
 def citation_review_citers(request, paper_id: int):
@@ -133,76 +95,23 @@ def citation_review_citers(request, paper_id: int):
 
     if not dblp_url:
         messages.warning(request, "Introduce tu URL de DBLP para continuar.")
-        return redirect("citation_review_papers")
+        return redirect("dblp_articles")
 
     try:
         all_papers = get_author_papers(dblp_url)
     except DBLPClientError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
     if paper_id < 0 or paper_id >= len(all_papers):
-        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
     paper = all_papers[paper_id]
     paper["paper_id"] = paper_id
-
-    citing_papers = []
-    next_page_offset = None
-    error_message = None
-    limit = 10
-    offset = 0
-    offset_raw = request.GET.get("offset")
-    if offset_raw and offset_raw.isdigit():
-        offset = int(offset_raw)
-
     if paper.get("doi"):
-        try:
-            citing_papers, next_page_offset = get_citing_papers_for_doi_paginated(
-                paper["doi"], limit=limit, offset=offset
-            )
-        except (ValueError, SemanticScholarError) as exc:
-            error_message = str(exc)
-    else:
-        error_message = "Este articulo no tiene DOI, así que no se puede revisar."
-
-    registered_map = {}
-    if paper.get("doi") and request.user.is_authenticated:
-        citing_dois = [c.get("doi") for c in citing_papers if c.get("doi")]
-        if citing_dois:
-            registered = IncorrectCitation.objects.filter(
-                doi_original=paper["doi"],
-                doi_incorrect__in=citing_dois,
-            ).values("doi_incorrect", "id")
-            registered_map = {row["doi_incorrect"]: row["id"] for row in registered}
-
-    for citing in citing_papers:
-        citing_doi = citing.get("doi")
-        if citing_doi and citing_doi in registered_map:
-            citing["is_reported"] = True
-            citing["report_id"] = registered_map[citing_doi]
-        else:
-            citing["is_reported"] = False
-            citing["report_id"] = None
-        citing["metadata_json"] = json.dumps(
-            _build_citing_metadata(citing), ensure_ascii=True
-        )
-
-    paper["metadata_json"] = json.dumps(
-        _build_original_metadata(paper), ensure_ascii=True
-    )
-
-    return render(request, "citations/tutor_citers.html", {
-        "paper": paper,
-        "dblp_url": dblp_url,
-        "citing_papers": citing_papers,
-        "error_message": error_message,
-        "offset": offset,
-        "limit": limit,
-        "next_offset": next_page_offset,
-        "range_start": offset + 1 if citing_papers else 0,
-        "range_end": offset + len(citing_papers),
-    })
+        return redirect(reverse("doi_search") + "?" + urlencode({"doi": paper["doi"]}))
+    messages.warning(request, "Este articulo no tiene DOI, así que no se puede buscar citadores.")
+    return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
 
 def citation_review_random(request):
@@ -211,29 +120,26 @@ def citation_review_random(request):
 
     if not dblp_url:
         messages.warning(request, "Introduce tu URL de DBLP para continuar.")
-        return redirect("citation_review_papers")
+        return redirect("dblp_articles")
 
     try:
         all_papers = get_author_papers(dblp_url)
     except DBLPClientError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
     _assign_paper_ids(all_papers)
     try:
         papers_with_citers = _filter_papers_with_citers(all_papers)
     except SemanticScholarError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
     if not papers_with_citers:
         messages.warning(request, "No hay articulos con citantes en este perfil DBLP.")
-        return redirect(reverse("citation_review_papers") + f"?dblp_url={dblp_url}")
+        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
     paper = random.choice(papers_with_citers)
-    return redirect(
-        reverse("citation_review_citers", args=[paper["paper_id"]])
-        + f"?dblp_url={dblp_url}"
-    )
+    return redirect(reverse("doi_search") + "?" + urlencode({"doi": paper["doi"]}))
 
 
 @require_POST
@@ -253,10 +159,18 @@ def citation_review_create_report(request):
 
     metadata_original = _parse_json("original_metadata_json")
     metadata_incorrect = _parse_json("citing_metadata_json")
+    evidence_items = normalize_evidence_items(
+        request.POST.get("citation_contexts_json")
+        or request.POST.get("citing_paragraphs_json"),
+        default_source="semantic_scholar",
+        default_article="citing",
+        default_kind="citation_context",
+        default_doi=citing_doi,
+    )
 
     if not original_doi and not citing_doi:
         messages.error(request, "No se pudo crear el reporte sin DOIs.")
-        return redirect("citation_review_papers")
+        return redirect("doi_search")
 
     citation = IncorrectCitation(
         author=request.user,
@@ -267,6 +181,7 @@ def citation_review_create_report(request):
         publication_area="OTH",
         metadata_original=metadata_original,
         metadata_incorrect=metadata_incorrect,
+        citation_contexts=evidence_items,
     )
     citation.save()
 

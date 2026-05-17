@@ -1,6 +1,8 @@
 """Views related to user profiles and personalized content."""
 
 
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -19,6 +21,7 @@ from ..models import (
     Vote,
 )
 from ..services.dblp_client import DBLPClientError, get_author_papers
+from ..services.evidence import normalize_evidence_items
 from ..services.semantic_scholar_client import (
     SemanticScholarError,
     get_citation_counts_for_dois,
@@ -296,14 +299,13 @@ def doi_search_view(request):
     if offset_raw and offset_raw.isdigit():
         offset = int(offset_raw)
 
-    import json as _json
     paper_metadata_json = ""
     try:
         paper = get_paper_metadata_by_doi(doi)
         if paper is None:
             error_message = f"No se encontró ningún artículo con DOI '{doi}' en Semantic Scholar."
         else:
-            paper_metadata_json = _json.dumps({
+            paper_metadata_json = json.dumps({
                 "title": paper.get("title"),
                 "doi": paper.get("doi") or doi,
                 "year": paper.get("year"),
@@ -316,6 +318,26 @@ def doi_search_view(request):
             )
     except SemanticScholarError as exc:
         error_message = str(exc)
+
+    for citing in citing_papers:
+        citing_metadata = {
+            "title": citing.get("title"),
+            "doi": citing.get("doi"),
+            "year": citing.get("year"),
+            "authors": citing.get("authors"),
+            "url": citing.get("url"),
+            "source": "semantic_scholar",
+        }
+        citing["metadata_json"] = json.dumps(citing_metadata, ensure_ascii=True)
+        evidence_items = normalize_evidence_items(
+            citing.get("contexts") or [],
+            default_source="semantic_scholar",
+            default_article="citing",
+            default_kind="citation_context",
+            default_doi=citing.get("doi") or "",
+        )
+        citing["evidence_items"] = evidence_items
+        citing["evidence_json"] = json.dumps(evidence_items, ensure_ascii=True)
 
     range_start = offset + 1 if citing_papers else 0
     range_end = offset + len(citing_papers)

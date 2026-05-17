@@ -105,6 +105,8 @@
 
           <input type="hidden" name="original_metadata_json" id="id_original_metadata_json">
           <input type="hidden" name="citing_metadata_json" id="id_citing_metadata_json">
+          <input type="hidden" name="citation_contexts_json" id="id_citation_contexts_json">
+          <input type="hidden" name="citing_paragraphs_json" id="id_citing_paragraphs_json">
 
           <div class="mt-3">
             <label for="incorrect_reason" class="form-label">{% trans "Motivo" %}</label>
@@ -115,6 +117,18 @@
               placeholder="{% trans 'Describa el motivo del reporte...' %}"
               required
             ></textarea>
+          </div>
+
+          <div class="mt-3">
+            <label for="id_manual_evidence_text" class="form-label">{% trans "Evidencia de la cita" %}</label>
+            <textarea
+              id="id_manual_evidence_text"
+              class="form-control"
+              name="manual_evidence_text"
+              rows="3"
+              placeholder="{% trans 'Pega aqui el fragmento donde el articulo citante menciona o interpreta el articulo original...' %}"
+            ></textarea>
+            <div id="prefilled-evidence-preview" class="mt-2 d-none"></div>
           </div>
 
           <div class="row g-3 mt-1">
@@ -224,6 +238,10 @@ const incorrectInput = document.getElementById('id_doi_incorrect');
 const reportTitleInput = document.getElementById('id_report_title');
 const originalMetaInput = document.getElementById('id_original_metadata_json');
 const incorrectMetaInput = document.getElementById('id_citing_metadata_json');
+const citationContextsInput = document.getElementById('id_citation_contexts_json');
+const legacyParagraphsInput = document.getElementById('id_citing_paragraphs_json');
+const manualEvidenceInput = document.getElementById('id_manual_evidence_text');
+const prefilledEvidencePreview = document.getElementById('prefilled-evidence-preview');
 const originalPdfInput = document.getElementById('id_uploaded_pdf_original_file');
 const incorrectPdfInput = document.getElementById('id_uploaded_pdf_incorrect_file');
 const citationTypeSelect = document.getElementById('citation_type');
@@ -431,6 +449,48 @@ function prefillReportModal(payload) {
   }
   if (incorrectMetaInput) {
     incorrectMetaInput.value = payload.incorrectMetadata || '';
+  }
+  const evidenceJson = payload.citationContexts || payload.evidenceJson || '';
+  if (citationContextsInput) {
+    citationContextsInput.value = evidenceJson;
+  }
+  if (legacyParagraphsInput) {
+    legacyParagraphsInput.value = evidenceJson;
+  }
+  if (manualEvidenceInput) {
+    manualEvidenceInput.value = payload.manualEvidence || '';
+  }
+  if (prefilledEvidencePreview) {
+    let evidenceItems = [];
+    if (evidenceJson) {
+      try {
+        const parsed = JSON.parse(evidenceJson);
+        evidenceItems = Array.isArray(parsed) ? parsed : [parsed];
+      } catch (err) {
+        evidenceItems = [];
+      }
+    }
+    const escapeHtml = (value) =>
+      String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    if (evidenceItems.length) {
+      prefilledEvidencePreview.classList.remove('d-none');
+      prefilledEvidencePreview.innerHTML = `
+        <div class="border rounded-3 p-2 bg-light">
+          <div class="small fw-semibold text-muted mb-1">{% trans "Evidencias detectadas" %}: ${evidenceItems.length}</div>
+          ${evidenceItems.slice(0, 3).map((item) => {
+            const text = item.text || item.paragraph || item.snippet || '';
+            return `<div class="small text-body mb-1" style="white-space:pre-wrap;">${escapeHtml(String(text).slice(0, 240))}</div>`;
+          }).join('')}
+        </div>`;
+    } else {
+      prefilledEvidencePreview.classList.add('d-none');
+      prefilledEvidencePreview.innerHTML = '';
+    }
   }
   if (citationTypeSelect) {
     const selectedValues = Array.isArray(payload.citationTypes)

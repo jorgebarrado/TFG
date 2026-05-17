@@ -15,6 +15,7 @@ from django.views.decorators.http import require_POST
 
 from ..forms import IncorrectCitationForm, RegisterForm
 from ..models import Comment, IncorrectCitation, SavedCitation, Vote
+from ..services.evidence import normalize_evidence_items
 from ..services.report_tags import (
     CITATION_TYPE_CHOICES,
     PUBLICATION_AREA_LABELS,
@@ -163,13 +164,26 @@ def ajax_submit_citation(request):
             except json.JSONDecodeError:
                 pass
 
-        # Contextos seleccionados donde aparece la cita
-        raw_contexts = request.POST.get("citing_paragraphs_json")
-        if raw_contexts:
-            try:
-                citation.citation_contexts = json.loads(raw_contexts)
-            except json.JSONDecodeError:
-                pass
+        # Evidencias del reporte. Mantiene compatibilidad con el antiguo
+        # campo citing_paragraphs_json, pero normaliza todo a citation_contexts.
+        raw_contexts = request.POST.get("citation_contexts_json") or request.POST.get(
+            "citing_paragraphs_json"
+        )
+        evidence_items = normalize_evidence_items(
+            raw_contexts,
+            default_source="semantic_scholar",
+            default_article="citing",
+            default_kind="citation_context",
+            default_doi=citation.doi_incorrect,
+        )
+        manual_evidence = normalize_evidence_items(
+            request.POST.get("manual_evidence_text"),
+            default_source="manual",
+            default_article="citing",
+            default_kind="manual_text",
+        )
+        if evidence_items or manual_evidence:
+            citation.citation_contexts = evidence_items + manual_evidence
 
         apply_report_tags(citation, selected_types, selected_areas)
         citation.save()

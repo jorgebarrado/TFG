@@ -7,7 +7,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from citations.models import UserProfile
-from citations.services.dblp_client import DBLPClientError
 
 
 class DBLPLoadingIndicatorTests(TestCase):
@@ -59,20 +58,16 @@ class DBLPLoadingIndicatorTests(TestCase):
         self.assertNotContains(response, "<strong>Perfil DBLP:</strong>")
         mock_get_author_papers.assert_not_called()
 
-    def test_citation_review_load_form_renders_loading_indicator(self):
+    def test_citation_review_papers_redirects_to_dblp_selector(self):
         response = self.client.get(reverse("citation_review_papers"))
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-dblp-load-form')
-        self.assertContains(response, 'id="dblp-load-progress"')
-        self.assertContains(response, 'class="extract-progress d-none"')
-        self.assertContains(response, 'Buscando articulos en DBLP')
+        self.assertRedirects(
+            response,
+            reverse("dblp_articles"),
+            fetch_redirect_response=False,
+        )
 
-    @patch("citations.views.tutor_views.get_author_papers")
-    def test_logged_user_sees_prefilled_citation_review_form_without_auto_loading_dblp(
-        self,
-        mock_get_author_papers,
-    ):
+    def test_citation_review_papers_preserves_query_redirect(self):
         user = User.objects.create_user(username="grace", password="test-pass")
         self.client.force_login(user)
         UserProfile.objects.update_or_create(
@@ -80,92 +75,42 @@ class DBLPLoadingIndicatorTests(TestCase):
             defaults={"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
         )
 
-        response = self.client.get(reverse("citation_review_papers"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-dblp-load-form')
-        self.assertContains(
-            response,
-            'value="https://dblp.org/pid/t/TestAuthor.html"',
-        )
-        self.assertNotContains(response, "Artículo aleatorio")
-        mock_get_author_papers.assert_not_called()
-
-    @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_shows_dblp_error_instead_of_empty_state(
-        self,
-        mock_get_author_papers,
-    ):
-        mock_get_author_papers.side_effect = DBLPClientError(
-            "No se pudo conectar con DBLP."
-        )
-
         response = self.client.get(
             reverse("citation_review_papers"),
             {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No se pudo conectar con DBLP.")
-        self.assertNotContains(response, "No hemos encontrado articulos en DBLP.")
+        self.assertRedirects(
+            response,
+            reverse("dblp_articles")
+            + "?dblp_url=https%3A%2F%2Fdblp.org%2Fpid%2Ft%2FTestAuthor.html",
+            fetch_redirect_response=False,
+        )
 
-    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
     @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_excludes_papers_without_citers(
+    def test_citation_review_citers_redirects_to_official_doi_search(
         self,
         mock_get_author_papers,
-        mock_get_citation_counts_for_dois,
     ):
         mock_get_author_papers.return_value = [
             {"title": "Without citers", "type": "article", "doi": "10.1000/none"},
             {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
-            {"title": "No DOI paper", "type": "article", "doi": ""},
         ]
-        mock_get_citation_counts_for_dois.return_value = {
-            "10.1000/none": 0,
-            "10.1000/with": 3,
-        }
 
         response = self.client.get(
-            reverse("citation_review_papers"),
+            reverse("citation_review_citers", args=[1]),
             {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Has citers")
-        self.assertNotContains(response, "Without citers")
-        self.assertNotContains(response, "No DOI paper")
-        self.assertContains(response, reverse("citation_review_citers", args=[1]))
-        mock_get_citation_counts_for_dois.assert_called_once_with(
-            ["10.1000/none", "10.1000/with"]
-        )
-
-    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
-    @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_random_link_preserves_dblp_url_for_anonymous(
-        self,
-        mock_get_author_papers,
-        mock_get_citation_counts_for_dois,
-    ):
-        mock_get_author_papers.return_value = [
-            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
-        ]
-        mock_get_citation_counts_for_dois.return_value = {"10.1000/with": 3}
-
-        response = self.client.get(
-            reverse("citation_review_papers"),
-            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
+        self.assertRedirects(
             response,
-            f'href="{reverse("citation_review_random")}?dblp_url=https%3A//dblp.org/pid/t/TestAuthor.html"',
+            reverse("doi_search") + "?doi=10.1000%2Fwith",
+            fetch_redirect_response=False,
         )
 
     @patch("citations.views.tutor_views.get_citation_counts_for_dois")
     @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_random_uses_only_papers_with_citers(
+    def test_citation_review_random_redirects_to_official_doi_search(
         self,
         mock_get_author_papers,
         mock_get_citation_counts_for_dois,
@@ -186,8 +131,7 @@ class DBLPLoadingIndicatorTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse("citation_review_citers", args=[1])
-            + "?dblp_url=https://dblp.org/pid/t/TestAuthor.html",
+            reverse("doi_search") + "?doi=10.1000%2Fwith",
             fetch_redirect_response=False,
         )
         mock_get_citation_counts_for_dois.assert_called_once_with(

@@ -300,11 +300,11 @@ class Notification(models.Model):
         return f"{self.title} -> {self.user.username}"
 
 
-# TODO: futuro flujo avanzado de reportes (CitationReport).
-# Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
+# Modelo legacy conservado por compatibilidad de migraciones.
+# El producto final crea y muestra reportes con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Flujo antiguo de wizard. No forma parte del flujo productivo actual.
     """
 
     created_by = models.ForeignKey(
@@ -328,7 +328,7 @@ class CitationReport(models.Model):
         upload_to="citing_pdfs/", null=True, blank=True
     )
 
-    # Párrafos seleccionados donde aparece la cita
+    # Campo legacy de párrafos seleccionados donde aparecía la cita
     citing_paragraphs = models.JSONField(null=True, blank=True)  # lista de dicts
     citing_pages = models.JSONField(null=True, blank=True)
 

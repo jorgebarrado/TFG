@@ -1,3 +1,4 @@
+import json
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -501,6 +502,52 @@ class ApiViewTests(LoggedInTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
+        citation = IncorrectCitation.objects.latest("id")
+        self.assertEqual(citation.citation_contexts, None)
+
+    def test_ajax_submit_citation_normalizes_manual_evidence(self):
+        self.client.login(username="user1", password="password")
+        response = self.client.post(
+            reverse("ajax_submit"),
+            {
+                "doi_original": "10.1000/new_orig",
+                "doi_incorrect": "10.1000/new_inc",
+                "incorrect_reason": "Razón de prueba",
+                "report_title": "Reporte con evidencia",
+                "citation_type": "misinterpretation",
+                "publication_area": "CIS",
+                "manual_evidence_text": "Texto citado manualmente",
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        citation = IncorrectCitation.objects.get(id=response.json()["citation_id"])
+        self.assertEqual(citation.citation_contexts[0]["source"], "manual")
+        self.assertEqual(citation.citation_contexts[0]["text"], "Texto citado manualmente")
+
+    def test_add_evidence_endpoint_appends_reader_selection(self):
+        self.client.login(username="user1", password="password")
+        response = self.client.post(
+            reverse("citation_add_evidence", args=[self.report1.id]),
+            data=json.dumps(
+                {
+                    "source": "reader_selection",
+                    "article": "citing",
+                    "kind": "pdf_selection",
+                    "text": "Texto seleccionado en el reader",
+                    "page": 4,
+                    "boxes": [],
+                }
+            ),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.report1.refresh_from_db()
+        self.assertEqual(self.report1.citation_contexts[0]["source"], "reader_selection")
+        self.assertEqual(self.report1.citation_contexts[0]["page"], 4)
 
     def test_ajax_submit_citation_invalid(self):
         self.client.login(username="user1", password="password")

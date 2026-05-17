@@ -89,6 +89,59 @@ function looksLikeFalseAuthorHead(text) {
   return AUTHOR_YEAR_FALSE_HEADS.has(head.toLowerCase());
 }
 
+function getCookieValue(name) {
+  const target = `${name}=`;
+  return String(document.cookie || "")
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(target))
+    ?.slice(target.length) || "";
+}
+
+function elementFromSelectionNode(node) {
+  if (!node) return null;
+  return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+}
+
+function getReaderSelectionPayload(viewerEl) {
+  const selection = window.getSelection?.();
+  const text = String(selection?.toString() || "").trim();
+  if (!selection || !text || !selection.rangeCount) {
+    return null;
+  }
+
+  const anchorEl = elementFromSelectionNode(selection.anchorNode);
+  const focusEl = elementFromSelectionNode(selection.focusNode);
+  const pageEl =
+    anchorEl?.closest?.(".pdf-reader__page") ||
+    focusEl?.closest?.(".pdf-reader__page") ||
+    null;
+  if (viewerEl && pageEl && !viewerEl.contains(pageEl)) {
+    return null;
+  }
+
+  const pageNumber = Number(
+    pageEl?.dataset?.pageNumber || pageEl?.getAttribute?.("data-page-number")
+  );
+  const page = Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : null;
+  const range = selection.getRangeAt(0);
+  const pageRect = pageEl?.getBoundingClientRect?.();
+  const boxes =
+    pageRect
+      ? Array.from(range.getClientRects())
+          .filter((rect) => rect.width > 0 && rect.height > 0)
+          .slice(0, 24)
+          .map((rect) => ({
+            left: Math.max(0, rect.left - pageRect.left),
+            top: Math.max(0, rect.top - pageRect.top),
+            width: rect.width,
+            height: rect.height,
+          }))
+      : [];
+
+  return { text, page, boxes };
+}
+
 function stripDoiTrailing(value) {
   let cleaned = String(value || "");
   while (cleaned.length) {
@@ -2135,6 +2188,70 @@ function PageNavigator({ viewerRef }) {
   );
 }
 
+function SelectionEvidenceButton({ viewerRef, evidenceUrl }) {
+  const [status, setStatus] = useState({ tone: "idle", text: "" });
+  const [saving, setSaving] = useState(false);
+
+  if (!evidenceUrl) return null;
+
+  const saveSelection = async () => {
+    const payload = getReaderSelectionPayload(viewerRef?.current);
+    if (!payload?.text) {
+      setStatus({ tone: "warning", text: "Selecciona texto del PDF primero." });
+      return;
+    }
+    setSaving(true);
+    setStatus({ tone: "idle", text: "" });
+    try {
+      const response = await fetch(evidenceUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookieValue("csrftoken"),
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+          source: "reader_selection",
+          article: "citing",
+          kind: "pdf_selection",
+          text: payload.text,
+          page: payload.page,
+          boxes: payload.boxes,
+        }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) {
+        setStatus({ tone: "error", text: "No se pudo guardar la evidencia." });
+        return;
+      }
+      window.getSelection?.().removeAllRanges?.();
+      setStatus({ tone: "success", text: "Evidencia guardada." });
+    } catch (err) {
+      setStatus({ tone: "error", text: "Error de red al guardar." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="reader-toolbar-group reader-evidence-toolbar">
+      <button
+        type="button"
+        className="reader-tool-btn"
+        onClick={saveSelection}
+        disabled={saving}
+      >
+        {saving ? "Guardando..." : "Usar como evidencia"}
+      </button>
+      {status.text && (
+        <span className={`reader-selection-status is-${status.tone}`}>
+          {status.text}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function PdfPages() {
   const { numPages } = React.useContext(DocumentContext);
   if (!numPages) {
@@ -2155,6 +2272,7 @@ function PdfPages() {
 
 function PdfViewer({
   pdfUrl,
+  evidenceUrl,
   selectedMention,
   onHighlight,
   viewerRef,
@@ -2227,6 +2345,7 @@ function PdfViewer({
         <div className="reader-toolbar">
           <ZoomControls />
           <PageNavigator viewerRef={viewerRef} />
+          <SelectionEvidenceButton viewerRef={viewerRef} evidenceUrl={evidenceUrl} />
         </div>
         <div className="reader-scroll" ref={viewerRef}>
           <DocumentWrapper file={pdfUrl} renderType={RENDER_TYPE.MULTI_CANVAS}>
@@ -2242,6 +2361,7 @@ export default function ReaderApp({
   apiUrl,
   pdfUrl,
   reportId,
+  evidenceUrl = "",
   reportOriginalDoi = "",
   reportIncorrectDoi = "",
   previewFile,
@@ -5817,6 +5937,7 @@ export default function ReaderApp({
         <div className="reader-viewer-shell" ref={viewerShellRef}>
           <PdfViewer
             pdfUrl={resolvedPdfUrl}
+            evidenceUrl={evidenceUrl}
             selectedMention={selectedSnippet}
             onHighlight={handleHighlight}
             viewerRef={viewerRef}

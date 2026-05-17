@@ -8,6 +8,7 @@
   data-api-url="{% url 'api_reader_data' report_id=report_id %}"
   data-pdf-url="{{ pdf_url|default:'' }}"
   data-report-id="{{ report_id }}"
+  data-evidence-url="{{ evidence_add_url|default:'' }}"
   data-original-doi="{{ citation.doi_original|default:'' }}"
   data-incorrect-doi="{{ citation.doi_incorrect|default:'' }}"
 ></div>

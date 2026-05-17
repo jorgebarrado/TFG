@@ -262,54 +262,79 @@
             <section class="mb-4">
                 <div class="card surface-card report-content-card">
                     <div class="card-body">
-                        <h5 class="card-title mb-3"><i class="bi bi-quote me-2 text-secondary"></i>{% trans "Párrafos donde aparece la cita" %}</h5>
+                        <h5 class="card-title mb-3"><i class="bi bi-quote me-2 text-secondary"></i>{% trans "Evidencias del reporte" %}</h5>
                         {% if can_edit_report %}
                         <form method="post" action="{% url 'citation_extract_contexts' citation.id %}" class="mb-3 d-inline">
                             {% csrf_token %}
                             <input type="hidden" name="engine" value="generic">
                             <button class="btn btn-outline-primary btn-sm">
-                                {% trans "Detectar parrafos con extractor" %}
+                                {% trans "Detectar evidencias con extractor" %}
                             </button>
                         </form>
                         {% endif %}
-                        {% if citation.citation_contexts %}
+                        {% if evidence_items %}
                             {% if can_edit_report %}
                             <form method="post" action="{% url 'citation_extract_contexts' citation.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="context_selection" value="1">
                                 <div class="list-group list-group-flush">
-                                    {% for ctx in citation.citation_contexts %}
+                                    {% for ctx in evidence_items %}
                                         <label class="list-group-item px-0 d-flex gap-2 align-items-start">
                                             <input type="checkbox" class="form-check-input mt-1" name="selected_context_index" value="{{ forloop.counter0 }}" checked>
                                             <div>
-                                                <div class="small text-muted mb-1">
-                                                    {% trans "Página" %} {{ ctx.page }}{% if ctx.pattern %} · {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code>{% endif %}
+                                                <div class="small text-muted mb-1 d-flex flex-wrap gap-2">
+                                                    <span>{{ ctx.source_label }}</span>
+                                                    {% if ctx.article_label %}<span>· {{ ctx.article_label }}</span>{% endif %}
+                                                    {% if ctx.page %}<span>· {% trans "Página" %} {{ ctx.page }}</span>{% endif %}
+                                                    {% if ctx.pattern %}<span>· {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code></span>{% endif %}
                                                 </div>
-                                                <div class="small" style="white-space: pre-wrap;">{{ ctx.paragraph }}</div>
+                                                <div class="small" style="white-space: pre-wrap;">{{ ctx.text }}</div>
+                                                {% if ctx.pdf_url %}
+                                                <a class="small" href="{{ ctx.pdf_url }}" target="_blank" rel="noopener">{% trans "Abrir PDF" %}</a>
+                                                {% endif %}
                                             </div>
                                         </label>
                                     {% endfor %}
                                 </div>
                                 <div class="mt-3">
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                        {% trans "Guardar selección de párrafos" %}
+                                        {% trans "Guardar selección de evidencias" %}
                                     </button>
                                 </div>
                             </form>
                             {% else %}
                             <div class="list-group list-group-flush">
-                                {% for ctx in citation.citation_contexts %}
+                                {% for ctx in evidence_items %}
                                     <div class="list-group-item px-0">
-                                        <div class="small text-muted mb-1">
-                                            {% trans "Página" %} {{ ctx.page }}{% if ctx.pattern %} · {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code>{% endif %}
+                                        <div class="small text-muted mb-1 d-flex flex-wrap gap-2">
+                                            <span>{{ ctx.source_label }}</span>
+                                            {% if ctx.article_label %}<span>· {{ ctx.article_label }}</span>{% endif %}
+                                            {% if ctx.page %}<span>· {% trans "Página" %} {{ ctx.page }}</span>{% endif %}
+                                            {% if ctx.pattern %}<span>· {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code></span>{% endif %}
                                         </div>
-                                        <div class="small" style="white-space: pre-wrap;">{{ ctx.paragraph }}</div>
+                                        <div class="small" style="white-space: pre-wrap;">{{ ctx.text }}</div>
+                                        {% if ctx.pdf_url %}
+                                        <a class="small" href="{{ ctx.pdf_url }}" target="_blank" rel="noopener">{% trans "Abrir PDF" %}</a>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
                             {% endif %}
                         {% else %}
-                            <p class="text-muted mb-0">{% trans "Este reporte se creó sin seleccionar párrafos concretos del artículo que cita." %}</p>
+                            <p class="text-muted mb-0">{% trans "Este reporte todavía no tiene evidencias textuales asociadas." %}</p>
+                        {% endif %}
+                        {% if can_edit_report %}
+                        <form method="post" action="{% url 'citation_add_evidence' citation.id %}" class="mt-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="source" value="manual">
+                            <input type="hidden" name="article" value="citing">
+                            <input type="hidden" name="kind" value="manual_text">
+                            <label for="manual-evidence-text" class="form-label small">{% trans "Añadir evidencia manual" %}</label>
+                            <textarea id="manual-evidence-text" name="text" class="form-control form-control-sm" rows="3" placeholder="{% trans 'Pega un fragmento textual relevante...' %}"></textarea>
+                            <button type="submit" class="btn btn-outline-primary btn-sm mt-2">
+                                {% trans "Añadir evidencia" %}
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>

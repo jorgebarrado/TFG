@@ -198,6 +198,7 @@ function renderReaderApp() {
   const apiUrl = mount.dataset.apiUrl || "";
   const pdfUrl = mount.dataset.pdfUrl || "";
   const reportId = mount.dataset.reportId || "";
+  const evidenceUrl = mount.dataset.evidenceUrl || "";
   const reportOriginalDoi = mount.dataset.originalDoi || "";
   const reportIncorrectDoi = mount.dataset.incorrectDoi || "";
   ReactDOM.render(
@@ -205,6 +206,7 @@ function renderReaderApp() {
       apiUrl={apiUrl}
       pdfUrl={pdfUrl}
       reportId={reportId}
+      evidenceUrl={evidenceUrl}
       reportOriginalDoi={reportOriginalDoi}
       reportIncorrectDoi={reportIncorrectDoi}
       previewFile={previewFile}
