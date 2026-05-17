@@ -88,7 +88,7 @@
         <ul class="dropdown-menu shadow-sm">
           <li>
             <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">
-              {% trans "Rapido" %}
+              {% trans "Crear reporte" %}
             </button>
           </li>
           <li>
@@ -134,13 +134,13 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'dblp_articles' %}">
-              {% trans "Explorar DBLP" %}
+            <a class="dropdown-item" href="{% url 'doi_search' %}">
+              {% trans "Buscar citadores" %}
             </a>
           </li>
           <li>
-            <a class="dropdown-item" href="{% url 'citation_review_papers' %}">
-              {% trans "Revisión de citas (DBLP)" %}
+            <a class="dropdown-item" href="{% url 'dblp_articles' %}">
+              {% trans "Usar perfil DBLP para elegir un artículo" %}
             </a>
           </li>
         </ul>

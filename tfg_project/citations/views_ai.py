@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 from .models import IncorrectCitation
 from .services.ai_citation_detector import ai_detect_citations_for_report
 from .services.ai_report_evaluator import analyze_report_with_ai
+from .services.evidence import normalize_evidence_items
 
 
 @require_POST
@@ -14,7 +15,13 @@ def citation_ai_detect(request, pk):
 
     try:
         contexts = ai_detect_citations_for_report(citation)
-        citation.citation_contexts = contexts
+        citation.citation_contexts = normalize_evidence_items(
+            contexts,
+            default_source="pdf_extractor",
+            default_article="citing",
+            default_kind="pdf_extracted_context",
+            default_doi=citation.doi_incorrect,
+        )
         citation.save()
         messages.success(
             request,

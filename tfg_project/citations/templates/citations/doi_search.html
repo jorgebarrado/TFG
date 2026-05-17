@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Buscar por DOI - CiteCheck{% endblock %}
+{% block title %}Buscar citadores - CiteCheck{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
   <section class="hero-card mb-4">
     <div>
-      <p class="muted-label mb-1">Búsqueda por artículo</p>
-      <h1 class="fw-bold mb-2">¿Quién cita tu artículo?</h1>
+      <p class="muted-label mb-1">Buscar citadores</p>
+      <h1 class="fw-bold mb-2">Artículo original y artículos citadores</h1>
       <p class="text-muted mb-0">
-        Introduce el DOI de cualquier artículo para ver todos los trabajos que lo han citado.
+        Introduce el DOI de un artículo original para ver trabajos citadores y crear un reporte verificable.
       </p>
     </div>
   </section>
@@ -43,7 +43,7 @@
   {% if paper %}
     <section class="hero-card mb-4">
       <div>
-        <p class="muted-label mb-1">Artículo buscado</p>
+        <p class="muted-label mb-1">Artículo original</p>
         <h2 class="fw-bold mb-2">{{ paper.title }}</h2>
         <div class="d-flex flex-wrap gap-2 mb-2">
           {% if paper.year %}
@@ -65,7 +65,7 @@
 
     {% if citing_papers %}
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Artículos citantes</h4>
+        <h4 class="mb-0">Artículos citadores</h4>
         {% if total %}
           <span class="text-muted small">
             Mostrando {{ range_start }}–{{ range_end }} / {{ total }}
@@ -104,10 +104,10 @@
                   </div>
                   {% if citing.contexts %}
                     <div class="mt-3">
-                      <p class="small fw-semibold text-muted mb-1">Fragmento donde aparece la cita:</p>
-                      {% for snippet in citing.contexts %}
+                      <p class="small fw-semibold text-muted mb-1">Evidencias devueltas por Semantic Scholar:</p>
+                      {% for evidence in citing.evidence_items %}
                         <blockquote class="blockquote-sm border-start border-3 border-warning ps-3 py-1 mb-2">
-                          <p class="small mb-0 fst-italic text-body">{{ snippet }}</p>
+                          <p class="small mb-0 fst-italic text-body">{{ evidence.text }}</p>
                         </blockquote>
                       {% endfor %}
                     </div>
@@ -119,8 +119,9 @@
                           style="white-space:nowrap;"
                           data-original-doi="{{ doi }}"
                           data-incorrect-doi="{{ citing.doi|default:'' }}"
-                          data-original-metadata="{{ paper_metadata_json|escapejs }}"
-                          data-incorrect-metadata="">
+                          data-original-metadata="{{ paper_metadata_json|escape }}"
+                          data-incorrect-metadata="{{ citing.metadata_json|escape }}"
+                          data-evidence-json="{{ citing.evidence_json|escape }}">
                     Crear reporte
                   </button>
                 </div>
@@ -162,6 +163,7 @@
           incorrectDoi: btn.dataset.incorrectDoi || '',
           originalMetadata: btn.dataset.originalMetadata || '',
           incorrectMetadata: btn.dataset.incorrectMetadata || '',
+          evidenceJson: btn.dataset.evidenceJson || '',
         });
         modal.show();
       });

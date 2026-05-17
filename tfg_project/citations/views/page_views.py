@@ -1,5 +1,6 @@
 """Views for pages that render complete HTML pages."""
 
+import json
 import os
 import re
 import tempfile
@@ -36,6 +37,11 @@ from ..models import (
 from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.citation_extractor import process_manuscript
 from ..services.engines import ALLOWED_ENGINES
+from ..services.evidence import (
+    evidence_article_label,
+    evidence_source_label,
+    normalize_evidence_items,
+)
 from ..services.reader_data import extract_pdf_references, extract_pdf_url_from_metadata
 from ..services.report_tags import (
     CITATION_TYPE_CHOICES,
@@ -241,6 +247,19 @@ def _context_dedupe_key(page, paragraph: str, snippet: str) -> tuple[str, str]:
     )
     page_key = str(page).strip() if page is not None else ""
     return page_key, primary_text
+
+
+def _evidence_items_for_display(citation, original_pdf_url: str, incorrect_pdf_url: str):
+    evidence_items = normalize_evidence_items(citation.citation_contexts)
+    for item in evidence_items:
+        source = str(item.get("source") or "")
+        article = str(item.get("article") or "citing")
+        item["source_label"] = evidence_source_label(source)
+        item["article_label"] = evidence_article_label(article)
+        item["pdf_url"] = (
+            original_pdf_url if article == "original" else incorrect_pdf_url
+        )
+    return evidence_items
 
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
@@ -647,6 +666,11 @@ def citation_detail(request, pk):
     else:
         incorrect_pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
 
+    evidence_items = _evidence_items_for_display(
+        citation,
+        original_pdf_url=original_pdf_url or "",
+        incorrect_pdf_url=incorrect_pdf_url or "",
+    )
     can_edit_report = _can_edit_report(request.user, citation)
     report_edit_mode = can_edit_report and (
         request.GET.get("edit") == "1" or request.GET.get("edit_header") == "1"
@@ -677,6 +701,7 @@ def citation_detail(request, pk):
         "pdf_url": incorrect_pdf_url or "",
         "original_pdf_url": original_pdf_url or "",
         "incorrect_pdf_url": incorrect_pdf_url or "",
+        "evidence_items": evidence_items,
         "can_edit_report": can_edit_report,
         "report_edit_mode": report_edit_mode,
         "header_edit_mode": header_edit_mode,
@@ -903,6 +928,60 @@ def citation_discard_draft(request, pk):
     return JsonResponse({"success": True})
 
 
+@login_required
+@require_POST
+def citation_add_evidence(request, pk):
+    citation = get_object_or_404(IncorrectCitation, pk=pk)
+    if not _can_edit_report(request.user, citation):
+        return JsonResponse({"success": False, "error": "forbidden"}, status=403)
+
+    wants_json = (
+        "application/json" in str(request.headers.get("Content-Type", ""))
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    if "application/json" in str(request.headers.get("Content-Type", "")):
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+    else:
+        payload = request.POST.dict()
+    if not isinstance(payload, dict):
+        payload = {"text": payload}
+
+    evidence_items = normalize_evidence_items(
+        payload,
+        default_source=str(payload.get("source") or "manual"),
+        default_article=str(payload.get("article") or "citing"),
+        default_kind=str(payload.get("kind") or "manual_text"),
+        default_doi=citation.doi_incorrect,
+    )
+    if not evidence_items:
+        if wants_json:
+            return JsonResponse(
+                {"success": False, "error": "empty_evidence"},
+                status=400,
+            )
+        messages.error(request, "La evidencia no puede estar vacia.")
+        return redirect("citation_detail", pk=pk)
+
+    current_items = normalize_evidence_items(citation.citation_contexts)
+    citation.citation_contexts = current_items + evidence_items
+    citation.save(update_fields=["citation_contexts"])
+
+    if wants_json:
+        return JsonResponse(
+            {
+                "success": True,
+                "evidence": evidence_items[-1],
+                "count": len(citation.citation_contexts),
+            }
+        )
+
+    messages.success(request, "Evidencia añadida correctamente.")
+    return redirect("citation_detail", pk=pk)
+
+
 @xframe_options_sameorigin
 def citation_uploaded_pdf(request, pk, article: str = "incorrect"):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
@@ -991,16 +1070,12 @@ def citation_extract_contexts(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     if not _can_edit_report(request.user, citation):
         messages.error(
-            request, "No tienes permiso para actualizar los parrafos de cita."
+            request, "No tienes permiso para actualizar las evidencias."
         )
         return redirect("citation_detail", pk=pk)
 
     if request.POST.get("context_selection") == "1":
-        existing_contexts = (
-            citation.citation_contexts
-            if isinstance(citation.citation_contexts, list)
-            else []
-        )
+        existing_contexts = normalize_evidence_items(citation.citation_contexts)
         selected_indices = set()
         for raw_idx in request.POST.getlist("selected_context_index"):
             try:
@@ -1017,7 +1092,7 @@ def citation_extract_contexts(request, pk):
         citation.save(update_fields=["citation_contexts"])
         messages.success(
             request,
-            f"Seleccion actualizada: {len(selected_contexts)} parrafos guardados.",
+            f"Seleccion actualizada: {len(selected_contexts)} evidencias guardadas.",
         )
         return redirect("citation_detail", pk=pk)
 
@@ -1042,7 +1117,7 @@ def citation_extract_contexts(request, pk):
     else:
         pdf_url = extract_pdf_url_from_metadata(citation.metadata_incorrect)
         if not pdf_url:
-            messages.error(request, "No hay PDF disponible para extraer parrafos.")
+            messages.error(request, "No hay PDF disponible para extraer evidencias.")
             return redirect("citation_detail", pk=pk)
         tmp_path = download_pdf_to_temp(pdf_url) or ""
 
@@ -1056,7 +1131,7 @@ def citation_extract_contexts(request, pk):
             messages.error(
                 request,
                 data.get("error")
-                or "No se pudieron extraer parrafos con el motor seleccionado.",
+                or "No se pudieron extraer evidencias con el motor seleccionado.",
             )
             return redirect("citation_detail", pk=pk)
 
@@ -1097,6 +1172,10 @@ def citation_extract_contexts(request, pk):
             seen_context_keys.add(dedupe_key)
             contexts.append(
                 {
+                    "source": "pdf_extractor",
+                    "article": "citing",
+                    "kind": "pdf_extracted_context",
+                    "text": paragraph or snippet,
                     "page": item.get("page"),
                     "pattern": item.get("type") or item.get("pattern") or "",
                     "snippet": snippet,
@@ -1115,11 +1194,17 @@ def citation_extract_contexts(request, pk):
                 }
             )
 
-        citation.citation_contexts = contexts
+        citation.citation_contexts = normalize_evidence_items(
+            contexts,
+            default_source="pdf_extractor",
+            default_article="citing",
+            default_kind="pdf_extracted_context",
+            default_doi=citation.doi_incorrect,
+        )
         citation.save(update_fields=["citation_contexts"])
         messages.success(
             request,
-            f"Extractor aplicado: {len(contexts)} fragmentos guardados.",
+            f"Extractor aplicado: {len(citation.citation_contexts or [])} evidencias guardadas.",
         )
         return redirect("citation_detail", pk=pk)
     except Exception as exc:  # pylint: disable=broad-except
@@ -1178,6 +1263,7 @@ def citation_reader(request, report_id: int):
         "citation": citation,
         "pdf_url": pdf_url or "",
         "report_id": report_id,
+        "evidence_add_url": reverse("citation_add_evidence", kwargs={"pk": report_id}),
         "reader_build": _reader_build_stamp(),
         "reader_vite_url": _reader_vite_dev_server(),
     }

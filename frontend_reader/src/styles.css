@@ -1545,6 +1545,29 @@ body.reader-fullscreen .reader-main {
   margin-top: 4px;
 }
 
+.reader-evidence-toolbar {
+  min-width: 220px;
+}
+
+.reader-selection-status {
+  font-size: 0.75rem;
+  color: var(--reader-muted);
+  max-width: 190px;
+  line-height: 1.2;
+}
+
+.reader-selection-status.is-success {
+  color: #166534;
+}
+
+.reader-selection-status.is-warning {
+  color: #92400e;
+}
+
+.reader-selection-status.is-error {
+  color: #991b1b;
+}
+
 /* ── Text highlight ── */
 .reader-highlight {
   background: rgba(37, 99, 235, 0.18);

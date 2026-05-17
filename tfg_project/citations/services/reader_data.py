@@ -391,7 +391,7 @@ def build_mentions(contexts: Any) -> List[Dict[str, Any]]:
     for ctx in contexts:
         if not isinstance(ctx, dict):
             continue
-        paragraph = ctx.get("paragraph") or ""
+        paragraph = ctx.get("paragraph") or ctx.get("text") or ""
         snippet = ctx.get("snippet") or ctx.get("fragment") or paragraph[:200]
         page = ctx.get("page") or ctx.get("page_num") or ctx.get("page_number")
         mentions.append(

@@ -2,12 +2,12 @@
 {% load static i18n %}
 {% block content %}
 <div class="container py-4">
-  <h2>Articulos publicados (DBLP)</h2>
+  <h2>Usar perfil DBLP para elegir un artículo</h2>
 
   {% if show_dblp_form or not dblp_url %}
     <div class="card glass-card mb-4">
       <div class="card-body">
-        <p class="text-muted mb-3">Introduce la URL de tu perfil DBLP para ver tus articulos.</p>
+        <p class="text-muted mb-3">Introduce la URL de tu perfil DBLP para elegir un artículo y buscar sus citadores.</p>
         <form method="get" class="d-flex flex-wrap align-items-end gap-2" data-dblp-load-form>
           <input
             type="url"
@@ -101,16 +101,13 @@
             <div class="d-flex flex-wrap gap-2 mt-2 align-items-center">
               {% if article.citation_count %}
                 <span class="badge bg-primary">{{ article.citation_count }} cita{{ article.citation_count|pluralize:"s" }}</span>
-                <a href="{% url 'citation_review_citers' article.paper_id %}?dblp_url={{ dblp_url|urlencode }}" class="btn btn-sm btn-outline-success">
-                  Ver citantes
-                </a>
-                <a href="{% url 'doi_search' %}?doi={{ article.doi }}" class="btn btn-sm btn-outline-primary">
-                  Buscar por DOI
+                <a href="{% url 'doi_search' %}?doi={{ article.doi|urlencode }}" class="btn btn-sm btn-outline-primary">
+                  Buscar citadores
                 </a>
               {% elif article.can_review_citers %}
                 <span class="badge bg-secondary">Sin citas</span>
-                <a href="{% url 'doi_search' %}?doi={{ article.doi }}" class="btn btn-sm btn-outline-primary">
-                  Buscar por DOI
+                <a href="{% url 'doi_search' %}?doi={{ article.doi|urlencode }}" class="btn btn-sm btn-outline-primary">
+                  Buscar citadores
                 </a>
               {% else %}
                 <span class="badge bg-light text-dark border">Sin DOI</span>
