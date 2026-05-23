@@ -1,107 +1,154 @@
 # Flujo de Datos End-to-End
 
-Este documento explica cómo interactúan las tres herramientas principales de CiteCheck: **Reportes**, **Viewer** (Visor) y **Buscador de Citadores**.
+Este documento conecta los flujos principales: creación de reportes, reader PDF, extracción de referencias y búsqueda de citadores.
 
-## Diagrama de Flujo Global
+## Vista Global
 
 ```mermaid
 graph TD
-    User((Usuario))
+    U[Usuario]
+    UI[Django templates]
+    R[Reader React]
+    API[views_api.py]
+    S[services/]
+    EXT[Semantic Scholar / Crossref / DBLP]
+    DB[(SQLite / Django ORM)]
 
-    subgraph "Herramienta 1: Buscador de Citadores"
-        Search[Búsqueda de Citadores]
-        Pipeline[Semantic Pipeline]
-        ExtraccionAuto[Extracción Auto (PaperMage)]
-    end
-
-    subgraph "Herramienta 2: Viewer (Reader)"
-        ViewerUI[Interfaz React Reader]
-        PDFRender[Renderizado PDF]
-        RefExtract[Extracción de Referencias]
-    end
-
-    subgraph "Herramienta 3: Reportes"
-        CreateForm[Formulario IncorrectCitation]
-        DB[(Base de Datos)]
-    end
-
-    %% Flujo 1: Búsqueda -> Reporte
-    User -->|1. Busca DOI Original| Search
-    Search -->|2. Obtiene Citadores| Pipeline
-    Pipeline -->|3. Descarga & Analiza| ExtraccionAuto
-    ExtraccionAuto -->|4. Muestra Contextos| Search
-    Search -->|5. Click 'Reportar'| CreateForm
-
-    %% Flujo 2: Viewer -> Reporte
-    User -->|1. Sube PDF / Abre PDF| ViewerUI
-    ViewerUI -->|2. Extrae Refs| RefExtract
-    ViewerUI -->|3. Click en Cita| ViewerUI
-    ViewerUI -->|4. Click 'Reportar esta cita'| CreateForm
-
-    %% Flujo 3: Reporte -> Viewer
-    User -->|1. Ve Reporte Existente| DB
-    DB -->|2. 'Ver en Contexto'| ViewerUI
-    ViewerUI -->|3. Carga Datos (API reader-data)| DB
+    U --> UI
+    UI --> DB
+    UI --> API
+    U --> R
+    R --> API
+    API --> S
+    S --> EXT
+    S --> DB
+    API --> R
+    UI --> R
 ```
 
----
+## Flujo 1: Reporte Manual
 
-## Detalle de Flujos
+1. El usuario crea o envía un reporte desde la UI.
+2. El formulario usa `IncorrectCitationForm`.
+3. El backend guarda `doi_original`, `doi_incorrect`, `incorrect_reason`, `citation_type` y `publication_area`.
+4. Si hay metadatos disponibles, se guardan en `metadata_original` y `metadata_incorrect`.
+5. El detalle del reporte permite comentarios, votos, guardado, extracción de contextos y apertura del reader.
 
-### 1. De Búsqueda a Reporte
-Es el flujo automatizado ideal.
-1.  El usuario introduce un DOI "Víctima" (Artículo A).
-2.  El backend (`semantic_citation_pipeline.py`) busca en Semantic Scholar quién cita a A.
-3.  El sistema descarga los PDFs de los citadores (B, C...) y busca frases como "[12]" o "(Smith, 2020)".
-4.  Si encuentra una frase sospechosa, el usuario pulsa "Reportar".
-5.  Se pre-llena el formulario `IncorrectCitation` con:
-    *   DOI Original (A).
-    *   DOI Citador (B).
-    *   **Contexto:** La frase exacta encontrada en el PDF.
+Modelo persistido: `IncorrectCitation`.
 
-### 2. Del Viewer al Reporte
-Flujo manual asistido.
-1.  El usuario abre el **Viewer** (Reader) con un PDF (artículo B).
-2.  El Viewer llama a `/api/extract-citations/` para identificar todas las referencias.
-3.  El usuario navega por el PDF. Al hacer clic en una referencia (ej. "[4]"), el visor resalta dónde aparece en el texto.
-4.  Si el usuario detecta que lo que dice el texto no coincide con el título de la referencia [4], inicia el reporte desde el visor.
-5.  El Viewer envía los metadatos de [4] (Original) y del PDF actual (Citador) al formulario de creación.
+## Flujo 2: Reader Preview con PDF Subido
 
-### 3. Del Reporte al Viewer
-Flujo de verificación / consumo.
-1.  Un usuario navega por la lista de reportes existentes.
-2.  Ve una denuncia: "El paper B cita mal al paper A".
-3.  Pulsa "Ver contexto completo".
-4.  Se abre el **Viewer** cargando el PDF de B (si es Open Access).
-5.  El Viewer consulta `/api/reader-data/<report_id>/`.
-6.  El backend devuelve la ubicación exacta (`page`, `snippet`) guardada en el reporte.
-7.  El Viewer hace **scroll automático** hasta la página y resalta la frase controvertida.
+1. El usuario abre `/citations/reader/preview/`.
+2. El reader React se monta en `#reader-root`.
+3. El usuario sube un PDF.
+4. El frontend llama a `POST /citations/api/extract-citations/` con `manuscript`.
+5. `views_api.api_extract_citations` ejecuta:
+   - `extract_pdf_references()`;
+   - `process_manuscript()`;
+   - `extract_pdf_data()`;
+   - `build_references_data()`;
+   - `reconcile_reference_sources()`;
+   - `enrich_extraction_with_doi()` si hay DOI.
+6. La respuesta devuelve referencias, snippets, capas, estadísticas, datos de artículo y citadores enriquecidos.
+7. El reader renderiza referencias y menciones para navegación visual.
 
----
+## Flujo 3: Reporte Existente al Reader
 
-## Estructuras de Datos de Intercambio
+1. El usuario abre un reporte y pulsa la acción de reader/contexto.
+2. Django renderiza `reader.html` con:
+   - `data-api-url="/citations/api/reader-data/<id>/"`;
+   - `data-pdf-url` si hay PDF resoluble;
+   - DOI original y citador.
+3. El reader llama a `GET /citations/api/reader-data/<id>/`.
+4. El backend resuelve el PDF desde metadatos o Semantic Scholar.
+5. Devuelve `pdf_url`, `mentions`, `snippets`, `references` y `stats`.
+6. El reader resalta el contexto guardado en `citation_contexts`.
 
-### Objeto `ContextHit` (Backend -> Frontend)
-Estructura estándar para pasar fragmentos de texto.
+## Flujo 4: Búsqueda de Citadores
+
+1. El usuario introduce un DOI original.
+2. El backend consulta Semantic Scholar para encontrar trabajos citadores.
+3. Si un citador tiene PDF open access, se descarga temporalmente.
+4. Los servicios de extracción buscan patrones de mención al trabajo original.
+5. La UI muestra contextos candidatos para revisión humana.
+6. El usuario puede transformar el hallazgo en reporte.
+
+Endpoints implicados:
+
+- `GET /citations/api/get-semantic-citations/`
+- `GET /citations/api/semantic-citation-analysis/`
+- `GET|POST /citations/api/get-citation-context/`
+
+## Objetos de Intercambio
+
+### Contexto de cita
 
 ```json
 {
   "paragraph": "Texto completo del párrafo...",
   "snippet": "Texto recortado...",
-  "page": 5,          // Número de página (1-based)
-  "start": 102,       // Índice inicio match
-  "end": 140,         // Índice fin match
-  "pattern": "[12]"   // Patrón que lo detectó
+  "page": 5,
+  "start": 102,
+  "end": 140,
+  "pattern": "[12]",
+  "section": "body"
 }
 ```
 
-### Objeto `ReaderData` (API -> Viewer)
-Datos para inicializar el visor en modo "Ver Reporte".
+### Datos del reader
 
 ```json
 {
-  "pdf_url": "https://...",
-  "mentions": [ ...ContextHit... ],  // Dónde se cita
-  "references": [ ...Reference... ]  // Lista biblio
+  "pdf_url": "https://example.org/paper.pdf",
+  "snippets": [
+    {
+      "id": "snippet-1",
+      "page": 2,
+      "snippet": "...",
+      "type": "numeric",
+      "confidence": 0.8
+    }
+  ],
+  "references": [
+    {
+      "index": 1,
+      "raw": "[1] Smith ...",
+      "doi": "10.1000/example",
+      "confidence": 1.0,
+      "numbered": true
+    }
+  ],
+  "stats": {
+    "pages_total": 12,
+    "references_total": 35,
+    "dois_total": 18,
+    "citation_style": "numeric",
+    "max_reference_index": 35
+  }
 }
 ```
+
+### Extracción completa
+
+`POST /citations/api/extract-citations/` devuelve un payload más amplio que puede incluir:
+
+- `references`;
+- `snippets`;
+- `pages`;
+- `layers`;
+- `references_data`;
+- `reference_reconciliation`;
+- `reference_debug`;
+- `cited_by`;
+- `enrichment`;
+- `article_info`;
+- `stats`.
+
+## Persistencia vs Artefactos
+
+- Persistencia de producto: modelos Django y campos JSON.
+- Archivos subidos: `MEDIA_ROOT`.
+- Logs: `tfg_project/logs/`.
+- Artefactos de debug/regresión: `tmp/reference_debug/`, `tmp/reference_regression/`, `tmp/grobid_debug/`.
+
+Los artefactos de `tmp/` son diagnósticos, no fuente de verdad del producto.

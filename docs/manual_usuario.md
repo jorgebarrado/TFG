@@ -1,66 +1,120 @@
-# Manual de Usuario de CiteCheck
+# Manual de Usuario
 
-Este manual describe las funcionalidades principales de CiteCheck para usuarios finales.
+Este manual describe los flujos principales de CiteCheck desde la perspectiva de una persona usuaria.
 
 ## Registro e Inicio de Sesión
 
-Para interactuar con la plataforma, es necesario tener una cuenta.
+Puedes usar CiteCheck en modo lectura para explorar algunos contenidos, pero para interactuar con reportes necesitas iniciar sesión.
 
-1.  **Registro:** Puedes registrarte usando tu correo electrónico y una contraseña, o utilizando tus cuentas de **Google** u **ORCID**.
-2.  **Inicio de Sesión:** Si ya tienes cuenta, accede desde la página de login.
+Opciones disponibles según configuración del entorno:
 
-## Gestión de Perfil
+- usuario y contraseña;
+- Google;
+- ORCID.
 
-Tu perfil es tu identidad en la comunidad académica de CiteCheck.
+Al iniciar sesión, la aplicación redirige a la página principal.
 
-*   **Acceso:** Haz clic en tu avatar o nombre de usuario en la barra de navegación y selecciona "Mi Perfil".
-*   **Edición:** Puedes editar tu biografía, cambiar tu avatar, y añadir enlaces a redes sociales (Twitter, LinkedIn, GitHub, Web Personal).
-*   **Integración con DBLP:**
-    *   En la sección de perfil, puedes vincular tu URL de perfil de DBLP.
-    *   Esto permite importar y visualizar tus artículos publicados dentro de CiteCheck.
+## Perfil
 
-## Navegación por Reportes
+Desde el menú de usuario puedes abrir tu perfil y ajustes.
 
-En la página principal o en la lista de reportes (`/citations/list/`), encontrarás las citas incorrectas reportadas por la comunidad.
+En ajustes puedes modificar:
 
-*   **Búsqueda:** Utiliza la barra de búsqueda para encontrar reportes por DOI, título o autor.
-*   **Detalle:** Haz clic en un reporte para ver los detalles completos:
-    *   Artículo original (el que fue citado incorrectamente).
-    *   Artículo citante (el que cometió el error).
-    *   Explicación del error.
-    *   Contexto de la cita (fragmento del texto donde aparece la cita).
+- nombre y usuario;
+- avatar y biografía;
+- país, idioma preferido, profesión, institución y área de investigación;
+- enlaces sociales;
+- correo de contacto;
+- URL de DBLP;
+- preferencias de notificación;
+- privacidad del perfil y visibilidad de actividad/enlaces;
+- contraseña.
 
-## Reportar una Cita Incorrecta
+El idioma preferido se guarda en cookie cuando se actualiza el perfil.
 
-Si encuentras una cita errónea en un artículo, puedes reportarla para alertar a la comunidad.
+## DBLP
 
-1.  Navega al formulario de creación de reporte (generalmente accesible desde el botón "Nuevo Reporte").
-2.  **DOI Original:** Introduce el DOI del artículo que fue citado.
-3.  **DOI Citante:** Introduce el DOI del artículo que contiene la cita incorrecta.
-4.  **Tipo de Error:** Selecciona el tipo (ej. "No mencionado", "Malinterpretación").
-5.  **Explicación:** Describe por qué consideras que la cita es incorrecta.
-6.  **Contexto (Opcional):** Si el sistema lo permite, se intentará extraer automáticamente el contexto del PDF.
+Si añades una URL de DBLP, CiteCheck puede listar tus publicaciones y mostrar información de citas cuando las APIs externas lo permitan.
 
-## Interacción y Comunidad
+También puedes introducir una URL de DBLP manualmente desde la pantalla de artículos DBLP sin guardarla en tu perfil.
 
-CiteCheck fomenta la discusión científica.
+## Reportes de Citas Incorrectas
 
-*   **Votos:** Puedes votar positiva o negativamente (Upvote/Downvote) en los reportes para indicar si estás de acuerdo con el hallazgo.
-*   **Comentarios:** Participa en la discusión dejando comentarios en los reportes. Puedes responder a otros usuarios creando hilos de conversación.
-*   **Guardar:** Puedes guardar reportes de interés para consultarlos más tarde en tu perfil ("Guardados").
+Un reporte describe que un artículo citador interpreta o usa incorrectamente otro artículo.
 
-## Mensajería Privada
+Campos principales:
 
-Puedes comunicarte directamente con otros investigadores.
+- DOI original: trabajo citado o interpretado;
+- DOI citador: trabajo donde aparece la cita problemática;
+- tipo de error:
+  - `Not Said`;
+  - `Misinterpretation`;
+  - `Contextual Misattribution`;
+- área de publicación;
+- explicación del problema;
+- contextos extraídos, si el sistema pudo encontrarlos.
 
-1.  Ve al perfil de un usuario.
-2.  Haz clic en el botón de "Mensaje" (o similar).
-3.  Se abrirá una conversación privada donde podrán intercambiar mensajes.
+En el detalle de un reporte puedes:
 
-## Lector de Citas (Citation Reader)
+- leer metadatos y explicación;
+- ver contextos extraídos;
+- comentar o responder comentarios;
+- votar;
+- guardar el reporte;
+- abrir el reader si hay PDF disponible;
+- editar o borrar si eres autor o superusuario.
 
-CiteCheck incluye una herramienta visual avanzada para analizar documentos.
+## Comentarios, Votos y Guardados
 
-*   Al acceder al "Reader" de un reporte, verás el PDF del artículo (si está disponible en acceso abierto).
-*   Las citas estarán resaltadas.
-*   Al hacer clic en una cita, verás los detalles de la referencia y podrás navegar entre las menciones en el texto.
+Los comentarios permiten discutir un reporte. Las respuestas se muestran como hilos.
+
+Los votos indican acuerdo o desacuerdo con el reporte. Cada usuario solo puede emitir un voto por reporte.
+
+Los reportes guardados aparecen en tu área personal para consulta posterior.
+
+## Mensajes y Notificaciones
+
+Los perfiles públicos permiten iniciar conversaciones privadas con otros usuarios.
+
+Las notificaciones cubren eventos como:
+
+- comentarios nuevos;
+- votos en reportes propios;
+- mensajes nuevos;
+- avisos del sistema.
+
+Puedes marcar notificaciones como leídas individualmente o todas a la vez.
+
+## Reader PDF
+
+El reader sirve para inspeccionar PDFs y relacionar referencias con menciones.
+
+Modos habituales:
+
+1. **Preview/subida manual**
+   - Abres `/citations/reader/preview/`.
+   - Subes un PDF.
+   - El sistema intenta extraer referencias, snippets, capas y DOI del artículo.
+   - Puedes revisar referencias y contextos sin crear necesariamente un reporte.
+
+2. **Reporte existente**
+   - Desde un reporte, abres el reader.
+   - Si el sistema encuentra un PDF open access para el DOI citador, lo carga.
+   - El reader muestra menciones guardadas y referencias asociadas.
+
+3. **Debug de referencias**
+   - En entornos de desarrollo, puede activarse debug para descargar JSON diagnóstico.
+   - Esta función es para mantenimiento técnico, no para usuarios finales.
+
+## Revisión de Citadores
+
+La zona de revisión de citas permite partir de publicaciones y buscar trabajos que las citan. Cuando hay PDFs open access, CiteCheck intenta localizar el contexto textual de la cita.
+
+El resultado automático debe revisarse manualmente antes de crear un reporte.
+
+## Limitaciones Para Usuarios
+
+- Si no hay PDF open access, el sistema no podrá extraer contexto automáticamente.
+- Los PDFs escaneados pueden no producir texto.
+- Los metadatos externos pueden estar incompletos o tardar en responder.
+- La detección automática ayuda a encontrar evidencia, pero no decide si una cita es incorrecta.

@@ -1,21 +1,51 @@
 # Reference Pipeline Baseline
 
-Run the current end-to-end reference pipeline baseline with:
+La baseline del pipeline de referencias se ejecuta con:
 
 ```powershell
-.\.venv311\Scripts\python.exe tfg_project/manage.py test citations.tests_reference_pipeline_baseline
+python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
 ```
 
-The baseline intentionally uses the current production flow:
+## Qué Cubre
+
+El test usa el flujo de producción:
 
 1. `extract_pdf_references`
 2. `process_manuscript`
 3. `extract_pdf_data`
 4. `build_references_data`
 
-It covers two real PDFs already present in `tfg_project/citations/static/citations/PDFs-Reales`:
+PDFs cubiertos:
 
-- `2017-CT-development-computational-thinking_RG.pdf`
-- `JScientometRes-14-3-838.pdf`
+- `tfg_project/citations/static/citations/PDFs-Reales/2017-CT-development-computational-thinking_RG.pdf`
+- `tfg_project/citations/static/citations/PDFs-Reales/JScientometRes-14-3-838.pdf`
 
-The assertions use stable invariants: the pipeline completes, PaperMage layers exist, structured references are produced, citation style and max reference index are defined, debug payload keys are present, and a forced Crossref failure does not break the flow. The CT case also pins the current fallback count at zero.
+## Invariantes
+
+La prueba no intenta congelar toda la salida. Comprueba invariantes estables:
+
+- el pipeline completa sin excepción;
+- existen capas PaperMage;
+- se producen referencias estructuradas;
+- se define `citation_style`;
+- se define `max_reference_index`;
+- existen claves esperadas en `debug_payload`;
+- un fallo forzado de Crossref no rompe el flujo;
+- el caso CT conserva la cuenta de fallback actual.
+
+## Cuándo Usarla
+
+Ejecuta esta prueba al tocar:
+
+- extracción de referencias;
+- reconciliación;
+- enriquecimiento DOI;
+- capas del reader;
+- motores;
+- API de extracción del reader.
+
+Para inspección más amplia usa también:
+
+```powershell
+python scripts/run_reference_regression.py --engine papermage --limit 1
+```
