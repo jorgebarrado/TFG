@@ -1,72 +1,152 @@
-# Frontend Reader (React)
+# Frontend Reader
 
-El **Reader** es una aplicación React (Single Page Application) incrustada dentro del proyecto Django. Su función es visualizar PDFs, gestionar el resaltado de citas y facilitar la navegación entre referencias bibliográficas y sus menciones en el texto.
+El reader es una aplicación React/Vite integrada en Django para visualizar PDFs, extraer referencias, mostrar menciones y navegar entre contexto y bibliografía.
 
-## Estructura Híbrida
+## Ubicación
 
-La aplicación no es 100% SPA; vive dentro de una plantilla de Django.
-
-### 1. El Wrapper Legacy (Django)
-*   **Archivo:** `citations/templates/citations/reader.html`
-*   **Responsabilidad:**
-    *   Provee el contenedor HTML (`<div id="root">`).
-    *   Inyecta datos iniciales desde el backend (URL del PDF, ID del reporte) usando `data-attributes`.
-    *   Carga el bundle de JavaScript compilado (`{% static 'assets/index.js' %}`).
-
-```html
-<!-- Ejemplo conceptual de integración -->
-<div id="root"
-     data-api-url="/citations/api/reader-data/123/"
-     data-pdf-url="..."
-     data-report-id="123">
-</div>
+```text
+frontend_reader/
+├── package.json
+├── vite.config.js
+├── index.html
+└── src/
+    ├── main.jsx
+    ├── reader-app.jsx
+    └── styles.css
 ```
 
-### 2. La Aplicación React (Moderna)
-*   **Directorio:** `frontend_reader/`
-*   **Entrada:** `frontend_reader/src/main.jsx`
-*   **Responsabilidad:**
-    *   Lee los `data-attributes` del div `#root`.
-    *   Monta el componente raíz `ReaderApp`.
-    *   Gestiona todo el renderizado del PDF y la interactividad.
+Build de producción:
 
-## Estado de la Aplicación (`reader-app.jsx`)
+```text
+tfg_project/citations/static/reader/
+├── index.html
+├── reader.js
+├── reader.js.map
+└── reader.css
+```
 
-El componente `ReaderApp` gestiona un estado complejo para sincronizar la vista del PDF con los datos de citas.
+## Integración con Django
 
-### Estados Principales
-*   `activeFile` / `previewUrl`: El archivo PDF binario o URL que se está visualizando.
-*   `snippetsData`: Lista de menciones en el texto (ej. "[1]", "Smith et al.").
-*   `referencesData`: Lista de referencias bibliográficas (al final del documento).
-*   `activeTab`: Pestaña lateral activa (`snippets`, `references`, `stats`, `extract`).
-*   `selectedSnippet`: El fragmento de texto actualmente seleccionado/resaltado.
-*   `activeCitation`: La cita sobre la que el usuario ha hecho clic en el PDF (capa interactiva).
+Plantillas:
 
-### Hooks y Efectos Clave
-1.  **Carga Inicial:** Al montar, si hay `apiUrl` (modo "Ver Reporte"), hace fetch para traer los datos del backend.
-2.  **Resaltado (`useHighlightedSnippet`):**
-    *   Escucha cambios en `selectedSnippet`.
-    *   Busca en la capa de texto del PDF (`.textLayer`) el texto coincidente.
-    *   Dibuja cajas de resaltado (`.reader-highlight` o `.reader-paragraph-layer`) sobre las coordenadas calculadas.
-    *   *Nota Técnica:* Usa un algoritmo difuso (fuzzy) simple si el match exacto falla, buscando keywords.
-3.  **Detección de Citas (`collectCitationHitsForPage`):**
-    *   Escanea el DOM de cada página renderizada buscando patrones regex (`[1]`, `Name et al.`).
-    *   Crea una capa interactiva transparente sobre el texto para hacer las citas clicables.
+- `tfg_project/citations/templates/citations/reader.html`
+- `tfg_project/citations/templates/citations/reader_preview.html`
 
-## Comunicación con Backend
+Ambas montan React en:
 
-El Reader consume las siguientes APIs (ver `api_reference_completa.md`):
+```html
+<div id="reader-root" class="reader-root-fullscreen"></div>
+```
 
-| API Endpoint | Método | Uso |
-| :--- | :--- | :--- |
-| `/citations/api/reader-data/<id>/` | GET | Inicializa el visor con datos de un reporte existente. |
-| `/citations/api/extract-citations/` | POST | Envía el PDF actual para que el backend extraiga referencias y snippets (modo subida manual). |
-| `/citations/api/extractor-engines/` | GET | Obtiene lista de motores disponibles (`auto`, `science-parse`) para poblar el dropdown. |
+`reader.html` añade datos de reporte:
 
-## Desarrollo Local
+- `data-api-url`;
+- `data-pdf-url`;
+- `data-report-id`;
+- `data-original-doi`;
+- `data-incorrect-doi`.
 
-Para trabajar en el frontend sin recompilar Django constantemente:
-1.  Ir a `frontend_reader/`.
-2.  `npm install`.
-3.  `npm run dev`.
-4.  *Nota:* Esto levantará un servidor Vite separado. Para verlo integrado en Django, se debe configurar Django para apuntar al servidor de desarrollo de Vite o hacer `npm run build` tras cada cambio.
+En producción o sin Vite, Django carga:
+
+```django
+{% static 'reader/reader.css' %}
+{% static 'reader/reader.js' %}
+```
+
+En desarrollo, si `READER_VITE_DEV_SERVER` está definido y `DJANGO_DEBUG=1`, carga:
+
+```html
+<script type="module" src="<vite>/@vite/client"></script>
+<script type="module" src="<vite>/src/main.jsx"></script>
+```
+
+## Dependencias
+
+`frontend_reader/package.json` usa:
+
+- React 17;
+- Vite 5;
+- `@allenai/pdf-components`;
+- `react-pdf`;
+- Less.
+
+El `package.json` de la raíz contiene dependencias frontend históricas y no sustituye al paquete real del reader.
+
+## Build y Desarrollo
+
+Instalación:
+
+```powershell
+cd frontend_reader
+npm install
+```
+
+Servidor Vite:
+
+```powershell
+npm run dev
+```
+
+Build integrado:
+
+```powershell
+npm run build
+```
+
+`vite.config.js` escribe el build en `../tfg_project/citations/static/reader`, con nombres estables `reader.js` y `reader.css`.
+
+## APIs Consumidas
+
+| Endpoint | Método | Uso |
+| --- | --- | --- |
+| `/citations/api/reader-data/<id>/` | GET | Carga datos para un reporte existente. |
+| `/citations/api/extract-citations/` | POST | Procesa PDF subido y devuelve referencias/snippets/capas. |
+| `/citations/api/detect-article-doi/` | POST | Intenta detectar DOI del PDF. |
+| `/citations/api/extractor-engines/` | GET | Lista motores disponibles. |
+| `/citations/api/pdf-reader-v2-upload/` | POST | Devuelve páginas y capas para overlays. |
+| `/citations/api/reference-debug-download/` | GET | Descarga debug de referencias si se activó. |
+
+## Estado Interno Relevante
+
+`reader-app.jsx` coordina:
+
+- PDF activo (`activeFile`, `previewUrl`, `pdfUrl`);
+- referencias (`referencesData`);
+- snippets/menciones (`snippetsData`, `selectedSnippet`, `activeCitation`);
+- capas del PDF (`pages`, `layers`);
+- pestañas y paneles laterales;
+- stats, enriquecimiento y datos del artículo;
+- modo debug de detección de referencias.
+
+El resaltado depende de la capa de texto del PDF. Cambios en `@allenai/pdf-components`, `react-pdf` o CSS pueden afectar el cálculo visual de cajas.
+
+## Contrato de Datos
+
+El reader espera referencias con campos como:
+
+```json
+{
+  "index": 1,
+  "raw": "[1] Smith ...",
+  "doi": "10.1000/example",
+  "title": "Optional title",
+  "authors": ["Smith"],
+  "year": 2020,
+  "confidence": 1.0,
+  "numbered": true
+}
+```
+
+Y snippets/contextos con:
+
+```json
+{
+  "id": "snippet-1",
+  "page": 3,
+  "snippet": "...",
+  "type": "numeric",
+  "confidence": 0.8
+}
+```
+
+Antes de cambiar nombres de campos, revisa `reader-app.jsx`, `views_api.py`, `reader_data.py` y `references_data.py`.

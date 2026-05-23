@@ -1,68 +1,90 @@
 # Reference Parsing Experiment
 
-This experiment is intentionally isolated from the application flow. It does not touch views, models, URLs, or frontend code.
+Este experimento está aislado del flujo de aplicación. No modifica vistas, modelos, URLs ni frontend.
 
-## Goal
+## Objetivo
 
-Compare three alternatives for parsing and enriching references that have already been segmented by the current extractor:
+Comparar alternativas para parsear/enriquecer referencias ya segmentadas por el extractor actual:
 
 1. `refextract`
 2. `anystyle`
 3. `llm`
 
-Primary path:
+Ruta conceptual:
 
-`PDF -> current extractor -> raw references -> alternative parser`
-
-## Code layout
-
-- `tfg_project/citations/services/reference_parsing_experiments/input_common.py`
-  - Builds the shared input by calling `extract_pdf_references()` and writing `inputs/<paper>_raw_references.json`.
-- `tfg_project/citations/services/reference_parsing_experiments/runners/refextract_runner.py`
-  - Runs `refextract` in string mode over already segmented references.
-- `tfg_project/citations/services/reference_parsing_experiments/runners/anystyle_runner.py`
-  - Runs `anystyle parse` over one-reference-per-line text if the CLI is installed.
-- `tfg_project/citations/services/reference_parsing_experiments/runners/llm_runner.py`
-  - Builds a strict JSON prompt, validates the response, and stores prompt/raw response artifacts.
-- `tfg_project/citations/services/reference_parsing_experiments/normalization.py`
-  - Converts each parser output into a shared schema.
-- `tfg_project/citations/services/reference_parsing_experiments/comparison.py`
-  - Generates counts and side-by-side comparisons.
-- `tfg_project/citations/services/reference_parsing_experiments/experiment.py`
-  - Orchestrates the run and writes artifacts.
-- `scripts/run_reference_parsing_experiment.py`
-  - Standalone CLI entry point.
-
-## Execution
-
-From the repository root:
-
-```powershell
-.\.venv311\Scripts\python.exe scripts/run_reference_parsing_experiment.py
+```text
+PDF -> extractor actual -> referencias raw -> parser alternativo -> comparación
 ```
 
-With explicit PDFs:
+## Código
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `reference_parsing_experiments/input_common.py` | Construye entrada compartida llamando a `extract_pdf_references()`. |
+| `runners/refextract_runner.py` | Ejecuta refextract en modo string. |
+| `runners/anystyle_runner.py` | Ejecuta `anystyle parse` si el CLI está en `PATH`. |
+| `runners/llm_runner.py` | Construye prompt JSON estricto y valida respuesta. |
+| `normalization.py` | Normaliza salidas a un schema común. |
+| `comparison.py` | Genera conteos y comparaciones. |
+| `experiment.py` | Orquesta la ejecución. |
+| `scripts/run_reference_parsing_experiment.py` | CLI standalone. |
+
+## Ejecución
+
+Muestra curada por defecto:
 
 ```powershell
-.\.venv311\Scripts\python.exe scripts/run_reference_parsing_experiment.py `
-  --pdf JScientometRes-14-3-838.pdf `
-  --pdf 2023.emnlp-demo.45.pdf `
-  --pdf Kelemen_Subramanian_19.09.2023.pdf
+python scripts/run_reference_parsing_experiment.py
 ```
 
-To inspect the curated default sample:
+PDFs explícitos:
 
 ```powershell
-.\.venv311\Scripts\python.exe scripts/run_reference_parsing_experiment.py --list-default-pdfs
+python scripts/run_reference_parsing_experiment.py --pdf JScientometRes-14-3-838.pdf --pdf 2023.emnlp-demo.45.pdf
 ```
 
-## Artifacts
+Todos los PDFs disponibles:
 
-Each run is written to:
+```powershell
+python scripts/run_reference_parsing_experiment.py --all-pdfs
+```
 
-`tmp/reference_parser_experiments/<run_id>/`
+Listar PDFs por defecto:
 
-Expected layout:
+```powershell
+python scripts/run_reference_parsing_experiment.py --list-default-pdfs
+```
+
+Listar todos los PDFs detectados:
+
+```powershell
+python scripts/run_reference_parsing_experiment.py --list-all-pdfs
+```
+
+## Opciones
+
+| Opción | Uso |
+| --- | --- |
+| `--pdf NAME` | Puede repetirse para seleccionar PDFs concretos. |
+| `--all-pdfs` | Usa todos los PDFs detectados. |
+| `--run-id ID` | Fija el nombre del run. |
+| `--output-root DIR` | Cambia la raíz de salida. |
+| `--comparison-limit N` | Limita ejemplos en comparaciones. |
+| `--llm-model MODEL` | Modelo usado por el runner LLM. |
+| `--list-default-pdfs` | Lista muestra curada y termina. |
+| `--list-all-pdfs` | Lista todos los PDFs y termina. |
+
+No combines `--all-pdfs` y `--pdf`.
+
+## Artefactos
+
+Cada run se escribe en:
+
+```text
+tmp/reference_parser_experiments/<run_id>/
+```
+
+Estructura esperada:
 
 - `config.json`
 - `summary.md`
@@ -76,14 +98,17 @@ Expected layout:
 - `comparisons/<paper_slug>.json`
 - `comparisons/aggregate.json`
 
-## Environment notes
+## Notas de Entorno
 
-- `refextract`
-  - Validated in string mode over already segmented references.
-  - In this Windows environment, the package imports `magic` even for string mode. The runner installs a local shim only for the experiment so the string API can execute. File-based `refextract` paths remain out of scope.
-- `anystyle`
-  - Not executable unless `anystyle` is installed and available on `PATH`.
-  - The official CLI depends on Ruby/anystyle-cli.
-- `llm`
-  - Requires `OPENAI_API_KEY`.
-  - The runner is compatible with both legacy and newer OpenAI Python SDK shapes, but it will not fabricate results when credentials are missing.
+- `refextract`: se valida sobre referencias ya segmentadas. En Windows, el runner instala un shim local para `magic` si hace falta.
+- `anystyle`: requiere Ruby/anystyle-cli instalado y disponible en `PATH`.
+- `llm`: requiere `OPENAI_API_KEY`. Si falta, el runner registra que no se ejecutó y no fabrica resultados.
+
+## Criterio de Integración
+
+Este experimento no debe integrarse en producción hasta que haya:
+
+- comparación reproducible contra el runner de regresión;
+- mejora clara sobre métricas actuales;
+- coste/latencia aceptable;
+- manejo de dependencias externas documentado.
