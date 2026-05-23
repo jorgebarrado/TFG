@@ -1,64 +1,65 @@
-# Estado del Sistema CiteCheck
+# Estado del Sistema
 
-Este documento detalla el estado actual de madurez de los diferentes módulos del proyecto. Se utiliza para identificar rápidamente qué partes son críticas/estables y cuáles están en fase de desarrollo o experimentación.
+Estado revisado: 2026-05-23.
 
-## Mapa Mental del Sistema
+Este documento resume la madurez técnica de los módulos principales. Úsalo para decidir qué piezas son flujo principal, cuáles están en beta y cuáles son experimentos aislados.
+
+## Mapa de Módulos
 
 ```mermaid
 mindmap
   root((CiteCheck))
-    Core Stable
-      Modelos Datos
-        IncorrectCitation
-        UserProfile
-      Autenticacion
-        Django Allauth
-      Frontend Viewer
-        React App
-        Highlighting
-      Reportes Basicos
-        CRUD IncorrectCitation
-    Partial Beta
-      API REST
-        Extraction Endpoints
-        Context Search
-      Servicios Extraccion
-        PaperMage Wrapper
-        Semantic Pipeline
-        PDF Handling
+    Principal
+      IncorrectCitation
+      Perfiles
+      Comentarios y votos
+      Guardados
+      Mensajes y notificaciones
+      Reader PDF
+    Parcial
+      Extraccion de referencias
+      Enriquecimiento DOI
+      Pipeline Semantic Scholar
+      APIs JSON
     Experimental
-      Inteligencia Artificial
-        Citation Detector
-        Report Evaluator
-      Legacy
-        Report Wizard
-        Old JS Templates
+      GROBID
+      Parsers alternativos
+      IA de deteccion
+      IA de evaluacion
+      CitationReport wizard
 ```
 
-## Resumen de Módulos
+## Tabla de Madurez
 
-| Módulo / Funcionalidad | Estado | Descripción | Riesgos Principales |
-| :--- | :--- | :--- | :--- |
-| **Modelos de Datos** | ✅ **Estable** | Esquema de BD (SQLite/Postgres) definido en `models.py`. | Cambios en `IncorrectCitation` pueden requerir migraciones complejas. |
-| **Autenticación** | ✅ **Estable** | `django-allauth` con Google y ORCID. No tocar. | Dependencia de claves de API externas (Google/ORCID). |
-| **API REST (Core)** | ⚠️ **Parcial** | Endpoints en `views_api.py`. Funcional pero mezcla lógica legacy con nueva. | Falta de validación estricta de payloads en algunos endpoints. |
-| **Extracción de Citas** | ⚠️ **Parcial** | Uso de `papermage` y `papercraft`. Funciona pero es lento y pesado. | Requiere instalación compleja de dependencias (PyTorch, Java). Falla con PDFs escaneados (sin OCR). |
-| **Viewer Frontend (React)** | ✅ **Estable** | Aplicación en `frontend_reader/` con soporte de resaltado. | Dependencia de `@allenai/pdf-components`. Integración con backend vía `reader.html` (legacy wrapper). |
-| **Pipeline Semántico** | ⚠️ **Parcial** | Búsqueda inversa de citadores (`semantic_citation_pipeline.py`). | Depende críticamente de la API gratuita de Semantic Scholar (rate limits). |
-| **Reportes (Wizard Legacy)** | 🛑 **Inactivo** | Flujo en `report_wizard.html` y modelo `CitationReport`. | Código muerto o desactivado. No usar como referencia de flujo principal. |
-| **Reportes (IncorrectCitation)** | ✅ **Estable** | Flujo actual de creación de reportes. | Interfaz básica, sin wizard paso a paso avanzado. |
-| **Módulos IA (Experimental)** | 🧪 **Experimental** | `ai_citation_detector.py`. | No integrado en el flujo principal. Solo pruebas de concepto. |
+| Módulo | Estado | Archivos principales | Riesgo |
+| --- | --- | --- | --- |
+| Reportes `IncorrectCitation` | Estable | `models.py`, `page_views.py`, `ajax_views.py` | Cambios de campos requieren migraciones y revisión de plantillas. |
+| Perfiles | Estable | `UserProfile`, `user_views.py`, `account_settings.html` | Mezcla datos públicos, privacidad y preferencias de idioma. |
+| Comentarios, votos y guardados | Estable | `Comment`, `Vote`, `SavedCitation`, parciales de templates | Debe conservar restricciones de voto único y permisos de edición/borrado. |
+| Mensajes y notificaciones | Estable | `Conversation`, `Message`, `Notification`, `signals.py`, `notifications.py` | Requiere consistencia de URLs y destinatarios. |
+| Reader React | Estable con deuda | `frontend_reader/`, `reader.html`, `reader_preview.html` | Dependencia de bundle compilado o Vite dev server; DOM de PDF sensible a cambios. |
+| API de extracción | Parcial | `views_api.py`, `engines.py`, `references_data.py` | Payload grande y heterogéneo; algunos errores no comparten formato único. |
+| Pipeline Semantic Scholar | Parcial | `semantic_citation_pipeline.py`, `semantic_scholar_client.py` | Rate limits, PDFs no open access y latencia de descargas. |
+| Enriquecimiento DOI | Parcial | `doi_enrichment_service.py`, `crossref_client.py` | Matching heurístico; debe rechazar falsos positivos. |
+| Regresión de referencias | Útil para mantenimiento | `scripts/run_reference_regression.py` | Pesado; produce artefactos en `tmp/reference_regression/`. |
+| GROBID | Experimental aislado | `grobid_client.py`, `grobid_parser.py`, comandos `debug_grobid*` | No afecta al flujo principal; requiere servicio externo local o remoto. |
+| Parsers alternativos | Experimental aislado | `reference_parsing_experiments/` | AnyStyle y LLM dependen de herramientas/credenciales externas. |
+| Módulos IA | Experimental | `ai_citation_detector.py`, `ai_report_evaluator.py` | Requieren claves externas; no son parte del flujo principal. |
+| `CitationReport` wizard | Legacy/inactivo | `CitationReport`, `views_reports.py`, `report_wizard.html` | No usar como base para nuevas funcionalidades sin revalidarlo. |
 
-## Deuda Técnica y Faltantes
+## Deuda Técnica Principal
 
-1.  **Validación de PDFs:** No hay un sistema robusto para validar si un PDF corresponde realmente al DOI indicado.
-2.  **Rate Limiting:** No hay manejo explícito de rate limits para Semantic Scholar en el backend (riesgo de bloqueo 429).
-3.  **Logs Estructurados:** El sistema de logging (`citations.context`) es bueno pero no cubre todos los módulos críticos.
-4.  **Tests Unitarios:** Cobertura baja en los servicios de extracción (`services/`).
-5.  **Hardcoded Paths:** Algunas rutas de archivos temporales o configuraciones de PaperMage pueden no ser portables entre entornos.
+1. **Extracciones síncronas largas.** Analizar PDFs en peticiones HTTP puede provocar timeouts. Celery/RQ sería el siguiente paso natural.
+2. **Rate limiting.** Semantic Scholar y Crossref necesitan manejo más explícito de cuotas, reintentos y caché persistente.
+3. **Validación de PDF contra DOI.** El sistema resuelve metadatos y PDFs, pero no garantiza siempre que el archivo subido corresponda al DOI indicado.
+4. **Formato de errores.** Algunas APIs devuelven `{"ok": false, ...}` y otras solo `{"error": ...}`.
+5. **Cobertura focalizada.** Hay tests de clientes y baseline de referencias, pero los servicios de extracción siguen siendo la zona de más riesgo.
+6. **Artefactos históricos.** `tmp/` contiene resultados útiles para comparación, pero no debe confundirse con documentación viva.
 
-## Próximos Pasos Recomendados
+## Prioridades Recomendadas
 
-*   Consolidar el pipeline de extracción para que sea asíncrono (Celery/RQ) debido a la latencia de descarga/análisis de PDFs.
-*   Migrar completamente la lógica de "Report Wizard" al nuevo flujo o eliminar el código muerto.
-*   Implementar caché para las respuestas de Semantic Scholar.
+- Mantener `IncorrectCitation` como flujo principal y evitar extender `CitationReport` sin una decisión explícita.
+- Estandarizar respuestas JSON de error antes de exponer endpoints a consumidores externos.
+- Añadir caché y límites de concurrencia al pipeline semántico.
+- Usar `scripts/run_reference_regression.py` antes y después de tocar `references_data.py`, `reader_data.py`, `engines.py` o `views_api.py`.
+- Mantener GROBID y parsers alternativos como experimentos hasta que exista una comparación reproducible que justifique integrarlos.

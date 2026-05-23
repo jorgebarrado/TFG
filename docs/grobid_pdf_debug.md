@@ -1,76 +1,75 @@
-# GROBID PDF Debug (Simple Experimental Tool)
+# GROBID PDF Debug
 
-Comando experimental mínimo para probar GROBID con un PDF local.
+`debug_grobid_pdf` es un comando mínimo para enviar un PDF local a GROBID y guardar XML, JSON parseado y resumen. No ejecuta el extractor actual ni compara resultados.
 
-No usa el extractor actual del proyecto, no compara resultados y no afecta el flujo principal.
+Para el comando completo con comparación, consulta [grobid_experiment.md](grobid_experiment.md).
 
 ## Requisitos
 
-1. Tener una instancia real de GROBID levantada (recomendado: local con Docker):
+Levanta GROBID:
 
-```bash
+```powershell
+docker compose --profile experimental up -d grobid
+```
+
+O manualmente:
+
+```powershell
 docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppiano/grobid:0.8.1
 ```
 
-2. Verificar disponibilidad:
+Verifica disponibilidad:
 
-```bash
+```powershell
 curl http://localhost:8070/api/isalive
-# esperado: true
 ```
 
 Opcional:
 
-```bash
+```powershell
 curl http://localhost:8070/api/health
 ```
 
-Nota: la demo pública (por ejemplo HF Spaces) no es fiable para evaluación seria.
+La demo pública o HF Spaces no es fiable para evaluación seria.
 
-## Comando
+## Uso
 
 Desde `tfg_project/`:
 
-```bash
+```powershell
 python manage.py debug_grobid_pdf --pdf /ruta/paper.pdf --mode header
 python manage.py debug_grobid_pdf --pdf /ruta/paper.pdf --mode references
 python manage.py debug_grobid_pdf --pdf /ruta/paper.pdf --mode fulltext
 ```
 
 Opciones:
-- `--pdf PATH` (obligatorio)
-- `--mode header|references|fulltext` (obligatorio lógico, default `fulltext`)
-- `--grobid-url URL` (opcional, default `GROBID_BASE_URL`)
-- `--timeout N` (opcional, default `120`)
-- `--output-dir DIR` (opcional)
-- `--check-health` (opcional, además de `isalive`)
 
-## Qué devuelve cada modo
+| Opción | Uso |
+| --- | --- |
+| `--pdf PATH` | PDF obligatorio. |
+| `--mode header|references|fulltext` | Endpoint a ejecutar. Default: `fulltext`. |
+| `--grobid-url URL` | Override de `GROBID_BASE_URL`. |
+| `--timeout N` | Timeout en segundos. Default: `120`. |
+| `--output-dir DIR` | Directorio de salida. |
+| `--check-health` | Además de `isalive`, consulta `/api/health`. |
 
-- `header` (`/api/processHeaderDocument`)
-  - título
-  - autores
-  - abstract
-  - DOI/identificadores si aparecen
+## Modos
 
-- `references` (`/api/processReferences`)
-  - lista de referencias
-  - por referencia: `id`, `title`, `authors`, `doi`, `year`, `venue`, `pages`, `raw_citation` (si aparece)
-
-- `fulltext` (`/api/processFulltextDocument`)
-  - metadata del paper
-  - secciones básicas
-  - referencias
-  - citas inline
-  - counts
+- `header`: `/api/processHeaderDocument`; título, autores, abstract e identificadores.
+- `references`: `/api/processReferences`; referencias bibliográficas con campos detectados.
+- `fulltext`: `/api/processFulltextDocument`; metadatos, secciones, referencias y citas inline.
 
 ## Artefactos
 
 Run exitoso:
+
 - `response.xml`
 - `parsed.json`
 - `summary.txt`
 
 Run con error:
+
 - `error.json`
-- `response_body.txt` (solo si hubo body inválido útil para diagnóstico)
+- `response_body.txt` si hubo cuerpo inválido útil para diagnóstico.
+
+Los artefactos son diagnósticos y deben quedarse fuera del flujo de producción.

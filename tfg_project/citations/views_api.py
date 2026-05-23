@@ -374,7 +374,8 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             También puede contener los siguientes campos en el cuerpo de
             la solicitud:
             - engine (str, optional): El motor de extracción a utilizar
-              ('auto', 'science-parse', etc.). Por defecto es 'auto'.
+              ('papermage', 'papercraft' o 'generic'). Por defecto es
+              'papermage'.
             - debug (bool, optional): Si se activa, incluye información
               adicional de depuración en la respuesta.
 

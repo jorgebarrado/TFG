@@ -1,38 +1,39 @@
 # Extractor de Referencias y Runner de Regresión
 
-Esta página documenta dos piezas muy relacionadas del sistema:
+Esta página documenta dos piezas relacionadas:
 
-1. `tfg_project/citations/services/references_data.py`
-2. `scripts/run_reference_regression.py`
+- `tfg_project/citations/services/references_data.py`
+- `scripts/run_reference_regression.py`
 
-La primera construye la salida estructurada de referencias a partir de referencias base, snippets y capas del reader. La segunda ejecuta ese flujo real sobre un conjunto de PDFs y guarda artefactos comparables.
+`references_data.py` construye la salida estructurada de referencias para el reader. El runner ejecuta el flujo real sobre PDFs del repositorio y guarda artefactos comparables.
 
-## 1. `references_data.py`
+## `references_data.py`
 
 ### Responsabilidad
 
-`references_data.py` es la capa que transforma:
+Transforma:
 
-- referencias base extraídas del PDF
-- snippets de citas detectados en el manuscrito
-- capas geométricas del reader (`tokens`, `rows`, `paragraphs`, `bibliographies`, `sections`)
+- referencias base extraídas del PDF;
+- snippets detectados en el manuscrito;
+- capas geométricas del reader (`tokens`, `rows`, `paragraphs`, `bibliographies`, `sections`);
 
-en una salida final con:
+en:
 
-- `references`
-- `citations`
-- `contexts`
-- metadatos de bibliografía
-- `reference_debug_steps`
-- `debug_payload` opcional para diagnóstico profundo
+- referencias finales;
+- menciones/citations;
+- contextos;
+- metadatos de bibliografía;
+- alertas;
+- pasos de debug;
+- payload diagnóstico opcional.
 
-No es el extractor inicial del PDF. Trabaja encima de datos ya extraídos por `reader_data.py`, `papermage_extractor.py` y `citation_extractor.py`.
+No descarga PDFs, no llama a PaperMage directamente y no decide qué motor ejecutar.
 
-### API pública
+### API Pública
 
 #### `build_references_data(...)`
 
-Entrada principal del módulo.
+Entrada principal:
 
 ```python
 build_references_data(
@@ -48,22 +49,11 @@ build_references_data(
 )
 ```
 
-Entradas:
-
-- `references`: referencias base del PDF, normalmente desde `extract_pdf_references(...)`
-- `snippets`: resultados de `build_snippets_from_results(...)`
-- `layers`: capas del reader, normalmente desde `extract_pdf_data(...)`
-- `references_numbered`: pista inicial sobre si el documento es numerado
-- `article_doi`: DOI del paper fuente, usado para contexto Crossref
-- `source_filename`: nombre del PDF para metadatos/debug
-- `engine_used`: motor real que ejecutó `process_manuscript`
-- `debug_reference_detection`: si `True`, construye `debug_payload`
-
 Salida principal:
 
-- `references`: referencias serializadas finales
-- `citations`: menciones/citas enlazadas a referencias
-- `contexts`: contextos enriquecidos
+- `references`
+- `citations`
+- `contexts`
 - `citation_style`
 - `max_reference_index`
 - `bibliography_start_page`
@@ -79,9 +69,7 @@ Salida principal:
 
 #### `finalize_reference_detection_debug_payload(...)`
 
-Normaliza el `debug_payload` al estado final de las referencias, especialmente útil después de enriquecimiento DOI o de cualquier ajuste posterior sobre `references_data["references"]`.
-
-Uso típico:
+Ajusta el debug final al estado real de las referencias después de reconciliación o enriquecimiento.
 
 ```python
 final_debug_payload = finalize_reference_detection_debug_payload(
@@ -92,140 +80,102 @@ final_debug_payload = finalize_reference_detection_debug_payload(
 
 #### `write_reference_detection_debug_json(...)`
 
-Escribe el debug final a `tmp/reference_debug/<paper>/debug-<timestamp>.json`.
+Escribe debug final en `tmp/reference_debug/<paper>/debug-<timestamp>.json` y devuelve la ruta.
 
-Se usa cuando se quiere descarga o persistencia explícita del debug fuera del runner de regresión.
+### Fases Internas
 
-### Usos reales en el proyecto
+1. Normaliza capas del reader.
+2. Detecta segmentos de bibliografía.
+3. Recorta rows dentro de zona bibliográfica.
+4. Detecta anchors de referencia.
+5. Reconstruye referencias por rows si el documento parece numerado.
+6. Aplica fallbacks si la estructura no alcanza.
+7. Construye `reference_entries`.
+8. Vincula snippets, citations y contexts.
+9. Construye alertas globales.
+10. Construye debug y auditorías.
 
-#### 1. API de extracción
+### Debug
 
-En `tfg_project/citations/views_api.py` se usa dentro del flujo real de extracción del preview:
+Con `debug_reference_detection=True`, el módulo puede exponer:
 
-1. `extract_pdf_references(...)`
-2. `process_manuscript(...)`
-3. `build_snippets_from_results(...)`
-4. `extract_pdf_data(...)`
-5. `build_references_data(...)`
+- `metadata`;
+- `phases`;
+- `references`;
+- `alerts`;
+- `document_diagnostics`;
+- `phase_diagnostics`;
+- `row_rejection_audit`;
+- `reference_failure_audit`;
+- `numeric_coverage_summary`;
+- `contamination_diagnostics`;
+- `start_page_column_decision`.
 
-Después:
+Úsalo para explicar por qué faltan referencias, por qué se rechazaron rows o por qué una bibliografía fue interpretada como no numerada.
 
-- la vista reemplaza la lista visual de referencias por `references_data["references"]`
-- propaga `citation_style`, `max_reference_index` y `bibliography_start_page`
-- lanza enriquecimiento DOI
-- si el modo debug está activo, finaliza y escribe el debug JSON
-
-#### 2. Runner de regresión
-
-`scripts/run_reference_regression.py` ejecuta exactamente ese flujo real por PDF y usa `build_references_data(...)` como paso central para generar:
-
-- `extraction.json`
-- `reference_debug.json`
-- `metrics.json`
-
-#### 3. Script de depuración puntual
-
-`scripts/debug_references_ct_pdf.py` usa `build_references_data(...)` para inspección rápida de un PDF concreto, normalmente sin recorrer todo el flujo del preview.
-
-### Fases internas relevantes
-
-Sin entrar en cada helper privado, el módulo sigue este esquema:
-
-1. Carga y normalización de capas: `bibliographies`, `tokens`, `rows`, `paragraphs`, `sections`
-2. Detección de segmentos de bibliografía
-3. Recorte de rows dentro de la zona de bibliografía
-4. Detección de anchors de referencia
-5. Reconstrucción de referencias por rows si el documento parece numerado
-6. Fallbacks si no hay estructura suficiente
-7. Construcción de `reference_entries`
-8. Vinculación de snippets/citations/contexts
-9. Construcción de `global_alerts`
-10. Construcción de `reference_debug_steps`
-11. Construcción opcional de `debug_payload`
-
-### Debug y diagnóstico
-
-Si `debug_reference_detection=True`, el módulo expone un `debug_payload` amplio.
-
-Bloques principales:
-
-- `metadata`
-- `phases`
-- `references`
-- `alerts`
-- `document_diagnostics`
-- `phase_diagnostics`
-- `row_rejection_audit`
-- `reference_failure_audit`
-- `numeric_coverage_summary`
-- `contamination_diagnostics`
-- `start_page_column_decision`
-
-Objetivo de estos bloques:
-
-- explicar si el PDF fue interpretado como numerado o no
-- ver en qué fase empieza a degradarse
-- auditar rows rechazadas
-- auditar referencias fallidas o débiles
-- resumir cobertura numérica
-- detectar contaminación de apéndice o tail noise
-- explicar la decisión de columnas en la `start_page`
-
-### Cuándo tocar este módulo
-
-Tócalo cuando quieras:
-
-- cambiar cómo se serializan las referencias finales
-- mejorar enlace entre snippets y referencias
-- añadir o ajustar señales diagnósticas
-- modificar geometría de bibliografía o heurísticas de segmentación
-- cambiar trazas de debug del extractor de referencias
-
-No es el sitio correcto para:
-
-- cambiar descarga de PDFs
-- cambiar el motor PaperMage
-- cambiar selección de engine
-- cambiar el pipeline semántico de citadores
-
-## 2. `run_reference_regression.py`
+## `run_reference_regression.py`
 
 ### Responsabilidad
 
-`scripts/run_reference_regression.py` es un runner CLI para ejecutar el flujo real actual del extractor sobre PDFs reales y guardar artefactos comparables por paper y por run.
+Runner CLI para ejecutar el pipeline real actual sobre PDFs en:
 
-No es un endpoint web y no lo llama ningún otro módulo. Se usa manualmente desde terminal.
+```text
+tfg_project/citations/static/citations/PDFs-Reales
+```
 
-### Qué hace
+Por cada PDF:
 
-Por cada PDF seleccionado:
+1. descubre referencias base;
+2. ejecuta `process_manuscript`;
+3. genera snippets;
+4. obtiene capas reales;
+5. ejecuta `build_references_data`;
+6. finaliza debug;
+7. calcula métricas;
+8. escribe artefactos.
 
-1. descubre referencias base con `extract_pdf_references(...)`
-2. resuelve contexto de citación esperado
-3. ejecuta `process_manuscript(...)`
-4. genera snippets con `build_snippets_from_results(...)`
-5. obtiene capas reales con `extract_pdf_data(...)`
-6. ejecuta `build_references_data(...)`
-7. finaliza el debug con `finalize_reference_detection_debug_payload(...)` si existe
-8. calcula métricas de regresión
-9. escribe artefactos por paper
+### Comandos
 
-Después:
+Smoke test:
 
-- agrega métricas globales
-- escribe `summary.json`
-- escribe `summary.md`
-- aplica la política de limpieza de runs
+```powershell
+python scripts/run_reference_regression.py --engine papermage --limit 1
+```
 
-### Dataset y descubrimiento
+Un paper concreto:
 
-El dataset actual se descubre automáticamente en:
+```powershell
+python scripts/run_reference_regression.py --engine papermage --paper-id 2017_ct_development_computational_thinking_rg
+```
 
-`tfg_project/citations/static/citations/PDFs-Reales`
+Run manual persistente:
 
-No usa manifest externo. El `paper_id` se deriva del nombre del PDF.
+```powershell
+python scripts/run_reference_regression.py --engine papermage --run-name baseline_refs --overwrite
+```
 
-### Artefactos que genera
+Limpiar runs antiguos:
+
+```powershell
+python scripts/run_reference_regression.py --cleanup-keep-days 3
+```
+
+### Opciones
+
+| Opción | Uso |
+| --- | --- |
+| `--dataset-type all|exploratory` | Filtra el subconjunto autodetectado. |
+| `--paper-id <id>` | Puede repetirse para ejecutar varios PDFs concretos. |
+| `--engine papermage|papercraft|generic|auto` | Motor usado por `process_manuscript`. |
+| `--limit N` | Limita cantidad de PDFs tras filtros. |
+| `--output-dir DIR` | Directorio de salida manual. |
+| `--run-name NAME` | Nombre bajo `tmp/reference_regression/`. |
+| `--overwrite` | Permite reemplazar una salida manual existente. |
+| `--cleanup-all` | Borra todos los runs y termina. |
+| `--cleanup-keep-days N` | Conserva solo runs recientes. |
+| `--cleanup-keep-current-revision` | Conserva solo runs de la revisión git actual. |
+
+### Artefactos
 
 Por paper, dentro de `per_paper/<paper_id>/`:
 
@@ -233,31 +183,12 @@ Por paper, dentro de `per_paper/<paper_id>/`:
 - `reference_debug.json`
 - `metrics.json`
 
-A nivel global:
+A nivel de run:
 
 - `summary.json`
 - `summary.md`
 
-### Salidas principales
-
-#### `extraction.json`
-
-Snapshot del flujo real de extracción. Incluye:
-
-- contexto del paper
-- engine pedido y engine efectivo
-- stats base de referencias
-- resumen de `process_manuscript`
-- resumen de capas del reader
-- `final_extraction`
-
-#### `reference_debug.json`
-
-Payload diagnóstico final. Si la rama tiene `finalize_reference_detection_debug_payload`, el runner lo usa. Si no existe, conserva el `debug_payload` crudo.
-
-#### `metrics.json`
-
-Resumen estable y comparable por PDF. Contiene métricas como:
+### Métricas Relevantes
 
 - `references_total`
 - `max_reference_index_detected`
@@ -272,128 +203,21 @@ Resumen estable y comparable por PDF. Contiene métricas como:
 - `status`
 - `status_reasons`
 
-#### `summary.json`
+## Cómo Revisar Una Regresión
 
-Índice compacto del run:
+1. Abre `summary.md`.
+2. Mira `status` y `main_issues` por paper.
+3. Abre `metrics.json` del PDF problemático.
+4. Abre `reference_debug.json`.
+5. Compara `reference_failure_audit`, `row_rejection_audit` y `global_alerts`.
 
-- `metadata`
-- `aggregate_metrics`
-- `papers`
+## Cuándo Ejecutarlo
 
-Cada entrada en `papers` incluye:
+Ejecuta el runner antes y después de cambiar:
 
-- `paper_id`
-- `pdf_file`
-- `status`
-- `document_mode`
-- `references_total`
-- `max_reference_index_detected`
-- `coverage_ratio`
-- `pct_rows_raw`
-- `pct_raw_fallback`
-- `pct_accepted`
-- `main_issues`
-- `artifacts`
-
-#### `summary.md`
-
-Tabla breve para revisión rápida del run.
-
-### CLI disponible
-
-Opciones actuales:
-
-- `--dataset-type`
-- `--paper-id`
-- `--engine`
-- `--limit`
-- `--output-dir`
-- `--run-name`
-- `--overwrite`
-- `--cleanup-all`
-- `--cleanup-keep-days`
-- `--cleanup-keep-current-revision`
-
-### Ejemplos de uso
-
-Smoke test:
-
-```powershell
-python scripts/run_reference_regression.py --engine papermage --limit 1
-```
-
-Un solo paper:
-
-```powershell
-python scripts/run_reference_regression.py --engine papermage --paper-id 2017_ct_development_computational_thinking_rg
-```
-
-Run manual persistente:
-
-```powershell
-python scripts/run_reference_regression.py --engine papermage --run-name baseline_refs --overwrite
-```
-
-Limpiar y terminar:
-
-```powershell
-python scripts/run_reference_regression.py --cleanup-keep-days 3
-```
-
-### Política de limpieza
-
-#### Limpieza automática normal
-
-Se aplica tras un run nuevo y es conservadora:
-
-- borra runs `auto` con `git_revision` distinta
-- borra runs `auto` con más de `RUN_RETENTION_DAYS`
-- no borra runs `manual`
-
-#### Limpieza explícita
-
-Modos disponibles:
-
-- `--cleanup-all`: borra todos los runs del runner
-- `--cleanup-keep-days N`: borra todo excepto los últimos `N` días
-- `--cleanup-keep-current-revision`: borra todo excepto runs de la revisión git actual
-
-La decisión se basa preferentemente en `summary.json`:
-
-- `run_kind`
-- `git_revision`
-- `timestamp`
-
-Si falta `summary.json`, el runner usa heurísticas conservadoras con nombre de carpeta y timestamps de filesystem.
-
-### Cuándo usar este script
-
-Úsalo cuando quieras:
-
-- comparar comportamiento del extractor entre cambios
-- generar artefactos reproducibles por PDF
-- revisar fallos de cobertura, fallback, contaminación o tail noise
-- validar una rama antes de tocar lógica funcional
-
-No es el sitio correcto para:
-
-- cambiar el extractor
-- cambiar scoring del pipeline
-- servir datos al frontend
-- persistir debug en el flujo web de usuario
-
-## Resumen operativo
-
-Relación entre ambas piezas:
-
-- `references_data.py` construye la salida estructurada y diagnóstica por PDF
-- `run_reference_regression.py` ejecuta ese flujo sobre un conjunto de PDFs y lo convierte en artefactos comparables de regresión
-
-Si quieres depurar un PDF concreto, empieza por `reference_debug.json`.
-
-Si quieres comparar una rama completa, usa el runner y revisa:
-
-1. `summary.md`
-2. `summary.json`
-3. `metrics.json` del paper problemático
-4. `reference_debug.json` para el detalle fino
+- `references_data.py`;
+- `reader_data.py`;
+- `citation_extractor.py`;
+- `engines.py`;
+- `views_api.api_extract_citations`;
+- CSS/DOM del reader si afecta resaltados o capas.
