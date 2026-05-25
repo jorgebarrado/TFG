@@ -87,7 +87,11 @@ def run_anystyle_parser(common_input: Dict[str, Any]) -> Dict[str, Any]:
 
     temp_dir = Path(tempfile.mkdtemp(prefix="anystyle_parse_"))
     input_path = temp_dir / "references.txt"
-    input_text = "\n".join(clean_text(item.get("raw_input")) for item in raw_references if clean_text(item.get("raw_input")))
+    input_text = "\n".join(
+        clean_text(item.get("raw_input"))
+        for item in raw_references
+        if clean_text(item.get("raw_input"))
+    )
     input_path.write_text(input_text, encoding="utf-8")
 
     try:

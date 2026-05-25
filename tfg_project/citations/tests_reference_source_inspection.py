@@ -3,7 +3,6 @@ from pathlib import Path
 
 from django.test import SimpleTestCase
 
-
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "inspect_reference_sources.py"
 )

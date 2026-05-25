@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 import time
+import xml.etree.ElementTree as ET
 from hashlib import sha1
 from typing import List, Optional, TypedDict
 from urllib.parse import urlsplit, urlunsplit
@@ -83,8 +83,7 @@ def _raise_for_dblp_http_error(response: requests.Response) -> None:
                 else ""
             )
             raise DBLPClientError(
-                "DBLP esta limitando temporalmente las peticiones."
-                f"{wait_hint}"
+                "DBLP esta limitando temporalmente las peticiones." f"{wait_hint}"
             ) from exc
         raise
 

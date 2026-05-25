@@ -30,6 +30,8 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
+from citations.services.citation_patterns import find_citation_matches  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tfg_project"))
 
@@ -37,15 +39,10 @@ DEFAULT_PDF_DIR = (
     ROOT / "tfg_project" / "citations" / "static" / "citations" / "PDFs-Reales"
 )
 
-from citations.services.citation_patterns import find_citation_matches  # noqa: E402
 
 # ---- Regex viejos (copiados de la version pre-refactor) ----
-OLD_NUMERIC = re.compile(
-    r"\[\s*\d+(?:\s*(?:[,;]\s*\d+|\s*[-–—]\s*\d+))*\s*\]"
-)
-OLD_AUTHOR_YEAR_NARROW = re.compile(
-    r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)"
-)
+OLD_NUMERIC = re.compile(r"\[\s*\d+(?:\s*(?:[,;]\s*\d+|\s*[-–—]\s*\d+))*\s*\]")
+OLD_AUTHOR_YEAR_NARROW = re.compile(r"\b([A-Z][A-Za-z\-]+)\s*\(\s*(19|20)\d{2}\s*\)")
 OLD_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 
 
@@ -143,7 +140,9 @@ def collect_targets(args: argparse.Namespace) -> list[Path]:
         return []
     if not args.paths:
         if not DEFAULT_PDF_DIR.is_dir():
-            raise SystemExit(f"No encuentro el directorio por defecto: {DEFAULT_PDF_DIR}")
+            raise SystemExit(
+                f"No encuentro el directorio por defecto: {DEFAULT_PDF_DIR}"
+            )
         return sorted(DEFAULT_PDF_DIR.glob("*.pdf"))
 
     out: list[Path] = []
@@ -184,7 +183,8 @@ def main() -> None:
         help="PDFs/.txt/directorios a analizar (def: PDFs-Reales/).",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Lista cada cita ganada o perdida, no solo totales.",
     )
@@ -209,8 +209,7 @@ def main() -> None:
     delta = total_new - total_old
     pct = (delta / total_old * 100) if total_old else float("inf")
     print(
-        f"TOTAL  viejo={total_old}  nuevo={total_new}  "
-        f"delta=+{delta} ({pct:+.1f}%)"
+        f"TOTAL  viejo={total_old}  nuevo={total_new}  " f"delta=+{delta} ({pct:+.1f}%)"
     )
 
 

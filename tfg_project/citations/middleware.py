@@ -5,12 +5,14 @@ from django.http import HttpRequest, HttpResponse
 
 from .logging_utils import request_id_var
 
+
 class RequestIdMiddleware:
     """
     Middleware que genera y asocia un request_id único para cada petición.
     Este ID se guarda en un ContextVar para que esté disponible para el logging
     de forma segura en hilos o llamadas asíncronas.
     """
+
     def __init__(self, get_response: Callable):
         self.get_response = get_response
 

@@ -11,9 +11,15 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from unittest.mock import patch
 
+import django  # noqa: E402
+from django.apps import apps  # noqa: E402
+
+from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
+from citations.services.reader_data import extract_pdf_references  # noqa: E402
+from citations.services.references_data import build_references_data  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = ROOT / "tfg_project"
@@ -26,15 +32,9 @@ if str(PROJECT_ROOT) not in sys.path:
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tfg_project.settings")
 os.environ.setdefault("TRANSFORMERS_CACHE", str(ROOT / ".cache" / "transformers"))
 
-import django  # noqa: E402
-from django.apps import apps  # noqa: E402
 
 if not apps.ready:
     django.setup()
-
-from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
-from citations.services.reader_data import extract_pdf_references  # noqa: E402
-from citations.services.references_data import build_references_data  # noqa: E402
 
 
 DOI_RE = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
@@ -148,15 +148,11 @@ def _detect_suspicious_text(
     anchors = []
     for match in BRACKETED_ANCHOR_VALUE_RE.finditer(normalized):
         anchors.extend(
-            int(value)
-            for value in match.groups()
-            if value and int(value) <= 500
+            int(value) for value in match.groups() if value and int(value) <= 500
         )
     for match in LINE_START_ANCHOR_VALUE_RE.finditer(normalized):
         anchors.extend(
-            int(value)
-            for value in match.groups()
-            if value and int(value) <= 500
+            int(value) for value in match.groups() if value and int(value) <= 500
         )
     if len(set(anchors)) > 1:
         reasons.append("multiple_anchors")
@@ -168,7 +164,8 @@ def _detect_suspicious_text(
         or has_doi
         or " et al" in lowered
         or lowered.count(",") >= 2
-        or "." in normalized and "," in normalized
+        or "." in normalized
+        and "," in normalized
     )
     if (
         not has_bibliographic_shape
@@ -196,11 +193,7 @@ def _summarize_indices(
     counter = Counter(indices)
     unique_indices = sorted(counter)
     upper_bound = expected_max_index or (max(unique_indices) if unique_indices else 0)
-    missing = [
-        value
-        for value in range(1, upper_bound + 1)
-        if value not in counter
-    ]
+    missing = [value for value in range(1, upper_bound + 1) if value not in counter]
     return {
         "indexed_count": len(indices),
         "unique_count": len(unique_indices),
@@ -249,9 +242,7 @@ def _summarize_entries(
             validation = reference.get("reference_validation")
             entry["structure_source"] = structure_source or None
             entry["accepted"] = (
-                validation.get("accepted")
-                if isinstance(validation, dict)
-                else None
+                validation.get("accepted") if isinstance(validation, dict) else None
             )
         entries.append(entry)
         if reasons:
@@ -309,8 +300,7 @@ def summarize_structured_source(payload: Dict[str, Any]) -> Dict[str, Any]:
         source_kind="structured",
     )
     source_counts = Counter(
-        str(reference.get("structure_source") or "missing")
-        for reference in references
+        str(reference.get("structure_source") or "missing") for reference in references
     )
     accepted_count = 0
     rejected_count = 0
@@ -326,9 +316,7 @@ def summarize_structured_source(payload: Dict[str, Any]) -> Dict[str, Any]:
             unknown_validation_count += 1
 
     fallback_count = sum(
-        count
-        for source, count in source_counts.items()
-        if "fallback" in source.lower()
+        count for source, count in source_counts.items() if "fallback" in source.lower()
     )
     total = len(entries)
     max_reference_index = _safe_int(payload.get("max_reference_index"))
@@ -468,7 +456,10 @@ def _classify_result(
         return "structured_better", reasons
     if not reasons:
         return "stable_match", ["no_material_differences"]
-    if reasons == ["base_duplicate_indices"] and structured_summary["fallback_pct"] < 10:
+    if (
+        reasons == ["base_duplicate_indices"]
+        and structured_summary["fallback_pct"] < 10
+    ):
         return "structured_better", reasons
     return "needs_manual_review", reasons
 
@@ -555,10 +546,7 @@ def build_comparison_for_pdf(
             engine_used="papermage",
             debug_reference_detection=True,
         )
-    layer_counts = {
-        str(name): len(items or [])
-        for name, items in layers.items()
-    }
+    layer_counts = {str(name): len(items or []) for name, items in layers.items()}
     return compare_reference_sources(
         pdf_path=pdf_path,
         base_references=references,
@@ -691,7 +679,9 @@ def _print_console_result(result: Dict[str, Any]) -> None:
     structured = result["structured"]
     comparison = result["comparison"]
     print(f"PDF: {result['pdf']['name']}")
-    print(f"  class: {result['classification']} ({', '.join(result['classification_reasons'])})")
+    print(
+        f"  class: {result['classification']} ({', '.join(result['classification_reasons'])})"
+    )
     print(
         "  totals: "
         f"base={base['total']} structured={structured['total']} "

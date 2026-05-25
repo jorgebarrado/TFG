@@ -1,8 +1,6 @@
 import logging
 import xml.etree.ElementTree as ET
 
-import requests
-
 from .services.external_api import build_external_api_session
 from .services.semantic_scholar_client import (
     SemanticScholarError,
@@ -65,8 +63,8 @@ def get_articles_from_dblp(dblp_url):
 
         return publications
 
-    except Exception as e:
-        print("Error al obtener publicaciones desde DBLP:", e)
+    except Exception:
+        logger.exception("Error al obtener publicaciones desde DBLP")
         return []
 
 
@@ -115,7 +113,9 @@ def get_citing_articles(doi):
         return result
 
     except (SemanticScholarError, ValueError, TypeError) as exc:
-        logger.warning("Error en Semantic Scholar al obtener citantes doi=%s error=%s", doi, exc)
+        logger.warning(
+            "Error en Semantic Scholar al obtener citantes doi=%s error=%s", doi, exc
+        )
         return []
 
 
@@ -133,7 +133,9 @@ def check_doi_has_citations(doi):
         data = get_paper_by_doi(doi, fields="citationCount")
         return bool(data and data.get("citationCount", 0) > 0)
     except (SemanticScholarError, ValueError, TypeError) as exc:
-        logger.warning("Error consultando DOI en Semantic Scholar doi=%s error=%s", doi, exc)
+        logger.warning(
+            "Error consultando DOI en Semantic Scholar doi=%s error=%s", doi, exc
+        )
         return False
 
 
@@ -150,5 +152,7 @@ def get_citation_count(doi):
     try:
         return get_citation_counts_for_dois([doi]).get(str(doi or "").strip(), 0)
     except (SemanticScholarError, ValueError, TypeError) as e:
-        logger.warning("Error al obtener citationCount en Semantic Scholar doi=%s error=%s", doi, e)
+        logger.warning(
+            "Error al obtener citationCount en Semantic Scholar doi=%s error=%s", doi, e
+        )
         return 0

@@ -6,12 +6,13 @@ from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-# TODO: futuro flujo avanzado de reportes (CitationReport).
-# Ahora mismo no se usa en produccion; el flujo activo usa IncorrectCitation.
 
 from .models import IncorrectCitation
 from .services.evidence import normalize_evidence_items
 from .services.report_tags import CITATION_TYPE_CHOICES, PUBLICATION_AREA_LABELS
+
+# Flujo avanzado de CitationReport reservado para mantener estable IncorrectCitation.
+# Ahora mismo no se usa en produccion; el flujo activo usa IncorrectCitation.
 
 
 def create_report_wizard(request):

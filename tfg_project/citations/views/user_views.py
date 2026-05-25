@@ -1,6 +1,5 @@
 """Views related to user profiles and personalized content."""
 
-
 import json
 
 from django.conf import settings
@@ -243,9 +242,7 @@ def dblp_articles_view(request):
     if tipo:
         articles = [a for a in articles if a.get("type") == tipo]
     if busqueda:
-        articles = [
-            a for a in articles if busqueda in (a.get("title") or "").lower()
-        ]
+        articles = [a for a in articles if busqueda in (a.get("title") or "").lower()]
     if not include_without_citations:
         citation_counts = {}
         try:
@@ -303,16 +300,21 @@ def doi_search_view(request):
     try:
         paper = get_paper_metadata_by_doi(doi)
         if paper is None:
-            error_message = f"No se encontró ningún artículo con DOI '{doi}' en Semantic Scholar."
+            error_message = (
+                f"No se encontró ningún artículo con DOI '{doi}' en Semantic Scholar."
+            )
         else:
-            paper_metadata_json = json.dumps({
-                "title": paper.get("title"),
-                "doi": paper.get("doi") or doi,
-                "year": paper.get("year"),
-                "authors": paper.get("authors"),
-                "venue": paper.get("venue"),
-                "source": "semantic_scholar",
-            }, ensure_ascii=True)
+            paper_metadata_json = json.dumps(
+                {
+                    "title": paper.get("title"),
+                    "doi": paper.get("doi") or doi,
+                    "year": paper.get("year"),
+                    "authors": paper.get("authors"),
+                    "venue": paper.get("venue"),
+                    "source": "semantic_scholar",
+                },
+                ensure_ascii=True,
+            )
             citing_papers, next_page_offset = get_citing_papers_for_doi_paginated(
                 paper.get("doi") or doi, limit=limit, offset=offset
             )

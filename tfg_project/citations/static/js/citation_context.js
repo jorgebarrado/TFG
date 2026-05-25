@@ -100,7 +100,4 @@
       hide(LOADING);
     }
   });
-
-  // Log para verificar que carga el JS
-  console.log('[citation_context] cargado');
 })();

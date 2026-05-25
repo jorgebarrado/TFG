@@ -7,15 +7,17 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .crossref_client import (
     fetch_cited_by_for_doi,
-    fetch_work_by_doi as crossref_fetch_work_by_doi,
+)
+from .crossref_client import fetch_work_by_doi as crossref_fetch_work_by_doi
+from .crossref_client import (
     search_works_by_bibliographic_text,
 )
+from .reference_reconciliation import validate_reference_against_metadata
 from .semantic_scholar_client import (
     SemanticScholarError,
     get_citing_papers_for_doi_paginated,
-    get_work_by_doi as semantic_fetch_work_by_doi,
 )
-from .reference_reconciliation import validate_reference_against_metadata
+from .semantic_scholar_client import get_work_by_doi as semantic_fetch_work_by_doi
 
 logger = logging.getLogger("citations.doi_enrichment")
 
@@ -143,7 +145,9 @@ def _score_external_reference_match(
         return 0.99
 
     local_text = _extract_reference_text(local_ref)
-    external_title = str(external_ref.get("title") or external_ref.get("raw_text") or "").strip()
+    external_title = str(
+        external_ref.get("title") or external_ref.get("raw_text") or ""
+    ).strip()
     if not local_text or not external_title:
         return 0.0
 
@@ -199,7 +203,9 @@ def _pick_best_external_reference_match(
     return best_ref, best_score
 
 
-def _as_reference_candidate_from_work(work_item: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def _as_reference_candidate_from_work(
+    work_item: Optional[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
     if not isinstance(work_item, dict):
         return None
     doi = normalize_doi(work_item.get("doi"))
@@ -209,7 +215,11 @@ def _as_reference_candidate_from_work(work_item: Optional[Dict[str, Any]]) -> Op
     return {
         "doi": doi,
         "title": title,
-        "authors": work_item.get("authors") if isinstance(work_item.get("authors"), list) else [],
+        "authors": (
+            work_item.get("authors")
+            if isinstance(work_item.get("authors"), list)
+            else []
+        ),
         "year": _extract_year(work_item.get("year")),
         "venue": str(work_item.get("venue") or "").strip() or None,
         "source": str(work_item.get("source") or "").strip() or "crossref",
@@ -232,7 +242,11 @@ def _apply_reference_metadata(
     if match.get("title"):
         out["title"] = str(match.get("title")).strip()
     if isinstance(match.get("authors"), list) and match.get("authors"):
-        out["authors"] = [str(author).strip() for author in match.get("authors") if str(author).strip()]
+        out["authors"] = [
+            str(author).strip()
+            for author in match.get("authors")
+            if str(author).strip()
+        ]
     year = _extract_year(match.get("year"))
     if year:
         out["year"] = year
@@ -309,10 +323,16 @@ def _coerce_final_decision(value: Any) -> Dict[str, Any]:
         "expected_anchor_index": value.get("expected_anchor_index"),
         "has_nested_anchor": bool(value.get("has_nested_anchor")),
         "header_noise_score": round(float(value.get("header_noise_score") or 0.0), 3),
-        "crossref_match_score": round(float(value.get("crossref_match_score") or 0.0), 3),
+        "crossref_match_score": round(
+            float(value.get("crossref_match_score") or 0.0), 3
+        ),
         "doi_match_score": round(float(value.get("doi_match_score") or 0.0), 3),
-        "row_continuity_score": round(float(value.get("row_continuity_score") or 0.0), 3),
-        "token_cleanup_confidence": round(float(value.get("token_cleanup_confidence") or 0.0), 3),
+        "row_continuity_score": round(
+            float(value.get("row_continuity_score") or 0.0), 3
+        ),
+        "token_cleanup_confidence": round(
+            float(value.get("token_cleanup_confidence") or 0.0), 3
+        ),
         "cleanup_applied": bool(value.get("cleanup_applied")),
         "selected_candidate_source": value.get("selected_candidate_source"),
     }
@@ -379,7 +399,9 @@ def _evaluate_enrichment_acceptance(
         expected_index=expected_index,
         other_metadata_candidates=other_candidates,
     )
-    structural_validation = _coerce_reference_validation(current.get("reference_validation"))
+    structural_validation = _coerce_reference_validation(
+        current.get("reference_validation")
+    )
     structure_source = str(current.get("structure_source") or "").strip().lower()
     local_row_count = int(current.get("local_row_count") or 0)
     local_anchor_detected = bool(current.get("local_anchor_detected"))
@@ -406,16 +428,19 @@ def _evaluate_enrichment_acceptance(
             or metadata_validation.get("has_nested_anchor")
         )
         metadata_match = float(metadata_validation.get("match_score") or 0.0)
-        direct_doi_match = (
-            bool(normalize_doi(current.get("doi")))
-            and normalize_doi(current.get("doi")) == normalize_doi(match.get("doi"))
-        )
+        direct_doi_match = bool(normalize_doi(current.get("doi"))) and normalize_doi(
+            current.get("doi")
+        ) == normalize_doi(match.get("doi"))
         high_confidence = float(score or 0.0) >= 0.72
         metadata_accepted = bool(metadata_validation.get("accepted"))
         accepted = bool(
             metadata_accepted
             and combined_mixed < 0.72
-            and (metadata_match >= 0.72 or (direct_doi_match and metadata_match >= 0.52) or high_confidence)
+            and (
+                metadata_match >= 0.72
+                or (direct_doi_match and metadata_match >= 0.52)
+                or high_confidence
+            )
             and not (has_nested and not direct_doi_match)
         )
         if accepted:
@@ -423,7 +448,9 @@ def _evaluate_enrichment_acceptance(
         elif has_nested or combined_mixed >= 0.72:
             reason = "mixed_rows_multiple_references"
         else:
-            reason = str(metadata_validation.get("reason") or "metadata_validation_failed")
+            reason = str(
+                metadata_validation.get("reason") or "metadata_validation_failed"
+            )
 
     merged = _build_merged_reference_validation(
         structural_validation=structural_validation,
@@ -466,9 +493,13 @@ def resolve_work_by_doi(doi: str) -> Dict[str, Any]:
     try:
         semantic_work = semantic_fetch_work_by_doi(normalized_doi)
     except SemanticScholarError as exc:
-        logger.warning("semantic scholar resolve failed doi=%s error=%s", normalized_doi, exc)
+        logger.warning(
+            "semantic scholar resolve failed doi=%s error=%s", normalized_doi, exc
+        )
     except Exception as exc:  # pragma: no cover - defensive guard
-        logger.warning("semantic scholar unexpected error doi=%s error=%s", normalized_doi, exc)
+        logger.warning(
+            "semantic scholar unexpected error doi=%s error=%s", normalized_doi, exc
+        )
     if semantic_work:
         resolved["sources_used"].append("semantic_scholar")
         logger.info("semantic scholar resolved doi=%s", normalized_doi)
@@ -480,15 +511,27 @@ def resolve_work_by_doi(doi: str) -> Dict[str, Any]:
     if crossref_work and semantic_work:
         secondary = semantic_work
 
-    resolved["title"] = str(preferred.get("title") or secondary.get("title") or "").strip()
+    resolved["title"] = str(
+        preferred.get("title") or secondary.get("title") or ""
+    ).strip()
     resolved["authors"] = (
         preferred.get("authors")
         if isinstance(preferred.get("authors"), list) and preferred.get("authors")
-        else secondary.get("authors") if isinstance(secondary.get("authors"), list) else []
+        else (
+            secondary.get("authors")
+            if isinstance(secondary.get("authors"), list)
+            else []
+        )
     )
     resolved["year"] = preferred.get("year") or secondary.get("year")
-    resolved["venue"] = str(preferred.get("venue") or secondary.get("venue") or "").strip()
-    resolved["source"] = "crossref" if crossref_work else ("semantic_scholar" if semantic_work else "none")
+    resolved["venue"] = str(
+        preferred.get("venue") or secondary.get("venue") or ""
+    ).strip()
+    resolved["source"] = (
+        "crossref"
+        if crossref_work
+        else ("semantic_scholar" if semantic_work else "none")
+    )
 
     references = _merge_unique_work_items(
         crossref_work.get("references", []) if isinstance(crossref_work, dict) else [],
@@ -513,7 +556,11 @@ def resolve_work_by_doi(doi: str) -> Dict[str, Any]:
             semantic_citations = [
                 {
                     "title": str(item.get("title") or "").strip(),
-                    "authors": [name.strip() for name in str(item.get("authors") or "").split(",") if name.strip()],
+                    "authors": [
+                        name.strip()
+                        for name in str(item.get("authors") or "").split(",")
+                        if name.strip()
+                    ],
                     "year": _extract_year(item.get("year")),
                     "doi": normalize_doi(item.get("doi")),
                     "venue": "",
@@ -523,7 +570,10 @@ def resolve_work_by_doi(doi: str) -> Dict[str, Any]:
                 for item in cited_page
                 if isinstance(item, dict)
             ]
-            if semantic_citations and "semantic_scholar" not in resolved["sources_used"]:
+            if (
+                semantic_citations
+                and "semantic_scholar" not in resolved["sources_used"]
+            ):
                 resolved["sources_used"].append("semantic_scholar")
         except Exception:
             semantic_citations = []
@@ -537,7 +587,11 @@ def enrich_references_with_doi_data(
     local_references: Sequence[Dict[str, Any]],
     external_work_data: Dict[str, Any],
 ) -> Dict[str, Any]:
-    candidates = external_work_data.get("references") if isinstance(external_work_data, dict) else []
+    candidates = (
+        external_work_data.get("references")
+        if isinstance(external_work_data, dict)
+        else []
+    )
     candidates = candidates if isinstance(candidates, list) else []
 
     by_doi: Dict[str, Dict[str, Any]] = {}
@@ -589,7 +643,9 @@ def enrich_references_with_doi_data(
                     try:
                         fetched_work = crossref_fetch_work_by_doi(local_doi)
                     except Exception as exc:  # pragma: no cover - defensive guard
-                        logger.warning("crossref doi lookup failed doi=%s error=%s", local_doi, exc)
+                        logger.warning(
+                            "crossref doi lookup failed doi=%s error=%s", local_doi, exc
+                        )
                     if not fetched_work:
                         try:
                             fetched_work = semantic_fetch_work_by_doi(local_doi)
@@ -613,44 +669,62 @@ def enrich_references_with_doi_data(
                     source = str(lookup_match.get("source") or "crossref")
 
         if best_match is None and candidates:
-            best_match, best_score = _pick_best_external_reference_match(current, candidates)
+            best_match, best_score = _pick_best_external_reference_match(
+                current, candidates
+            )
             if best_match and best_score >= 0.72:
-                source = str(best_match.get("source") or external_work_data.get("source") or "crossref")
+                source = str(
+                    best_match.get("source")
+                    or external_work_data.get("source")
+                    or "crossref"
+                )
             else:
                 best_match = None
 
-        if best_match is None and local_text and crossref_query_lookups < max_crossref_queries:
+        if (
+            best_match is None
+            and local_text
+            and crossref_query_lookups < max_crossref_queries
+        ):
             query_key = _normalize_text(local_text)[:300]
             query_results = query_cache.get(query_key)
             if query_results is None:
-                query_results = search_works_by_bibliographic_text(local_text[:320], rows=4)
+                query_results = search_works_by_bibliographic_text(
+                    local_text[:320], rows=4
+                )
                 query_cache[query_key] = query_results
                 crossref_query_lookups += 1
             if query_results:
                 validation_candidates.extend(
                     [item for item in query_results if isinstance(item, dict)]
                 )
-                query_match, query_score = _pick_best_external_reference_match(current, query_results)
+                query_match, query_score = _pick_best_external_reference_match(
+                    current, query_results
+                )
                 if query_match and query_score >= 0.62:
                     best_match = query_match
                     best_score = query_score
                     source = str(query_match.get("source") or "crossref")
 
         if best_match is not None:
-            accepted, merged_validation, rejection_reason = _evaluate_enrichment_acceptance(
-                current=current,
-                match=best_match,
-                score=best_score,
-                candidates=validation_candidates,
+            accepted, merged_validation, rejection_reason = (
+                _evaluate_enrichment_acceptance(
+                    current=current,
+                    match=best_match,
+                    score=best_score,
+                    candidates=validation_candidates,
+                )
             )
             current_final_decision = _coerce_final_decision(
                 current.get("final_decision")
                 if isinstance(current.get("final_decision"), dict)
                 else current.get("scores")
             )
-            synced_reference_validation = _sync_reference_validation_with_final_decision(
-                current.get("reference_validation"),
-                current_final_decision,
+            synced_reference_validation = (
+                _sync_reference_validation_with_final_decision(
+                    current.get("reference_validation"),
+                    current_final_decision,
+                )
             )
             if accepted:
                 updated = _apply_reference_metadata(
@@ -682,7 +756,11 @@ def enrich_references_with_doi_data(
                     "confidence": round(float(best_score), 3),
                     "doi": normalize_doi(best_match.get("doi")) or None,
                     "title": str(best_match.get("title") or "").strip() or None,
-                    "authors": best_match.get("authors") if isinstance(best_match.get("authors"), list) else [],
+                    "authors": (
+                        best_match.get("authors")
+                        if isinstance(best_match.get("authors"), list)
+                        else []
+                    ),
                     "year": _extract_year(best_match.get("year")),
                     "venue": str(best_match.get("venue") or "").strip() or None,
                     "reason": rejection_reason or "metadata_validation_failed",
@@ -782,7 +860,9 @@ def enrich_extraction_with_doi(
     }
 
     safe_local = [dict(item) for item in local_references if isinstance(item, dict)]
-    safe_visual = [dict(item) for item in references_data_references if isinstance(item, dict)]
+    safe_visual = [
+        dict(item) for item in references_data_references if isinstance(item, dict)
+    ]
     if not doi_provided:
         return {
             "local_references": safe_local,
@@ -793,7 +873,9 @@ def enrich_extraction_with_doi(
 
     normalized_doi = normalize_doi(doi_input)
     enrichment_meta["doi_normalized"] = normalized_doi
-    logger.info("doi enrichment requested raw=%s normalized=%s", doi_input, normalized_doi)
+    logger.info(
+        "doi enrichment requested raw=%s normalized=%s", doi_input, normalized_doi
+    )
     if not is_valid_doi(normalized_doi):
         enrichment_meta["warning"] = "invalid_doi"
         logger.info("doi enrichment skipped invalid doi=%s", doi_input)
@@ -812,7 +894,11 @@ def enrich_extraction_with_doi(
     )
     enrichment_meta["paper_resolved"] = paper_resolved
     enrichment_meta["sources_used"] = list(external_work.get("sources_used") or [])
-    cited_by = external_work.get("citations") if isinstance(external_work.get("citations"), list) else []
+    cited_by = (
+        external_work.get("citations")
+        if isinstance(external_work.get("citations"), list)
+        else []
+    )
     enrichment_meta["cited_by_count"] = len(cited_by)
 
     if not paper_resolved:
@@ -863,7 +949,9 @@ def enrich_extraction_with_doi(
 
     return {
         "local_references": projected_local["references"],
-        "references_data_references": enriched_visual_references if safe_visual else safe_visual,
+        "references_data_references": (
+            enriched_visual_references if safe_visual else safe_visual
+        ),
         "cited_by": cited_by,
         "enrichment": enrichment_meta,
     }

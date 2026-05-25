@@ -12,7 +12,6 @@ from citations.services.reader_data import (
 from citations.services.reference_reconciliation import reconcile_reference_sources
 from citations.services.references_data import build_references_data
 
-
 PDF_FIXTURE_DIR = (
     Path(__file__).resolve().parent / "static" / "citations" / "PDFs-Reales"
 )
@@ -127,7 +126,9 @@ class ReferenceReconciliationTests(SimpleTestCase):
         self.assertEqual(summary["rescued_indices"], [2])
         self.assertEqual(result["final_references_total"], 3)
         self.assertEqual(result["final_max_reference_index"], 3)
-        self.assertEqual([ref["index"] for ref in result["final_references"]], [1, 2, 3])
+        self.assertEqual(
+            [ref["index"] for ref in result["final_references"]], [1, 2, 3]
+        )
         self.assertFalse(
             any(
                 "fallback" in str(ref.get("structure_source") or "")
@@ -177,7 +178,12 @@ class ReferenceReconciliationTests(SimpleTestCase):
         self.assertEqual(summary["final_missing_indices"], [2])
         self.assertEqual(result["final_references_total"], 2)
         self.assertIn(
-            {"index": 2, "source": "base", "action": "skipped", "reason": "ambiguous_candidates"},
+            {
+                "index": 2,
+                "source": "base",
+                "action": "skipped",
+                "reason": "ambiguous_candidates",
+            },
             summary["rescue_reasons"],
         )
 
@@ -279,7 +285,10 @@ class ReferenceReconciliationTests(SimpleTestCase):
         self.assertEqual(result["reconciliation_summary"]["source_selected"], "base")
         self.assertEqual(result["final_references_total"], 2)
         self.assertEqual(result["final_max_reference_index"], 2)
-        self.assertEqual([ref["raw"] for ref in result["final_references"]], [ref["raw"] for ref in base_references])
+        self.assertEqual(
+            [ref["raw"] for ref in result["final_references"]],
+            [ref["raw"] for ref in base_references],
+        )
 
     def test_ct_pdf_remains_stable_after_reconciliation(self):
         base_references, base_stats, structured_payload = self._build_real_payloads(

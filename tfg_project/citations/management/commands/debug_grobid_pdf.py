@@ -9,6 +9,7 @@ Objetivo:
 - parsearlo,
 - guardar artefactos simples.
 """
+
 from __future__ import annotations
 
 import json
@@ -113,13 +114,15 @@ class Command(BaseCommand):
         run_dir = self._build_run_dir(pdf_path, mode=mode, output_dir=output_dir)
         run_dir.mkdir(parents=True, exist_ok=True)
 
-        self.stdout.write(self.style.MIGRATE_HEADING(
-            f"\n[EXPERIMENTAL] GROBID PDF Debug\n"
-            f"  PDF       : {pdf_path}\n"
-            f"  URL       : {base_url}\n"
-            f"  Modo      : {mode}\n"
-            f"  Endpoint  : /api/{endpoint}\n"
-        ))
+        self.stdout.write(
+            self.style.MIGRATE_HEADING(
+                f"\n[EXPERIMENTAL] GROBID PDF Debug\n"
+                f"  PDF       : {pdf_path}\n"
+                f"  URL       : {base_url}\n"
+                f"  Modo      : {mode}\n"
+                f"  Endpoint  : /api/{endpoint}\n"
+            )
+        )
 
         ok, detail = check_service_ready(
             base_url=base_url,
@@ -249,7 +252,9 @@ class Command(BaseCommand):
         summary_path = run_dir / "summary.txt"
         summary_path.write_text(summary, encoding="utf-8")
 
-        self.stdout.write(self.style.SUCCESS("  OK: respuesta procesada correctamente.\n"))
+        self.stdout.write(
+            self.style.SUCCESS("  OK: respuesta procesada correctamente.\n")
+        )
         self.stdout.write(summary)
         self.stdout.write(self.style.MIGRATE_HEADING("\n--- Artefactos guardados ---"))
         self.stdout.write(f"  response.xml  {response_path}")
@@ -299,7 +304,9 @@ class Command(BaseCommand):
             ]
         elif mode == "references":
             refs = parsed.get("references") or []
-            lines.append(f"  references_count: {parsed.get('reference_count', len(refs))}")
+            lines.append(
+                f"  references_count: {parsed.get('reference_count', len(refs))}"
+            )
             lines.append("  primeras_5_referencias:")
             for idx, ref in enumerate(refs[:5], 1):
                 title = ref.get("title") or "(sin título)"
@@ -327,7 +334,9 @@ class Command(BaseCommand):
 
         return "\n".join(lines)
 
-    def _build_run_dir(self, pdf_path: Path, *, mode: str, output_dir: Optional[Path]) -> Path:
+    def _build_run_dir(
+        self, pdf_path: Path, *, mode: str, output_dir: Optional[Path]
+    ) -> Path:
         ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
         run_name = f"{ts}_{pdf_path.stem}_{mode}"
         return (output_dir or DEFAULT_OUTPUT_DIR) / run_name

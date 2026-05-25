@@ -5,6 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, NotRequired, Sequence, Tuple, TypedDict
+
 from citations.logging_utils import get_logger
 
 logger = get_logger("citations.extractor.papermage")
@@ -36,9 +37,7 @@ except Exception:
     PdfReader = None  # type: ignore[assignment]
 
 try:
-    from PyPDF2 import (
-        PdfReader as LegacyPdfReader,  # type: ignore[import-not-found]
-    )
+    from PyPDF2 import PdfReader as LegacyPdfReader  # type: ignore[import-not-found]
 except Exception:
     LegacyPdfReader = None  # type: ignore[assignment]
 
@@ -113,7 +112,9 @@ def _load_document(pdf_path: str) -> Document:
         logger.debug(f"Parseando documento con PDFPlumberParser en {pdf_path}")
         parser = PDFPlumberParser()
         doc = parser.parse(input_pdf_path=str(path))
-        logger.debug(f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas")
+        logger.debug(
+            f"Documento cargado correctamente en PaperMage: {len(getattr(doc, 'pages', []))} páginas"
+        )
         return doc
     except Exception as exc:
         logger.error(f"Fallo al parsear PDF con PDFPlumberParser: {exc}")

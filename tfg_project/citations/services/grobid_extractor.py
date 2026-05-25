@@ -13,9 +13,9 @@ Uso programático:
     result = run_grobid_extraction("/ruta/al/paper.pdf", save_artifacts=True)
     if result["ok"]:
         refs = result["parsed"]["references"]
-        print(f"GROBID encontró {len(refs)} referencias")
+        logger.info("GROBID encontró %s referencias", len(refs))
     else:
-        print(f"Error: {result['error']}")
+        logger.error("Error: %s", result["error"])
 
 Estructura de retorno de run_grobid_extraction():
     {
@@ -38,6 +38,7 @@ Estructura de retorno de run_grobid_extraction():
         "run_dir": str,               # directorio donde se guardaron los artefactos
     }
 """
+
 from __future__ import annotations
 
 import json
@@ -121,7 +122,9 @@ def run_grobid_extraction(
     """
     mode = (mode or "fulltext").strip().lower()
     if mode not in _VALID_MODES:
-        raise ValueError(f"Modo GROBID no soportado: {mode!r}. Valores válidos: {sorted(_VALID_MODES)}")
+        raise ValueError(
+            f"Modo GROBID no soportado: {mode!r}. Valores válidos: {sorted(_VALID_MODES)}"
+        )
 
     pdf_path = Path(pdf_path).resolve()
     if run_dir is not None:
@@ -151,18 +154,21 @@ def run_grobid_extraction(
     # 1. Llamada a GROBID
     # ------------------------------------------------------------------
     logger.info("Iniciando extracción GROBID (%s): %s", mode, pdf_path.name)
-    raw_body: Optional[str] = None
     try:
         if mode == "references":
             tei_xml = process_references(pdf_path, base_url=base_url, timeout=timeout)
         else:
-            tei_xml = process_fulltext_document(pdf_path, base_url=base_url, timeout=timeout)
+            tei_xml = process_fulltext_document(
+                pdf_path, base_url=base_url, timeout=timeout
+            )
     except GrobidInvalidResponseError as exc:
         result["error"] = str(exc)
         result["error_type"] = _classify_invalid_response(exc)
         logger.error("Respuesta inválida de GROBID [%s]: %s", result["error_type"], exc)
         if save_artifacts:
-            _save_error_artifacts(out_dir, result, invalid_exc=exc, artifact_prefix=prefix)
+            _save_error_artifacts(
+                out_dir, result, invalid_exc=exc, artifact_prefix=prefix
+            )
         return result
     except GrobidUnavailableError as exc:
         result["error"] = str(exc)
@@ -194,7 +200,9 @@ def run_grobid_extraction(
     # ------------------------------------------------------------------
     try:
         if mode == "references":
-            parsed = parse_references_tei(tei_xml, include_raw_citation=include_raw_citation)
+            parsed = parse_references_tei(
+                tei_xml, include_raw_citation=include_raw_citation
+            )
         else:
             parsed = parse_tei(tei_xml)
     except GrobidParseError as exc:
@@ -202,7 +210,9 @@ def run_grobid_extraction(
         result["error_type"] = "parse_error"
         logger.error("Error parseando TEI de GROBID: %s", exc)
         if save_artifacts:
-            _save_error_artifacts(out_dir, result, raw_body=tei_xml, artifact_prefix=prefix)
+            _save_error_artifacts(
+                out_dir, result, raw_body=tei_xml, artifact_prefix=prefix
+            )
         return result
 
     result["parsed"] = parsed
@@ -272,13 +282,21 @@ def _save_error_artifacts(
         # Guardar el body completo recibido (sea HTML o lo que sea) para inspección
         full_body = invalid_exc.body or invalid_exc.body_preview
         if full_body:
-            body_filename = f"{artifact_prefix}response_body.txt" if artifact_prefix else "response_body.txt"
+            body_filename = (
+                f"{artifact_prefix}response_body.txt"
+                if artifact_prefix
+                else "response_body.txt"
+            )
             body_path = out_dir / body_filename
             body_path.write_text(full_body, encoding="utf-8")
             result["artifacts"]["response_body"] = str(body_path)
 
     elif raw_body is not None:
-        body_filename = f"{artifact_prefix}response_body.txt" if artifact_prefix else "response_body.txt"
+        body_filename = (
+            f"{artifact_prefix}response_body.txt"
+            if artifact_prefix
+            else "response_body.txt"
+        )
         body_path = out_dir / body_filename
         body_path.write_text(raw_body, encoding="utf-8")
         result["artifacts"]["response_body"] = str(body_path)

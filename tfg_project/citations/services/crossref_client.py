@@ -107,7 +107,9 @@ def _normalize_reference_item(reference: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(reference, dict):
         return {}
     unstructured = str(reference.get("unstructured") or "").strip()
-    title = str(reference.get("article-title") or reference.get("volume-title") or "").strip()
+    title = str(
+        reference.get("article-title") or reference.get("volume-title") or ""
+    ).strip()
     author = str(reference.get("author") or "").strip()
     year: Optional[int] = None
     try:
@@ -121,7 +123,9 @@ def _normalize_reference_item(reference: Dict[str, Any]) -> Dict[str, Any]:
         "title": title or "",
         "authors": [author] if author else [],
         "year": year,
-        "venue": str(reference.get("journal-title") or reference.get("series-title") or "").strip()
+        "venue": str(
+            reference.get("journal-title") or reference.get("series-title") or ""
+        ).strip()
         or None,
         "raw_text": unstructured or title or author or "",
         "source": "crossref",
@@ -162,7 +166,9 @@ def _request_json(
         logger.warning("crossref rate limit path=%s", path)
         return None
     if response.status_code >= 500:
-        logger.warning("crossref server error path=%s status=%s", path, response.status_code)
+        logger.warning(
+            "crossref server error path=%s status=%s", path, response.status_code
+        )
         return None
     if response.status_code != 200:
         logger.info("crossref non-200 path=%s status=%s", path, response.status_code)
@@ -170,7 +176,9 @@ def _request_json(
     return _safe_json_response(response)
 
 
-def fetch_work_by_doi(doi: str, *, timeout: int = DEFAULT_TIMEOUT) -> Optional[Dict[str, Any]]:
+def fetch_work_by_doi(
+    doi: str, *, timeout: int = DEFAULT_TIMEOUT
+) -> Optional[Dict[str, Any]]:
     normalized_doi = _normalize_doi(doi)
     if not normalized_doi:
         return None

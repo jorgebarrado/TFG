@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 import traceback
@@ -12,10 +11,6 @@ from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import quote
 
 import requests
-
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
 
 from citations.services.doi_enrichment_service import (  # noqa: E402
     is_valid_doi,
@@ -39,12 +34,17 @@ from citations.services.reference_parsing_experiments.input_common import (  # n
 from citations.services.reference_parsing_experiments.runners import (  # noqa: E402
     run_refextract_parser,
 )
-from citations.services.references_data import _detect_article_doi_from_rows  # noqa: E402
+from citations.services.references_data import (  # noqa: E402
+    _detect_article_doi_from_rows,
+)
 from citations.services.semantic_scholar_client import (  # noqa: E402
     SEMANTIC_SCHOLAR_API_URL,
     SemanticScholarError,
     get_paper_by_doi,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
 
 
 CROSSREF_API_BASE = "https://api.crossref.org"
@@ -114,7 +114,10 @@ def normalize_author_list(values: Any) -> List[str]:
                 given = clean_text(item.get("given"))
                 family = clean_text(item.get("family"))
                 literal = clean_text(item.get("literal"))
-                name = clean_text(" ".join(part for part in [given, family] if part)) or literal
+                name = (
+                    clean_text(" ".join(part for part in [given, family] if part))
+                    or literal
+                )
         else:
             name = clean_text(item)
         if name:
@@ -141,7 +144,9 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def _error_payload(exc: Exception, *, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def _error_payload(
+    exc: Exception, *, context: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     return {
         "status": "error",
         "error_type": type(exc).__name__,
@@ -236,8 +241,14 @@ def _list_output_files(output_dir: Path) -> List[str]:
     )
 
 
-def _extractor_bibliography_start_page(common_input: Optional[Dict[str, Any]]) -> Optional[int]:
-    extractor_stats = ((common_input or {}).get("extractor_stats") or {}) if isinstance(common_input, dict) else {}
+def _extractor_bibliography_start_page(
+    common_input: Optional[Dict[str, Any]],
+) -> Optional[int]:
+    extractor_stats = (
+        ((common_input or {}).get("extractor_stats") or {})
+        if isinstance(common_input, dict)
+        else {}
+    )
     raw_page = extractor_stats.get("bibliography_start_page")
     try:
         page = int(raw_page)
@@ -254,7 +265,9 @@ def collect_extractor_paper_candidate(
 ) -> Dict[str, Any]:
     warnings: List[str] = []
     if not common_input:
-        warnings.append("Extractor metadata unavailable because common_input could not be built.")
+        warnings.append(
+            "Extractor metadata unavailable because common_input could not be built."
+        )
         return {
             "paper_title": None,
             "paper_doi": None,
@@ -273,7 +286,9 @@ def collect_extractor_paper_candidate(
         )
         normalized_doi = normalize_doi_or_none(detected_doi)
         if detected_doi and not normalized_doi:
-            warnings.append(f"Extractor produced an invalid DOI candidate: {detected_doi}")
+            warnings.append(
+                f"Extractor produced an invalid DOI candidate: {detected_doi}"
+            )
         return {
             "paper_title": None,
             "paper_doi": normalized_doi,
@@ -317,7 +332,9 @@ def collect_grobid_paper_candidate(
         raw_doi = parsed.get("doi")
         normalized_doi = normalize_doi_or_none(raw_doi)
         if raw_doi and not normalized_doi:
-            warnings.append(f"GROBID header produced an invalid DOI candidate: {raw_doi}")
+            warnings.append(
+                f"GROBID header produced an invalid DOI candidate: {raw_doi}"
+            )
         warnings.extend(
             clean_text(item)
             for item in (parsed.get("_warnings") or [])
@@ -369,7 +386,10 @@ def resolve_paper_identity(
     doi_source: Optional[str] = None
     if extractor_doi:
         paper_doi = extractor_doi
-        doi_source = clean_text(extractor_candidate.get("doi_source")) or "extractor_row_detection"
+        doi_source = (
+            clean_text(extractor_candidate.get("doi_source"))
+            or "extractor_row_detection"
+        )
         if grobid_doi and grobid_doi != extractor_doi:
             warnings.append(
                 f"DOI conflict between extractor ({extractor_doi}) and GROBID ({grobid_doi}); extractor DOI kept by priority."
@@ -378,7 +398,9 @@ def resolve_paper_identity(
         paper_doi = grobid_doi
         doi_source = clean_text(grobid_candidate.get("doi_source")) or "grobid_header"
     else:
-        warnings.append("No reliable paper DOI detected from extractor metadata or GROBID header.")
+        warnings.append(
+            "No reliable paper DOI detected from extractor metadata or GROBID header."
+        )
 
     paper_title = extractor_title or grobid_title
     return {
@@ -394,7 +416,9 @@ def resolve_paper_identity(
     }
 
 
-def normalize_extractor_reference(reference: Dict[str, Any], *, index: int) -> Dict[str, Any]:
+def normalize_extractor_reference(
+    reference: Dict[str, Any], *, index: int
+) -> Dict[str, Any]:
     return {
         "source": "extractor",
         "index": index + 1,
@@ -402,7 +426,9 @@ def normalize_extractor_reference(reference: Dict[str, Any], *, index: int) -> D
         "title": None,
         "authors": [],
         "year": None,
-        "doi": normalize_doi_or_none(reference.get("extractor_doi") or reference.get("doi")),
+        "doi": normalize_doi_or_none(
+            reference.get("extractor_doi") or reference.get("doi")
+        ),
         "venue": None,
         "pages": None,
         "extra": {
@@ -418,7 +444,9 @@ def normalize_extractor_reference(reference: Dict[str, Any], *, index: int) -> D
     }
 
 
-def normalize_grobid_reference(reference: Dict[str, Any], *, index: int) -> Dict[str, Any]:
+def normalize_grobid_reference(
+    reference: Dict[str, Any], *, index: int
+) -> Dict[str, Any]:
     return {
         "source": "grobid_processReferences",
         "index": index + 1,
@@ -436,7 +464,9 @@ def normalize_grobid_reference(reference: Dict[str, Any], *, index: int) -> Dict
     }
 
 
-def normalize_refextract_reference(reference: Dict[str, Any], *, index: int) -> Dict[str, Any]:
+def normalize_refextract_reference(
+    reference: Dict[str, Any], *, index: int
+) -> Dict[str, Any]:
     return {
         "source": "refextract",
         "index": index + 1,
@@ -460,7 +490,9 @@ def normalize_refextract_reference(reference: Dict[str, Any], *, index: int) -> 
     }
 
 
-def normalize_crossref_reference(reference: Dict[str, Any], *, index: int) -> Dict[str, Any]:
+def normalize_crossref_reference(
+    reference: Dict[str, Any], *, index: int
+) -> Dict[str, Any]:
     raw = clean_text(reference.get("unstructured"))
     title = first_text(
         reference.get("article-title"),
@@ -476,7 +508,9 @@ def normalize_crossref_reference(reference: Dict[str, Any], *, index: int) -> Di
         "authors": [author] if author else [],
         "year": coerce_year(reference.get("year")),
         "doi": normalize_doi_or_none(reference.get("DOI") or reference.get("doi")),
-        "venue": first_text(reference.get("journal-title"), reference.get("series-title")),
+        "venue": first_text(
+            reference.get("journal-title"), reference.get("series-title")
+        ),
         "pages": first_text(reference.get("first-page"), reference.get("page")),
         "extra": {
             "volume": clean_text(reference.get("volume")),
@@ -486,7 +520,9 @@ def normalize_crossref_reference(reference: Dict[str, Any], *, index: int) -> Di
     }
 
 
-def normalize_semantic_scholar_reference(reference: Dict[str, Any], *, index: int) -> Dict[str, Any]:
+def normalize_semantic_scholar_reference(
+    reference: Dict[str, Any], *, index: int
+) -> Dict[str, Any]:
     external_ids = reference.get("externalIds") or {}
     return {
         "source": "semantic_scholar",
@@ -570,7 +606,10 @@ def _fetch_crossref_artifacts(
     except requests.RequestException as exc:
         _write_json(output_dir / "crossref_work.json", work_payload)
         _write_json(output_dir / "crossref_references.json", raw_references)
-        _write_json(output_dir / "crossref_error.json", _error_payload(exc, context={"url": url, "doi": doi}))
+        _write_json(
+            output_dir / "crossref_error.json",
+            _error_payload(exc, context={"url": url, "doi": doi}),
+        )
         notes.append(f"Crossref request failed: {exc}")
         _write_json(
             output_dir / "crossref_notes.json",
@@ -620,7 +659,12 @@ def _fetch_crossref_artifacts(
             "notes": notes,
         },
     )
-    return {"status": "ok", "references": normalized_references, "notes": notes, "work": work_payload}
+    return {
+        "status": "ok",
+        "references": normalized_references,
+        "notes": notes,
+        "work": work_payload,
+    }
 
 
 def _fetch_semantic_scholar_artifacts(
@@ -686,7 +730,9 @@ def _fetch_semantic_scholar_artifacts(
 
     paper_payload = payload if isinstance(payload, dict) else {}
     raw_references = [
-        item for item in (paper_payload.get("references") or []) if isinstance(item, dict)
+        item
+        for item in (paper_payload.get("references") or [])
+        if isinstance(item, dict)
     ]
     normalized_references = [
         normalize_semantic_scholar_reference(item, index=index)
@@ -695,7 +741,9 @@ def _fetch_semantic_scholar_artifacts(
     if not raw_references:
         notes.append("Semantic Scholar resolved the DOI but did not return references.")
     else:
-        notes.append("Semantic Scholar references come from the Graph paper record, not citing papers.")
+        notes.append(
+            "Semantic Scholar references come from the Graph paper record, not citing papers."
+        )
 
     _write_json(output_dir / "semantic_scholar_paper.json", paper_payload)
     _write_json(output_dir / "semantic_scholar_references.json", raw_references)
@@ -708,7 +756,12 @@ def _fetch_semantic_scholar_artifacts(
             "notes": notes,
         },
     )
-    return {"status": "ok", "references": normalized_references, "notes": notes, "paper": paper_payload}
+    return {
+        "status": "ok",
+        "references": normalized_references,
+        "notes": notes,
+        "paper": paper_payload,
+    }
 
 
 def _empty_source_payload(*, status: str, notes: Iterable[str]) -> Dict[str, Any]:
@@ -741,8 +794,13 @@ def run_inspection(
         raw_references = common_input.get("raw_references") or []
         _write_json(output_dir / "common_input.json", common_input)
         _write_json(output_dir / "extractor_raw_references.json", raw_references)
-        _write_json(output_dir / "extractor_stats.json", common_input.get("extractor_stats") or {})
-        _write_json(output_dir / "extractor_warnings.json", common_input.get("warnings") or [])
+        _write_json(
+            output_dir / "extractor_stats.json",
+            common_input.get("extractor_stats") or {},
+        )
+        _write_json(
+            output_dir / "extractor_warnings.json", common_input.get("warnings") or []
+        )
         source_payloads["extractor"] = {
             "status": "ok",
             "references": [
@@ -801,7 +859,9 @@ def run_inspection(
                 notes=[f"GROBID processReferences failed: {exc}"],
             )
     else:
-        reason = str(health.get("summary", {}).get("ready_detail") or "GROBID is not ready")
+        reason = str(
+            health.get("summary", {}).get("ready_detail") or "GROBID is not ready"
+        )
         _write_json(
             output_dir / "grobid_processReferences_error.json",
             {
@@ -833,7 +893,9 @@ def run_inspection(
         try:
             refextract_output = run_refextract_parser(common_input)
             entries = [
-                item for item in (refextract_output.get("entries") or []) if isinstance(item, dict)
+                item
+                for item in (refextract_output.get("entries") or [])
+                if isinstance(item, dict)
             ]
             refextract_notes = [
                 clean_text(item)
@@ -888,7 +950,10 @@ def run_inspection(
         _write_json(output_dir / "refextract_entries.json", [])
         _write_json(
             output_dir / "refextract_notes.json",
-            {"status": "error", "notes": ["Refextract skipped because common_input is unavailable."]},
+            {
+                "status": "error",
+                "notes": ["Refextract skipped because common_input is unavailable."],
+            },
         )
         _write_json(
             output_dir / "refextract_error.json",
@@ -928,7 +993,9 @@ def run_inspection(
 
     unified_references: List[Dict[str, Any]] = []
     for source in SOURCE_ORDER:
-        unified_references.extend(source_payloads.get(source, {}).get("references") or [])
+        unified_references.extend(
+            source_payloads.get(source, {}).get("references") or []
+        )
     _write_json(output_dir / "unified_references.json", unified_references)
 
     unified_counts = build_unified_counts(

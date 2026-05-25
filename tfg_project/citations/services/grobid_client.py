@@ -12,13 +12,14 @@ Configuración (settings.py o .env):
 Este módulo no forma parte del flujo principal del proyecto.
 No modifica ni reemplaza ningún extractor existente.
 """
+
 from __future__ import annotations
 
 import logging
 import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
-import xml.etree.ElementTree as ET
 
 import requests
 
@@ -293,7 +294,10 @@ def check_service_ready(
     try:
         resp = requests.get(isalive_url, timeout=timeout)
     except requests.exceptions.ConnectionError:
-        return False, f"Sin conexión con {base_url} (connection refused / host inalcanzable)"
+        return (
+            False,
+            f"Sin conexión con {base_url} (connection refused / host inalcanzable)",
+        )
     except requests.exceptions.Timeout:
         return False, f"Timeout al comprobar {isalive_url} (>{timeout}s)"
     except requests.exceptions.RequestException as exc:
@@ -340,7 +344,10 @@ def check_grobid_alive(
     try:
         resp = requests.get(url, timeout=timeout)
     except requests.exceptions.ConnectionError:
-        return False, f"Sin conexión con {base_url} (connection refused / host inalcanzable)"
+        return (
+            False,
+            f"Sin conexión con {base_url} (connection refused / host inalcanzable)",
+        )
     except requests.exceptions.Timeout:
         return False, f"Timeout al comprobar {url} (>{timeout}s)"
     except requests.exceptions.RequestException as exc:

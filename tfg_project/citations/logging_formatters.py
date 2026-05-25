@@ -1,12 +1,15 @@
 import json
 import logging
+
 from .logging_utils import get_request_id
+
 
 class ColorFormatter(logging.Formatter):
     """
     Formateador de logs que añade colores a la salida de consola usando códigos ANSI.
     Formato: [TIMESTAMP] [NIVEL] [LOGGER] [REQ_ID] MENSAJE
     """
+
     grey = "\x1b[38;20m"
     blue = "\x1b[34;20m"
     green = "\x1b[32;20m"

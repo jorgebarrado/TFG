@@ -1,12 +1,18 @@
 from __future__ import annotations
-from typing import List, Dict, Any, Tuple
+
+from typing import Any, Dict, List, Tuple
+
+from .generic_extractor import (
+    GENERIC_AVAILABLE,
+    generic_extract_paragraphs_with_positions,
+)
 
 # ---- Declaraciones de disponibilidad e import seguro ----
 try:
     from .papermage_extractor import (
+        PM_AVAILABLE,
         pm_extract_paragraphs,
         pm_extract_paragraphs_with_positions,
-        PM_AVAILABLE,
     )
 except Exception:
     PM_AVAILABLE = False
@@ -15,20 +21,15 @@ except Exception:
 
 try:
     from .papercraft_extractor import (
+        PC_AVAILABLE,
         pc_extract_paragraphs,
         pc_extract_paragraphs_with_positions,
-        PC_AVAILABLE,
     )
 except Exception:
     PC_AVAILABLE = False
     pc_extract_paragraphs = None  # type: ignore
     pc_extract_paragraphs_with_positions = None  # type: ignore
 
-from .generic_extractor import (
-    generic_extract_paragraphs,
-    generic_extract_paragraphs_with_positions,
-    GENERIC_AVAILABLE,
-)
 
 EngineAttempt = Dict[str, Any]
 

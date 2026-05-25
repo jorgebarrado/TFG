@@ -38,6 +38,8 @@ const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d
 // Patrones autor-anio y DOI (espejo de citation_patterns.py). Necesitan
 // soportar marcas combinantes (\u0300-\u036f) porque el texto del PDF se
 // normaliza a NFKD antes de matchear.
+// Mantenerlos alineados con el backend evita que el reader resalte citas que
+// luego el servidor no puede reconciliar.
 const _NAME_TOKEN =
   "[A-Z\\u00C0-\\u00DC\\u0100-\\u017F]" +
   "[A-Za-z\\u00C0-\\u00FF\\u0100-\\u017F\\u0300-\\u036F'\\-]+";

@@ -17,10 +17,11 @@ from django.db.models import Count, IntegerField, Q, Sum, Value
 from django.db.models.functions import Coalesce, ExtractYear
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
-from django.template.loader import render_to_string
+
 from ..forms import (
     CommentForm,
     DBLPUrlForm,
@@ -34,7 +35,6 @@ from ..models import (
     IncorrectCitation,
     UserProfile,
 )
-from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.citation_extractor import process_manuscript
 from ..services.engines import ALLOWED_ENGINES
 from ..services.evidence import (
@@ -51,6 +51,7 @@ from ..services.report_tags import (
     extract_report_tag_values,
     normalize_tag_values,
 )
+from ..services.semantic_fetch import get_citations_with_fallback
 from ..services.semanticscholar import download_pdf_to_temp
 
 
@@ -249,7 +250,9 @@ def _context_dedupe_key(page, paragraph: str, snippet: str) -> tuple[str, str]:
     return page_key, primary_text
 
 
-def _evidence_items_for_display(citation, original_pdf_url: str, incorrect_pdf_url: str):
+def _evidence_items_for_display(
+    citation, original_pdf_url: str, incorrect_pdf_url: str
+):
     evidence_items = normalize_evidence_items(citation.citation_contexts)
     for item in evidence_items:
         source = str(item.get("source") or "")
@@ -486,9 +489,9 @@ def citation_list(request):
         page_ids = [citation.id for citation in page_obj.object_list]
         if page_ids:
             saved_citation_ids = set(
-                request.user.saved_citations.filter(citation_id__in=page_ids).values_list(
-                    "citation_id", flat=True
-                )
+                request.user.saved_citations.filter(
+                    citation_id__in=page_ids
+                ).values_list("citation_id", flat=True)
             )
 
     for citation in page_obj.object_list:
@@ -1069,9 +1072,7 @@ def citation_preview(request, pk):
 def citation_extract_contexts(request, pk):
     citation = get_object_or_404(IncorrectCitation, pk=pk)
     if not _can_edit_report(request.user, citation):
-        messages.error(
-            request, "No tienes permiso para actualizar las evidencias."
-        )
+        messages.error(request, "No tienes permiso para actualizar las evidencias.")
         return redirect("citation_detail", pk=pk)
 
     if request.POST.get("context_selection") == "1":

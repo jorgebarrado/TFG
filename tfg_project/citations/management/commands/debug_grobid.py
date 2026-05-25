@@ -33,6 +33,7 @@ Artefactos generados en tmp/grobid_debug/<timestamp>_<pdf>/:
 
 Consulta docs/grobid_experiment.md para instrucciones de puesta en marcha.
 """
+
 from __future__ import annotations
 
 import json
@@ -45,7 +46,10 @@ from typing import Any, Dict, List, Optional
 from django.core.management.base import BaseCommand, CommandError
 
 from citations.services.grobid_client import check_grobid_alive, get_base_url
-from citations.services.grobid_extractor import DEFAULT_OUTPUT_DIR, run_grobid_extraction
+from citations.services.grobid_extractor import (
+    DEFAULT_OUTPUT_DIR,
+    run_grobid_extraction,
+)
 
 _MODE_ENDPOINT = {
     "fulltext": "processFulltextDocument",
@@ -55,27 +59,27 @@ _MODE_ENDPOINT = {
 
 # Descripciones cortas para consola (el detalle largo va a summary.txt / error.json)
 _SHORT_ERROR_DESC: dict = {
-    "connection":                   "GROBID no alcanzable (connection refused / timeout)",
-    "http":                         "GROBID devolvió un código HTTP de error",
+    "connection": "GROBID no alcanzable (connection refused / timeout)",
+    "http": "GROBID devolvió un código HTTP de error",
     "huggingface_space_warming_up": "HuggingFace Space dormido — devolvió HTML en lugar de TEI XML",
     "huggingface_space_warming_up_timeout": "El Space no salió del estado warming-up tras los reintentos",
-    "non_tei_html_response":        "URL devolvió HTML (proxy, landing page u otro servicio)",
-    "non_tei_response":             "Respuesta no-HTML pero sin <TEI> (endpoint incorrecto?)",
-    "invalid_response":             "Respuesta no es TEI XML de GROBID",
-    "parse_error":                  "XML recibido no es TEI válido",
-    "error":                        "Error genérico",
+    "non_tei_html_response": "URL devolvió HTML (proxy, landing page u otro servicio)",
+    "non_tei_response": "Respuesta no-HTML pero sin <TEI> (endpoint incorrecto?)",
+    "invalid_response": "Respuesta no es TEI XML de GROBID",
+    "parse_error": "XML recibido no es TEI válido",
+    "error": "Error genérico",
 }
 
 _ERROR_LABELS: dict = {
-    "connection":                   "Error de conexión",
-    "http":                         "Error HTTP de GROBID",
+    "connection": "Error de conexión",
+    "http": "Error HTTP de GROBID",
     "huggingface_space_warming_up": "HuggingFace Space dormido (devolvió HTML)",
     "huggingface_space_warming_up_timeout": "HuggingFace Space no salió de warming-up a tiempo",
-    "non_tei_html_response":        "URL devolvió HTML — no es el endpoint GROBID",
-    "non_tei_response":             "Respuesta sin <TEI> (endpoint incorrecto?)",
-    "invalid_response":             "Respuesta inválida — no es TEI XML de GROBID",
-    "parse_error":                  "Error de parseo del XML recibido",
-    "error":                        "Error genérico",
+    "non_tei_html_response": "URL devolvió HTML — no es el endpoint GROBID",
+    "non_tei_response": "Respuesta sin <TEI> (endpoint incorrecto?)",
+    "invalid_response": "Respuesta inválida — no es TEI XML de GROBID",
+    "parse_error": "Error de parseo del XML recibido",
+    "error": "Error genérico",
 }
 
 
@@ -186,12 +190,14 @@ class Command(BaseCommand):
 
         effective_grobid_url = (grobid_url or get_base_url()).rstrip("/")
 
-        self.stdout.write(self.style.MIGRATE_HEADING(
-            f"\n[EXPERIMENTAL] GROBID Debug\n"
-            f"  PDF        : {pdf_path}\n"
-            f"  GROBID URL : {effective_grobid_url}\n"
-            f"  Modo       : {mode}\n"
-        ))
+        self.stdout.write(
+            self.style.MIGRATE_HEADING(
+                f"\n[EXPERIMENTAL] GROBID Debug\n"
+                f"  PDF        : {pdf_path}\n"
+                f"  GROBID URL : {effective_grobid_url}\n"
+                f"  Modo       : {mode}\n"
+            )
+        )
 
         # Comprobación de disponibilidad de GROBID.
         # Para HF Space + HTML en /api/isalive puede activar warmup-retry bloqueante.
@@ -228,18 +234,22 @@ class Command(BaseCommand):
                 )
                 warmup_retry["eligible"] = is_hf_warmup
                 if is_hf_warmup and not no_warmup_retry:
-                    self.stdout.write(self.style.WARNING(
-                        "  /api/isalive devolvió HTML; el Space parece estar arrancando.\n"
-                    ))
+                    self.stdout.write(
+                        self.style.WARNING(
+                            "  /api/isalive devolvió HTML; el Space parece estar arrancando.\n"
+                        )
+                    )
                     alive, alive_detail, warmup_retry = self._retry_hf_space_warmup(
                         base_url=effective_grobid_url,
                         current_detail=alive_detail,
                         warmup_retry=warmup_retry,
                     )
                     if alive:
-                        self.stdout.write(self.style.SUCCESS(
-                            "  GROBID listo; continuando con la extracción.\n"
-                        ))
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                "  GROBID listo; continuando con la extracción.\n"
+                            )
+                        )
                     else:
                         attempts_done = warmup_retry.get("attempts_performed", 0)
                         result_code = warmup_retry.get("result")
@@ -253,22 +263,28 @@ class Command(BaseCommand):
                                 "  /api/isalive no llegó a 'true' durante el warmup-retry "
                                 f"(resultado: {result_code}, intentos: {attempts_done})."
                             )
-                        self.stdout.write(self.style.ERROR(
-                            f"{msg}\n  Último detalle: {alive_detail}\n"
-                        ))
+                        self.stdout.write(
+                            self.style.ERROR(
+                                f"{msg}\n  Último detalle: {alive_detail}\n"
+                            )
+                        )
                         skip_grobid_extraction = True
                 elif is_hf_warmup and no_warmup_retry:
-                    self.stdout.write(self.style.WARNING(
-                        "  Aviso: el Space de HuggingFace parece dormido, pero "
-                        "el warmup-retry está desactivado (--no-warmup-retry).\n"
-                        "  Se intenta la llamada de extracción de todos modos...\n"
-                    ))
+                    self.stdout.write(
+                        self.style.WARNING(
+                            "  Aviso: el Space de HuggingFace parece dormido, pero "
+                            "el warmup-retry está desactivado (--no-warmup-retry).\n"
+                            "  Se intenta la llamada de extracción de todos modos...\n"
+                        )
+                    )
                     warmup_retry["result"] = "disabled"
                 else:
-                    self.stdout.write(self.style.WARNING(
-                        f"  Aviso: {alive_detail}\n"
-                        "  Se intenta la llamada de extracción de todos modos...\n"
-                    ))
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"  Aviso: {alive_detail}\n"
+                            "  Se intenta la llamada de extracción de todos modos...\n"
+                        )
+                    )
                     warmup_retry["result"] = "not_eligible"
 
         # ------------------------------------------------------------------
@@ -319,17 +335,21 @@ class Command(BaseCommand):
                             f"{parsed.get('inline_citation_count', 0)} citas inline.\n"
                         )
                     else:
-                        msg = f"  OK — {parsed.get('reference_count', 0)} referencias.\n"
+                        msg = (
+                            f"  OK — {parsed.get('reference_count', 0)} referencias.\n"
+                        )
                     self.stdout.write(self.style.SUCCESS(msg))
                 else:
                     error_type = mode_result.get("error_type", "error")
                     short_desc = _SHORT_ERROR_DESC.get(error_type, "error inesperado")
                     artifacts = mode_result.get("artifacts") or {}
                     error_file = artifacts.get("error_json", "error.json")
-                    self.stdout.write(self.style.ERROR(
-                        f"  FALLÓ [{error_type}]: {short_desc}\n"
-                        f"  Detalles en: {error_file}\n"
-                    ))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"  FALLÓ [{error_type}]: {short_desc}\n"
+                            f"  Detalles en: {error_file}\n"
+                        )
+                    )
 
         # ------------------------------------------------------------------
         # 2. Extractor actual (opcional, solo si GROBID OK o se pide igualmente)
@@ -353,13 +373,17 @@ class Command(BaseCommand):
                     encoding="utf-8",
                 )
                 artifact_map["current_json"] = str(current_path)
-                self.stdout.write(self.style.SUCCESS(
-                    f"  OK — {current_result['ref_count']} referencias.\n"
-                ))
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"  OK — {current_result['ref_count']} referencias.\n"
+                    )
+                )
             else:
-                self.stdout.write(self.style.WARNING(
-                    f"  No disponible: {current_result.get('error')}\n"
-                ))
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"  No disponible: {current_result.get('error')}\n"
+                    )
+                )
 
         # ------------------------------------------------------------------
         # 3. Summary y comparación (siempre, incluso si GROBID falló)
@@ -394,7 +418,9 @@ class Command(BaseCommand):
         if mode == "both":
             summary = self._build_summary_both(grobid_results, current_result)
         else:
-            summary = self._build_summary(grobid_results[selected_modes[0]], current_result)
+            summary = self._build_summary(
+                grobid_results[selected_modes[0]], current_result
+            )
         summary_path = run_dir / "summary.txt"
         summary_path.write_text(summary, encoding="utf-8")
         artifact_map["summary"] = str(summary_path)
@@ -403,9 +429,13 @@ class Command(BaseCommand):
             for selected_mode, mode_result in grobid_results.items():
                 if not mode_result.get("ok"):
                     continue
-                comparison = self._build_comparison(mode_result["parsed"], current_result)
+                comparison = self._build_comparison(
+                    mode_result["parsed"], current_result
+                )
                 comparison_name = (
-                    f"comparison_{selected_mode}.json" if mode == "both" else "comparison.json"
+                    f"comparison_{selected_mode}.json"
+                    if mode == "both"
+                    else "comparison.json"
                 )
                 comparison_path = run_dir / comparison_name
                 comparison_path.write_text(
@@ -418,7 +448,9 @@ class Command(BaseCommand):
                     else "comparison_json"
                 )
                 artifact_map[key] = str(comparison_path)
-                mode_result.setdefault("artifacts", {})["comparison_json"] = str(comparison_path)
+                mode_result.setdefault("artifacts", {})["comparison_json"] = str(
+                    comparison_path
+                )
 
         # ------------------------------------------------------------------
         # 4. Salida en consola — solo artefactos; el detalle está en summary.txt
@@ -546,17 +578,24 @@ class Command(BaseCommand):
             from citations.services.reader_data import extract_pdf_references
             from citations.services.references_data import build_references_data
         except ImportError as exc:
-            return {"ok": False, "error": f"No se pudo importar el extractor actual: {exc}"}
+            return {
+                "ok": False,
+                "error": f"No se pudo importar el extractor actual: {exc}",
+            }
 
         try:
             references, stats = extract_pdf_references(str(pdf_path))
         except Exception as exc:
-            return {"ok": False, "error": f"extract_pdf_references falló: {type(exc).__name__}: {exc}"}
+            return {
+                "ok": False,
+                "error": f"extract_pdf_references falló: {type(exc).__name__}: {exc}",
+            }
 
         # Intentar obtener layers de papermage (no es fatal si falla)
         layers: Dict[str, Any] = {}
         try:
             from citations.services.papermage_extractor import extract_pdf_data
+
             reader = extract_pdf_data(str(pdf_path))
             layers = reader.get("layers", {})
         except Exception:
@@ -602,14 +641,20 @@ class Command(BaseCommand):
         artifacts = grobid_result.get("artifacts") or {}
         warmup_retry = grobid_result.get("warmup_retry") or {}
         mode_name = grobid_result.get("mode") or "fulltext"
-        endpoint_name = grobid_result.get("endpoint") or _MODE_ENDPOINT.get(mode_name, "")
+        endpoint_name = grobid_result.get("endpoint") or _MODE_ENDPOINT.get(
+            mode_name, ""
+        )
 
         lines += [
             "=== Resumen GROBID Experimental ===",
             f"Fecha       : {ts}",
             f"PDF         : {grobid_result['pdf']}",
             f"Modo        : {mode_name}",
-            f"Endpoint    : /api/{endpoint_name}" if endpoint_name else "Endpoint    : (no informado)",
+            (
+                f"Endpoint    : /api/{endpoint_name}"
+                if endpoint_name
+                else "Endpoint    : (no informado)"
+            ),
             "",
         ]
 
@@ -658,7 +703,11 @@ class Command(BaseCommand):
                     "  El endpoint /api/isalive nunca devolvió 'true' dentro del límite configurado.",
                     "  No se ejecutó el endpoint de extracción para evitar un POST prematuro.",
                 ]
-            elif error_type in ("non_tei_html_response", "invalid_response", "non_tei_response"):
+            elif error_type in (
+                "non_tei_html_response",
+                "invalid_response",
+                "non_tei_response",
+            ):
                 lines += [
                     "",
                     "Diagnóstico:",
@@ -687,11 +736,13 @@ class Command(BaseCommand):
             if artifacts.get("response_body"):
                 lines.append(f"  response_body.txt   : {artifacts['response_body']}")
             if artifacts.get("availability_check"):
-                lines.append(f"  availability_check  : {artifacts['availability_check']}")
+                lines.append(
+                    f"  availability_check  : {artifacts['availability_check']}"
+                )
         else:
             lines += [
                 "--- GROBID: OK ---",
-                f"Estado      : OK",
+                "Estado      : OK",
                 f"Referencias : {parsed.get('reference_count', 0)}",
             ]
             if mode_name == "fulltext":
@@ -726,11 +777,11 @@ class Command(BaseCommand):
         if current_result is not None:
             lines += ["", "--- Extractor actual ---"]
             if not current_result.get("ok"):
-                lines.append(f"Estado      : ERROR")
+                lines.append("Estado      : ERROR")
                 lines.append(f"Detalle     : {current_result.get('error')}")
             else:
                 lines += [
-                    f"Estado      : OK",
+                    "Estado      : OK",
                     f"Referencias : {current_result.get('ref_count', 0)}",
                 ]
                 current_data = current_result.get("data") or {}
@@ -744,7 +795,9 @@ class Command(BaseCommand):
                         doi = ref.get("doi") or ""
                         src = ref.get("structure_source") or ""
                         lines.append(f"  [{i + 1}] {text}")
-                        details = " | ".join(filter(None, [doi, f"src={src}" if src else ""]))
+                        details = " | ".join(
+                            filter(None, [doi, f"src={src}" if src else ""])
+                        )
                         if details:
                             lines.append(f"       {details}")
 
@@ -754,15 +807,19 @@ class Command(BaseCommand):
                 gp = grobid_result.get("parsed") or {}
                 g = gp.get("reference_count", 0)
                 c = current_result.get("ref_count", 0)
-                lines.append(f"Referencias — GROBID: {g} | Actual: {c} | Diferencia: {g - c:+d}")
+                lines.append(
+                    f"Referencias — GROBID: {g} | Actual: {c} | Diferencia: {g - c:+d}"
+                )
                 g_inline = gp.get("inline_citation_count", 0)
-                lines.append(f"Citas inline — GROBID: {g_inline} | Actual: (no medido aquí)")
+                lines.append(
+                    f"Citas inline — GROBID: {g_inline} | Actual: (no medido aquí)"
+                )
                 g_with_doi = sum(
                     1 for r in (gp.get("references") or []) if r.get("doi")
                 )
                 lines.append(f"Refs con DOI (GROBID): {g_with_doi} de {g}")
                 if artifacts.get("comparison_json"):
-                    lines.append(f"Ver comparison.json para detalle DOI-a-DOI.")
+                    lines.append("Ver comparison.json para detalle DOI-a-DOI.")
             elif not grobid_result["ok"]:
                 lines.append(
                     f"(Comparación no ejecutada: GROBID falló [{grobid_result.get('error_type')}].)"
@@ -785,7 +842,9 @@ class Command(BaseCommand):
     ) -> str:
         lines: List[str] = []
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        first_result = grobid_results.get("fulltext") or grobid_results.get("references") or {}
+        first_result = (
+            grobid_results.get("fulltext") or grobid_results.get("references") or {}
+        )
         pdf_path = first_result.get("pdf", "(desconocido)")
         warmup_retry = first_result.get("warmup_retry") or {}
 
@@ -814,7 +873,9 @@ class Command(BaseCommand):
             if result.get("ok"):
                 parsed = result.get("parsed") or {}
                 ref_count = parsed.get("reference_count", 0)
-                line = f"{mode_name:10s} /api/{endpoint} -> OK | referencias: {ref_count}"
+                line = (
+                    f"{mode_name:10s} /api/{endpoint} -> OK | referencias: {ref_count}"
+                )
                 if mode_name == "fulltext":
                     line += f" | citas inline: {parsed.get('inline_citation_count', 0)}"
                 lines.append(line)
@@ -858,20 +919,30 @@ class Command(BaseCommand):
 
         best_mode = min(mode_counts, key=lambda m: abs(mode_counts[m] - current_count))
         best_diff = abs(mode_counts[best_mode] - current_count)
-        ties = [m for m, c in mode_counts.items() if abs(c - current_count) == best_diff]
+        ties = [
+            m for m, c in mode_counts.items() if abs(c - current_count) == best_diff
+        ]
         if len(ties) > 1:
-            lines.append("Conclusión: ambos endpoints quedan igual de cerca del baseline actual.")
+            lines.append(
+                "Conclusión: ambos endpoints quedan igual de cerca del baseline actual."
+            )
         else:
             lines.append(
                 f"Conclusión: {best_mode} es el endpoint más cercano al baseline actual "
                 "para conteo de bibliografía."
             )
         if mode_counts.get("references", 0) > mode_counts.get("fulltext", 0):
-            lines.append("Nota: processReferences detectó más referencias que processFulltextDocument.")
+            lines.append(
+                "Nota: processReferences detectó más referencias que processFulltextDocument."
+            )
         elif mode_counts.get("references", 0) < mode_counts.get("fulltext", 0):
-            lines.append("Nota: processFulltextDocument detectó más referencias que processReferences.")
+            lines.append(
+                "Nota: processFulltextDocument detectó más referencias que processReferences."
+            )
         else:
-            lines.append("Nota: ambos endpoints detectaron el mismo número de referencias.")
+            lines.append(
+                "Nota: ambos endpoints detectaron el mismo número de referencias."
+            )
 
         return "\n".join(lines)
 
@@ -905,7 +976,9 @@ class Command(BaseCommand):
         return {
             "grobid_ref_count": len(grobid_refs),
             "current_ref_count": len(current_refs),
-            "grobid_inline_citation_count": grobid_parsed.get("inline_citation_count", 0),
+            "grobid_inline_citation_count": grobid_parsed.get(
+                "inline_citation_count", 0
+            ),
             "grobid_refs_with_doi": len(grobid_dois),
             "current_refs_with_doi": len(current_dois),
             "dois_in_common": len(common_dois),

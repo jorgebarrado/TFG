@@ -5,15 +5,14 @@ import json
 import sys
 from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
-
 from citations.services.reference_parsing_experiments import (  # noqa: E402
     DEFAULT_PDFS,
     discover_all_pdf_paths,
     run_reference_parsing_experiment,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
 
 
 def build_parser() -> argparse.ArgumentParser:

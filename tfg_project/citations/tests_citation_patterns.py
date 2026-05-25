@@ -100,10 +100,13 @@ class AuthorYearNarrativeTests(SimpleTestCase):
         )
 
     def test_year_with_suffix(self):
-        self.assertEqual(_matches("Smith (2020a) and Smith (2020b)."), [
-            "Smith (2020a)",
-            "Smith (2020b)",
-        ])
+        self.assertEqual(
+            _matches("Smith (2020a) and Smith (2020b)."),
+            [
+                "Smith (2020a)",
+                "Smith (2020b)",
+            ],
+        )
 
 
 class AuthorYearParentheticalTests(SimpleTestCase):
@@ -293,8 +296,15 @@ class HitShapeContractTests(SimpleTestCase):
         self.assertEqual(len(hits), 1)
         h = hits[0]
         self.assertEqual(h["type"], "numeric")
-        for key in ("match", "start", "end", "snippet", "confidence",
-                    "citation_block", "citation_numbers"):
+        for key in (
+            "match",
+            "start",
+            "end",
+            "snippet",
+            "confidence",
+            "citation_block",
+            "citation_numbers",
+        ):
             self.assertIn(key, h)
         self.assertEqual(h["citation_numbers"], [3, 5, 6])
 

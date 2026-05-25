@@ -225,12 +225,14 @@ LOGGING = {
     },
     "loggers": {
         "citations": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
+            + ["console"],
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "citations.context": {
-            "handlers": (["citations_context_file"] if LOG_CITATIONS else []) + ["console"],
+            "handlers": (["citations_context_file"] if LOG_CITATIONS else [])
+            + ["console"],
             "level": LOG_CITATIONS_LEVEL,
             "propagate": False,
         },

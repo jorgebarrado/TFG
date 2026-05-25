@@ -14,6 +14,16 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+import django  # noqa: E402
+
+from citations.services.citation_extractor import process_manuscript  # noqa: E402
+from citations.services.engines import ALLOWED_ENGINES  # noqa: E402
+from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
+from citations.services.reader_data import (  # noqa: E402
+    build_snippets_from_results,
+    extract_pdf_references,
+)
+from citations.services.references_data import build_references_data  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = ROOT / "tfg_project"
@@ -28,18 +38,9 @@ if str(PROJECT_ROOT) not in sys.path:
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tfg_project.settings")
 os.environ.setdefault("TRANSFORMERS_CACHE", str(ROOT / ".cache" / "transformers"))
 
-import django  # noqa: E402
 
 django.setup()
 
-from citations.services.citation_extractor import process_manuscript  # noqa: E402
-from citations.services.engines import ALLOWED_ENGINES  # noqa: E402
-from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
-from citations.services.reader_data import (  # noqa: E402
-    build_snippets_from_results,
-    extract_pdf_references,
-)
-from citations.services.references_data import build_references_data  # noqa: E402
 
 try:
     from citations.services.references_data import (  # noqa: E402
@@ -163,7 +164,9 @@ def _normalize_run_name(run_name: str) -> str:
     normalized = re.sub(r"[^A-Za-z0-9._-]+", "_", normalized)
     normalized = normalized.strip("._-")
     if not normalized:
-        raise SystemExit("El valor de --run-name no genera un nombre de carpeta valido.")
+        raise SystemExit(
+            "El valor de --run-name no genera un nombre de carpeta valido."
+        )
     return normalized
 
 
@@ -198,15 +201,15 @@ def _extract_run_metadata(run_dir: Path) -> Dict[str, Any]:
     metadata = _coerce_dict((payload or {}).get("metadata"))
     legacy = payload or {}
 
-    run_kind = str(
-        metadata.get("run_kind")
-        or legacy.get("run_kind")
-        or (
-            "auto"
-            if _is_auto_run_dir_name(run_dir.name)
-            else "manual"
+    run_kind = (
+        str(
+            metadata.get("run_kind")
+            or legacy.get("run_kind")
+            or ("auto" if _is_auto_run_dir_name(run_dir.name) else "manual")
         )
-    ).strip().lower()
+        .strip()
+        .lower()
+    )
     if run_kind not in {"auto", "manual"}:
         run_kind = "auto" if _is_auto_run_dir_name(run_dir.name) else "manual"
 
@@ -225,9 +228,10 @@ def _extract_run_metadata(run_dir: Path) -> Dict[str, Any]:
         except OSError:
             timestamp = None
 
-    git_revision = str(
-        metadata.get("git_revision") or legacy.get("git_revision") or ""
-    ).strip() or None
+    git_revision = (
+        str(metadata.get("git_revision") or legacy.get("git_revision") or "").strip()
+        or None
+    )
 
     return {
         "summary_path": summary_path,
@@ -253,9 +257,7 @@ def _prepare_output_dir(
         )
 
     if not _path_is_within(ROOT, output_dir):
-        raise SystemExit(
-            f"Se rechazo --overwrite fuera del workspace: {output_dir}"
-        )
+        raise SystemExit(f"Se rechazo --overwrite fuera del workspace: {output_dir}")
 
     shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -443,9 +445,7 @@ def _resolve_pdf_path(entry: Dict[str, Any]) -> Path:
     pdf_name = str(entry.get("pdf") or "").strip()
     pdf_path = DATASET_DIR / pdf_name
     if not pdf_path.exists():
-        raise FileNotFoundError(
-            f"No se encontro el PDF '{pdf_name}' en {DATASET_DIR}"
-        )
+        raise FileNotFoundError(f"No se encontro el PDF '{pdf_name}' en {DATASET_DIR}")
     return pdf_path
 
 
@@ -456,9 +456,7 @@ def _resolve_reference_context(
     citation_style = (
         str(
             ref_stats.get("citation_style")
-            or (
-                "numeric" if ref_stats.get("references_numbered") else "non_numeric"
-            )
+            or ("numeric" if ref_stats.get("references_numbered") else "non_numeric")
         )
         .strip()
         .lower()
@@ -498,11 +496,7 @@ def _extract_reader_layers(
                 f"No se pudieron preparar las capas del reader con PaperMage: {exc}"
             ) from exc
         reader_data = {"pages": [], "layers": {}}
-    return (
-        reader_data
-        if isinstance(reader_data, dict)
-        else {"pages": [], "layers": {}}
-    )
+    return reader_data if isinstance(reader_data, dict) else {"pages": [], "layers": {}}
 
 
 def _finalize_debug_payload(
@@ -657,9 +651,10 @@ def _reference_tail_trimmed(reference: Dict[str, Any]) -> bool:
     anomalies = reference.get("anomalies")
     if not isinstance(anomalies, dict):
         return False
-    return bool(anomalies.get("tail_trim_applied")) or int(
-        anomalies.get("tail_trim_removed_rows_count") or 0
-    ) > 0
+    return (
+        bool(anomalies.get("tail_trim_applied"))
+        or int(anomalies.get("tail_trim_removed_rows_count") or 0) > 0
+    )
 
 
 def _reference_has_tail_noise(reference: Dict[str, Any]) -> bool:
@@ -684,9 +679,10 @@ def _reference_has_tail_noise(reference: Dict[str, Any]) -> bool:
 
 
 def _reference_has_page_location(reference: Dict[str, Any]) -> bool:
-    return _safe_int(reference.get("page_index")) is not None or _safe_int(
-        reference.get("page")
-    ) is not None
+    return (
+        _safe_int(reference.get("page_index")) is not None
+        or _safe_int(reference.get("page")) is not None
+    )
 
 
 def _current_git_revision() -> Optional[str]:
@@ -772,12 +768,15 @@ def _calculate_metrics(
     debug_payload = debug_payload if isinstance(debug_payload, dict) else None
     debug_metadata = _coerce_dict((debug_payload or {}).get("metadata"))
     debug_document_profile = _coerce_dict((debug_payload or {}).get("document_profile"))
-    document_mode = str(
-        references_data.get("document_mode")
-        or debug_document_profile.get("document_mode")
-        or debug_metadata.get("document_mode")
-        or ""
-    ).strip() or None
+    document_mode = (
+        str(
+            references_data.get("document_mode")
+            or debug_document_profile.get("document_mode")
+            or debug_metadata.get("document_mode")
+            or ""
+        ).strip()
+        or None
+    )
 
     detected_anchor_indices = _coerce_list(
         coverage_audit.get("detected_anchor_indices")
@@ -803,7 +802,11 @@ def _calculate_metrics(
     failed_total = (
         len(failed_indices)
         if failed_indices
-        else (len(failed_candidate_ids) if failed_candidate_ids else len(failed_references))
+        else (
+            len(failed_candidate_ids)
+            if failed_candidate_ids
+            else len(failed_references)
+        )
     )
     expected_total = _derive_expected_reference_total(
         paper_entry=paper_entry,
@@ -824,13 +827,10 @@ def _calculate_metrics(
     coverage_ratio = _safe_float(coverage_audit.get("coverage_ratio"))
     if not coverage_audit or coverage_audit.get("coverage_ratio") is None:
         coverage_ratio = _round_ratio(serialized_useful_total, expected_total)
-    extraction_status = (
-        str(coverage_audit.get("extraction_status") or "").strip()
-        or (
-            "derived_from_serialized_references"
-            if expected_total > 0 and not coverage_audit
-            else None
-        )
+    extraction_status = str(coverage_audit.get("extraction_status") or "").strip() or (
+        "derived_from_serialized_references"
+        if expected_total > 0 and not coverage_audit
+        else None
     )
 
     expected_max = _safe_int(paper_entry.get("expected_max_reference_index"))
@@ -857,7 +857,9 @@ def _calculate_metrics(
         (total - expected_max) if expected_max is not None else None
     )
 
-    source_counter = Counter(str(item.get("structure_source") or "") for item in references)
+    source_counter = Counter(
+        str(item.get("structure_source") or "") for item in references
+    )
     rows_raw_count = source_counter.get("rows_raw", 0)
     raw_fallback_count = source_counter.get("raw_reference_fallback", 0)
     inside_bibliography_count = sum(
@@ -868,10 +870,14 @@ def _calculate_metrics(
     local_anchor_count = sum(
         1 for item in references if bool(item.get("local_anchor_detected"))
     )
-    page_index_count = sum(1 for item in references if _reference_has_page_location(item))
+    page_index_count = sum(
+        1 for item in references if _reference_has_page_location(item)
+    )
     doi_count = sum(1 for item in references if str(item.get("doi") or "").strip())
     accepted_count = sum(
-        1 for item in references if bool(_reference_final_decision(item).get("accepted"))
+        1
+        for item in references
+        if bool(_reference_final_decision(item).get("accepted"))
     )
     accepted_with_cleanup_count = sum(
         1
@@ -1023,9 +1029,7 @@ def _calculate_metrics(
                     experimental_numeric_metrics.get("coverage_ratio")
                 ),
                 "experimental_numeric_pipeline_v2_pct_structure_source_rows_raw": _safe_float(
-                    experimental_numeric_metrics.get(
-                        "pct_structure_source_rows_raw"
-                    )
+                    experimental_numeric_metrics.get("pct_structure_source_rows_raw")
                 ),
                 "experimental_numeric_pipeline_v2_pct_structure_source_raw_reference_fallback": _safe_float(
                     experimental_numeric_metrics.get(
@@ -1112,7 +1116,6 @@ def _calculate_metrics(
 
 def _determine_status(metrics: Dict[str, Any]) -> Dict[str, Any]:
     total = int(metrics.get("references_total_serialized") or 0)
-    fallback_pct = _safe_float(metrics.get("pct_structure_source_raw_reference_fallback"))
     inside_pct = _safe_float(metrics.get("pct_references_inside_bibliography_zone"))
     page_pct = _safe_float(metrics.get("pct_references_with_page_index"))
     accepted_pct = _safe_float(metrics.get("pct_accepted"))
@@ -1212,8 +1215,14 @@ def _derive_main_issues(metrics: Dict[str, Any]) -> List[str]:
             issues.append(reason)
 
     important_signals = [
-        ("reference_count_mismatch_detected", bool(metrics.get("reference_count_mismatch_detected"))),
-        ("appendix_contamination_detected", bool(metrics.get("appendix_contamination_detected"))),
+        (
+            "reference_count_mismatch_detected",
+            bool(metrics.get("reference_count_mismatch_detected")),
+        ),
+        (
+            "appendix_contamination_detected",
+            bool(metrics.get("appendix_contamination_detected")),
+        ),
         ("fallback_rate_high", bool(metrics.get("fallback_rate_high"))),
         ("fallback_rate_extreme", bool(metrics.get("fallback_rate_extreme"))),
         (
@@ -1232,9 +1241,7 @@ def _derive_main_issues(metrics: Dict[str, Any]) -> List[str]:
 def _build_compact_paper_summary(paper_summary: Dict[str, Any]) -> Dict[str, Any]:
     metrics = _coerce_dict(paper_summary.get("metrics"))
     return {
-        "paper_id": str(
-            paper_summary.get("paper_id") or metrics.get("paper_id") or ""
-        ),
+        "paper_id": str(paper_summary.get("paper_id") or metrics.get("paper_id") or ""),
         "pdf_file": str(paper_summary.get("pdf_file") or metrics.get("pdf_file") or ""),
         "status": str(paper_summary.get("status") or metrics.get("status") or "FAIL"),
         "document_mode": metrics.get("document_mode"),
@@ -1315,9 +1322,7 @@ def _build_summary_payload(
             "selected_pdfs_total": selected_pdfs_total,
         },
         "aggregate_metrics": aggregate,
-        "papers": [
-            _build_compact_paper_summary(item) for item in paper_summaries
-        ],
+        "papers": [_build_compact_paper_summary(item) for item in paper_summaries],
     }
 
 
@@ -1360,7 +1365,9 @@ def _build_summary_markdown(
     metadata = _coerce_dict(run_summary.get("metadata"))
     aggregate = _coerce_dict(run_summary.get("aggregate_metrics"))
     compact_papers = [
-        item for item in _coerce_list(run_summary.get("papers")) if isinstance(item, dict)
+        item
+        for item in _coerce_list(run_summary.get("papers"))
+        if isinstance(item, dict)
     ]
     lines = [
         "# Reference Regression Summary",
@@ -1521,10 +1528,14 @@ def _run_regression(
                     "reference_debug": str(
                         (paper_dir / "reference_debug.json").relative_to(output_dir)
                     ),
-                    "metrics": str((paper_dir / "metrics.json").relative_to(output_dir)),
+                    "metrics": str(
+                        (paper_dir / "metrics.json").relative_to(output_dir)
+                    ),
                 },
             }
-        except Exception as exc:  # pragma: no cover - el runner debe sobrevivir paper a paper
+        except (
+            Exception
+        ) as exc:  # pragma: no cover - el runner debe sobrevivir paper a paper
             metrics = _build_error_metrics(
                 paper_entry=entry,
                 pdf_path=pdf_path,
@@ -1568,7 +1579,9 @@ def _run_regression(
                     "reference_debug": str(
                         (paper_dir / "reference_debug.json").relative_to(output_dir)
                     ),
-                    "metrics": str((paper_dir / "metrics.json").relative_to(output_dir)),
+                    "metrics": str(
+                        (paper_dir / "metrics.json").relative_to(output_dir)
+                    ),
                 },
             }
 

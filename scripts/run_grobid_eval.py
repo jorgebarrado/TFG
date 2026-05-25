@@ -10,10 +10,6 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 import requests
 
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
-
 from citations.services.grobid_client import (  # noqa: E402
     GrobidError,
     process_fulltext_document,
@@ -40,8 +36,13 @@ from citations.services.reference_parsing_experiments.runners import (  # noqa: 
     run_refextract_parser,
 )
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
 
-DEFAULT_BUCKET_SUMMARY = Path("tmp/reference_parser_experiments/all_pdfs_eval_20260414/summary.json")
+
+DEFAULT_BUCKET_SUMMARY = Path(
+    "tmp/reference_parser_experiments/all_pdfs_eval_20260414/summary.json"
+)
 DEFAULT_OUTPUT_ROOT = Path("tmp/grobid_eval")
 DEFAULT_PROBLEM_BUCKETS = [
     "low_alpha_or_short_noise",
@@ -77,7 +78,9 @@ def _load_bucket_papers(summary_path: Path) -> List[Dict[str, Any]]:
     payload = json.loads(summary_path.read_text(encoding="utf-8"))
     papers = payload.get("papers")
     if not isinstance(papers, list):
-        raise ValueError(f"Invalid bucket summary format (missing papers[]): {summary_path}")
+        raise ValueError(
+            f"Invalid bucket summary format (missing papers[]): {summary_path}"
+        )
     normalized: List[Dict[str, Any]] = []
     for paper in papers:
         if not isinstance(paper, dict):
@@ -92,7 +95,8 @@ def _load_bucket_papers(summary_path: Path) -> List[Dict[str, Any]]:
                 {
                     "pdf_name": pdf_name,
                     "input_bucket": input_bucket or "unknown",
-                    "paper_slug": clean_text(paper.get("paper_slug")) or slugify_pdf_name(pdf_name),
+                    "paper_slug": clean_text(paper.get("paper_slug"))
+                    or slugify_pdf_name(pdf_name),
                 }
             )
     if not normalized:
@@ -192,7 +196,11 @@ def _is_extractor_ref_valid(raw_input: str, warnings: Iterable[str]) -> bool:
     warning_set = set(warnings or [])
     if not raw:
         return False
-    if {"empty_raw_reference", "very_short_reference", "low_alpha_content"}.intersection(warning_set):
+    if {
+        "empty_raw_reference",
+        "very_short_reference",
+        "low_alpha_content",
+    }.intersection(warning_set):
         return False
     if len(raw) < 30:
         return False
@@ -233,7 +241,11 @@ def _summarize_extractor_common_input(common_input: Dict[str, Any]) -> Dict[str,
 
 def _is_grobid_ref_valid(reference: Dict[str, Any]) -> bool:
     title = clean_text(reference.get("title"))
-    authors = [clean_text(item) for item in (reference.get("authors") or []) if clean_text(item)]
+    authors = [
+        clean_text(item)
+        for item in (reference.get("authors") or [])
+        if clean_text(item)
+    ]
     year = reference.get("year")
     doi = clean_text(reference.get("doi"))
     venue = clean_text(reference.get("venue"))
@@ -245,7 +257,13 @@ def _is_grobid_ref_valid(reference: Dict[str, Any]) -> bool:
         return True
     if title and year:
         return True
-    non_empty_fields = int(bool(title)) + int(bool(authors)) + int(bool(year)) + int(bool(venue)) + int(bool(pages))
+    non_empty_fields = (
+        int(bool(title))
+        + int(bool(authors))
+        + int(bool(year))
+        + int(bool(venue))
+        + int(bool(pages))
+    )
     if non_empty_fields >= 3:
         return True
     if len(raw_citation) >= 60 and _alpha_count(raw_citation) >= 25:
@@ -264,7 +282,11 @@ def _summarize_grobid_references(parsed: Dict[str, Any]) -> Dict[str, Any]:
     for reference in refs:
         if clean_text(reference.get("title")):
             title_non_empty += 1
-        if [clean_text(item) for item in (reference.get("authors") or []) if clean_text(item)]:
+        if [
+            clean_text(item)
+            for item in (reference.get("authors") or [])
+            if clean_text(item)
+        ]:
             authors_non_empty += 1
         if reference.get("year"):
             year_non_empty += 1
@@ -302,7 +324,9 @@ def _classify_error(exc: Exception) -> Dict[str, Any]:
     return {"error_type": "error", "error": clean_text(exc)}
 
 
-def _run_process_references(pdf_path: Path, *, base_url: str, timeout: int) -> Dict[str, Any]:
+def _run_process_references(
+    pdf_path: Path, *, base_url: str, timeout: int
+) -> Dict[str, Any]:
     try:
         tei_xml = process_references(pdf_path, base_url=base_url, timeout=timeout)
         parsed = parse_references_tei(tei_xml, include_raw_citation=True)
@@ -331,10 +355,14 @@ def _run_process_references(pdf_path: Path, *, base_url: str, timeout: int) -> D
 
 def _run_fulltext(pdf_path: Path, *, base_url: str, timeout: int) -> Dict[str, Any]:
     try:
-        tei_xml = process_fulltext_document(pdf_path, base_url=base_url, timeout=timeout)
+        tei_xml = process_fulltext_document(
+            pdf_path, base_url=base_url, timeout=timeout
+        )
         parsed = parse_fulltext_tei(tei_xml)
         metrics = _summarize_grobid_references(parsed)
-        metrics["inline_citation_count"] = _safe_int(parsed.get("inline_citation_count"), 0)
+        metrics["inline_citation_count"] = _safe_int(
+            parsed.get("inline_citation_count"), 0
+        )
         metrics["section_count"] = len(parsed.get("sections") or [])
         return {
             "status": "ok",
@@ -357,13 +385,18 @@ def _run_fulltext(pdf_path: Path, *, base_url: str, timeout: int) -> Dict[str, A
             "error": error_payload["error"],
         }
 
+
 def _call_process_citation_list(
     raw_references: Sequence[Dict[str, Any]],
     *,
     base_url: str,
     timeout: int,
 ) -> Tuple[str, Dict[str, Any], List[str], List[Dict[str, Any]]]:
-    citations = [clean_text(item.get("raw_input")) for item in raw_references if clean_text(item.get("raw_input"))]
+    citations = [
+        clean_text(item.get("raw_input"))
+        for item in raw_references
+        if clean_text(item.get("raw_input"))
+    ]
     if not citations:
         raise ValueError("No raw references available for /api/processCitationList")
 
@@ -379,7 +412,9 @@ def _call_process_citation_list(
     tei_xml = response.text or ""
     if "<TEI" not in tei_xml[:1200]:
         preview = tei_xml[:300]
-        raise GrobidParseError(f"/api/processCitationList did not return TEI XML. Preview: {preview!r}")
+        raise GrobidParseError(
+            f"/api/processCitationList did not return TEI XML. Preview: {preview!r}"
+        )
 
     parsed = parse_references_tei(tei_xml, include_raw_citation=True)
     parsed_refs = parsed.get("references") or []
@@ -397,12 +432,24 @@ def _call_process_citation_list(
                 raw_input=source_item.get("raw_input") or "",
                 parser="grobid_citation_list",
                 title=parsed_ref.get("title") if isinstance(parsed_ref, dict) else None,
-                authors=(parsed_ref.get("authors") if isinstance(parsed_ref, dict) else []) or [],
+                authors=(
+                    parsed_ref.get("authors") if isinstance(parsed_ref, dict) else []
+                )
+                or [],
                 year=(parsed_ref.get("year") if isinstance(parsed_ref, dict) else None),
                 doi=(parsed_ref.get("doi") if isinstance(parsed_ref, dict) else None),
-                venue=(parsed_ref.get("venue") if isinstance(parsed_ref, dict) else None),
-                pages=(parsed_ref.get("pages") if isinstance(parsed_ref, dict) else None),
-                identifiers=(parsed_ref.get("identifiers") if isinstance(parsed_ref, dict) else {}) or {},
+                venue=(
+                    parsed_ref.get("venue") if isinstance(parsed_ref, dict) else None
+                ),
+                pages=(
+                    parsed_ref.get("pages") if isinstance(parsed_ref, dict) else None
+                ),
+                identifiers=(
+                    parsed_ref.get("identifiers")
+                    if isinstance(parsed_ref, dict)
+                    else {}
+                )
+                or {},
                 raw_output=parsed_ref,
                 warnings=warnings,
             )
@@ -481,9 +528,8 @@ def _build_extractor_vs_process_references_row(
     extractor_garbage = _safe_int(extractor_summary.get("likely_garbage"), 0)
     process_garbage = _safe_int(process_metrics.get("likely_garbage"), 0)
     rescue_header_case = (
-        (not bool(extractor_summary.get("references_header_found")))
-        and (process_valid >= extractor_valid + 2 or process_total >= extractor_total + 3)
-    )
+        not bool(extractor_summary.get("references_header_found"))
+    ) and (process_valid >= extractor_valid + 2 or process_total >= extractor_total + 3)
     rescue_small_set = extractor_total <= 5 and process_valid >= extractor_valid + 2
     rescue_general = process_valid >= extractor_valid + 3
     rescue = rescue_header_case or rescue_small_set or rescue_general
@@ -529,11 +575,16 @@ def _build_citation_parser_comparison_row(
     citation_list_summary: Dict[str, Any],
 ) -> Dict[str, Any]:
     delta = {
-        "title_non_empty": _safe_int(citation_list_summary.get("title_non_empty")) - _safe_int(refextract_summary.get("title_non_empty")),
-        "authors_non_empty": _safe_int(citation_list_summary.get("authors_non_empty")) - _safe_int(refextract_summary.get("authors_non_empty")),
-        "year_non_empty": _safe_int(citation_list_summary.get("year_non_empty")) - _safe_int(refextract_summary.get("year_non_empty")),
-        "doi_non_empty": _safe_int(citation_list_summary.get("doi_non_empty")) - _safe_int(refextract_summary.get("doi_non_empty")),
-        "almost_empty": _safe_int(citation_list_summary.get("almost_empty")) - _safe_int(refextract_summary.get("almost_empty")),
+        "title_non_empty": _safe_int(citation_list_summary.get("title_non_empty"))
+        - _safe_int(refextract_summary.get("title_non_empty")),
+        "authors_non_empty": _safe_int(citation_list_summary.get("authors_non_empty"))
+        - _safe_int(refextract_summary.get("authors_non_empty")),
+        "year_non_empty": _safe_int(citation_list_summary.get("year_non_empty"))
+        - _safe_int(refextract_summary.get("year_non_empty")),
+        "doi_non_empty": _safe_int(citation_list_summary.get("doi_non_empty"))
+        - _safe_int(refextract_summary.get("doi_non_empty")),
+        "almost_empty": _safe_int(citation_list_summary.get("almost_empty"))
+        - _safe_int(refextract_summary.get("almost_empty")),
     }
     return {
         "paper_slug": paper_slug,
@@ -602,10 +653,16 @@ def _build_difficult_reference_examples(
     return examples
 
 
-def _aggregate_extractor_vs_process_references(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def _aggregate_extractor_vs_process_references(
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
     problem_rows = [row for row in rows if row.get("input_bucket") != "clean_input"]
-    ok_rows = [row for row in rows if row.get("process_references", {}).get("status") == "ok"]
-    rescue_rows = [row for row in problem_rows if row.get("rescue", {}).get("is_rescue")]
+    ok_rows = [
+        row for row in rows if row.get("process_references", {}).get("status") == "ok"
+    ]
+    rescue_rows = [
+        row for row in problem_rows if row.get("rescue", {}).get("is_rescue")
+    ]
     return {
         "paper_count": len(rows),
         "ok_count": len(ok_rows),
@@ -614,19 +671,26 @@ def _aggregate_extractor_vs_process_references(rows: Sequence[Dict[str, Any]]) -
         "rescued_problematic_paper_count": len(rescue_rows),
         "rescued_problematic_papers": [row.get("pdf_name") for row in rescue_rows],
         "avg_delta_total_refs": (
-            sum(_safe_int(row.get("delta", {}).get("references_total")) for row in ok_rows) / len(ok_rows)
+            sum(
+                _safe_int(row.get("delta", {}).get("references_total"))
+                for row in ok_rows
+            )
+            / len(ok_rows)
             if ok_rows
             else 0.0
         ),
         "avg_delta_valid_refs": (
-            sum(_safe_int(row.get("delta", {}).get("likely_valid")) for row in ok_rows) / len(ok_rows)
+            sum(_safe_int(row.get("delta", {}).get("likely_valid")) for row in ok_rows)
+            / len(ok_rows)
             if ok_rows
             else 0.0
         ),
     }
 
 
-def _aggregate_citation_parser_comparison(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def _aggregate_citation_parser_comparison(
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
     if not rows:
         return {
             "paper_count": 0,
@@ -669,21 +733,26 @@ def _aggregate_citation_parser_comparison(rows: Sequence[Dict[str, Any]]) -> Dic
         "delta_sums": delta_sums,
     }
 
+
 def _aggregate_fulltext_vs_references(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     comparable_rows = [row for row in rows if row.get("status_pair") == "ok_ok"]
-    added_value_rows = [row for row in comparable_rows if row.get("fulltext_adds_value")]
+    added_value_rows = [
+        row for row in comparable_rows if row.get("fulltext_adds_value")
+    ]
     return {
         "paper_count": len(rows),
         "comparable_paper_count": len(comparable_rows),
         "added_value_count": len(added_value_rows),
         "added_value_papers": [row.get("pdf_name") for row in added_value_rows],
         "avg_delta_total_refs": (
-            sum(_safe_int(row.get("delta_total_refs")) for row in comparable_rows) / len(comparable_rows)
+            sum(_safe_int(row.get("delta_total_refs")) for row in comparable_rows)
+            / len(comparable_rows)
             if comparable_rows
             else 0.0
         ),
         "avg_delta_valid_refs": (
-            sum(_safe_int(row.get("delta_valid_refs")) for row in comparable_rows) / len(comparable_rows)
+            sum(_safe_int(row.get("delta_valid_refs")) for row in comparable_rows)
+            / len(comparable_rows)
             if comparable_rows
             else 0.0
         ),
@@ -696,15 +765,21 @@ def _build_decision(
     fulltext_agg: Dict[str, Any],
     citation_agg: Dict[str, Any],
 ) -> Dict[str, Any]:
-    problematic_total = _safe_int(extractor_vs_refs_agg.get("problematic_paper_count"), 0)
-    rescued_total = _safe_int(extractor_vs_refs_agg.get("rescued_problematic_paper_count"), 0)
+    problematic_total = _safe_int(
+        extractor_vs_refs_agg.get("problematic_paper_count"), 0
+    )
+    rescued_total = _safe_int(
+        extractor_vs_refs_agg.get("rescued_problematic_paper_count"), 0
+    )
     rescue_rate = (rescued_total / problematic_total) if problematic_total else 0.0
     q1_strong = problematic_total > 0 and rescue_rate >= 0.5
     q1_partial = rescued_total > 0
 
     comparable_fulltext = _safe_int(fulltext_agg.get("comparable_paper_count"), 0)
     fulltext_added = _safe_int(fulltext_agg.get("added_value_count"), 0)
-    q2_positive = comparable_fulltext > 0 and (fulltext_added / comparable_fulltext) >= 0.3
+    q2_positive = (
+        comparable_fulltext > 0 and (fulltext_added / comparable_fulltext) >= 0.3
+    )
     q2_partial = fulltext_added > 0
 
     metric_wins = citation_agg.get("metric_wins") or {}
@@ -802,7 +877,9 @@ def _build_per_paper_notes(
                 f"segmentacion={rescue.get('segmentation_assessment')}"
             )
             if rescue.get("is_rescue"):
-                notes.append("processReferences rescata este PDF frente al extractor actual.")
+                notes.append(
+                    "processReferences rescata este PDF frente al extractor actual."
+                )
         if input_bucket != "clean_input":
             notes.append(f"PDF de bucket problematico: {input_bucket}.")
 
@@ -817,7 +894,9 @@ def _build_per_paper_notes(
                     f"inline={_safe_int(fulltext_row.get('inline_citation_count'))}"
                 )
                 if fulltext_row.get("fulltext_adds_value"):
-                    notes.append("fulltext aporta valor adicional frente a processReferences en este PDF.")
+                    notes.append(
+                        "fulltext aporta valor adicional frente a processReferences en este PDF."
+                    )
             else:
                 notes.append(
                     f"Comparacion fulltext vs processReferences no disponible ({status_pair})."
@@ -872,14 +951,20 @@ def _build_summary_markdown(
     lines.append("")
     lines.append("## Q1: processReferences")
     lines.append("")
-    lines.append(f"- Problematicos: {extractor_vs_refs_agg.get('problematic_paper_count')}")
+    lines.append(
+        f"- Problematicos: {extractor_vs_refs_agg.get('problematic_paper_count')}"
+    )
     lines.append(
         "- Rescatados: "
         f"{extractor_vs_refs_agg.get('rescued_problematic_paper_count')} "
         f"({', '.join(extractor_vs_refs_agg.get('rescued_problematic_papers') or []) or 'ninguno'})"
     )
-    lines.append(f"- Avg delta refs: {extractor_vs_refs_agg.get('avg_delta_total_refs'):.2f}")
-    lines.append(f"- Avg delta valid: {extractor_vs_refs_agg.get('avg_delta_valid_refs'):.2f}")
+    lines.append(
+        f"- Avg delta refs: {extractor_vs_refs_agg.get('avg_delta_total_refs'):.2f}"
+    )
+    lines.append(
+        f"- Avg delta valid: {extractor_vs_refs_agg.get('avg_delta_valid_refs'):.2f}"
+    )
     lines.append(
         f"- Respuesta: {decision.get('q1_process_references_compensa_fallos_extractor')}"
     )
@@ -917,7 +1002,9 @@ def _build_summary_markdown(
         f"doi={delta_sums.get('doi_non_empty', 0):+d}, "
         f"almost_empty={delta_sums.get('almost_empty', 0):+d}"
     )
-    lines.append(f"- Respuesta: {decision.get('q3_citation_list_mejora_vs_refextract')}")
+    lines.append(
+        f"- Respuesta: {decision.get('q3_citation_list_mejora_vs_refextract')}"
+    )
     lines.append("")
     lines.append("## Recomendacion")
     lines.append("")
@@ -978,6 +1065,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
@@ -998,10 +1086,12 @@ def main() -> int:
             "selected_count": len(selected_pdf_names),
         }
     else:
-        selected_pdf_names, bucket_by_pdf, selection_meta = _select_sample_from_bucket_summary(
-            bucket_summary_path=Path(args.bucket_summary),
-            problem_buckets=problem_buckets,
-            clean_control_count=args.clean_control_count,
+        selected_pdf_names, bucket_by_pdf, selection_meta = (
+            _select_sample_from_bucket_summary(
+                bucket_summary_path=Path(args.bucket_summary),
+                problem_buckets=problem_buckets,
+                clean_control_count=args.clean_control_count,
+            )
         )
 
     if not selected_pdf_names:
@@ -1034,7 +1124,11 @@ def main() -> int:
     for pdf_path in resolved_pdf_paths:
         common_input = build_common_input(pdf_path)
         paper_slug = common_input.get("paper_slug") or slugify_pdf_name(pdf_path.name)
-        input_bucket = bucket_by_pdf.get(pdf_path.name) or common_input.get("input_quality", {}).get("primary_bucket") or "unknown"
+        input_bucket = (
+            bucket_by_pdf.get(pdf_path.name)
+            or common_input.get("input_quality", {}).get("primary_bucket")
+            or "unknown"
+        )
 
         extractor_summary = _summarize_extractor_common_input(common_input)
         process_refs_result = _run_process_references(
@@ -1072,9 +1166,14 @@ def main() -> int:
             "metrics": process_refs_result.get("metrics") or {},
             "parsed": process_refs_result.get("parsed") or {},
         }
-        _write_json(run_dir / "process_references" / f"{paper_slug}.json", process_payload)
+        _write_json(
+            run_dir / "process_references" / f"{paper_slug}.json", process_payload
+        )
         if process_refs_result.get("tei_xml"):
-            _write_text(run_dir / "process_references" / f"{paper_slug}.xml", process_refs_result["tei_xml"])
+            _write_text(
+                run_dir / "process_references" / f"{paper_slug}.xml",
+                process_refs_result["tei_xml"],
+            )
 
         fulltext_payload = {
             "paper_slug": paper_slug,
@@ -1089,7 +1188,9 @@ def main() -> int:
         }
         _write_json(run_dir / "fulltext" / f"{paper_slug}.json", fulltext_payload)
         if fulltext_result.get("tei_xml"):
-            _write_text(run_dir / "fulltext" / f"{paper_slug}.xml", fulltext_result["tei_xml"])
+            _write_text(
+                run_dir / "fulltext" / f"{paper_slug}.xml", fulltext_result["tei_xml"]
+            )
 
         citation_payload = {
             "paper_slug": paper_slug,
@@ -1105,7 +1206,10 @@ def main() -> int:
         }
         _write_json(run_dir / "citation_list" / f"{paper_slug}.json", citation_payload)
         if citation_list_result.get("tei_xml"):
-            _write_text(run_dir / "citation_list" / f"{paper_slug}.xml", citation_list_result["tei_xml"])
+            _write_text(
+                run_dir / "citation_list" / f"{paper_slug}.xml",
+                citation_list_result["tei_xml"],
+            )
 
         extractor_vs_row = _build_extractor_vs_process_references_row(
             paper_slug=paper_slug,
@@ -1125,8 +1229,12 @@ def main() -> int:
         delta_valid_refs = None
         fulltext_adds_value = False
         if status_pair == "ok_ok":
-            delta_total_refs = _safe_int(fulltext_metrics.get("total_references")) - _safe_int(process_metrics.get("total_references"))
-            delta_valid_refs = _safe_int(fulltext_metrics.get("likely_valid")) - _safe_int(process_metrics.get("likely_valid"))
+            delta_total_refs = _safe_int(
+                fulltext_metrics.get("total_references")
+            ) - _safe_int(process_metrics.get("total_references"))
+            delta_valid_refs = _safe_int(
+                fulltext_metrics.get("likely_valid")
+            ) - _safe_int(process_metrics.get("likely_valid"))
             fulltext_adds_value = (
                 _safe_int(delta_valid_refs, 0) >= 2
                 or _safe_int(delta_total_refs, 0) >= 3
@@ -1141,7 +1249,9 @@ def main() -> int:
                 "status_pair": status_pair,
                 "delta_total_refs": delta_total_refs,
                 "delta_valid_refs": delta_valid_refs,
-                "inline_citation_count": _safe_int(fulltext_metrics.get("inline_citation_count"), 0),
+                "inline_citation_count": _safe_int(
+                    fulltext_metrics.get("inline_citation_count"), 0
+                ),
                 "fulltext_adds_value": fulltext_adds_value,
                 "process_references_status": process_status,
                 "fulltext_status": fulltext_status,
@@ -1163,7 +1273,9 @@ def main() -> int:
             limit=5,
         )
 
-    extractor_vs_refs_agg = _aggregate_extractor_vs_process_references(extractor_vs_refs_rows)
+    extractor_vs_refs_agg = _aggregate_extractor_vs_process_references(
+        extractor_vs_refs_rows
+    )
     citation_agg = _aggregate_citation_parser_comparison(citation_vs_refextract_rows)
     fulltext_agg = _aggregate_fulltext_vs_references(fulltext_rows)
     decision = _build_decision(
@@ -1202,9 +1314,18 @@ def main() -> int:
         "aggregate": fulltext_agg,
     }
 
-    _write_json(run_dir / "comparisons" / "extractor_vs_process_references.json", extractor_vs_payload)
-    _write_json(run_dir / "comparisons" / "fulltext_vs_process_references.json", fulltext_vs_payload)
-    _write_json(run_dir / "comparisons" / "refextract_vs_citation_list.json", citation_vs_payload)
+    _write_json(
+        run_dir / "comparisons" / "extractor_vs_process_references.json",
+        extractor_vs_payload,
+    )
+    _write_json(
+        run_dir / "comparisons" / "fulltext_vs_process_references.json",
+        fulltext_vs_payload,
+    )
+    _write_json(
+        run_dir / "comparisons" / "refextract_vs_citation_list.json",
+        citation_vs_payload,
+    )
     _write_json(run_dir / "comparisons" / "per_paper_notes.json", per_paper_notes)
     _write_json(run_dir / "comparisons" / "aggregate.json", aggregate_payload)
 

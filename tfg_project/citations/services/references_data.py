@@ -1,3 +1,10 @@
+"""ConstrucciÃ³n de referencias, anclajes y diagnÃ³sticos para el reader.
+
+Este mÃ³dulo concentra heurÃ­sticas de extracciÃ³n que dependen de geometrÃ­a del
+PDF, texto normalizado y metadatos externos. La prioridad de mantenimiento es
+preservar el contrato de salida que consume el reader y los tests de regresiÃ³n.
+"""
+
 from __future__ import annotations
 
 import json
@@ -11,10 +18,11 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from citations.logging_utils import get_logger
 
-logger = get_logger("citations.references")
-TRACE_REFERENCES = os.getenv("TRACE_REFERENCES", "0") == "1"
 from .crossref_client import fetch_work_by_doi as crossref_fetch_work_by_doi
 from .reference_reconciliation import validate_reference_against_metadata
+
+logger = get_logger("citations.references")
+TRACE_REFERENCES = os.getenv("TRACE_REFERENCES", "0") == "1"
 
 DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
@@ -31,9 +39,7 @@ SPLITTABLE_PAREN_ANCHOR_RE = re.compile(r"\(\s*\d{1,4}\s*\)|\b\d{1,4}\)")
 MARKER_ONLY_BRACKETED_REFERENCE_RE = re.compile(r"^\s*\[\s*(\d{1,4})\s*\]\s*$")
 MARKER_ONLY_DOTTED_REFERENCE_RE = re.compile(r"^\s*(\d{1,4})\.\s*$")
 MARKER_ONLY_SUFFIX_PAREN_REFERENCE_RE = re.compile(r"^\s*(\d{1,4})\)\s*$")
-MARKER_ONLY_WRAPPED_PAREN_REFERENCE_RE = re.compile(
-    r"^\s*\(\s*(\d{1,4})\s*\)\s*$"
-)
+MARKER_ONLY_WRAPPED_PAREN_REFERENCE_RE = re.compile(r"^\s*\(\s*(\d{1,4})\s*\)\s*$")
 NUMERIC_ANCHOR_STYLES = (
     "bracketed",
     "dotted",
@@ -60,9 +66,7 @@ FIXED_ARTIFACT_RE = re.compile(
 PAGE_NUMBER_ONLY_RE = re.compile(r"^\s*\(?\d{1,4}\)?\s*$")
 REFERENCE_YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 REFERENCE_WORD_RE = re.compile(r"[A-Za-zÀ-ÿ]{3,}")
-REFERENCE_GLUE_RE = re.compile(
-    r"\b[A-Za-zÀ-ÿ]{4,}[a-zà-ÿ][A-ZÀ-ß][A-Za-zÀ-ÿ]{2,}\b"
-)
+REFERENCE_GLUE_RE = re.compile(r"\b[A-Za-zÀ-ÿ]{4,}[a-zà-ÿ][A-ZÀ-ß][A-Za-zÀ-ÿ]{2,}\b")
 REFERENCE_TRAILING_AFTER_DOI_RE = re.compile(
     r"(?:https?://\S+|10\.\d{4,9}/\S+)\s+[A-Za-zÀ-ÿ]",
     re.IGNORECASE,
@@ -140,9 +144,7 @@ NUMERIC_REFERENCE_PIPELINE_V2_NAME = "numeric_reference_pipeline_v2"
 NUMERIC_REFERENCE_PIPELINE_V2_RUN_MODE = "debug_only"
 NUMERIC_REFERENCE_PIPELINE_V3_NAME = "numeric_reference_pipeline_v3"
 NUMERIC_REFERENCE_PIPELINE_V3_RUN_MODE = "debug_only"
-REFERENCE_DEBUG_DIR = (
-    Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
-)
+REFERENCE_DEBUG_DIR = Path(__file__).resolve().parents[3] / "tmp" / "reference_debug"
 REFERENCE_DIAGNOSTIC_TAIL_NOISE_MARKERS = (
     "cite this article",
     "how to cite",
@@ -534,7 +536,7 @@ def _split_reference_row_on_anchors(
         (match.start(), match.end()) for match in NUMBERED_ANCHOR_RE.finditer(text)
     ]
     for match in SPLITTABLE_PAREN_ANCHOR_RE.finditer(text):
-        candidate = _match_reference_anchor_at_line_start(text[match.start():])
+        candidate = _match_reference_anchor_at_line_start(text[match.start() :])
         if not candidate or not candidate.get("accepted"):
             continue
         candidate_style = str(candidate.get("anchor_style") or "")
@@ -557,7 +559,9 @@ def _split_reference_row_on_anchors(
     parts: List[Dict[str, Any]] = []
     for part_idx, (start_char, end_char) in enumerate(spans):
         segment_text = text[start_char:end_char].strip()
-        if not segment_text or (_is_reference_noise_text(segment_text) and not allow_noise_override):
+        if not segment_text or (
+            _is_reference_noise_text(segment_text) and not allow_noise_override
+        ):
             continue
         next_row = dict(row)
         next_row["id"] = f"{row.get('id') or 'row'}::seg-{part_idx}"
@@ -789,7 +793,9 @@ def _score_header_noise(text: str) -> float:
     return 0.0
 
 
-def _normalize_crossref_reference_candidate(candidate: Dict[str, Any]) -> Dict[str, Any]:
+def _normalize_crossref_reference_candidate(
+    candidate: Dict[str, Any],
+) -> Dict[str, Any]:
     normalized = {
         "doi": _normalize_doi(candidate.get("doi")),
         "title": str(candidate.get("title") or "").strip(),
@@ -823,7 +829,9 @@ def _detect_article_doi_from_rows(
 ) -> str:
     best_candidate = ""
     best_rank: Optional[Tuple[int, float, int]] = None
-    max_page = bibliography_start_page if isinstance(bibliography_start_page, int) else 3
+    max_page = (
+        bibliography_start_page if isinstance(bibliography_start_page, int) else 3
+    )
     for row in row_items:
         page = row.get("page")
         box = _normalize_box(row.get("box"))
@@ -838,7 +846,8 @@ def _detect_article_doi_from_rows(
         normalized = _normalize_text(text)
         has_explicit_doi_label = "doi" in normalized
         has_article_like_context = any(
-            token in normalized for token in ("doi:", "https://doi.org/", "acm isbn", "article")
+            token in normalized
+            for token in ("doi:", "https://doi.org/", "acm isbn", "article")
         )
         y0 = float(box[1])
         priority = 0
@@ -1001,11 +1010,7 @@ def _build_repeating_page_artifacts(
         if len(key) < 9:
             continue
         pages_per_key[key].add(page)
-    repeated_keys = {
-        key
-        for key, pages in pages_per_key.items()
-        if len(pages) >= 2
-    }
+    repeated_keys = {key for key, pages in pages_per_key.items() if len(pages) >= 2}
     return {"repeated_text_keys": repeated_keys}
 
 
@@ -1085,7 +1090,9 @@ def _build_same_column_row_context(
             row_id = str(row.get("id") or f"{page}:{column_id}:{idx}")
             context_by_row_id[row_id] = {
                 "previous_row": ordered_rows[idx - 1] if idx > 0 else None,
-                "next_row": ordered_rows[idx + 1] if idx + 1 < len(ordered_rows) else None,
+                "next_row": (
+                    ordered_rows[idx + 1] if idx + 1 < len(ordered_rows) else None
+                ),
                 "current_anchor": previous_anchor,
                 "next_anchor": next_anchor_by_idx[idx],
             }
@@ -1169,9 +1176,7 @@ def _strong_bibliography_continuation_row(
 
     alpha_words = re.findall(r"[A-Za-zÀ-ÿ]{2,}", text)
     has_bibliographic_text = bool(
-        _extract_doi(text)
-        or REFERENCE_YEAR_RE.search(text)
-        or len(text) >= 72
+        _extract_doi(text) or REFERENCE_YEAR_RE.search(text) or len(text) >= 72
     )
     if len(alpha_words) < 6 or not has_bibliographic_text:
         return result
@@ -1194,7 +1199,11 @@ def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]
         row
         for row in rows
         if (
-            (_to_float(row.get("y0")) or (_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[1]) > 0.08
+            (
+                _to_float(row.get("y0"))
+                or (_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[1]
+            )
+            > 0.08
             and (
                 _to_float(row.get("y1"))
                 or (
@@ -1213,7 +1222,8 @@ def _detect_page_column_split(rows: Sequence[Dict[str, Any]]) -> Optional[float]
             else (_normalize_box(row.get("box")) or [0.0, 0.0, 0.0, 0.0])[0]
         )
         for row in sample
-        if _to_float(row.get("x0")) is not None or _normalize_box(row.get("box")) is not None
+        if _to_float(row.get("x0")) is not None
+        or _normalize_box(row.get("box")) is not None
     )
     if len(x_values) < 4:
         return None
@@ -1318,7 +1328,9 @@ def build_bibliography_reading_flow(
     return ordered
 
 
-def _collect_page_split_map(rows: Sequence[Dict[str, Any]]) -> Dict[int, Optional[float]]:
+def _collect_page_split_map(
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[int, Optional[float]]:
     page_splits: Dict[int, Optional[float]] = {}
     for row in rows:
         page = row.get("page")
@@ -1347,7 +1359,11 @@ def _detect_reference_heading_candidates(
             page = item.get("page")
             box = _normalize_box(item.get("box"))
             text = str(item.get("text") or "").strip()
-            if not isinstance(page, int) or box is None or not _is_reference_heading_text(text):
+            if (
+                not isinstance(page, int)
+                or box is None
+                or not _is_reference_heading_text(text)
+            ):
                 continue
             dedupe_key = (
                 page,
@@ -1373,7 +1389,9 @@ def _detect_reference_heading_candidates(
                     "column_id": column_id,
                 }
             )
-    return sorted(candidates, key=lambda item: (item["page"], item["box"][1], item["box"][0]))
+    return sorted(
+        candidates, key=lambda item: (item["page"], item["box"][1], item["box"][0])
+    )
 
 
 def _build_bibliography_segments(
@@ -1385,7 +1403,11 @@ def _build_bibliography_segments(
     rows_with_columns = _assign_column_ids(rows)
     page_splits = _collect_page_split_map(rows_with_columns)
     max_page = max(
-        (int(row.get("page")) for row in rows_with_columns if isinstance(row.get("page"), int)),
+        (
+            int(row.get("page"))
+            for row in rows_with_columns
+            if isinstance(row.get("page"), int)
+        ),
         default=-1,
     )
     tail_page_span = max(3, int((max_page + 1) * 0.35))
@@ -1395,7 +1417,9 @@ def _build_bibliography_segments(
         sections,
         page_splits,
     )
-    anchors = detect_reference_anchors_from_rows(build_bibliography_reading_flow(rows_with_columns))
+    anchors = detect_reference_anchors_from_rows(
+        build_bibliography_reading_flow(rows_with_columns)
+    )
     anchor_rows = [anchor for anchor in anchors if isinstance(anchor.get("page"), int)]
     tail_heading_candidates = [
         candidate
@@ -1411,7 +1435,8 @@ def _build_bibliography_segments(
         {
             int(item.get("page"))
             for item in bibliography_items
-            if isinstance(item.get("page"), int) and int(item.get("page")) >= tail_start_page
+            if isinstance(item.get("page"), int)
+            and int(item.get("page")) >= tail_start_page
         }
     )
     start_page_candidates = [candidate["page"] for candidate in tail_heading_candidates]
@@ -1419,7 +1444,9 @@ def _build_bibliography_segments(
     if not start_page_candidates and tail_bibliography_pages:
         start_page_candidates.append(tail_bibliography_pages[0])
     if not start_page_candidates:
-        start_page_candidates.extend(candidate["page"] for candidate in heading_candidates)
+        start_page_candidates.extend(
+            candidate["page"] for candidate in heading_candidates
+        )
         start_page_candidates.extend(anchor.get("page") for anchor in anchor_rows[:4])
     valid_start_pages = [
         int(page)
@@ -1467,7 +1494,11 @@ def _build_bibliography_segments(
         record = _serialize_layer_item(section)
         score = _score_header_noise(section.get("text") or "")
         record["noise_score"] = round(score, 3)
-        record["kind"] = "heading" if _is_reference_heading_text(section.get("text") or "") else "section"
+        record["kind"] = (
+            "heading"
+            if _is_reference_heading_text(section.get("text") or "")
+            else "section"
+        )
         if score >= 0.5 and page >= int(start_page or page):
             record["candidate_noise"] = True
             candidate_noise_sections.append(record)
@@ -1483,7 +1514,9 @@ def _build_bibliography_segments(
             text = str(row.get("text") or "").strip()
             if not text:
                 continue
-            if _is_header_footer_row(row, artifact_info) and not _match_reference_anchor_at_line_start(text):
+            if _is_header_footer_row(
+                row, artifact_info
+            ) and not _match_reference_anchor_at_line_start(text):
                 continue
             if page == start_page and selected_heading is not None:
                 heading_page = int(selected_heading.get("page") or -1)
@@ -1520,7 +1553,10 @@ def _build_bibliography_segments(
             default=0.0,
         )
         confidence = 0.58
-        if anchor_columns_by_page.get(page) and column_id in anchor_columns_by_page[page]:
+        if (
+            anchor_columns_by_page.get(page)
+            and column_id in anchor_columns_by_page[page]
+        ):
             confidence += 0.22
         if page == start_page and selected_heading is not None:
             confidence += 0.12
@@ -1535,7 +1571,10 @@ def _build_bibliography_segments(
                     part
                     for part, enabled in (
                         ("rows", True),
-                        ("sections", page == start_page and selected_heading is not None),
+                        (
+                            "sections",
+                            page == start_page and selected_heading is not None,
+                        ),
                         ("bibliography_layer", overlap_with_layer >= 0.2),
                     )
                     if enabled
@@ -1552,7 +1591,11 @@ def _build_bibliography_segments(
     if bibliography_segments:
         first_segment = min(
             bibliography_segments,
-            key=lambda item: (int(item["page"]), float(item["box"][1]), float(item["box"][0])),
+            key=lambda item: (
+                int(item["page"]),
+                float(item["box"][1]),
+                float(item["box"][0]),
+            ),
         )
         bibliography_anchor = (
             int(first_segment["page"]),
@@ -1585,7 +1628,11 @@ def _row_in_any_segment(
         segment_box = _normalize_box(segment.get("box"))
         if segment_box is None:
             continue
-        if segment.get("column_id") and row.get("column_id") and segment.get("column_id") != row.get("column_id"):
+        if (
+            segment.get("column_id")
+            and row.get("column_id")
+            and segment.get("column_id") != row.get("column_id")
+        ):
             continue
         if _contains_box(segment_box, box) or _overlap_ratio(segment_box, box) >= 0.6:
             return True
@@ -1672,9 +1719,7 @@ def _collect_bibliography_rows_from_segments(
                     if override_payload.get("accepted")
                     else None
                 ),
-                "noise_override_reasons": list(
-                    override_payload.get("reasons") or []
-                ),
+                "noise_override_reasons": list(override_payload.get("reasons") or []),
                 "in_bibliography_zone": in_zone,
                 "included": included,
                 "reason": reason,
@@ -1713,9 +1758,7 @@ def _collect_bibliography_rows_from_segments(
                     if override_payload.get("accepted")
                     else None
                 ),
-                "noise_override_reasons": list(
-                    override_payload.get("reasons") or []
-                ),
+                "noise_override_reasons": list(override_payload.get("reasons") or []),
             }
         )
 
@@ -1761,7 +1804,9 @@ def _build_paragraph_phase_payload(
     if row_text and paragraph_text:
         row_tokens = _tokenize(row_text)
         paragraph_tokens = _tokenize(paragraph_text)
-        overlap = len(row_tokens.intersection(paragraph_tokens)) / max(len(row_tokens), 1)
+        overlap = len(row_tokens.intersection(paragraph_tokens)) / max(
+            len(row_tokens), 1
+        )
         if overlap < 0.45:
             inconsistencies.append("paragraph_text_diverges_from_rows")
     return {
@@ -1771,7 +1816,9 @@ def _build_paragraph_phase_payload(
     }
 
 
-def _index_tokens_by_page(tokens: Sequence[Dict[str, Any]]) -> Dict[int, List[Dict[str, Any]]]:
+def _index_tokens_by_page(
+    tokens: Sequence[Dict[str, Any]],
+) -> Dict[int, List[Dict[str, Any]]]:
     indexed: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     for token in tokens:
         page = token.get("page")
@@ -1781,7 +1828,9 @@ def _index_tokens_by_page(tokens: Sequence[Dict[str, Any]]) -> Dict[int, List[Di
             continue
         indexed[page].append({"text": text, "box": box, "page": page})
     for page in list(indexed.keys()):
-        indexed[page].sort(key=lambda item: (float(item["box"][1]), float(item["box"][0])))
+        indexed[page].sort(
+            key=lambda item: (float(item["box"][1]), float(item["box"][0]))
+        )
     return indexed
 
 
@@ -1801,7 +1850,12 @@ def _tokens_for_row(
     for token in tokens_by_page.get(page, []):
         token_box = token["box"]
         token_center_x, token_center_y = _box_center(token_box)
-        if row_y0 - 0.004 <= token_center_y <= row_y1 + 0.004 and float(box[0]) - 0.003 <= token_center_x <= float(box[0]) + float(box[2]) + 0.003:
+        if (
+            row_y0 - 0.004 <= token_center_y <= row_y1 + 0.004
+            and float(box[0]) - 0.003
+            <= token_center_x
+            <= float(box[0]) + float(box[2]) + 0.003
+        ):
             matched.append(token)
     matched.sort(key=lambda item: (float(item["box"][1]), float(item["box"][0])))
     return matched
@@ -1819,7 +1873,9 @@ def _merge_text_fragments(parts: Sequence[str]) -> str:
         if merged.endswith("-") and chunk[:1].isalnum():
             merged = f"{merged[:-1]}{chunk}"
             continue
-        if re.search(r"(https?://|doi\.org/|10\.\d{4,9}/)\Z", merged, flags=re.IGNORECASE):
+        if re.search(
+            r"(https?://|doi\.org/|10\.\d{4,9}/)\Z", merged, flags=re.IGNORECASE
+        ):
             merged = f"{merged}{chunk}"
             continue
         merged = f"{merged} {chunk}"
@@ -2299,18 +2355,16 @@ def _normalize_reference_text_candidate(text: str) -> Dict[str, Any]:
     year_match = REFERENCE_YEAR_RE.search(current)
     if year_match:
         author_prefix = _normalize_reference_author_section(
-            current[:year_match.start()].strip(),
+            current[: year_match.start()].strip(),
             cleanups=cleanups,
         )
         year_value = year_match.group(0)
         body_suffix = _normalize_reference_body_section(
-            current[year_match.end():].lstrip(" ."),
+            current[year_match.end() :].lstrip(" ."),
             cleanups=cleanups,
         )
         current = (
-            f"{author_prefix} {year_value}".strip()
-            if author_prefix
-            else year_value
+            f"{author_prefix} {year_value}".strip() if author_prefix else year_value
         )
         if body_suffix:
             current = f"{current}. {body_suffix}"
@@ -2355,10 +2409,14 @@ def _reference_text_quality_metrics(text: str) -> Dict[str, Any]:
         ),
         "broken_url_like": bool(
             re.search(r"https?://\S+\s+[A-Za-zÀ-ÿ]", normalized, flags=re.IGNORECASE)
-            or re.search(r"10\.\d{4,9}/\S+\s+[A-Za-z0-9]", normalized, flags=re.IGNORECASE)
+            or re.search(
+                r"10\.\d{4,9}/\S+\s+[A-Za-z0-9]", normalized, flags=re.IGNORECASE
+            )
         ),
         "trailing_after_doi": bool(REFERENCE_TRAILING_AFTER_DOI_RE.search(normalized)),
-        "fragment_after_pages": bool(REFERENCE_FRAGMENT_AFTER_PAGES_RE.search(normalized)),
+        "fragment_after_pages": bool(
+            REFERENCE_FRAGMENT_AFTER_PAGES_RE.search(normalized)
+        ),
         "trailing_venue_fragment": bool(
             REFERENCE_TRAILING_VENUE_FRAGMENT_RE.search(normalized)
         ),
@@ -2464,7 +2522,11 @@ def _looks_like_glued_artifact_word(word: str) -> bool:
         return True
     for suffix in REFERENCE_SUFFIX_SPLITS:
         suffix_key = _reference_edit_word_key(suffix)
-        if suffix_key and lowered.endswith(suffix_key) and len(lowered) > len(suffix_key) + 4:
+        if (
+            suffix_key
+            and lowered.endswith(suffix_key)
+            and len(lowered) > len(suffix_key) + 4
+        ):
             return True
     for connector in REFERENCE_GLUE_SUFFIX_CONNECTORS:
         if lowered.endswith(connector) and len(lowered) > len(connector) + 4:
@@ -2532,7 +2594,10 @@ def _classify_local_reference_edit(
     if "-" in str(before_segment or "") and compact_before == compact_after:
         return "line_break_hyphen"
     if compact_before == compact_after:
-        if any(symbol in context for symbol in ("(", ")", "[", "]", '"', "”", "’", "'", ".", ",", ";", ":")):
+        if any(
+            symbol in context
+            for symbol in ("(", ")", "[", "]", '"', "”", "’", "'", ".", ",", ";", ":")
+        ):
             return "punctuation_spacing"
         if re.search(r"\b(?:ACM|IEEE|IATED|SIGCSE|CS)\b", context):
             return "publisher_spacing"
@@ -2556,11 +2621,19 @@ def _has_strong_local_spacing_pattern(before_window: str, after_window: str) -> 
     lowered = before_compact.lower()
     for suffix in REFERENCE_SUFFIX_SPLITS:
         suffix_key = _reference_edit_word_key(suffix)
-        if suffix_key and lowered.endswith(suffix_key) and len(lowered) > len(suffix_key) + 4:
+        if (
+            suffix_key
+            and lowered.endswith(suffix_key)
+            and len(lowered) > len(suffix_key) + 4
+        ):
             return True
     for connector in REFERENCE_GLUE_SUFFIX_CONNECTORS:
         connector_key = _reference_edit_word_key(connector)
-        if connector_key and lowered.endswith(connector_key) and len(lowered) > len(connector_key) + 4:
+        if (
+            connector_key
+            and lowered.endswith(connector_key)
+            and len(lowered) > len(connector_key) + 4
+        ):
             return True
     return False
 
@@ -2603,7 +2676,9 @@ def _apply_validated_reference_local_edits(
             "accepted_local_edit_count": 0,
             "rejected_local_edit_count": 0,
         }
-    row_evidence = _build_reference_edit_evidence(list(row_evidence_texts) + [base_value])
+    row_evidence = _build_reference_edit_evidence(
+        list(row_evidence_texts) + [base_value]
+    )
     token_evidence = _build_reference_edit_evidence(list(token_evidence_texts))
     combined_evidence = _build_reference_edit_evidence(
         list(row_evidence_texts) + list(token_evidence_texts) + [base_value]
@@ -2616,14 +2691,16 @@ def _apply_validated_reference_local_edits(
     new_word_split_detected = False
     lexical_degradation_detected = False
 
-    for tag, i1, i2, j1, j2 in SequenceMatcher(None, base_value, candidate_value).get_opcodes():
+    for tag, i1, i2, j1, j2 in SequenceMatcher(
+        None, base_value, candidate_value
+    ).get_opcodes():
         if tag == "equal":
             output_parts.append(base_value[i1:i2])
             continue
         before_segment = base_value[i1:i2]
         after_segment = candidate_value[j1:j2]
-        prefix = base_value[max(0, i1 - 48):i1]
-        suffix = base_value[i2:min(len(base_value), i2 + 48)]
+        prefix = base_value[max(0, i1 - 48) : i1]
+        suffix = base_value[i2 : min(len(base_value), i2 + 48)]
         left_char = prefix[-1:] if prefix else ""
         right_char = suffix[:1] if suffix else ""
         before_window = f"{prefix}{before_segment}{suffix}"
@@ -2658,7 +2735,9 @@ def _apply_validated_reference_local_edits(
             )
         }
         new_split_hits = [
-            hit for hit in new_split_hits if hit.get("bigram_key") not in previous_split_hits
+            hit
+            for hit in new_split_hits
+            if hit.get("bigram_key") not in previous_split_hits
         ]
         would_break_valid_word = bool(new_split_hits)
         supported_by_rows = _local_edit_supported_by_evidence(
@@ -2699,7 +2778,10 @@ def _apply_validated_reference_local_edits(
         elif supported_by_rows:
             accept_edit = True
             reason = "accepted_supported_by_rows"
-        elif edit_type in {"author_spacing", "publisher_spacing", "word_spacing"} and strong_pattern:
+        elif (
+            edit_type in {"author_spacing", "publisher_spacing", "word_spacing"}
+            and strong_pattern
+        ):
             accept_edit = True
             reason = "accepted_strong_spacing_pattern"
 
@@ -2780,26 +2862,25 @@ def _evaluate_reference_backbone_guard(
     if order_similarity < 0.985:
         order_penalty += min((0.985 - order_similarity) * 2.4, 0.34)
         reasons.append("order_similarity_below_backbone")
-    if (
-        candidate_metrics.get("fragment_after_pages")
-        and not backbone_metrics.get("fragment_after_pages")
+    if candidate_metrics.get("fragment_after_pages") and not backbone_metrics.get(
+        "fragment_after_pages"
     ):
         order_penalty += 0.22
         reasons.append("pages_fragment_reordered")
-    if (
-        candidate_metrics.get("trailing_venue_fragment")
-        and not backbone_metrics.get("trailing_venue_fragment")
+    if candidate_metrics.get("trailing_venue_fragment") and not backbone_metrics.get(
+        "trailing_venue_fragment"
     ):
         order_penalty += 0.24
         reasons.append("venue_fragment_reordered")
-    if (
-        candidate_metrics.get("trailing_after_doi")
-        and not backbone_metrics.get("trailing_after_doi")
+    if candidate_metrics.get("trailing_after_doi") and not backbone_metrics.get(
+        "trailing_after_doi"
     ):
         order_penalty += 0.24
         reasons.append("doi_tail_reordered")
     cleanup_only = bool(signature_match and order_similarity >= 0.995)
-    eligible = bool(signature_match and order_similarity >= 0.985 and order_penalty <= 0.18)
+    eligible = bool(
+        signature_match and order_similarity >= 0.985 and order_penalty <= 0.18
+    )
     if not reasons:
         reasons.append("backbone_preserved")
     return {
@@ -2878,7 +2959,12 @@ def _apply_token_local_cleanups_preserving_row_order(
             cleanups_applied.update(row_variant.get("token_cleanups_applied") or [])
         else:
             cleanups_applied.update(row_variant.get("raw_cleanups_applied") or [])
-            if token_available and token_text and token_text != raw_text and not guard["eligible"]:
+            if (
+                token_available
+                and token_text
+                and token_text != raw_text
+                and not guard["eligible"]
+            ):
                 selection_reason = "token_cleanup_rejected_backbone_guard"
         selected_parts.append(selected_text)
         row_decisions.append(
@@ -3024,7 +3110,10 @@ def _select_reference_text_candidate(
         }
         evaluations.append(evaluation)
         evaluation_by_source[source] = evaluation
-        if best_evaluation is None or combined_score > best_evaluation["combined_score"]:
+        if (
+            best_evaluation is None
+            or combined_score > best_evaluation["combined_score"]
+        ):
             best_evaluation = evaluation
 
     if best_evaluation is None:
@@ -3036,15 +3125,16 @@ def _select_reference_text_candidate(
         }
 
     raw_evaluation = evaluation_by_source.get("rows_raw") or best_evaluation
-    backbone_evaluation = raw_evaluation
     hybrid_evaluation = evaluation_by_source.get("rows_hybrid")
 
     selected_evaluation = raw_evaluation
     if (
         hybrid_evaluation is not None
         and hybrid_evaluation.get("backbone_eligible")
-        and str(hybrid_evaluation.get("text") or "") != str(raw_evaluation.get("text") or "")
-        and hybrid_evaluation["combined_score"] >= raw_evaluation["combined_score"] - 0.01
+        and str(hybrid_evaluation.get("text") or "")
+        != str(raw_evaluation.get("text") or "")
+        and hybrid_evaluation["combined_score"]
+        >= raw_evaluation["combined_score"] - 0.01
     ):
         selected_evaluation = hybrid_evaluation
     for evaluation in evaluations:
@@ -3088,13 +3178,18 @@ def _reconstruct_reference_text_from_rows_and_tokens(
         reconstructed = normalized_row_text
         if row_tokens:
             token_rows_used += 1
-            token_fragment = _merge_text_fragments([token["text"] for token in row_tokens])
+            token_fragment = _merge_text_fragments(
+                [token["text"] for token in row_tokens]
+            )
             reconstructed_payload = _normalize_reference_fragment_text(token_fragment)
             reconstructed = str(
                 reconstructed_payload.get("text") or normalized_row_text
             )
         else:
-            reconstructed_payload = {"text": normalized_row_text, "cleanups_applied": []}
+            reconstructed_payload = {
+                "text": normalized_row_text,
+                "cleanups_applied": [],
+            }
         per_row_after.append(reconstructed or normalized_row_text)
         row_variants.append(
             {
@@ -3128,8 +3223,7 @@ def _reconstruct_reference_text_from_rows_and_tokens(
         ],
         token_evidence_texts=[
             text
-            for text in list(per_row_after)
-            + [token_seed_text]
+            for text in list(per_row_after) + [token_seed_text]
             if str(text or "").strip()
         ],
         edit_scope="tokens",
@@ -3206,7 +3300,9 @@ def _reconstruct_reference_text_from_rows_and_tokens(
                 "cleanups_applied": sorted(
                     {
                         str(name).strip()
-                        for name in list(hybrid_text_candidate.get("cleanups_applied") or [])
+                        for name in list(
+                            hybrid_text_candidate.get("cleanups_applied") or []
+                        )
                         + list(backbone_payload.get("cleanups_applied") or [])
                         + list(token_edit_payload.get("cleanups_applied") or [])
                         if str(name).strip()
@@ -3237,7 +3333,9 @@ def _score_crossref_candidate(
     candidate_tokens = _tokenize(candidate_text)
     overlap = 0.0
     if local_tokens and candidate_tokens:
-        overlap = len(local_tokens.intersection(candidate_tokens)) / max(len(candidate_tokens), 1)
+        overlap = len(local_tokens.intersection(candidate_tokens)) / max(
+            len(candidate_tokens), 1
+        )
     score = overlap * 0.7
     title = _normalize_text(candidate.get("title") or "")
     if title and title in local_norm:
@@ -3338,8 +3436,7 @@ def _build_reference_decision(
         and int(leading_anchor.get("index") or 0) == int(expected_index or 0)
     )
     inside_bibliography_zone = bool(
-        rows
-        and all(_row_in_any_segment(row, bibliography_segments) for row in rows)
+        rows and all(_row_in_any_segment(row, bibliography_segments) for row in rows)
     )
     expected_column = first_row.get("column_id") if rows else None
     inside_expected_column = bool(
@@ -3351,15 +3448,21 @@ def _build_reference_decision(
     token_cleanup_confidence = float(
         token_reconstruction.get("token_cleanup_confidence") or 0.0
     )
-    selected_candidate_source = str(
-        token_reconstruction.get("selected_candidate_source") or "rows_raw"
-    ).strip() or "rows_raw"
+    selected_candidate_source = (
+        str(token_reconstruction.get("selected_candidate_source") or "rows_raw").strip()
+        or "rows_raw"
+    )
     selected_candidate_quality = 0.0
     for candidate_score in token_reconstruction.get("candidate_scores") or []:
         if not isinstance(candidate_score, dict):
             continue
-        if str(candidate_score.get("source") or "").strip() == selected_candidate_source:
-            selected_candidate_quality = float(candidate_score.get("quality_score") or 0.0)
+        if (
+            str(candidate_score.get("source") or "").strip()
+            == selected_candidate_source
+        ):
+            selected_candidate_quality = float(
+                candidate_score.get("quality_score") or 0.0
+            )
             break
     cleanup_applied = bool(
         token_reconstruction.get("cleanups_applied")
@@ -3423,9 +3526,7 @@ def _build_reference_decision(
         reason = validation_reason or "validation_failed"
     elif strong_structural_evidence and final_score >= 0.62:
         classification = (
-            "accepted_with_cleanup"
-            if cleanup_applied
-            else "accepted_structured"
+            "accepted_with_cleanup" if cleanup_applied else "accepted_structured"
         )
         accepted = True
         reason = "strong_structural_evidence"
@@ -3571,7 +3672,9 @@ def split_bibliography_columns(
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     if len(lines) < 8:
         return list(lines), []
-    x_values = sorted(float(line["box"][0]) for line in lines if _normalize_box(line.get("box")))
+    x_values = sorted(
+        float(line["box"][0]) for line in lines if _normalize_box(line.get("box"))
+    )
     if len(x_values) < 8:
         return list(lines), []
 
@@ -3671,12 +3774,9 @@ def detect_reference_anchors_from_rows(
         )
     for idx, anchor in enumerate(anchors):
         previous_index = int(anchors[idx - 1]["index"]) if idx > 0 else None
-        next_index = (
-            int(anchors[idx + 1]["index"]) if idx + 1 < len(anchors) else None
-        )
+        next_index = int(anchors[idx + 1]["index"]) if idx + 1 < len(anchors) else None
         anchor["sequence_supported"] = bool(
-            previous_index == anchor["index"] - 1
-            or next_index == anchor["index"] + 1
+            previous_index == anchor["index"] - 1 or next_index == anchor["index"] + 1
         )
     return anchors
 
@@ -3817,7 +3917,15 @@ def _default_reference_validation(
     has_nested = len(foreign_anchors) > 0
     mixed_score = 0.72 if has_nested else 0.12
     accepted = bool(len(text) >= 24 and not has_nested)
-    reason = None if accepted else ("mixed_rows_multiple_references" if has_nested else "short_or_empty_reference")
+    reason = (
+        None
+        if accepted
+        else (
+            "mixed_rows_multiple_references"
+            if has_nested
+            else "short_or_empty_reference"
+        )
+    )
     return {
         "match_score": 0.0,
         "mixed_reference_score": round(mixed_score, 3),
@@ -3964,7 +4072,11 @@ def build_reference_rows_between_anchors(
             )
             break
         if not is_anchor_row and _is_header_footer_row(row, artifact_info):
-            previous_row = selected_rows[-1] if selected_rows else (current_anchor.get("row") or current_anchor)
+            previous_row = (
+                selected_rows[-1]
+                if selected_rows
+                else (current_anchor.get("row") or current_anchor)
+            )
             noise_override_payload = _strong_bibliography_continuation_row(
                 row=row,
                 previous_row=previous_row,
@@ -4184,11 +4296,14 @@ def build_references_from_rows(
             reference_doi=reference_doi_seed,
             crossref_context=crossref_context,
         )
-        selected_candidate_source = str(
-            selected_candidate.get("source")
-            or token_reconstruction.get("selected_candidate_source")
+        selected_candidate_source = (
+            str(
+                selected_candidate.get("source")
+                or token_reconstruction.get("selected_candidate_source")
+                or "rows_raw"
+            ).strip()
             or "rows_raw"
-        ).strip() or "rows_raw"
+        )
         token_reconstruction["selected_candidate_source"] = selected_candidate_source
         token_reconstruction["candidate_scores"] = (
             selected_candidate.get("candidate_scores") or []
@@ -4416,7 +4531,7 @@ def _strip_numeric_anchor_prefix(text: str) -> str:
     value = str(text or "")
     bracketed_match = BRACKETED_REFERENCE_LINE_RE.match(value)
     if bracketed_match:
-        return value[bracketed_match.end():].lstrip()
+        return value[bracketed_match.end() :].lstrip()
     for candidate_pattern in (
         DOTTED_REFERENCE_CANDIDATE_RE,
         SUFFIX_PAREN_REFERENCE_CANDIDATE_RE,
@@ -4443,7 +4558,9 @@ def _match_marker_only_numeric_anchor(text: str) -> Optional[Dict[str, Any]]:
             index = int(match.group(1))
         except (TypeError, ValueError):
             return None
-        if index <= 0 or (style in {"suffix_paren", "wrapped_paren"} and 1900 <= index <= 2099):
+        if index <= 0 or (
+            style in {"suffix_paren", "wrapped_paren"} and 1900 <= index <= 2099
+        ):
             return None
         return {
             "index": index,
@@ -4633,11 +4750,7 @@ def _build_marker_only_anchor_link_map_v3(
             vertical_gap = abs(float(body_y0) - float(anchor_y1))
             right_band_alignment = bool(
                 horizontal_gap >= 0.012
-                and (
-                    overlap_ratio >= 0.2
-                    or delta_y <= 0.035
-                    or vertical_gap <= 0.03
-                )
+                and (overlap_ratio >= 0.2 or delta_y <= 0.035 or vertical_gap <= 0.03)
             )
             immediate_fallback = bool(
                 body_position == position + 1
@@ -4678,9 +4791,9 @@ def _build_marker_only_anchor_link_map_v3(
                 else:
                     score -= 0.07
                     reasons.append("off_body_band")
-            if row.get("reading_lane_id") and row.get("reading_lane_id") == candidate_row.get(
+            if row.get("reading_lane_id") and row.get(
                 "reading_lane_id"
-            ):
+            ) == candidate_row.get("reading_lane_id"):
                 score += 0.05
                 reasons.append("same_reading_lane")
             if len(candidate_text) >= 72:
@@ -4825,7 +4938,9 @@ def _detect_numeric_anchor_candidates_v2(
         text = str(row.get("text") or "").strip()
         if not text:
             continue
-        next_row = ordered_rows[position + 1] if position + 1 < len(ordered_rows) else None
+        next_row = (
+            ordered_rows[position + 1] if position + 1 < len(ordered_rows) else None
+        )
         next_text = str((next_row or {}).get("text") or "").strip()
         accepted_anchor = _match_reference_anchor_at_line_start(text)
         anchor_candidate = _match_reference_anchor_at_line_start(
@@ -4840,7 +4955,9 @@ def _detect_numeric_anchor_candidates_v2(
             and _has_v2_bibliographic_body_signal(next_text)
         )
         if accepted_anchor and accepted_anchor.get("accepted"):
-            confidence = 0.98 if accepted_anchor.get("anchor_style") == "bracketed" else 0.94
+            confidence = (
+                0.98 if accepted_anchor.get("anchor_style") == "bracketed" else 0.94
+            )
             if not _has_v2_bibliographic_body_signal(body_text) and weak_split_body:
                 confidence = round(confidence - 0.08, 3)
             candidates.append(
@@ -4851,7 +4968,8 @@ def _detect_numeric_anchor_candidates_v2(
                     "strength": "strong",
                     "reason": (
                         "accepted_anchor_with_split_body"
-                        if weak_split_body and not _has_v2_bibliographic_body_signal(body_text)
+                        if weak_split_body
+                        and not _has_v2_bibliographic_body_signal(body_text)
                         else "accepted_anchor"
                     ),
                     "page": row.get("page"),
@@ -4860,7 +4978,8 @@ def _detect_numeric_anchor_candidates_v2(
                     "row": row,
                     "body_inline": body_text,
                     "body_in_next_row": bool(
-                        weak_split_body and not _has_v2_bibliographic_body_signal(body_text)
+                        weak_split_body
+                        and not _has_v2_bibliographic_body_signal(body_text)
                     ),
                 }
             )
@@ -4885,7 +5004,8 @@ def _detect_numeric_anchor_candidates_v2(
         if (
             anchor_candidate
             and not anchor_candidate.get("accepted")
-            and anchor_candidate.get("anchor_rejected_reason") == "weak_bibliographic_signal"
+            and anchor_candidate.get("anchor_rejected_reason")
+            == "weak_bibliographic_signal"
             and weak_split_body
         ):
             candidates.append(
@@ -5014,7 +5134,11 @@ def _build_numeric_bibliography_territory_v2(
     pre_reading_flow = build_bibliography_reading_flow(rows_with_columns)
     pre_anchor_candidates = _detect_numeric_anchor_candidates_v2(pre_reading_flow)
     max_page = max(
-        (int(row.get("page")) for row in rows_with_columns if isinstance(row.get("page"), int)),
+        (
+            int(row.get("page"))
+            for row in rows_with_columns
+            if isinstance(row.get("page"), int)
+        ),
         default=-1,
     )
     tail_page_span = max(3, int((max_page + 1) * 0.35))
@@ -5033,7 +5157,8 @@ def _build_numeric_bibliography_territory_v2(
         {
             int(item.get("page"))
             for item in bibliography_items
-            if isinstance(item.get("page"), int) and int(item.get("page")) >= tail_start_page
+            if isinstance(item.get("page"), int)
+            and int(item.get("page")) >= tail_start_page
         }
     )
     start_page_candidates = [candidate["page"] for candidate in tail_heading_candidates]
@@ -5043,7 +5168,9 @@ def _build_numeric_bibliography_territory_v2(
     if not start_page_candidates and tail_bibliography_pages:
         start_page_candidates.append(tail_bibliography_pages[0])
     if not start_page_candidates:
-        start_page_candidates.extend(candidate["page"] for candidate in heading_candidates)
+        start_page_candidates.extend(
+            candidate["page"] for candidate in heading_candidates
+        )
         start_page_candidates.extend(
             candidate.get("page") for candidate in pre_anchor_candidates[:6]
         )
@@ -5101,7 +5228,10 @@ def _build_numeric_bibliography_territory_v2(
             and str(row.get("id") or "") not in anchor_row_ids
         ):
             continue
-        if _is_header_footer_row(row, artifact_info) and str(row.get("id") or "") not in anchor_row_ids:
+        if (
+            _is_header_footer_row(row, artifact_info)
+            and str(row.get("id") or "") not in anchor_row_ids
+        ):
             continue
         grouped_by_page[page].append(row)
 
@@ -5117,9 +5247,8 @@ def _build_numeric_bibliography_territory_v2(
             band_anchor_candidates = [
                 candidate
                 for candidate in pre_anchor_candidates
-                if str(candidate.get("row_id") or "") in {
-                    str(row.get("id") or "") for row in band_rows
-                }
+                if str(candidate.get("row_id") or "")
+                in {str(row.get("id") or "") for row in band_rows}
             ]
             band_overlap = max(
                 (
@@ -5177,7 +5306,11 @@ def _build_numeric_bibliography_territory_v2(
         accepted_bands = [band for band in accepted_bands if band.get("accepted")]
         accepted_bands.sort(
             key=lambda band: (
-                0 if (page in heading_bottom_by_page and band.get("anchor_total")) else 1,
+                (
+                    0
+                    if (page in heading_bottom_by_page and band.get("anchor_total"))
+                    else 1
+                ),
                 min(band.get("anchor_indices") or [10**9]),
                 float((_normalize_box(band.get("box")) or [0.0])[0]),
             )
@@ -5200,7 +5333,10 @@ def _build_numeric_bibliography_territory_v2(
                         part
                         for part, enabled in (
                             ("anchors", bool(band.get("anchor_total"))),
-                            ("bibliography_layer", float(band.get("layer_overlap") or 0.0) >= 0.18),
+                            (
+                                "bibliography_layer",
+                                float(band.get("layer_overlap") or 0.0) >= 0.18,
+                            ),
                             ("heading", page in heading_bottom_by_page),
                             (
                                 "bibliographic_density",
@@ -5209,7 +5345,9 @@ def _build_numeric_bibliography_territory_v2(
                         )
                         if enabled
                     ],
-                    "row_ids": [str(row.get("id") or "") for row in band.get("rows") or []],
+                    "row_ids": [
+                        str(row.get("id") or "") for row in band.get("rows") or []
+                    ],
                 }
             )
             reading_units.append(
@@ -5222,7 +5360,9 @@ def _build_numeric_bibliography_territory_v2(
                     "anchor_indices": band.get("anchor_indices") or [],
                     "bibliography_density": band.get("bibliography_density"),
                     "confidence": band.get("confidence"),
-                    "row_ids": [str(row.get("id") or "") for row in band.get("rows") or []],
+                    "row_ids": [
+                        str(row.get("id") or "") for row in band.get("rows") or []
+                    ],
                 }
             )
             for row in band.get("rows") or []:
@@ -5258,7 +5398,10 @@ def _build_numeric_bibliography_territory_v2(
         )
         first_box = _normalize_box(first_zone.get("box"))
         if first_box is not None:
-            bibliography_anchor = (int(first_zone.get("page") or 0), float(first_box[1]))
+            bibliography_anchor = (
+                int(first_zone.get("page") or 0),
+                float(first_box[1]),
+            )
 
     return {
         "rows_with_columns": rows_with_columns,
@@ -5448,7 +5591,11 @@ def _score_same_reference_row_v2(
                 if abs(float(row_x0) - float(previous_x0)) <= 0.12:
                     score += 0.08
                 elif row.get("reading_unit_id") != previous_row.get("reading_unit_id"):
-                    score += 0.04 if _reference_needs_continuation_v2(current_rows) else -0.04
+                    score += (
+                        0.04
+                        if _reference_needs_continuation_v2(current_rows)
+                        else -0.04
+                    )
         elif current_page - previous_page == 1:
             if current_y0 is not None and float(current_y0) <= 0.22:
                 score += 0.22
@@ -5602,7 +5749,10 @@ def _build_reference_rows_between_anchors_v2(
             current_rows=selected_rows,
             competing_anchor=competing_anchor,
         )
-        if _is_header_footer_row(row, artifact_info) and stop_reason == "same_reference_more_likely":
+        if (
+            _is_header_footer_row(row, artifact_info)
+            and stop_reason == "same_reference_more_likely"
+        ):
             stop_score = max(stop_score, 0.62)
             stop_reason = "header_footer_noise"
         if stop_score > same_reference_score + 0.12:
@@ -5667,7 +5817,9 @@ def _build_reference_rows_between_anchors_v2(
         issues.append("suspiciously_short_reference")
     if len(selected_rows) >= 18:
         issues.append("suspiciously_long_reference")
-    body_start = str((selected_rows[0] or {}).get("id") or "") if selected_rows else None
+    body_start = (
+        str((selected_rows[0] or {}).get("id") or "") if selected_rows else None
+    )
     body_end = str((selected_rows[-1] or {}).get("id") or "") if selected_rows else None
     return {
         "rows": selected_rows,
@@ -5695,12 +5847,16 @@ def _build_reference_decision_v2(
 ) -> Dict[str, Any]:
     first_row = rows[0] if rows else {}
     first_text = str(first_row.get("text") or "")
-    leading_anchor = _match_reference_anchor_at_line_start(first_text, include_rejected=True)
+    leading_anchor = _match_reference_anchor_at_line_start(
+        first_text, include_rejected=True
+    )
     starts_with_anchor = bool(
         leading_anchor
         and int(leading_anchor.get("index") or 0) == int(expected_index or 0)
     )
-    row_ids = {str(row.get("id") or "") for row in rows if str(row.get("id") or "").strip()}
+    row_ids = {
+        str(row.get("id") or "") for row in rows if str(row.get("id") or "").strip()
+    }
     territory_row_ids = {
         str(row_id)
         for zone in territory_zones
@@ -5721,15 +5877,21 @@ def _build_reference_decision_v2(
     token_cleanup_confidence = float(
         token_reconstruction.get("token_cleanup_confidence") or 0.0
     )
-    selected_candidate_source = str(
-        token_reconstruction.get("selected_candidate_source") or "rows_raw"
-    ).strip() or "rows_raw"
+    selected_candidate_source = (
+        str(token_reconstruction.get("selected_candidate_source") or "rows_raw").strip()
+        or "rows_raw"
+    )
     selected_candidate_quality = 0.0
     for candidate_score in token_reconstruction.get("candidate_scores") or []:
         if not isinstance(candidate_score, dict):
             continue
-        if str(candidate_score.get("source") or "").strip() == selected_candidate_source:
-            selected_candidate_quality = float(candidate_score.get("quality_score") or 0.0)
+        if (
+            str(candidate_score.get("source") or "").strip()
+            == selected_candidate_source
+        ):
+            selected_candidate_quality = float(
+                candidate_score.get("quality_score") or 0.0
+            )
             break
     cleanup_applied = bool(
         token_reconstruction.get("cleanups_applied")
@@ -5744,7 +5906,9 @@ def _build_reference_decision_v2(
         "mixed_rows_multiple_references",
         "short_or_empty_reference",
     }
-    continuation_between_pages = bool(block_diagnostics.get("continuation_between_pages"))
+    continuation_between_pages = bool(
+        block_diagnostics.get("continuation_between_pages")
+    )
     final_score = 0.0
     final_score += 0.2 if inside_bibliography_zone else -0.3
     final_score += 0.18 if starts_with_anchor else -0.22
@@ -5831,7 +5995,9 @@ def _build_numeric_pipeline_metrics(
         }
     )
     missing_indices = [
-        int(index) for index in expected_indices if int(index) not in set(serialized_indices)
+        int(index)
+        for index in expected_indices
+        if int(index) not in set(serialized_indices)
     ]
     references_total = len(reference_entries)
     source_counter = Counter(
@@ -5843,7 +6009,9 @@ def _build_numeric_pipeline_metrics(
         if bool((entry.get("final_decision") or {}).get("accepted"))
     )
     max_reference_index_detected = max(
-        list(detected_anchor_indices) + [int(index) for index in serialized_indices] + [0]
+        list(detected_anchor_indices)
+        + [int(index) for index in serialized_indices]
+        + [0]
     )
     coverage_ratio = (
         round(len(serialized_indices) / float(expected_total), 3)
@@ -5854,22 +6022,31 @@ def _build_numeric_pipeline_metrics(
         "references_total": references_total,
         "max_reference_index_detected": max_reference_index_detected,
         "coverage_ratio": coverage_ratio,
-        "pct_structure_source_rows_raw": round(
-            (source_counter.get("rows_raw", 0) / float(references_total)) * 100.0,
-            2,
-        )
-        if references_total
-        else 0.0,
-        "pct_structure_source_raw_reference_fallback": round(
-            (source_counter.get("raw_reference_fallback", 0) / float(references_total))
-            * 100.0,
-            2,
-        )
-        if references_total
-        else 0.0,
-        "pct_accepted": round((accepted_total / float(references_total)) * 100.0, 2)
-        if references_total
-        else 0.0,
+        "pct_structure_source_rows_raw": (
+            round(
+                (source_counter.get("rows_raw", 0) / float(references_total)) * 100.0,
+                2,
+            )
+            if references_total
+            else 0.0
+        ),
+        "pct_structure_source_raw_reference_fallback": (
+            round(
+                (
+                    source_counter.get("raw_reference_fallback", 0)
+                    / float(references_total)
+                )
+                * 100.0,
+                2,
+            )
+            if references_total
+            else 0.0
+        ),
+        "pct_accepted": (
+            round((accepted_total / float(references_total)) * 100.0, 2)
+            if references_total
+            else 0.0
+        ),
         "missing_indices": missing_indices,
         "duplicate_indices": sorted(
             {int(index) for index in duplicate_indices if int(index) > 0}
@@ -5910,7 +6087,9 @@ def _build_numeric_reference_comparison_v2(
     }
     regressions: List[Dict[str, Any]] = []
     improvements: List[Dict[str, Any]] = []
-    all_indices = sorted(set(current_by_index.keys()) | set(experimental_by_index.keys()))
+    all_indices = sorted(
+        set(current_by_index.keys()) | set(experimental_by_index.keys())
+    )
     for index in all_indices:
         current_entry = current_by_index.get(index) or {}
         experimental_entry = experimental_by_index.get(index) or {}
@@ -5988,9 +6167,7 @@ def _build_numeric_reference_comparison_v2(
         if not current_tail_noise and experimental_tail_noise:
             regressions.append({"index": index, "type": "new_tail_noise"})
         if not current_mixed and experimental_mixed:
-            regressions.append(
-                {"index": index, "type": "new_reference_contamination"}
-            )
+            regressions.append({"index": index, "type": "new_reference_contamination"})
         if not bool(current_decision.get("accepted")) and bool(
             experimental_decision.get("accepted")
         ):
@@ -6279,11 +6456,14 @@ def _run_numeric_reference_pipeline_v2(
             reference_doi=reference_doi_seed,
             crossref_context=crossref_context,
         )
-        selected_candidate_source = str(
-            selected_candidate.get("source")
-            or token_reconstruction.get("selected_candidate_source")
+        selected_candidate_source = (
+            str(
+                selected_candidate.get("source")
+                or token_reconstruction.get("selected_candidate_source")
+                or "rows_raw"
+            ).strip()
             or "rows_raw"
-        ).strip() or "rows_raw"
+        )
         token_reconstruction["selected_candidate_source"] = selected_candidate_source
         token_reconstruction["candidate_scores"] = (
             selected_candidate.get("candidate_scores") or []
@@ -6475,7 +6655,9 @@ def _run_numeric_reference_pipeline_v2(
                         "row_id": candidate.get("row_id"),
                         "style": candidate.get("anchor_style"),
                         "strength": candidate.get("strength"),
-                        "confidence": round(float(candidate.get("confidence") or 0.0), 3),
+                        "confidence": round(
+                            float(candidate.get("confidence") or 0.0), 3
+                        ),
                         "reason": candidate.get("reason"),
                         "body_in_next_row": bool(candidate.get("body_in_next_row")),
                     }
@@ -6485,8 +6667,7 @@ def _run_numeric_reference_pipeline_v2(
                 "missing_indices": anchor_reconciliation.get("missing_indices") or [],
                 "duplicate_indices": anchor_reconciliation.get("duplicate_indices")
                 or [],
-                "inferred_anchors": anchor_reconciliation.get("inferred_anchors")
-                or [],
+                "inferred_anchors": anchor_reconciliation.get("inferred_anchors") or [],
             },
             "reconciliation": {
                 "actions": anchor_reconciliation.get("reconciliation_actions") or [],
@@ -6536,9 +6717,7 @@ def _build_reference_geometry_payload_v3(
     geometry_source: str,
 ) -> Dict[str, Any]:
     row_ids = [
-        str(row.get("id") or "")
-        for row in rows
-        if str(row.get("id") or "").strip()
+        str(row.get("id") or "") for row in rows if str(row.get("id") or "").strip()
     ]
     row_boxes: List[Dict[str, Any]] = []
     page_box_map: Dict[int, List[List[float]]] = defaultdict(list)
@@ -6590,14 +6769,14 @@ def _detect_numeric_anchor_candidates_v3(
     marker_layout = _build_marker_only_anchor_link_map_v3(ordered_rows)
     marker_layout_confirmed = bool(marker_layout.get("layout_confirmed"))
     marker_links_by_position = (
-        marker_layout.get("linked_by_position") or {}
-        if marker_layout_confirmed
-        else {}
+        marker_layout.get("linked_by_position") or {} if marker_layout_confirmed else {}
     )
     if isinstance(debug_collector, dict):
         debug_collector["marker_only_anchor_audit"] = {
             "layout_confirmed": marker_layout_confirmed,
-            "layout_confirmation_reason": marker_layout.get("layout_confirmation_reason"),
+            "layout_confirmation_reason": marker_layout.get(
+                "layout_confirmation_reason"
+            ),
             "body_x0_reference": marker_layout.get("body_x0_reference"),
             "marker_rows_total": int(marker_layout.get("marker_rows_total") or 0),
             "linked_rows_total": int(marker_layout.get("linked_rows_total") or 0),
@@ -6621,8 +6800,7 @@ def _detect_numeric_anchor_candidates_v3(
         next_row_id = str((next_row or {}).get("id") or "")
         next_text = str((next_row or {}).get("text") or "").strip()
         next_same_page = bool(
-            next_row is not None
-            and _to_int(next_row.get("page")) == page
+            next_row is not None and _to_int(next_row.get("page")) == page
         )
         body_inline = _strip_numeric_anchor_prefix(text)
         body_inline_signal = _has_v2_bibliographic_body_signal(body_inline)
@@ -6917,7 +7095,9 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
                 0.16,
             )
         if anchor_counts_by_page.get(candidate_page):
-            score += min(0.1 * int(anchor_counts_by_page.get(candidate_page) or 0), 0.28)
+            score += min(
+                0.1 * int(anchor_counts_by_page.get(candidate_page) or 0), 0.28
+            )
         if candidate_page + 1 in tail_bibliography_pages:
             score += 0.08
         if candidate_page - 1 in tail_bibliography_pages:
@@ -6934,7 +7114,9 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
             key=lambda item: (
                 abs(
                     int(item.get("page") or 0)
-                    - int(start_page if start_page is not None else item.get("page") or 0)
+                    - int(
+                        start_page if start_page is not None else item.get("page") or 0
+                    )
                 ),
                 float((_normalize_box(item.get("box")) or [0.0, 0.0])[1]),
                 float((_normalize_box(item.get("box")) or [0.0])[0]),
@@ -6966,10 +7148,8 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
         if not row_id:
             continue
         existing = anchor_candidate_by_row_id.get(row_id)
-        if (
-            existing is None
-            or float(candidate.get("confidence") or 0.0)
-            > float(existing.get("confidence") or 0.0)
+        if existing is None or float(candidate.get("confidence") or 0.0) > float(
+            existing.get("confidence") or 0.0
         ):
             anchor_candidate_by_row_id[row_id] = candidate
 
@@ -7018,7 +7198,9 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
     window_end_soft = max(int(start_page or 0), max_anchor_page, max_layer_page)
     if section_transition_pages:
         transition_candidates = [
-            page for page in section_transition_pages if page >= int(start_page or 0) + 1
+            page
+            for page in section_transition_pages
+            if page >= int(start_page or 0) + 1
         ]
         if transition_candidates:
             window_end_soft = min(window_end_soft, min(transition_candidates))
@@ -7122,10 +7304,9 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
         row_payload["rescued_outside_initial_window"] = False
         if has_anchor:
             row_payload["anchor_index"] = _to_int(anchor_candidate.get("index"))
-            row_payload["anchor_style"] = (
-                anchor_candidate.get("anchor_style")
-                or anchor_candidate.get("style")
-            )
+            row_payload["anchor_style"] = anchor_candidate.get(
+                "anchor_style"
+            ) or anchor_candidate.get("style")
 
         accept = False
         rejection_reason = "low_bibliographic_score"
@@ -7309,9 +7490,7 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
             3,
         )
         lane_anchor_total = sum(
-            1
-            for row in lane_rows
-            if _to_int(row.get("anchor_index")) not in (None, 0)
+            1 for row in lane_rows if _to_int(row.get("anchor_index")) not in (None, 0)
         )
         reading_lanes.append(
             {
@@ -7340,10 +7519,16 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
                     signal
                     for signal, enabled in (
                         ("anchors", lane_anchor_total > 0),
-                        ("bibliography_layer", bool(bibliography_layer_by_page.get(page))),
+                        (
+                            "bibliography_layer",
+                            bool(bibliography_layer_by_page.get(page)),
+                        ),
                         (
                             "rescued_rows",
-                            any(bool(row.get("rescued_outside_initial_window")) for row in lane_rows),
+                            any(
+                                bool(row.get("rescued_outside_initial_window"))
+                                for row in lane_rows
+                            ),
                         ),
                     )
                     if enabled
@@ -7387,7 +7572,9 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
         "start_page": start_page,
         "pages": [
             {"page": page, "box": _serialize_box(box)}
-            for page, box in sorted(window_init_by_page.items(), key=lambda item: item[0])
+            for page, box in sorted(
+                window_init_by_page.items(), key=lambda item: item[0]
+            )
         ],
     }
     bibliography_territory = {
@@ -7408,14 +7595,16 @@ def _build_numeric_bibliography_territory_layers_rows_v3(
         "zone_count": len(territory_zones),
         "row_count": len(ordered_bibliography_rows),
         "union_box": _serialize_box(territory_union_box),
-        "confidence": round(
-            _median(
-                [float(zone.get("confidence") or 0.0) for zone in territory_zones]
-            ),
-            3,
-        )
-        if territory_zones
-        else 0.0,
+        "confidence": (
+            round(
+                _median(
+                    [float(zone.get("confidence") or 0.0) for zone in territory_zones]
+                ),
+                3,
+            )
+            if territory_zones
+            else 0.0
+        ),
     }
 
     bibliography_rows_selected = [
@@ -7528,7 +7717,11 @@ def _reconcile_numeric_anchor_candidates_v3(
                     }
                 )
 
-    selected_anchors = [selected_detected[index] for index in normalized_expected if index in selected_detected]
+    selected_anchors = [
+        selected_detected[index]
+        for index in normalized_expected
+        if index in selected_detected
+    ]
     selected_anchors.sort(
         key=lambda item: (
             int(item.get("index") or 0),
@@ -7735,7 +7928,11 @@ def _score_reference_row_hypotheses_v3(
                     same_score += 0.06
         elif current_page - previous_page == 1:
             needs_continuation = _reference_needs_continuation_v2(current_rows)
-            if current_y0 is not None and float(current_y0) <= 0.25 and needs_continuation:
+            if (
+                current_y0 is not None
+                and float(current_y0) <= 0.25
+                and needs_continuation
+            ):
                 same_score += 0.24
                 evidence.append("cross_page_continuation")
             elif current_y0 is not None and float(current_y0) <= 0.35:
@@ -7787,8 +7984,12 @@ def _grow_reference_rows_from_anchor_v3(
             "body_start_position": None,
             "anchor_type": str(current_anchor.get("anchor_type") or "unknown"),
             "layout_type": str(current_anchor.get("layout_type") or "unknown"),
-            "used_marker_only_anchor": bool(current_anchor.get("used_marker_only_anchor")),
-            "anchor_to_body_link_reason": current_anchor.get("anchor_to_body_link_reason"),
+            "used_marker_only_anchor": bool(
+                current_anchor.get("used_marker_only_anchor")
+            ),
+            "anchor_to_body_link_reason": current_anchor.get(
+                "anchor_to_body_link_reason"
+            ),
             "body_start": None,
             "body_end": None,
         }
@@ -7863,11 +8064,15 @@ def _grow_reference_rows_from_anchor_v3(
     if isinstance(next_anchor, dict):
         next_anchor_position = _to_int(next_anchor.get("position"))
         next_anchor_index = _to_int(next_anchor.get("index"))
-        next_anchor_body_start_position = _to_int(next_anchor.get("body_start_position"))
+        next_anchor_body_start_position = _to_int(
+            next_anchor.get("body_start_position")
+        )
     has_resolved_next_anchor = bool(
         next_anchor_position is not None and int(next_anchor_position) > start
     )
-    scan_end = int(next_anchor_position) if has_resolved_next_anchor else len(ordered_rows)
+    scan_end = (
+        int(next_anchor_position) if has_resolved_next_anchor else len(ordered_rows)
+    )
     closure_reason = (
         "next_anchor_boundary_n_plus_1"
         if has_resolved_next_anchor
@@ -7980,7 +8185,8 @@ def _grow_reference_rows_from_anchor_v3(
         outside_score = None
         stop_reason = None
         is_section_transition = bool(
-            _row_is_section_transition_v2(text) and not _has_v2_bibliographic_body_signal(text)
+            _row_is_section_transition_v2(text)
+            and not _has_v2_bibliographic_body_signal(text)
         )
         has_bibliographic_body = bool(_has_v2_bibliographic_body_signal(text))
         if competing_anchor is not None:
@@ -8006,7 +8212,11 @@ def _grow_reference_rows_from_anchor_v3(
             same_score = float(scores.get("same_reference") or 0.0)
             next_score = float(scores.get("next_reference") or 0.0)
             outside_score = float(scores.get("outside_bibliography") or 0.0)
-            if outside_score >= same_score + 0.26 and outside_score >= next_score and not has_bibliographic_body:
+            if (
+                outside_score >= same_score + 0.26
+                and outside_score >= next_score
+                and not has_bibliographic_body
+            ):
                 stop_reason = "outside_bibliography_after_anchor_without_next"
             else:
                 previous_page = _to_int(previous_row.get("page"))
@@ -8060,7 +8270,11 @@ def _grow_reference_rows_from_anchor_v3(
                         if isinstance(outside_score, (int, float))
                         else None
                     ),
-                    "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+                    "evidence": (
+                        (scores.get("evidence") or [])
+                        if isinstance(scores, dict)
+                        else []
+                    ),
                 }
             )
             break
@@ -8099,7 +8313,11 @@ def _grow_reference_rows_from_anchor_v3(
                         if isinstance(outside_score, (int, float))
                         else None
                     ),
-                    "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+                    "evidence": (
+                        (scores.get("evidence") or [])
+                        if isinstance(scores, dict)
+                        else []
+                    ),
                 }
             )
             continue
@@ -8160,7 +8378,9 @@ def _grow_reference_rows_from_anchor_v3(
                     if isinstance(outside_score, (int, float))
                     else None
                 ),
-                "evidence": (scores.get("evidence") or []) if isinstance(scores, dict) else [],
+                "evidence": (
+                    (scores.get("evidence") or []) if isinstance(scores, dict) else []
+                ),
             }
         )
         if len(selected_rows) >= 80:
@@ -8338,7 +8558,9 @@ def _build_experimental_reference_entries_v3(
             continue
         entry = dict(parsed)
         entry["index"] = index
-        if not _normalize_doi(entry.get("doi")) and _normalize_doi((seed_ref or {}).get("doi")):
+        if not _normalize_doi(entry.get("doi")) and _normalize_doi(
+            (seed_ref or {}).get("doi")
+        ):
             entry["doi"] = _normalize_doi((seed_ref or {}).get("doi"))
         entry["id"] = f"reference-entry-v3-ref-{index}"
         entry["ref_id"] = f"ref-{index}"
@@ -8385,7 +8607,9 @@ def _build_numeric_pipeline_metrics_v3(
         if "fallback" in str(entry.get("structure_source") or "")
     )
     continuation_total = sum(
-        1 for entry in reference_entries if bool(entry.get("continuation_between_pages"))
+        1
+        for entry in reference_entries
+        if bool(entry.get("continuation_between_pages"))
     )
     contamination_total = sum(
         1
@@ -8393,7 +8617,9 @@ def _build_numeric_pipeline_metrics_v3(
         if bool((entry.get("reference_validation") or {}).get("has_nested_anchor"))
     )
     marker_only_anchor_total = sum(
-        1 for entry in reference_entries if str(entry.get("anchor_type") or "") == "marker_only"
+        1
+        for entry in reference_entries
+        if str(entry.get("anchor_type") or "") == "marker_only"
     )
     marker_only_layout_total = sum(
         1
@@ -8457,9 +8683,11 @@ def _build_numeric_pipeline_metrics_v3(
             }
         ),
         "coverage_ratio": coverage_ratio,
-        "pct_accepted": round((accepted_total / float(references_total)) * 100.0, 2)
-        if references_total
-        else 0.0,
+        "pct_accepted": (
+            round((accepted_total / float(references_total)) * 100.0, 2)
+            if references_total
+            else 0.0
+        ),
         "fallback_total": fallback_total,
         "references_truncated_total": truncated_total,
         "continuation_between_pages_total": continuation_total,
@@ -8471,12 +8699,14 @@ def _build_numeric_pipeline_metrics_v3(
         "rows_per_reference_stats": {
             "min": min(rows_per_reference) if rows_per_reference else 0,
             "max": max(rows_per_reference) if rows_per_reference else 0,
-            "avg": round(
-                sum(rows_per_reference) / float(len(rows_per_reference)),
-                3,
-            )
-            if rows_per_reference
-            else 0.0,
+            "avg": (
+                round(
+                    sum(rows_per_reference) / float(len(rows_per_reference)),
+                    3,
+                )
+                if rows_per_reference
+                else 0.0
+            ),
         },
     }
 
@@ -8515,7 +8745,9 @@ def _build_numeric_reference_comparison_v3(
     }
     regressions: List[Dict[str, Any]] = []
     improvements: List[Dict[str, Any]] = []
-    all_indices = sorted(set(current_by_index.keys()) | set(experimental_by_index.keys()))
+    all_indices = sorted(
+        set(current_by_index.keys()) | set(experimental_by_index.keys())
+    )
     for index in all_indices:
         current_entry = current_by_index.get(index) or {}
         experimental_entry = experimental_by_index.get(index) or {}
@@ -8554,12 +8786,11 @@ def _build_numeric_reference_comparison_v3(
             experimental_entry
         ):
             regressions.append({"index": index, "type": "geometry_lost"})
-        if (
-            not bool((current_entry.get("reference_validation") or {}).get("has_nested_anchor"))
-            and bool(
-                (experimental_entry.get("reference_validation") or {}).get(
-                    "has_nested_anchor"
-                )
+        if not bool(
+            (current_entry.get("reference_validation") or {}).get("has_nested_anchor")
+        ) and bool(
+            (experimental_entry.get("reference_validation") or {}).get(
+                "has_nested_anchor"
             )
         ):
             regressions.append({"index": index, "type": "new_reference_contamination"})
@@ -8573,7 +8804,9 @@ def _build_numeric_reference_comparison_v3(
         if not bool(current_decision.get("accepted")) and bool(
             experimental_decision.get("accepted")
         ):
-            improvements.append({"index": index, "type": "accepted_reference_recovered"})
+            improvements.append(
+                {"index": index, "type": "accepted_reference_recovered"}
+            )
         if _entry_uses_fallback(current_entry) and not _entry_uses_fallback(
             experimental_entry
         ):
@@ -8590,7 +8823,9 @@ def _build_numeric_reference_comparison_v3(
             experimental_entry
         ):
             improvements.append({"index": index, "type": "truncation_fixed"})
-        if bool((current_entry.get("reference_validation") or {}).get("has_nested_anchor")) and not bool(
+        if bool(
+            (current_entry.get("reference_validation") or {}).get("has_nested_anchor")
+        ) and not bool(
             (experimental_entry.get("reference_validation") or {}).get(
                 "has_nested_anchor"
             )
@@ -8678,10 +8913,8 @@ def _run_numeric_reference_pipeline_v3(
         if position is None:
             continue
         existing = anchor_candidates_by_position.get(position)
-        if (
-            existing is None
-            or float(candidate.get("confidence") or 0.0)
-            > float(existing.get("confidence") or 0.0)
+        if existing is None or float(candidate.get("confidence") or 0.0) > float(
+            existing.get("confidence") or 0.0
         ):
             anchor_candidates_by_position[position] = candidate
 
@@ -8720,14 +8953,16 @@ def _run_numeric_reference_pipeline_v3(
                     "anchor_detected": {
                         "index": index,
                         "style": anchor.get("style"),
-                        "anchor_style": anchor.get("anchor_style") or anchor.get("style"),
+                        "anchor_style": anchor.get("anchor_style")
+                        or anchor.get("style"),
                         "anchor_type": anchor.get("anchor_type"),
                         "layout_type": anchor.get("layout_type"),
                         "confidence": round(float(anchor.get("confidence") or 0.0), 3),
                         "strength": anchor.get("strength"),
                         "page": anchor.get("page"),
                         "row_id": anchor.get("row_id"),
-                        "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                        "anchor_row_id": anchor.get("anchor_row_id")
+                        or anchor.get("row_id"),
                         "body_start_row_id": anchor.get("body_start_row_id"),
                         "body_start_position": anchor.get("body_start_position"),
                         "body_in_next_row": bool(anchor.get("body_in_next_row")),
@@ -8738,8 +8973,11 @@ def _run_numeric_reference_pipeline_v3(
                             anchor.get("used_marker_only_anchor")
                         ),
                     },
-                    "used_marker_only_anchor": bool(anchor.get("used_marker_only_anchor")),
-                    "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                    "used_marker_only_anchor": bool(
+                        anchor.get("used_marker_only_anchor")
+                    ),
+                    "anchor_row_id": anchor.get("anchor_row_id")
+                    or anchor.get("row_id"),
                     "body_start_row_id": anchor.get("body_start_row_id"),
                     "layout_type": anchor.get("layout_type"),
                     "anchor_to_body_link_reason": anchor.get(
@@ -8774,11 +9012,14 @@ def _run_numeric_reference_pipeline_v3(
             reference_doi=reference_doi_seed,
             crossref_context=crossref_context,
         )
-        selected_candidate_source = str(
-            selected_candidate.get("source")
-            or token_reconstruction.get("selected_candidate_source")
+        selected_candidate_source = (
+            str(
+                selected_candidate.get("source")
+                or token_reconstruction.get("selected_candidate_source")
+                or "rows_raw"
+            ).strip()
             or "rows_raw"
-        ).strip() or "rows_raw"
+        )
         token_reconstruction["selected_candidate_source"] = selected_candidate_source
         token_reconstruction["candidate_scores"] = (
             selected_candidate.get("candidate_scores") or []
@@ -8885,7 +9126,9 @@ def _run_numeric_reference_pipeline_v3(
             "token_reconstruction": token_reconstruction,
             "anomalies": {
                 "cut_reasons": list(growth.get("cut_reasons") or []),
-                "nested_anchor_indices": list(growth.get("nested_anchor_indices") or []),
+                "nested_anchor_indices": list(
+                    growth.get("nested_anchor_indices") or []
+                ),
             },
         }
         reference_debug.append(
@@ -8901,7 +9144,8 @@ def _run_numeric_reference_pipeline_v3(
                     "strength": anchor.get("strength"),
                     "page": anchor.get("page"),
                     "row_id": anchor.get("row_id"),
-                    "anchor_row_id": anchor.get("anchor_row_id") or anchor.get("row_id"),
+                    "anchor_row_id": anchor.get("anchor_row_id")
+                    or anchor.get("row_id"),
                     "body_start_row_id": anchor.get("body_start_row_id"),
                     "body_start_position": anchor.get("body_start_position"),
                     "position": anchor.get("position"),
@@ -8909,7 +9153,9 @@ def _run_numeric_reference_pipeline_v3(
                     "anchor_to_body_link_reason": anchor.get(
                         "anchor_to_body_link_reason"
                     ),
-                    "used_marker_only_anchor": bool(anchor.get("used_marker_only_anchor")),
+                    "used_marker_only_anchor": bool(
+                        anchor.get("used_marker_only_anchor")
+                    ),
                 },
                 "used_marker_only_anchor": bool(
                     growth.get("used_marker_only_anchor")
@@ -8985,18 +9231,37 @@ def _run_numeric_reference_pipeline_v3(
                 ),
             },
             "phase_1_bibliography_territory": {
-                "bibliography_start_page": territory_phase.get("bibliography_start_page"),
-                "bibliography_window_init": territory_phase.get("bibliography_window_init"),
-                "bibliography_window_end_soft": territory_phase.get("bibliography_window_end_soft"),
-                "bibliography_noise_regions": territory_phase.get("bibliography_noise_regions") or [],
+                "bibliography_start_page": territory_phase.get(
+                    "bibliography_start_page"
+                ),
+                "bibliography_window_init": territory_phase.get(
+                    "bibliography_window_init"
+                ),
+                "bibliography_window_end_soft": territory_phase.get(
+                    "bibliography_window_end_soft"
+                ),
+                "bibliography_noise_regions": territory_phase.get(
+                    "bibliography_noise_regions"
+                )
+                or [],
                 "bibliography_territory": territory_phase.get("bibliography_territory"),
                 "territory_zones": territory_phase.get("territory_zones") or [],
             },
             "phase_2_bibliography_rows_selection": {
-                "bibliography_rows_selected": territory_phase.get("bibliography_rows_selected") or [],
-                "bibliography_rows_rejected": territory_phase.get("bibliography_rows_rejected") or [],
-                "rows_rejection_reasons": territory_phase.get("rows_rejection_reasons") or {},
-                "rescued_rows_outside_initial_window": territory_phase.get("rescued_rows_outside_initial_window") or [],
+                "bibliography_rows_selected": territory_phase.get(
+                    "bibliography_rows_selected"
+                )
+                or [],
+                "bibliography_rows_rejected": territory_phase.get(
+                    "bibliography_rows_rejected"
+                )
+                or [],
+                "rows_rejection_reasons": territory_phase.get("rows_rejection_reasons")
+                or {},
+                "rescued_rows_outside_initial_window": territory_phase.get(
+                    "rescued_rows_outside_initial_window"
+                )
+                or [],
             },
             "phase_3_reading_order_rows": {
                 "reading_lanes": territory_phase.get("reading_lanes") or [],
@@ -9016,11 +9281,14 @@ def _run_numeric_reference_pipeline_v3(
                 "candidates": [
                     {
                         "index": candidate.get("index"),
-                        "anchor_style": candidate.get("anchor_style") or candidate.get("style"),
+                        "anchor_style": candidate.get("anchor_style")
+                        or candidate.get("style"),
                         "style": candidate.get("style"),
                         "anchor_type": candidate.get("anchor_type"),
                         "layout_type": candidate.get("layout_type"),
-                        "confidence": round(float(candidate.get("confidence") or 0.0), 3),
+                        "confidence": round(
+                            float(candidate.get("confidence") or 0.0), 3
+                        ),
                         "strength": candidate.get("strength"),
                         "row_id": candidate.get("row_id"),
                         "anchor_row_id": candidate.get("anchor_row_id")
@@ -9046,7 +9314,8 @@ def _run_numeric_reference_pipeline_v3(
                 ),
                 "anchor_sequence": anchor_reconciliation.get("anchor_sequence") or [],
                 "missing_indices": anchor_reconciliation.get("missing_indices") or [],
-                "duplicate_indices": anchor_reconciliation.get("duplicate_indices") or [],
+                "duplicate_indices": anchor_reconciliation.get("duplicate_indices")
+                or [],
                 "inferred_anchors": anchor_reconciliation.get("inferred_anchors") or [],
                 "actions": anchor_reconciliation.get("reconciliation_actions") or [],
             },
@@ -9058,17 +9327,31 @@ def _run_numeric_reference_pipeline_v3(
                     {
                         "index": entry.get("index"),
                         "selected_candidate_source": (
-                            (entry.get("token_reconstruction") or {}).get("selected_candidate_source")
+                            (entry.get("token_reconstruction") or {}).get(
+                                "selected_candidate_source"
+                            )
                         ),
                         "cleanups_applied": (
-                            (entry.get("token_reconstruction") or {}).get("cleanups_applied")
+                            (entry.get("token_reconstruction") or {}).get(
+                                "cleanups_applied"
+                            )
                             or []
                         ),
                         "accepted_local_edit_count": int(
-                            ((entry.get("token_reconstruction") or {}).get("accepted_local_edit_count") or 0)
+                            (
+                                (entry.get("token_reconstruction") or {}).get(
+                                    "accepted_local_edit_count"
+                                )
+                                or 0
+                            )
                         ),
                         "rejected_local_edit_count": int(
-                            ((entry.get("token_reconstruction") or {}).get("rejected_local_edit_count") or 0)
+                            (
+                                (entry.get("token_reconstruction") or {}).get(
+                                    "rejected_local_edit_count"
+                                )
+                                or 0
+                            )
                         ),
                     }
                     for entry in experimental_entries
@@ -9140,7 +9423,9 @@ def _build_references_from_lines_legacy(
     if len(first_anchor_by_index) < 2:
         return {}
 
-    anchor_positions = sorted(int(anchor["position"]) for anchor in first_anchor_by_index.values())
+    anchor_positions = sorted(
+        int(anchor["position"]) for anchor in first_anchor_by_index.values()
+    )
     parsed: Dict[int, Dict[str, Any]] = {}
     for index in sorted(first_anchor_by_index.keys()):
         anchor = first_anchor_by_index[index]
@@ -9455,38 +9740,46 @@ def _build_reference_debug_steps(
         if box is None:
             continue
         column_id = str(row.get("column_id") or "left")
-        col_items.append({
-            "id": f"col-{i}",
-            "page": row.get("page"),
-            "box": box,
-            "label": f"[{column_id}] {str(row.get('text') or '')[:40]}",
-            "meta": {"column_id": column_id},
-        })
-    steps.append({
-        "key": "assign_column_ids",
-        "label": "Columnas asignadas",
-        "source": "_assign_column_ids",
-        "kind": "boxes",
-        "items": col_items,
-    })
+        col_items.append(
+            {
+                "id": f"col-{i}",
+                "page": row.get("page"),
+                "box": box,
+                "label": f"[{column_id}] {str(row.get('text') or '')[:40]}",
+                "meta": {"column_id": column_id},
+            }
+        )
+    steps.append(
+        {
+            "key": "assign_column_ids",
+            "label": "Columnas asignadas",
+            "source": "_assign_column_ids",
+            "kind": "boxes",
+            "items": col_items,
+        }
+    )
 
     # ── 2. detect_page_column_split ─────────────────────────────────────────
     guide_items: List[Dict[str, Any]] = []
     for page, split_x in sorted(page_splits.items()):
         if split_x is None:
             continue
-        guide_items.append({
-            "page": page,
-            "x": float(split_x),
-            "label": f"p.{page + 1} x={split_x:.3f}",
-        })
-    steps.append({
-        "key": "detect_page_column_split",
-        "label": "Split vertical por página",
-        "source": "_detect_page_column_split",
-        "kind": "vertical_guides",
-        "items": guide_items,
-    })
+        guide_items.append(
+            {
+                "page": page,
+                "x": float(split_x),
+                "label": f"p.{page + 1} x={split_x:.3f}",
+            }
+        )
+    steps.append(
+        {
+            "key": "detect_page_column_split",
+            "label": "Split vertical por página",
+            "source": "_detect_page_column_split",
+            "kind": "vertical_guides",
+            "items": guide_items,
+        }
+    )
 
     # ── 3. detect_reference_heading_candidates ──────────────────────────────
     cand_items: List[Dict[str, Any]] = []
@@ -9494,46 +9787,54 @@ def _build_reference_debug_steps(
         box = _normalize_box(cand.get("box"))
         if box is None:
             continue
-        cand_items.append({
-            "id": f"hcand-{i}",
-            "page": cand.get("page"),
-            "box": box,
-            "label": str(cand.get("text") or ""),
-            "meta": {
-                "source": cand.get("source"),
-                "column_id": cand.get("column_id"),
-            },
-        })
-    steps.append({
-        "key": "detect_reference_heading_candidates",
-        "label": "Candidatos a heading",
-        "source": "_detect_reference_heading_candidates",
-        "kind": "boxes",
-        "items": cand_items,
-    })
+        cand_items.append(
+            {
+                "id": f"hcand-{i}",
+                "page": cand.get("page"),
+                "box": box,
+                "label": str(cand.get("text") or ""),
+                "meta": {
+                    "source": cand.get("source"),
+                    "column_id": cand.get("column_id"),
+                },
+            }
+        )
+    steps.append(
+        {
+            "key": "detect_reference_heading_candidates",
+            "label": "Candidatos a heading",
+            "source": "_detect_reference_heading_candidates",
+            "kind": "boxes",
+            "items": cand_items,
+        }
+    )
 
     # ── 4. selected_heading ─────────────────────────────────────────────────
     sel_items: List[Dict[str, Any]] = []
     if isinstance(selected_heading, dict):
         box = _normalize_box(selected_heading.get("box"))
         if box is not None:
-            sel_items.append({
-                "id": "selected-heading-0",
-                "page": selected_heading.get("page"),
-                "box": box,
-                "label": str(selected_heading.get("text") or ""),
-                "meta": {
-                    "source": selected_heading.get("source"),
-                    "column_id": selected_heading.get("column_id"),
-                },
-            })
-    steps.append({
-        "key": "selected_heading",
-        "label": "Heading seleccionado",
-        "source": "_build_bibliography_segments",
-        "kind": "boxes",
-        "items": sel_items,
-    })
+            sel_items.append(
+                {
+                    "id": "selected-heading-0",
+                    "page": selected_heading.get("page"),
+                    "box": box,
+                    "label": str(selected_heading.get("text") or ""),
+                    "meta": {
+                        "source": selected_heading.get("source"),
+                        "column_id": selected_heading.get("column_id"),
+                    },
+                }
+            )
+    steps.append(
+        {
+            "key": "selected_heading",
+            "label": "Heading seleccionado",
+            "source": "_build_bibliography_segments",
+            "kind": "boxes",
+            "items": sel_items,
+        }
+    )
 
     # ── 5. bibliography_segments ────────────────────────────────────────────
     seg_items: List[Dict[str, Any]] = []
@@ -9541,28 +9842,32 @@ def _build_reference_debug_steps(
         box = _normalize_box(seg.get("box"))
         if box is None:
             continue
-        seg_items.append({
-            "id": f"seg-{i}",
-            "page": seg.get("page"),
-            "box": box,
-            "label": (
-                f"col={seg.get('column_id')} "
-                f"conf={float(seg.get('confidence') or 0.0):.2f}"
-            ),
-            "meta": {
-                "column_id": seg.get("column_id"),
-                "confidence": seg.get("confidence"),
-                "source": seg.get("source"),
-                "segment_top_source": seg.get("segment_top_source"),
-            },
-        })
-    steps.append({
-        "key": "bibliography_segments",
-        "label": "Segmentos de bibliografía",
-        "source": "_build_bibliography_segments",
-        "kind": "boxes",
-        "items": seg_items,
-    })
+        seg_items.append(
+            {
+                "id": f"seg-{i}",
+                "page": seg.get("page"),
+                "box": box,
+                "label": (
+                    f"col={seg.get('column_id')} "
+                    f"conf={float(seg.get('confidence') or 0.0):.2f}"
+                ),
+                "meta": {
+                    "column_id": seg.get("column_id"),
+                    "confidence": seg.get("confidence"),
+                    "source": seg.get("source"),
+                    "segment_top_source": seg.get("segment_top_source"),
+                },
+            }
+        )
+    steps.append(
+        {
+            "key": "bibliography_segments",
+            "label": "Segmentos de bibliografía",
+            "source": "_build_bibliography_segments",
+            "kind": "boxes",
+            "items": seg_items,
+        }
+    )
 
     # ── 6. rows_in_bibliography_zone ────────────────────────────────────────
     zone_items: List[Dict[str, Any]] = []
@@ -9572,27 +9877,31 @@ def _build_reference_debug_steps(
         box = _debug_normalize_box(row.get("box"))
         if box is None:
             continue
-        zone_items.append({
-            "id": f"brow-{i}",
-            "page": row.get("page"),
-            "box": box,
-            "label": str(row.get("text") or "")[:60],
-            "meta": {
-                "column_id": row.get("column_id"),
-                "anchor_index": row.get("anchor_index"),
-                "anchor_style": row.get("anchor_style"),
-                "anchor_candidate_index": row.get("anchor_candidate_index"),
-                "anchor_candidate_style": row.get("anchor_candidate_style"),
-                "anchor_rejected_reason": row.get("anchor_rejected_reason"),
-            },
-        })
-    steps.append({
-        "key": "rows_in_bibliography_zone",
-        "label": "Rows en bibliografía",
-        "source": "_collect_bibliography_rows_from_segments",
-        "kind": "boxes",
-        "items": zone_items,
-    })
+        zone_items.append(
+            {
+                "id": f"brow-{i}",
+                "page": row.get("page"),
+                "box": box,
+                "label": str(row.get("text") or "")[:60],
+                "meta": {
+                    "column_id": row.get("column_id"),
+                    "anchor_index": row.get("anchor_index"),
+                    "anchor_style": row.get("anchor_style"),
+                    "anchor_candidate_index": row.get("anchor_candidate_index"),
+                    "anchor_candidate_style": row.get("anchor_candidate_style"),
+                    "anchor_rejected_reason": row.get("anchor_rejected_reason"),
+                },
+            }
+        )
+    steps.append(
+        {
+            "key": "rows_in_bibliography_zone",
+            "label": "Rows en bibliografía",
+            "source": "_collect_bibliography_rows_from_segments",
+            "kind": "boxes",
+            "items": zone_items,
+        }
+    )
 
     # ── 7. reference_anchors ────────────────────────────────────────────────
     anchor_items: List[Dict[str, Any]] = []
@@ -9609,22 +9918,27 @@ def _build_reference_debug_steps(
         if anchor_index is not None:
             anchor_style = str(row.get("anchor_style") or "unknown")
             anchor_prefix = _format_reference_anchor_prefix(anchor_index, anchor_style)
-            anchor_items.append({
-                "id": f"anchor-{anchor_index}",
-                "page": row.get("page"),
-                "box": box,
-                "label": f"{anchor_prefix} {str(row.get('text') or '')[:40]}",
-                "meta": {
-                    "anchor_index": anchor_index,
-                    "anchor_style": anchor_style,
-                    "column_id": row.get("column_id"),
-                },
-            })
+            anchor_items.append(
+                {
+                    "id": f"anchor-{anchor_index}",
+                    "page": row.get("page"),
+                    "box": box,
+                    "label": f"{anchor_prefix} {str(row.get('text') or '')[:40]}",
+                    "meta": {
+                        "anchor_index": anchor_index,
+                        "anchor_style": anchor_style,
+                        "column_id": row.get("column_id"),
+                    },
+                }
+            )
             continue
         candidate_text = str(row.get("text") or "")
         show_rejected_candidate = bool(
             rejected_reason == "doi_like"
-            or (rejected_reason == "weak_bibliographic_signal" and len(candidate_text) >= 24)
+            or (
+                rejected_reason == "weak_bibliographic_signal"
+                and len(candidate_text) >= 24
+            )
         )
         if (
             candidate_style in {"dotted", "suffix_paren", "wrapped_paren"}
@@ -9632,55 +9946,63 @@ def _build_reference_debug_steps(
             and rejected_reason
             and show_rejected_candidate
         ):
-            anchor_items.append({
-                "id": f"anchor-rejected-{candidate_index}-{i}",
-                "page": row.get("page"),
-                "box": box,
-                "label": (
-                    "reject "
-                    f"{_format_reference_anchor_prefix(candidate_index, str(candidate_style or 'unknown'))} "
-                    f"{candidate_text[:36]}"
-                ),
-                "meta": {
-                    "anchor_candidate_index": candidate_index,
-                    "anchor_style": candidate_style,
-                    "anchor_rejected_reason": rejected_reason,
-                    "column_id": row.get("column_id"),
-                },
-            })
-    steps.append({
-        "key": "reference_anchors",
-        "label": "Anchors de referencia",
-        "source": "detect_reference_anchors_from_rows",
-        "kind": "boxes",
-        "items": anchor_items,
-    })
+            anchor_items.append(
+                {
+                    "id": f"anchor-rejected-{candidate_index}-{i}",
+                    "page": row.get("page"),
+                    "box": box,
+                    "label": (
+                        "reject "
+                        f"{_format_reference_anchor_prefix(candidate_index, str(candidate_style or 'unknown'))} "
+                        f"{candidate_text[:36]}"
+                    ),
+                    "meta": {
+                        "anchor_candidate_index": candidate_index,
+                        "anchor_style": candidate_style,
+                        "anchor_rejected_reason": rejected_reason,
+                        "column_id": row.get("column_id"),
+                    },
+                }
+            )
+    steps.append(
+        {
+            "key": "reference_anchors",
+            "label": "Anchors de referencia",
+            "source": "detect_reference_anchors_from_rows",
+            "kind": "boxes",
+            "items": anchor_items,
+        }
+    )
 
     # ── 8. reference_block_rows ─────────────────────────────────────────────
     block_items: List[Dict[str, Any]] = []
     for block in row_phase_details:
         ref_idx = block.get("reference_index")
-        for decision in (block.get("row_decisions") or []):
+        for decision in block.get("row_decisions") or []:
             if not decision.get("included"):
                 continue
             box = _normalize_box(decision.get("box"))
             if box is None:
                 continue
             row_id = str(decision.get("row_id") or "")
-            block_items.append({
-                "id": f"blk-{ref_idx}-{row_id}",
-                "page": decision.get("page"),
-                "box": box,
-                "label": f"[{ref_idx}] {str(decision.get('text') or '')[:40]}",
-                "meta": {"reference_index": ref_idx, "row_id": row_id},
-            })
-    steps.append({
-        "key": "reference_block_rows",
-        "label": "Rows por referencia",
-        "source": "build_reference_rows_between_anchors",
-        "kind": "boxes",
-        "items": block_items,
-    })
+            block_items.append(
+                {
+                    "id": f"blk-{ref_idx}-{row_id}",
+                    "page": decision.get("page"),
+                    "box": box,
+                    "label": f"[{ref_idx}] {str(decision.get('text') or '')[:40]}",
+                    "meta": {"reference_index": ref_idx, "row_id": row_id},
+                }
+            )
+    steps.append(
+        {
+            "key": "reference_block_rows",
+            "label": "Rows por referencia",
+            "source": "build_reference_rows_between_anchors",
+            "kind": "boxes",
+            "items": block_items,
+        }
+    )
 
     # ── 9. accepted_references ──────────────────────────────────────────────
     acc_items: List[Dict[str, Any]] = []
@@ -9692,20 +10014,24 @@ def _build_reference_debug_steps(
         page = entry.get("page")
         if box is None or page is None:
             continue
-        acc_items.append({
-            "id": str(entry.get("ref_id") or f"acc-{entry.get('index')}"),
-            "page": page,
-            "box": box,
-            "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
-            "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
-        })
-    steps.append({
-        "key": "accepted_references",
-        "label": "Referencias aceptadas",
-        "source": "_build_reference_decision",
-        "kind": "boxes",
-        "items": acc_items,
-    })
+        acc_items.append(
+            {
+                "id": str(entry.get("ref_id") or f"acc-{entry.get('index')}"),
+                "page": page,
+                "box": box,
+                "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
+                "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
+            }
+        )
+    steps.append(
+        {
+            "key": "accepted_references",
+            "label": "Referencias aceptadas",
+            "source": "_build_reference_decision",
+            "kind": "boxes",
+            "items": acc_items,
+        }
+    )
 
     # ── 10. rejected_references ─────────────────────────────────────────────
     rej_items: List[Dict[str, Any]] = []
@@ -9717,20 +10043,24 @@ def _build_reference_debug_steps(
         page = entry.get("page")
         if box is None or page is None:
             continue
-        rej_items.append({
-            "id": str(entry.get("ref_id") or f"rej-{entry.get('index')}"),
-            "page": page,
-            "box": box,
-            "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
-            "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
-        })
-    steps.append({
-        "key": "rejected_references",
-        "label": "Referencias rechazadas",
-        "source": "_build_reference_decision",
-        "kind": "boxes",
-        "items": rej_items,
-    })
+        rej_items.append(
+            {
+                "id": str(entry.get("ref_id") or f"rej-{entry.get('index')}"),
+                "page": page,
+                "box": box,
+                "label": f"[{entry.get('index')}] {str(entry.get('text') or '')[:50]}",
+                "meta": {"index": entry.get("index"), "doi": entry.get("doi")},
+            }
+        )
+    steps.append(
+        {
+            "key": "rejected_references",
+            "label": "Referencias rechazadas",
+            "source": "_build_reference_decision",
+            "kind": "boxes",
+            "items": rej_items,
+        }
+    )
 
     return steps
 
@@ -9785,7 +10115,9 @@ def _anchor_window_from_context(context: Dict[str, Any]) -> Optional[List[int]]:
     return indices or None
 
 
-def _build_raw_row_metadata_map(raw_rows: Sequence[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def _build_raw_row_metadata_map(
+    raw_rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Dict[str, Any]]:
     metadata_by_row_id: Dict[str, Dict[str, Any]] = {}
     for item in raw_rows:
         if not isinstance(item, dict):
@@ -9796,11 +10128,15 @@ def _build_raw_row_metadata_map(raw_rows: Sequence[Dict[str, Any]]) -> Dict[str,
         payload: Dict[str, Any] = {}
         if item.get("section_id") not in (None, ""):
             payload["section_id"] = item.get("section_id")
-        elif isinstance(item.get("section"), dict) and item["section"].get("id") not in (None, ""):
+        elif isinstance(item.get("section"), dict) and item["section"].get(
+            "id"
+        ) not in (None, ""):
             payload["section_id"] = item["section"].get("id")
         if item.get("paragraph_id") not in (None, ""):
             payload["paragraph_id"] = item.get("paragraph_id")
-        elif isinstance(item.get("paragraph"), dict) and item["paragraph"].get("id") not in (None, ""):
+        elif isinstance(item.get("paragraph"), dict) and item["paragraph"].get(
+            "id"
+        ) not in (None, ""):
             payload["paragraph_id"] = item["paragraph"].get("id")
         metadata_by_row_id[row_id] = payload
     return metadata_by_row_id
@@ -9838,9 +10174,13 @@ def _build_document_diagnostics(
     numeric_anchor_rows = sum(anchor_style_counts.values())
     anchor_style_detected = _dominant_anchor_style_from_counts(anchor_style_counts)
     author_year_signal_count = sum(
-        1 for row in included_rows if _has_bibliographic_lead_signal(str(row.get("text") or ""))
+        1
+        for row in included_rows
+        if _has_bibliographic_lead_signal(str(row.get("text") or ""))
     )
-    bibliography_density = round(len(included_rows) / total_rows, 3) if total_rows else 0.0
+    bibliography_density = (
+        round(len(included_rows) / total_rows, 3) if total_rows else 0.0
+    )
     rejected_dotted_anchor_candidates = sum(
         1
         for row in scoped_rows
@@ -9939,7 +10279,9 @@ def _build_phase_diagnostics(
         or _to_int(row.get("page")) is None
         or int(row.get("page")) >= int(start_page)
     ]
-    style_detected = str(document_diagnostics.get("reference_style_detected") or "weak_or_unknown")
+    style_detected = str(
+        document_diagnostics.get("reference_style_detected") or "weak_or_unknown"
+    )
     detected_anchor_indices = _unique_preserve_order(
         sorted(
             {
@@ -9954,7 +10296,9 @@ def _build_phase_diagnostics(
     )
     included_rows = sum(1 for row in scoped_debug_rows if row.get("included"))
     total_rows = len(scoped_debug_rows)
-    total_segment_rows = sum(int(segment.get("row_count") or 0) for segment in bibliography_segments)
+    total_segment_rows = sum(
+        int(segment.get("row_count") or 0) for segment in bibliography_segments
+    )
     block_count = len(row_phase_details)
     selected_block_rows = sum(
         1
@@ -9992,7 +10336,9 @@ def _build_phase_diagnostics(
                 "candidate_count": len(heading_candidates),
                 "selected_page": selected_heading.get("page"),
                 "selected_column_id": selected_heading.get("column_id"),
-                "selected_text": _short_debug_text(selected_heading.get("text"), limit=120),
+                "selected_text": _short_debug_text(
+                    selected_heading.get("text"), limit=120
+                ),
             },
         )
     elif heading_candidates:
@@ -10171,7 +10517,11 @@ def _build_row_rejection_audit(
         if row.get("included"):
             continue
         row_page = _to_int(row.get("page"))
-        if isinstance(start_page, int) and isinstance(row_page, int) and row_page < start_page:
+        if (
+            isinstance(start_page, int)
+            and isinstance(row_page, int)
+            and row_page < start_page
+        ):
             continue
         row_id = str(row.get("id") or "")
         base_row_id = _base_row_id(row_id)
@@ -10215,7 +10565,11 @@ def _build_row_rejection_audit(
             anchor_window: List[int] = []
             if isinstance(reference_index, int) and reference_index > 0:
                 anchor_window.append(reference_index)
-            if isinstance(next_anchor_index, int) and next_anchor_index > 0 and next_anchor_index not in anchor_window:
+            if (
+                isinstance(next_anchor_index, int)
+                and next_anchor_index > 0
+                and next_anchor_index not in anchor_window
+            ):
                 anchor_window.append(next_anchor_index)
             if not anchor_window:
                 context_window = _anchor_window_from_context(context)
@@ -10260,7 +10614,9 @@ def _infer_reference_failure_stage(
     nested_anchor_indices: Sequence[int],
 ) -> Tuple[str, str]:
     final_decision = (
-        entry.get("final_decision") if isinstance(entry.get("final_decision"), dict) else {}
+        entry.get("final_decision")
+        if isinstance(entry.get("final_decision"), dict)
+        else {}
     )
     validation_intermediate = (
         detail.get("validation_intermediate")
@@ -10286,10 +10642,14 @@ def _infer_reference_failure_stage(
                 or "reference_block_rows_trimmed"
             ),
         )
-    if validation_intermediate.get("accepted") is False and validation_intermediate.get("reason"):
+    if validation_intermediate.get("accepted") is False and validation_intermediate.get(
+        "reason"
+    ):
         return "reference_validation", str(validation_intermediate.get("reason"))
     if final_decision.get("accepted") is False:
-        return "final_decision", str(final_decision.get("reason") or "rejected_in_final_decision")
+        return "final_decision", str(
+            final_decision.get("reason") or "rejected_in_final_decision"
+        )
     if structure_source and not structure_source.startswith("rows_raw"):
         return "final_decision", f"structure_source={structure_source}"
     return "final_decision", "diagnostic_flags_present"
@@ -10313,7 +10673,9 @@ def _build_reference_failure_audit(
             continue
         detail = details_by_index.get(reference_index) or {}
         final_decision = (
-            entry.get("final_decision") if isinstance(entry.get("final_decision"), dict) else {}
+            entry.get("final_decision")
+            if isinstance(entry.get("final_decision"), dict)
+            else {}
         )
         accepted = bool(final_decision.get("accepted"))
         structure_source = str(entry.get("structure_source") or "").strip()
@@ -10336,7 +10698,8 @@ def _build_reference_failure_audit(
             [
                 str(item.get("row_id") or "")
                 for item in row_decisions
-                if item.get("included") is False and str(item.get("row_id") or "").strip()
+                if item.get("included") is False
+                and str(item.get("row_id") or "").strip()
             ]
         )
         cut_reasons = _unique_preserve_order(
@@ -10351,14 +10714,18 @@ def _build_reference_failure_audit(
             {
                 int(index)
                 for index in list(detail.get("nested_anchor_indices") or [])
-                + list((entry.get("anomalies") or {}).get("nested_anchor_indices") or [])
+                + list(
+                    (entry.get("anomalies") or {}).get("nested_anchor_indices") or []
+                )
                 if _to_int(index) not in (None, 0)
             }
         )
         next_anchor_index = _to_int(detail.get("next_anchor_index"))
         missing_expected_continuations = bool(
             any(
-                str(reason).startswith(("vertical_gap", "page_jump", "late_page_continuation"))
+                str(reason).startswith(
+                    ("vertical_gap", "page_jump", "late_page_continuation")
+                )
                 for reason in cut_reasons
             )
             or (
@@ -10410,7 +10777,9 @@ def _build_reference_failure_audit(
     )
     return {
         "problematic_total": len(problematic_references),
-        "problematic_references": problematic_references[:REFERENCE_FAILURE_AUDIT_LIMIT],
+        "problematic_references": problematic_references[
+            :REFERENCE_FAILURE_AUDIT_LIMIT
+        ],
         "truncated": len(problematic_references) > REFERENCE_FAILURE_AUDIT_LIMIT,
     }
 
@@ -10435,7 +10804,9 @@ def _build_numeric_coverage_summary(
     serialized_indices = sorted(set(serialized_indices_all))
     expected_indices = sorted(metadata_by_index.keys())
     if not expected_indices:
-        expected_indices = sorted(set(detected_anchor_indices) | set(serialized_indices))
+        expected_indices = sorted(
+            set(detected_anchor_indices) | set(serialized_indices)
+        )
     failed_indices = sorted(
         {
             int(entry.get("index"))
@@ -10499,7 +10870,9 @@ def _build_contamination_diagnostics(
         or int(row.get("page")) >= int(start_page)
     ]
     appendix_mixed_rows = [
-        row for row in mixed_body_rows if appendix_like_re.search(str(row.get("text") or ""))
+        row
+        for row in mixed_body_rows
+        if appendix_like_re.search(str(row.get("text") or ""))
     ]
     tail_noise_samples: List[Dict[str, Any]] = []
     for entry in reference_entries:
@@ -10521,7 +10894,9 @@ def _build_contamination_diagnostics(
             }
         )
     return {
-        "appendix_contamination_detected": bool(appendix_sections or appendix_mixed_rows),
+        "appendix_contamination_detected": bool(
+            appendix_sections or appendix_mixed_rows
+        ),
         "tail_noise_detected": bool(tail_noise_samples),
         "appendix_like_sections_count": len(appendix_sections),
         "mixed_body_rows_count": len(mixed_body_rows),
@@ -10563,7 +10938,9 @@ def _build_start_page_column_decision(
         else None
     )
     selected_heading_box = (
-        _normalize_box(selected_heading.get("box")) if isinstance(selected_heading, dict) else None
+        _normalize_box(selected_heading.get("box"))
+        if isinstance(selected_heading, dict)
+        else None
     )
     heading_page = _to_int((selected_heading or {}).get("page"))
     heading_column_id = str((selected_heading or {}).get("column_id") or "left")
@@ -10682,7 +11059,9 @@ def _build_start_page_column_decision(
                 or _match_reference_anchor_at_line_start(str(row.get("text") or ""))
             ]
             reason = (
-                "no_rows_after_noise_filter" if not usable_rows else "column_not_selected"
+                "no_rows_after_noise_filter"
+                if not usable_rows
+                else "column_not_selected"
             )
         column_decisions.append(
             {
@@ -10708,7 +11087,9 @@ def build_references_data(
     engine_used: str = "",
     debug_reference_detection: bool = False,
 ) -> Dict[str, Any]:
-    logger.info(f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}")
+    logger.info(
+        f"build_references_data: {len(references)} referencias, {len(snippets)} snippets. references_numbered={references_numbered}"
+    )
 
     bibliography_items = _layer_items(layers, "bibliographies")
     token_items = _layer_items(layers, "tokens")
@@ -10771,7 +11152,9 @@ def build_references_data(
             continue
         metadata_by_index[idx] = ref
     indexed_input_references = sum(
-        1 for ref in references if isinstance(ref, dict) and _entry_index(ref) is not None
+        1
+        for ref in references
+        if isinstance(ref, dict) and _entry_index(ref) is not None
     )
     if is_numbered_bibliography(bibliography_lines):
         min_required = 2 if indexed_input_references <= 6 else 3
@@ -10851,7 +11234,11 @@ def build_references_data(
             "reason": "fallback_without_rows_structure",
         }
         final_decision: Dict[str, Any] = dict(decision_scores)
-        crossref_match_payload: Dict[str, Any] = {"score": 0.0, "doi_match_score": 0.0, "match": None}
+        crossref_match_payload: Dict[str, Any] = {
+            "score": 0.0,
+            "doi_match_score": 0.0,
+            "match": None,
+        }
         token_payload: Dict[str, Any] = {
             "raw_text": raw_text,
             "token_text": raw_text,
@@ -10893,9 +11280,15 @@ def build_references_data(
             candidate_validation = line_reference.get("reference_validation")
             if isinstance(candidate_validation, dict):
                 reference_validation = {
-                    "match_score": float(candidate_validation.get("match_score") or 0.0),
-                    "mixed_reference_score": float(candidate_validation.get("mixed_reference_score") or 0.0),
-                    "has_nested_anchor": bool(candidate_validation.get("has_nested_anchor")),
+                    "match_score": float(
+                        candidate_validation.get("match_score") or 0.0
+                    ),
+                    "mixed_reference_score": float(
+                        candidate_validation.get("mixed_reference_score") or 0.0
+                    ),
+                    "has_nested_anchor": bool(
+                        candidate_validation.get("has_nested_anchor")
+                    ),
                     "accepted": bool(candidate_validation.get("accepted")),
                     "reason": candidate_validation.get("reason"),
                 }
@@ -10927,7 +11320,9 @@ def build_references_data(
             else:
                 final_decision = dict(decision_scores)
             if isinstance(line_reference.get("crossref_match"), dict):
-                crossref_match_payload = dict(line_reference.get("crossref_match") or {})
+                crossref_match_payload = dict(
+                    line_reference.get("crossref_match") or {}
+                )
             if isinstance(line_reference.get("token_reconstruction"), dict):
                 token_payload = dict(line_reference.get("token_reconstruction") or {})
             if isinstance(line_reference.get("anomalies"), dict):
@@ -10955,14 +11350,18 @@ def build_references_data(
                     best_candidate = candidate
 
             if best_candidate and best_score >= 0.35:
-                candidate_id = str(best_candidate.get("id") or best_candidate.get("page") or "")
+                candidate_id = str(
+                    best_candidate.get("id") or best_candidate.get("page") or ""
+                )
                 if candidate_id:
                     used_bibliography_ids.add(candidate_id)
                 page = best_candidate["page"]
                 box = _normalize_box(best_candidate.get("box"))
                 text = str(best_candidate.get("text") or raw_text)
                 doi_from_text = _extract_doi(text)
-                if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
+                if doi_from_text and (
+                    not doi_value or len(doi_from_text) > len(doi_value)
+                ):
                     doi_value = doi_from_text
                 structure_source = "bibliography_box_fallback"
                 decision_scores.update(
@@ -10984,7 +11383,9 @@ def build_references_data(
                 box = None
                 text = raw_text
                 doi_from_text = _extract_doi(text)
-                if doi_from_text and (not doi_value or len(doi_from_text) > len(doi_value)):
+                if doi_from_text and (
+                    not doi_value or len(doi_from_text) > len(doi_value)
+                ):
                     doi_value = doi_from_text
                 structure_source = "raw_reference_fallback"
                 decision_scores.update(
@@ -11013,7 +11414,9 @@ def build_references_data(
                 float(crossref_match_payload.get("doi_match_score") or 0.0),
                 3,
             )
-            final_decision["crossref_match_score"] = decision_scores["crossref_match_score"]
+            final_decision["crossref_match_score"] = decision_scores[
+                "crossref_match_score"
+            ]
             final_decision["doi_match_score"] = decision_scores["doi_match_score"]
 
         final_decision = dict(final_decision or decision_scores)
@@ -11096,7 +11499,9 @@ def build_references_data(
             dedup_ref_ids.append(ref_id)
         if not dedup_ref_ids:
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: sin ref_ids resueltas. '{snippet_text[:50]}'")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: sin ref_ids resueltas. '{snippet_text[:50]}'"
+                )
             continue
 
         page_hint = _normalize_page_zero_based(snippet.get("page"))
@@ -11122,11 +11527,15 @@ def build_references_data(
             bibliography_zone_items,
         ):
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: está dentro de la bibliografía.")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: está dentro de la bibliografía."
+                )
             continue
         if is_after_bibliography(mention_page, mention_y, bibliography_anchor):
             if TRACE_REFERENCES:
-                logger.debug(f"Descartando snippet {snippet_idx}: es posterior al inicio de bibliografía.")
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: es posterior al inicio de bibliografía."
+                )
             continue
 
         for mention_pos, ref_id in enumerate(dedup_ref_ids, start=1):
@@ -11215,9 +11624,13 @@ def build_references_data(
         for entry in reference_entries
         if isinstance(entry.get("index"), int)
     ]
-    for previous, current in zip(sorted_reference_indices, sorted_reference_indices[1:]):
+    for previous, current in zip(
+        sorted_reference_indices, sorted_reference_indices[1:]
+    ):
         if current != previous + 1:
-            anchors_out_of_sequence.append({"expected": previous + 1, "actual": current})
+            anchors_out_of_sequence.append(
+                {"expected": previous + 1, "actual": current}
+            )
 
     references_mixed = [
         str(entry.get("ref_id") or "")
@@ -11242,14 +11655,16 @@ def build_references_data(
         if _row_in_any_segment(token, bibliography_zone_items)
     ]
     repeated_headers = sorted(
-        _build_repeating_page_artifacts(bibliography_phase.get("rows_with_columns") or [])
-        .get("repeated_text_keys", set())
+        _build_repeating_page_artifacts(
+            bibliography_phase.get("rows_with_columns") or []
+        ).get("repeated_text_keys", set())
     )
     bibliography_noise_candidates = [
         row
         for row in (bibliography_rows_phase.get("debug_rows") or [])
         if not row.get("included")
-        and row.get("reason") in {"header_footer_noise", "outside_bibliography_segments"}
+        and row.get("reason")
+        in {"header_footer_noise", "outside_bibliography_segments"}
     ]
     global_alerts = {
         "repeated_headers_detected": repeated_headers,
@@ -11273,7 +11688,9 @@ def build_references_data(
 
     debug_payload = None
     if debug_reference_detection:
-        raw_rows_layer = layers.get("rows") if isinstance(layers.get("rows"), list) else []
+        raw_rows_layer = (
+            layers.get("rows") if isinstance(layers.get("rows"), list) else []
+        )
         raw_row_metadata_map = _build_raw_row_metadata_map(raw_rows_layer)
         document_diagnostics = _build_document_diagnostics(
             bibliography_rows_debug=bibliography_rows_phase.get("debug_rows") or [],
@@ -11327,7 +11744,9 @@ def build_references_data(
                 if isinstance(numeric_coverage_summary, dict)
                 else [
                     index
-                    for index, count in Counter(detected_anchor_indices_for_current).items()
+                    for index, count in Counter(
+                        detected_anchor_indices_for_current
+                    ).items()
                     if int(count) > 1
                 ]
             )
@@ -11395,9 +11814,15 @@ def build_references_data(
                 "crossref": {
                     "doi_detected": crossref_context.get("article_doi"),
                     "queried": bool(crossref_context.get("crossref_queried")),
-                    "crossref_available": bool(crossref_context.get("crossref_available")),
-                    "article_metadata": crossref_context.get("crossref_article_metadata"),
-                    "reference_candidates": crossref_context.get("crossref_reference_candidates")
+                    "crossref_available": bool(
+                        crossref_context.get("crossref_available")
+                    ),
+                    "article_metadata": crossref_context.get(
+                        "crossref_article_metadata"
+                    ),
+                    "reference_candidates": crossref_context.get(
+                        "crossref_reference_candidates"
+                    )
                     or [],
                     "reference_count": int(
                         crossref_context.get("crossref_reference_count") or 0
@@ -11406,15 +11831,13 @@ def build_references_data(
                         {
                             "ref_id": entry.get("ref_id"),
                             "index": entry.get("index"),
-                            "crossref_match_score": (
-                                entry.get("scores") or {}
-                            ).get("crossref_match_score"),
-                            "doi_match_score": (
-                                entry.get("scores") or {}
-                            ).get("doi_match_score"),
-                            "match": (
-                                entry.get("crossref_match") or {}
-                            ).get("match"),
+                            "crossref_match_score": (entry.get("scores") or {}).get(
+                                "crossref_match_score"
+                            ),
+                            "doi_match_score": (entry.get("scores") or {}).get(
+                                "doi_match_score"
+                            ),
+                            "match": (entry.get("crossref_match") or {}).get("match"),
                         }
                         for entry in reference_entries
                     ],
@@ -11437,7 +11860,8 @@ def build_references_data(
                     ],
                 },
                 "sections": {
-                    "relevant_sections": bibliography_phase.get("section_records") or [],
+                    "relevant_sections": bibliography_phase.get("section_records")
+                    or [],
                     "selected_start": (
                         {
                             "page": bibliography_phase["selected_heading"].get("page"),
@@ -11448,12 +11872,16 @@ def build_references_data(
                             "box": _serialize_box(
                                 bibliography_phase["selected_heading"].get("box")
                             ),
-                            "source": bibliography_phase["selected_heading"].get("source"),
+                            "source": bibliography_phase["selected_heading"].get(
+                                "source"
+                            ),
                         }
                         if isinstance(bibliography_phase.get("selected_heading"), dict)
                         else None
                     ),
-                    "candidate_noise": bibliography_phase.get("candidate_noise_sections")
+                    "candidate_noise": bibliography_phase.get(
+                        "candidate_noise_sections"
+                    )
                     or [],
                 },
                 "paragraphs": paragraph_phase,
@@ -11480,17 +11908,21 @@ def build_references_data(
         if current_numeric_metrics is not None:
             debug_payload["numeric_pipeline_current_metrics"] = current_numeric_metrics
         if current_numeric_metrics_v3 is not None:
-            debug_payload["numeric_pipeline_current_metrics_v3"] = current_numeric_metrics_v3
+            debug_payload["numeric_pipeline_current_metrics_v3"] = (
+                current_numeric_metrics_v3
+            )
         if experimental_numeric_pipeline_v2 is not None:
-            debug_payload[
-                NUMERIC_REFERENCE_PIPELINE_V2_NAME
-            ] = experimental_numeric_pipeline_v2
+            debug_payload[NUMERIC_REFERENCE_PIPELINE_V2_NAME] = (
+                experimental_numeric_pipeline_v2
+            )
         if experimental_numeric_pipeline_v3 is not None:
-            debug_payload[
-                NUMERIC_REFERENCE_PIPELINE_V3_NAME
-            ] = experimental_numeric_pipeline_v3
+            debug_payload[NUMERIC_REFERENCE_PIPELINE_V3_NAME] = (
+                experimental_numeric_pipeline_v3
+            )
 
-    logger.info(f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos.")
+    logger.info(
+        f"Completado build_references_data: {len(reference_entries)} reference_entries, {len(citations)} citations, {len(contexts)} contexts construidos."
+    )
 
     return {
         "references": reference_entries,
@@ -11503,9 +11935,13 @@ def build_references_data(
         "crossref_available": bool(crossref_context.get("crossref_available")),
         "article_doi": crossref_context.get("article_doi"),
         "crossref_article_metadata": crossref_context.get("crossref_article_metadata"),
-        "crossref_reference_candidates": crossref_context.get("crossref_reference_candidates")
+        "crossref_reference_candidates": crossref_context.get(
+            "crossref_reference_candidates"
+        )
         or [],
-        "crossref_reference_count": int(crossref_context.get("crossref_reference_count") or 0),
+        "crossref_reference_count": int(
+            crossref_context.get("crossref_reference_count") or 0
+        ),
         "global_alerts": global_alerts,
         "debug_payload": debug_payload,
         "reference_debug_steps": reference_debug_steps,
@@ -11526,11 +11962,7 @@ def finalize_reference_detection_debug_payload(
         final_decision = (
             entry.get("final_decision")
             if isinstance(entry.get("final_decision"), dict)
-            else (
-                entry.get("scores")
-                if isinstance(entry.get("scores"), dict)
-                else {}
-            )
+            else (entry.get("scores") if isinstance(entry.get("scores"), dict) else {})
         )
         scores = dict(final_decision)
         validation = (
@@ -11581,7 +12013,8 @@ def finalize_reference_detection_debug_payload(
                 "anchor_type": entry.get("anchor_type"),
                 "used_marker_only_anchor": bool(entry.get("used_marker_only_anchor")),
                 "anchor_to_body_link_reason": entry.get("anchor_to_body_link_reason"),
-                "candidate_text_raw": entry.get("text_candidate_raw") or entry.get("text"),
+                "candidate_text_raw": entry.get("text_candidate_raw")
+                or entry.get("text"),
                 "token_candidate_text": token_info.get("token_text"),
                 "hybrid_candidate_text": token_info.get("hybrid_text"),
                 "backbone_text": token_info.get("backbone_text"),
@@ -11599,9 +12032,7 @@ def finalize_reference_detection_debug_payload(
                 "selected_candidate_source": token_info.get(
                     "selected_candidate_source"
                 ),
-                "order_similarity_to_rows": token_info.get(
-                    "order_similarity_to_rows"
-                ),
+                "order_similarity_to_rows": token_info.get("order_similarity_to_rows"),
                 "order_guard_reasons": token_info.get("order_guard_reasons") or [],
                 "backbone_source": token_info.get("backbone_source"),
                 "candidate_scores": token_info.get("candidate_scores") or [],
@@ -11622,7 +12053,11 @@ def finalize_reference_detection_debug_payload(
                 "enrichment_validation": enrichment_validation,
                 "enrichment_candidate": enrichment_candidate,
                 "enrichment_accepted": entry.get("enrichment_accepted"),
-                "anomalies": entry.get("anomalies") if isinstance(entry.get("anomalies"), dict) else {},
+                "anomalies": (
+                    entry.get("anomalies")
+                    if isinstance(entry.get("anomalies"), dict)
+                    else {}
+                ),
                 "fallback_used": "fallback" in str(entry.get("structure_source") or ""),
             }
         )

@@ -10,10 +10,6 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 import requests
 
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
-
 from citations.services.grobid_client import (  # noqa: E402
     check_service_ready,
     get_base_url,
@@ -33,6 +29,9 @@ from citations.services.reference_parsing_experiments.runners import (  # noqa: 
     run_refextract_parser,
 )
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str((ROOT / "tfg_project").resolve()))
+
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -44,7 +43,9 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def _error_payload(exc: Exception, *, context: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def _error_payload(
+    exc: Exception, *, context: Dict[str, Any] | None = None
+) -> Dict[str, Any]:
     return {
         "status": "error",
         "error_type": type(exc).__name__,
@@ -124,7 +125,9 @@ def _call_process_citation_list(
     tei_xml = response.text or ""
     if "<TEI" not in tei_xml[:1200]:
         preview = tei_xml[:300]
-        raise GrobidParseError(f"/api/processCitationList did not return TEI XML. Preview: {preview!r}")
+        raise GrobidParseError(
+            f"/api/processCitationList did not return TEI XML. Preview: {preview!r}"
+        )
 
     parsed = parse_references_tei(tei_xml, include_raw_citation=True)
     parsed_refs = parsed.get("references") or []
@@ -155,7 +158,11 @@ def _save_skipped_grobid_errors(output_dir: Path, reason: str, detail: str) -> N
 
 
 def _list_output_files(output_dir: Path) -> List[str]:
-    files = [path.relative_to(output_dir).as_posix() for path in output_dir.rglob("*") if path.is_file()]
+    files = [
+        path.relative_to(output_dir).as_posix()
+        for path in output_dir.rglob("*")
+        if path.is_file()
+    ]
     return sorted(files)
 
 
@@ -183,8 +190,13 @@ def run_inspection(
         raw_reference_count = len(raw_references)
         _write_json(output_dir / "common_input.json", common_input)
         _write_json(output_dir / "extractor_raw_references.json", raw_references)
-        _write_json(output_dir / "extractor_warnings.json", common_input.get("warnings") or [])
-        _write_json(output_dir / "extractor_stats.json", common_input.get("extractor_stats") or {})
+        _write_json(
+            output_dir / "extractor_warnings.json", common_input.get("warnings") or []
+        )
+        _write_json(
+            output_dir / "extractor_stats.json",
+            common_input.get("extractor_stats") or {},
+        )
         statuses["common_input"] = "ok"
     except Exception as exc:
         _write_json(
@@ -195,7 +207,9 @@ def run_inspection(
 
     if grobid_ready:
         try:
-            tei = process_references(pdf_path, base_url=grobid_base_url, timeout=timeout)
+            tei = process_references(
+                pdf_path, base_url=grobid_base_url, timeout=timeout
+            )
             parsed = parse_references_tei(tei, include_raw_citation=True)
             _write_text(output_dir / "grobid_processReferences.xml", tei)
             _write_json(output_dir / "grobid_processReferences_parsed.json", parsed)
@@ -208,28 +222,38 @@ def run_inspection(
             statuses["grobid_processReferences"] = "error"
 
         try:
-            tei = process_fulltext_document(pdf_path, base_url=grobid_base_url, timeout=timeout)
+            tei = process_fulltext_document(
+                pdf_path, base_url=grobid_base_url, timeout=timeout
+            )
             parsed = parse_fulltext_tei(tei)
             _write_text(output_dir / "grobid_processFulltextDocument.xml", tei)
-            _write_json(output_dir / "grobid_processFulltextDocument_parsed.json", parsed)
+            _write_json(
+                output_dir / "grobid_processFulltextDocument_parsed.json", parsed
+            )
             statuses["grobid_processFulltextDocument"] = "ok"
         except Exception as exc:
             _write_json(
                 output_dir / "grobid_processFulltextDocument_error.json",
-                _error_payload(exc, context={"endpoint": "/api/processFulltextDocument"}),
+                _error_payload(
+                    exc, context={"endpoint": "/api/processFulltextDocument"}
+                ),
             )
             statuses["grobid_processFulltextDocument"] = "error"
 
         try:
             if not common_input:
-                raise RuntimeError("common_input unavailable; cannot run /api/processCitationList")
+                raise RuntimeError(
+                    "common_input unavailable; cannot run /api/processCitationList"
+                )
             tei, parsed_payload = _call_process_citation_list(
                 common_input.get("raw_references") or [],
                 base_url=grobid_base_url,
                 timeout=timeout,
             )
             _write_text(output_dir / "grobid_processCitationList.xml", tei)
-            _write_json(output_dir / "grobid_processCitationList_parsed.json", parsed_payload)
+            _write_json(
+                output_dir / "grobid_processCitationList_parsed.json", parsed_payload
+            )
             statuses["grobid_processCitationList"] = "ok"
         except Exception as exc:
             _write_json(
@@ -238,7 +262,9 @@ def run_inspection(
             )
             statuses["grobid_processCitationList"] = "error"
     else:
-        detail = str(health.get("summary", {}).get("ready_detail") or "GROBID is not ready")
+        detail = str(
+            health.get("summary", {}).get("ready_detail") or "GROBID is not ready"
+        )
         _save_skipped_grobid_errors(
             output_dir=output_dir,
             reason="grobid_not_ready",
@@ -253,7 +279,10 @@ def run_inspection(
             raise RuntimeError("common_input unavailable; cannot run refextract")
         refextract_output = run_refextract_parser(common_input)
         _write_json(output_dir / "refextract_raw.json", refextract_output)
-        _write_json(output_dir / "refextract_entries.json", refextract_output.get("entries") or [])
+        _write_json(
+            output_dir / "refextract_entries.json",
+            refextract_output.get("entries") or [],
+        )
         _write_json(
             output_dir / "refextract_notes.json",
             {

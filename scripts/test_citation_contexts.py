@@ -3,16 +3,17 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Ahora podemos importar usando tfg_project.citations...
+from tfg_project.citations.services.papermage_extractor import (
+    extract_contexts_from_pdf,
+)
+
 # --- Ajustar sys.path para poder importar tfg_project ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = C:\Users\jbarr\Documents\TFG
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-# Ahora podemos importar usando tfg_project.citations...
-from tfg_project.citations.services.papermage_extractor import (
-    extract_contexts_from_pdf,
-)
 
 # --- Ruta al PDF de prueba ---
 PDF_PATH = Path(

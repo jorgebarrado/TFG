@@ -4,12 +4,12 @@ import json
 import sys
 from pathlib import Path
 
+from citations.services.papermage_extractor import extract_pdf_data
+
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = ROOT / "tfg_project"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-from citations.services.papermage_extractor import extract_pdf_data
 
 
 if __name__ == "__main__":

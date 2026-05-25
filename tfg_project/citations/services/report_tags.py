@@ -6,7 +6,6 @@ from typing import Iterable
 
 from ..models import AREA_CHOICES, IncorrectCitation
 
-
 CITATION_TYPE_CHOICES = tuple(
     IncorrectCitation._meta.get_field("citation_type").choices
 )

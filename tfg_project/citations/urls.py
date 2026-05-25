@@ -1,5 +1,6 @@
 # citations/urls.py
 from django.urls import path
+
 from . import views_ai, views_api, views_reports
 from .views import (
     ajax_views,
@@ -41,7 +42,7 @@ urlpatterns = [
         page_views.citation_discard_draft,
         name="citation_discard_draft",
     ),
-    # TODO: flujo avanzado de reportes (CitationReport) pendiente de activar; el flujo real usa IncorrectCitation.
+    # Flujo avanzado de CitationReport reservado; el flujo estable usa IncorrectCitation.
     path(
         "report/wizard/",
         views_reports.create_report_wizard,
