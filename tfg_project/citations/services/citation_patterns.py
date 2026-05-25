@@ -36,10 +36,7 @@ NUMERIC_CITATION_REGEX = re.compile(
 # Tambien incluimos marcas diacriticas combinantes (U+0300..U+036F) para que
 # funcione con texto descompuesto en NFKD (lo que devuelve el PDF text layer
 # tras la normalizacion del frontend).
-_NAME = (
-    r"[A-ZÀ-ÜĀ-ſ]"
-    r"[A-Za-zÀ-ÿĀ-ſ'\-̀-ͯ]+"
-)
+_NAME = r"[A-ZÀ-ÜĀ-ſ]" r"[A-Za-zÀ-ÿĀ-ſ'\-̀-ͯ]+"
 
 # Grupo de autores: un apellido, dos con and/&, "et al." o lista enumerada.
 _AUTHOR_GROUP = (
@@ -56,9 +53,7 @@ _YEAR = r"(?:1[5-9]|20)\d{2}[a-z]?"
 _YEAR_LIST = rf"{_YEAR}(?:\s*,\s*{_YEAR})*"
 
 # Narrativo: "Smith et al. (2020)", "Smith and Jones (2020a, 2021b)".
-NARRATIVE_AUTHOR_YEAR_REGEX = re.compile(
-    rf"\b{_AUTHOR_GROUP}\s*\(\s*{_YEAR_LIST}\s*\)"
-)
+NARRATIVE_AUTHOR_YEAR_REGEX = re.compile(rf"\b{_AUTHOR_GROUP}\s*\(\s*{_YEAR_LIST}\s*\)")
 
 # Parentetico: "(Smith, 2020)", "(Smith et al., 2020; Jones, 2021)",
 # "(Smith 2020)" sin coma. Permite separadores ; o , entre items.

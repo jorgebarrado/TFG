@@ -11,7 +11,6 @@ from citations.services.reader_data import (
 )
 from citations.services.references_data import build_references_data
 
-
 PDF_FIXTURE_DIR = (
     Path(__file__).resolve().parent / "static" / "citations" / "PDFs-Reales"
 )

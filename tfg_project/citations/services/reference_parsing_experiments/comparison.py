@@ -5,7 +5,9 @@ from typing import Any, Dict, Iterable, List
 from .normalization import clean_text, is_almost_empty
 
 
-def summarize_entries(parser: str, status: str, entries: Iterable[Dict[str, Any]], notes: Iterable[str]) -> Dict[str, Any]:
+def summarize_entries(
+    parser: str, status: str, entries: Iterable[Dict[str, Any]], notes: Iterable[str]
+) -> Dict[str, Any]:
     entry_list = list(entries)
     summary = {
         "parser": parser,
@@ -36,10 +38,14 @@ def summarize_entries(parser: str, status: str, entries: Iterable[Dict[str, Any]
         summary["observations"].append("No structured titles were recovered.")
     elif summary["title_non_empty"] < max(1, len(entry_list) // 3):
         summary["observations"].append("Title coverage is low.")
-    if summary["doi_non_empty"] and summary["doi_non_empty"] >= max(1, len(entry_list) // 2):
+    if summary["doi_non_empty"] and summary["doi_non_empty"] >= max(
+        1, len(entry_list) // 2
+    ):
         summary["observations"].append("DOI coverage is relatively strong.")
     if summary["almost_empty"] >= max(1, len(entry_list) // 2):
-        summary["observations"].append("A large share of entries remained close to raw text.")
+        summary["observations"].append(
+            "A large share of entries remained close to raw text."
+        )
     return summary
 
 

@@ -28,12 +28,12 @@ class DBLPLoadingIndicatorTests(TestCase):
         response = self.client.get(reverse("dblp_articles"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-dblp-load-form')
+        self.assertContains(response, "data-dblp-load-form")
         self.assertContains(response, 'id="include-without-citations"')
         self.assertContains(response, 'name="include_without_citations"')
         self.assertContains(response, 'id="dblp-load-progress"')
         self.assertContains(response, 'class="extract-progress d-none"')
-        self.assertContains(response, 'Buscando articulos en DBLP')
+        self.assertContains(response, "Buscando articulos en DBLP")
 
     @patch("citations.views.user_views.get_author_papers")
     def test_logged_user_sees_prefilled_form_without_auto_loading_dblp(
@@ -50,7 +50,7 @@ class DBLPLoadingIndicatorTests(TestCase):
         response = self.client.get(reverse("dblp_articles"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-dblp-load-form')
+        self.assertContains(response, "data-dblp-load-form")
         self.assertContains(
             response,
             'value="https://dblp.org/pid/t/TestAuthor.html"',
@@ -248,5 +248,5 @@ class DBLPLoadingIndicatorTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-dblp-load-more')
+        self.assertContains(response, "data-dblp-load-more")
         self.assertContains(response, 'id="dblp-load-progress"')

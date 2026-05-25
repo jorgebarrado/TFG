@@ -1,12 +1,20 @@
+"""Adaptadores que preparan datos de PDF para el reader React.
+
+El reader espera pÃ¡ginas, capas y cajas en un formato estable; este mÃ³dulo
+convierte la salida de los extractores backend en esa estructura sin exponer
+detalles de PaperMage/PyMuPDF a la interfaz.
+"""
+
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
 import os
 import re
 import unicodedata
+from typing import Any, Dict, List, Optional, Tuple
+
+from citations.logging_utils import get_logger, log_phase
 
 from .semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
-from citations.logging_utils import get_logger, log_phase
 
 logger = get_logger("citations.citations")
 TRACE_CITATIONS = os.getenv("TRACE_CITATIONS", "0") == "1"
@@ -277,7 +285,9 @@ def extract_pdf_references(
         page_texts
     )
     if not section:
-        logger.warning(f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas.")
+        logger.warning(
+            f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas."
+        )
         section = _fallback_reference_section(page_texts)
 
     logger.debug(f"Bibliografía detectada en la página {bibliography_start_page}")

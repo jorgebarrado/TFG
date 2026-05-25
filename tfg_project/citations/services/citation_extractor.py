@@ -1,18 +1,16 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Sequence, Tuple
+
 import re
-from .engines import run_engine
+from typing import Any, Dict, List, Sequence, Tuple
+
+from .citation_patterns import NARRATIVE_AUTHOR_YEAR_REGEX as CIT_AUTHORYEAR
+from .citation_patterns import NUMERIC_CITATION_REGEX as NUMERIC_CITATION_BLOCK
 from .citation_patterns import (
-    DOI_REGEX as CIT_DOI,
-    NARRATIVE_AUTHOR_YEAR_REGEX as CIT_AUTHORYEAR,
-    NUMERIC_CITATION_REGEX as NUMERIC_CITATION_BLOCK,
-    PARENTHETICAL_AUTHOR_YEAR_REGEX,
-    expand_numeric_block as expand_numeric_citation_block,
     find_citation_matches,
     infer_numeric_style,
-    is_valid_numeric_citation,
-    max_reference_index as _max_reference_index,
 )
+from .citation_patterns import max_reference_index as _max_reference_index
+from .engines import run_engine
 
 try:
     from .papermage_extractor import pm_extract_paragraphs
@@ -22,14 +20,16 @@ except Exception:
 # PaperMage (si tu módulo actual está orientado a "target matching", NO lo uses aquí)
 try:
     from .papermage_extractor import (
-        extract_contexts_from_pdf as pm_ctx,
-    )  # puede requerir params extra
+        extract_contexts_from_pdf as pm_ctx,  # puede requerir params extra
+    )
 except Exception:
     pm_ctx = None
 
 # PaperCraft (si no existe, quedará None)
 try:
-    from .papercraft_extractor import extract_contexts_from_pdf as pc_extract  # type: ignore
+    from .papercraft_extractor import (
+        extract_contexts_from_pdf as pc_extract,  # type: ignore
+    )
 except Exception:
     pc_extract = None
 

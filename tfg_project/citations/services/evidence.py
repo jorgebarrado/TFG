@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from typing import Any
 
-
 SOURCE_LABELS = {
     "semantic_scholar": "Semantic Scholar",
     "pdf_extractor": "PDF",
@@ -130,7 +129,9 @@ def normalize_evidence_items(
                     if (item.get("paragraph") or item.get("snippet"))
                     else "manual"
                 )
-            kind = _clean_text(item.get("kind")) or _kind_for_source(source, default_kind)
+            kind = _clean_text(item.get("kind")) or _kind_for_source(
+                source, default_kind
+            )
             article = _clean_text(item.get("article")) or default_article
             evidence = {
                 "source": source,

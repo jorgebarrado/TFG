@@ -9,7 +9,6 @@ from citations.services.reader_data import extract_pdf_references
 
 from .normalization import clean_text
 
-
 PDF_FIXTURE_DIR = Path("tfg_project/citations/static/citations/PDFs-Reales")
 INPUT_BUCKET_ORDER = [
     "clean_input",
@@ -46,7 +45,9 @@ def slugify_pdf_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", stem).strip("_") or "paper"
 
 
-def resolve_pdf_paths(pdf_names: Sequence[str], pdf_dir: Path | None = None) -> List[Path]:
+def resolve_pdf_paths(
+    pdf_names: Sequence[str], pdf_dir: Path | None = None
+) -> List[Path]:
     base_dir = pdf_dir or PDF_FIXTURE_DIR
     paths: List[Path] = []
     for item in pdf_names:
@@ -100,7 +101,9 @@ def _build_input_quality(
         for warning in item.get("warnings", []):
             warning_counts[warning] = warning_counts.get(warning, 0) + 1
 
-    short_or_low_alpha_count = warning_counts.get("very_short_reference", 0) + warning_counts.get(
+    short_or_low_alpha_count = warning_counts.get(
+        "very_short_reference", 0
+    ) + warning_counts.get(
         "low_alpha_content",
         0,
     )
@@ -108,7 +111,9 @@ def _build_input_quality(
         key: _safe_ratio(value, total_references)
         for key, value in warning_counts.items()
     }
-    warning_ratios["short_or_low_alpha_combined"] = _safe_ratio(short_or_low_alpha_count, total_references)
+    warning_ratios["short_or_low_alpha_combined"] = _safe_ratio(
+        short_or_low_alpha_count, total_references
+    )
 
     issue_flags = {
         "numeric_noise": "raw_references_contain_numeric_noise" in paper_warnings
@@ -117,9 +122,11 @@ def _build_input_quality(
         or warning_ratios.get("many_semicolon_segments", 0.0) >= 0.08,
         "small_reference_set": "very_small_reference_set" in paper_warnings
         or extractor_stats.get("references_total", 0) <= 5,
-        "low_alpha_or_short_noise": "raw_references_contain_many_short_or_low_alpha_entries" in paper_warnings
+        "low_alpha_or_short_noise": "raw_references_contain_many_short_or_low_alpha_entries"
+        in paper_warnings
         or warning_ratios.get("short_or_low_alpha_combined", 0.0) >= 0.15,
-        "header_not_found_fallback": "reference_header_not_found_fallback_tail_used" in paper_warnings,
+        "header_not_found_fallback": "reference_header_not_found_fallback_tail_used"
+        in paper_warnings,
     }
     active_issue_buckets = [
         bucket
@@ -141,7 +148,9 @@ def _build_input_quality(
 
     quality_notes: List[str] = []
     if primary_bucket == "clean_input":
-        quality_notes.append("No strong degradation signals detected in raw reference input.")
+        quality_notes.append(
+            "No strong degradation signals detected in raw reference input."
+        )
     if issue_flags.get("numeric_noise"):
         quality_notes.append(
             f"Numeric-leading noise in {warning_counts.get('starts_with_numeric_noise', 0)}/{total_references} references."
@@ -155,11 +164,17 @@ def _build_input_quality(
             f"Short/low-alpha noisy references in {short_or_low_alpha_count}/{total_references} entries."
         )
     if issue_flags.get("small_reference_set"):
-        quality_notes.append(f"Very small extracted reference set ({extractor_stats.get('references_total', 0)}).")
+        quality_notes.append(
+            f"Very small extracted reference set ({extractor_stats.get('references_total', 0)})."
+        )
     if issue_flags.get("header_not_found_fallback"):
-        quality_notes.append("References header not found; extractor fallback tail used.")
+        quality_notes.append(
+            "References header not found; extractor fallback tail used."
+        )
     if primary_bucket == "mixed_issues":
-        quality_notes.append(f"Mixed degradation signals: {', '.join(active_issue_buckets)}.")
+        quality_notes.append(
+            f"Mixed degradation signals: {', '.join(active_issue_buckets)}."
+        )
 
     return {
         "primary_bucket": primary_bucket,
@@ -214,7 +229,10 @@ def build_common_input(pdf_path: Path) -> Dict[str, Any]:
     )
     if normalized_references and noisy_count / len(normalized_references) >= 0.2:
         paper_warnings.append("raw_references_contain_numeric_noise")
-    if normalized_references and short_or_low_alpha_count / len(normalized_references) >= 0.15:
+    if (
+        normalized_references
+        and short_or_low_alpha_count / len(normalized_references) >= 0.15
+    ):
         paper_warnings.append("raw_references_contain_many_short_or_low_alpha_entries")
 
     input_quality = _build_input_quality(
@@ -235,7 +253,9 @@ def build_common_input(pdf_path: Path) -> Dict[str, Any]:
     }
 
 
-def write_common_input_artifact(common_input: Dict[str, Any], output_path: Path) -> None:
+def write_common_input_artifact(
+    common_input: Dict[str, Any], output_path: Path
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(common_input, indent=2, ensure_ascii=False),

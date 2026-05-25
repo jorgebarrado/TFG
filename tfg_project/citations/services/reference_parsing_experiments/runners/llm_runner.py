@@ -153,7 +153,9 @@ def run_llm_parser(common_input: Dict[str, Any], *, model: str) -> Dict[str, Any
         }
 
     try:
-        raw_response_text = _call_openai_chat(prompt=prompt, model=model, api_key=api_key)
+        raw_response_text = _call_openai_chat(
+            prompt=prompt, model=model, api_key=api_key
+        )
         parsed = json.loads(raw_response_text)
         entries, validation_warnings = _validate_llm_json(parsed, raw_references)
         notes = [

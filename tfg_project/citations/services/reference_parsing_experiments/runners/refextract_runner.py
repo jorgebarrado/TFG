@@ -84,7 +84,9 @@ def _normalize_refextract_record(
     doi_values = raw_output.get("doi") or []
     if doi_values:
         doi = clean_doi(doi_values[0])
-    venue = first_text(raw_output.get("journal_title"), raw_output.get("journal_reference"))
+    venue = first_text(
+        raw_output.get("journal_title"), raw_output.get("journal_reference")
+    )
     pages = first_text(raw_output.get("journal_page"), raw_output.get("page"))
     identifiers: Dict[str, Any] = {}
     for key in ("reportnumber", "texkey", "isbn", "url", "hdl"):

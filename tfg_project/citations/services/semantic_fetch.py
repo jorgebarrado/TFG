@@ -1,12 +1,12 @@
 import requests
 
-CR_BASE = "https://api.crossref.org"
-
 from .semantic_scholar_client import (
     SemanticScholarError,
     get_paper_by_doi,
     get_paper_citations,
 )
+
+CR_BASE = "https://api.crossref.org"
 
 
 def _safe_get(url, params=None, timeout=12):

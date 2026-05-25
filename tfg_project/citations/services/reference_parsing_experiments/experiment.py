@@ -15,7 +15,6 @@ from .input_common import (
 )
 from .runners import run_anystyle_parser, run_llm_parser, run_refextract_parser
 
-
 DEFAULT_PDFS = [
     "2017-CT-development-computational-thinking_RG.pdf",
     "2023.emnlp-demo.45.pdf",
@@ -44,7 +43,9 @@ def _merge_status(current: str | None, new_status: str | None) -> str:
     return "mixed"
 
 
-def _build_recommendation(aggregate_summaries: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
+def _build_recommendation(
+    aggregate_summaries: Dict[str, Dict[str, Any]],
+) -> Dict[str, str]:
     refextract = aggregate_summaries.get("refextract", {})
     anystyle = aggregate_summaries.get("anystyle", {})
     llm = aggregate_summaries.get("llm", {})
@@ -57,10 +58,14 @@ def _build_recommendation(aggregate_summaries: Dict[str, Dict[str, Any]]) -> Dic
     if llm.get("status") != "ok":
         llm_note = "LLM wiring is ready but no API execution happened because credentials are missing"
     else:
-        llm_note = "LLM execution happened and should be compared directly against refextract"
+        llm_note = (
+            "LLM execution happened and should be compared directly against refextract"
+        )
 
     if anystyle.get("status") != "ok":
-        anystyle_note = "AnyStyle is blocked by the lack of Ruby/anystyle-cli on this machine"
+        anystyle_note = (
+            "AnyStyle is blocked by the lack of Ruby/anystyle-cli on this machine"
+        )
     else:
         anystyle_note = "AnyStyle executed successfully"
 
@@ -79,7 +84,9 @@ def _build_recommendation(aggregate_summaries: Dict[str, Dict[str, Any]]) -> Dic
     }
 
 
-def _build_input_quality_overview(paper_results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def _build_input_quality_overview(
+    paper_results: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
     bucket_counts = {bucket: 0 for bucket in INPUT_BUCKET_ORDER}
     degraded_papers: List[Dict[str, Any]] = []
     signal_counts = {
@@ -108,7 +115,9 @@ def _build_input_quality_overview(paper_results: Sequence[Dict[str, Any]]) -> Di
                     "paper_slug": paper.get("paper_slug"),
                     "pdf_name": paper.get("pdf_name"),
                     "primary_bucket": primary_bucket,
-                    "active_issue_buckets": input_quality.get("active_issue_buckets", []),
+                    "active_issue_buckets": input_quality.get(
+                        "active_issue_buckets", []
+                    ),
                     "quality_notes": input_quality.get("quality_notes", []),
                 }
             )
@@ -164,7 +173,9 @@ def _build_paper_input_buckets(
         }
         paper_entries.append(paper_entry)
         buckets[primary_bucket]["paper_count"] += 1
-        buckets[primary_bucket]["reference_count_total"] += paper_entry["reference_count"]
+        buckets[primary_bucket]["reference_count_total"] += paper_entry[
+            "reference_count"
+        ]
         buckets[primary_bucket]["papers"].append(paper_entry)
 
     return {
@@ -207,12 +218,18 @@ def _build_aggregate_by_bucket(
 
         bucket_observations: List[str] = []
         if bucket == "clean_input" and paper_count:
-            bucket_observations.append("Baseline bucket with cleaner extracted references.")
+            bucket_observations.append(
+                "Baseline bucket with cleaner extracted references."
+            )
         if bucket == "mixed_issues" and paper_count:
             bucket_observations.append(
                 "Multiple degradation signals in the same papers; parser coverage in this bucket is especially sensitive to input quality."
             )
-        if bucket in {"numeric_noise", "likely_fused_references", "low_alpha_or_short_noise"} and paper_count:
+        if (
+            bucket
+            in {"numeric_noise", "likely_fused_references", "low_alpha_or_short_noise"}
+            and paper_count
+        ):
             bucket_observations.append(
                 "Coverage drops here should be interpreted primarily as input degradation effects, not only parser capability limits."
             )
@@ -222,7 +239,9 @@ def _build_aggregate_by_bucket(
         buckets_payload[bucket] = {
             "paper_count": paper_count,
             "reference_count_total": bucket_info.get("reference_count_total", 0),
-            "papers": [paper.get("pdf_name") for paper in bucket_info.get("papers", [])],
+            "papers": [
+                paper.get("pdf_name") for paper in bucket_info.get("papers", [])
+            ],
             "parser_summaries": parser_summaries,
             "observations": bucket_observations,
         }
@@ -250,9 +269,13 @@ def _build_aggregate_by_bucket_markdown(aggregate_by_bucket: Dict[str, Any]) -> 
         lines.append(f"## {bucket}")
         lines.append("")
         lines.append(f"- Papers: {bucket_payload.get('paper_count', 0)}")
-        lines.append(f"- Total references: {bucket_payload.get('reference_count_total', 0)}")
+        lines.append(
+            f"- Total references: {bucket_payload.get('reference_count_total', 0)}"
+        )
         paper_names = bucket_payload.get("papers", [])
-        lines.append(f"- Papers list: {', '.join(paper_names) if paper_names else '(none)'}")
+        lines.append(
+            f"- Papers list: {', '.join(paper_names) if paper_names else '(none)'}"
+        )
         observations = bucket_payload.get("observations", [])
         if observations:
             lines.append(f"- Observations: {' | '.join(observations)}")
@@ -261,7 +284,9 @@ def _build_aggregate_by_bucket_markdown(aggregate_by_bucket: Dict[str, Any]) -> 
             lines.append(f"### {parser_summary['parser']}")
             lines.append("")
             lines.append(f"- Status: {parser_summary['status']}")
-            lines.append(f"- Total references processed: {parser_summary['total_references']}")
+            lines.append(
+                f"- Total references processed: {parser_summary['total_references']}"
+            )
             lines.append(f"- Title non-empty: {parser_summary['title_non_empty']}")
             lines.append(f"- Authors non-empty: {parser_summary['authors_non_empty']}")
             lines.append(f"- Year non-empty: {parser_summary['year_non_empty']}")
@@ -269,7 +294,9 @@ def _build_aggregate_by_bucket_markdown(aggregate_by_bucket: Dict[str, Any]) -> 
             lines.append(f"- Almost empty: {parser_summary['almost_empty']}")
             parser_observations = parser_summary.get("observations") or []
             if parser_observations:
-                lines.append(f"- Parser observations: {' | '.join(parser_observations)}")
+                lines.append(
+                    f"- Parser observations: {' | '.join(parser_observations)}"
+                )
             lines.append("")
     return "\n".join(lines)
 
@@ -298,7 +325,9 @@ def _build_summary_markdown(
         lines.append(f"### {parser_summary['parser']}")
         lines.append("")
         lines.append(f"- Status: {parser_summary['status']}")
-        lines.append(f"- Total references processed: {parser_summary['total_references']}")
+        lines.append(
+            f"- Total references processed: {parser_summary['total_references']}"
+        )
         lines.append(f"- Title non-empty: {parser_summary['title_non_empty']}")
         lines.append(f"- Authors non-empty: {parser_summary['authors_non_empty']}")
         lines.append(f"- Year non-empty: {parser_summary['year_non_empty']}")
@@ -315,7 +344,9 @@ def _build_summary_markdown(
     lines.append(f"- Total papers: {quality.get('total_papers', 0)}")
     lines.append(f"- Degraded papers: {quality.get('degraded_paper_count', 0)}")
     signal_counts = quality.get("signal_counts", {})
-    lines.append(f"- Papers with numeric-noise signal: {signal_counts.get('numeric_noise', 0)}")
+    lines.append(
+        f"- Papers with numeric-noise signal: {signal_counts.get('numeric_noise', 0)}"
+    )
     lines.append(
         f"- Papers with likely-fused-references signal: {signal_counts.get('likely_fused_references', 0)}"
     )
@@ -349,7 +380,9 @@ def _build_summary_markdown(
         lines.append(f"### {bucket}")
         lines.append("")
         lines.append(f"- Papers: {paper_count}")
-        lines.append(f"- Total references: {bucket_payload.get('reference_count_total', 0)}")
+        lines.append(
+            f"- Total references: {bucket_payload.get('reference_count_total', 0)}"
+        )
         lines.append(f"- Papers list: {', '.join(bucket_payload.get('papers', []))}")
         for parser_summary in bucket_payload.get("parser_summaries", []):
             lines.append(
@@ -415,8 +448,12 @@ def run_reference_parsing_experiment(
     _write_json(run_dir / "config.json", config)
 
     paper_results: List[Dict[str, Any]] = []
-    aggregate_entries: Dict[str, List[Dict[str, Any]]] = {parser_name: [] for parser_name in PARSER_ORDER}
-    aggregate_notes: Dict[str, List[str]] = {parser_name: [] for parser_name in PARSER_ORDER}
+    aggregate_entries: Dict[str, List[Dict[str, Any]]] = {
+        parser_name: [] for parser_name in PARSER_ORDER
+    }
+    aggregate_notes: Dict[str, List[str]] = {
+        parser_name: [] for parser_name in PARSER_ORDER
+    }
     aggregate_statuses: Dict[str, str] = {}
     bucket_entries: Dict[str, Dict[str, List[Dict[str, Any]]]] = {
         bucket: {parser_name: [] for parser_name in PARSER_ORDER}
@@ -427,8 +464,7 @@ def run_reference_parsing_experiment(
         for bucket in INPUT_BUCKET_ORDER
     }
     bucket_statuses: Dict[str, Dict[str, str]] = {
-        bucket: {}
-        for bucket in INPUT_BUCKET_ORDER
+        bucket: {} for bucket in INPUT_BUCKET_ORDER
     }
 
     for pdf_path in resolved_paths:
@@ -457,7 +493,9 @@ def run_reference_parsing_experiment(
         _write_json(run_dir / "refextract" / f"{slug}.json", refextract_output)
         _write_json(run_dir / "anystyle" / f"{slug}.json", anystyle_output)
         _write_json(run_dir / "llm" / f"{slug}.json", llm_output)
-        _write_text(run_dir / "llm" / f"{slug}_prompt.txt", llm_output.get("prompt_text", ""))
+        _write_text(
+            run_dir / "llm" / f"{slug}_prompt.txt", llm_output.get("prompt_text", "")
+        )
         _write_text(
             run_dir / "llm" / f"{slug}_raw_response.txt",
             llm_output.get("raw_response_text", ""),
@@ -479,8 +517,12 @@ def run_reference_parsing_experiment(
                 aggregate_statuses.get(parser_name),
                 parser_status,
             )
-            bucket_entries[primary_bucket][parser_name].extend(parser_output.get("entries", []))
-            bucket_notes[primary_bucket][parser_name].extend(summary.get("observations", []))
+            bucket_entries[primary_bucket][parser_name].extend(
+                parser_output.get("entries", [])
+            )
+            bucket_notes[primary_bucket][parser_name].extend(
+                summary.get("observations", [])
+            )
             bucket_statuses[primary_bucket][parser_name] = _merge_status(
                 bucket_statuses[primary_bucket].get(parser_name),
                 parser_status,
@@ -538,8 +580,12 @@ def run_reference_parsing_experiment(
         "recommendation": _build_recommendation(aggregate_summary_map),
     }
     _write_json(run_dir / "comparisons" / "aggregate.json", aggregate)
-    _write_json(run_dir / "comparisons" / "aggregate_by_bucket.json", aggregate_by_bucket)
-    _write_json(run_dir / "comparisons" / "paper_input_buckets.json", paper_input_buckets)
+    _write_json(
+        run_dir / "comparisons" / "aggregate_by_bucket.json", aggregate_by_bucket
+    )
+    _write_json(
+        run_dir / "comparisons" / "paper_input_buckets.json", paper_input_buckets
+    )
     _write_text(
         run_dir / "comparisons" / "aggregate_by_bucket.md",
         _build_aggregate_by_bucket_markdown(aggregate_by_bucket),

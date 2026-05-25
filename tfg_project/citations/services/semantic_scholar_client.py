@@ -1,8 +1,15 @@
+"""Cliente defensivo para Semantic Scholar.
+
+Todas las llamadas pasan por este mÃ³dulo para centralizar cachÃ©, cuotas,
+reintentos y normalizaciÃ³n de DOI. Las vistas y pipelines consumen funciones de
+alto nivel para evitar duplicar manejo de errores HTTP.
+"""
+
 from __future__ import annotations
 
+import logging
 import os
 import re
-import logging
 import threading
 import time
 from email.utils import parsedate_to_datetime
@@ -62,7 +69,9 @@ class SemanticScholarHTTPError(SemanticScholarError):
         self.status_code = status_code
         self.detail = detail
         suffix = f": {detail}" if detail else "."
-        super().__init__(f"Error en la API de Semantic Scholar (HTTP {status_code}){suffix}")
+        super().__init__(
+            f"Error en la API de Semantic Scholar (HTTP {status_code}){suffix}"
+        )
 
 
 class CitingPaper(TypedDict):
@@ -76,13 +85,10 @@ class CitingPaper(TypedDict):
 
 def _get_api_key() -> str:
     try:
-        configured = str(
-            getattr(settings, "SEMANTIC_SCHOLAR_API_KEY", "") or ""
-        ).strip()
+        if hasattr(settings, "SEMANTIC_SCHOLAR_API_KEY"):
+            return str(settings.SEMANTIC_SCHOLAR_API_KEY or "").strip()
     except ImproperlyConfigured:
-        configured = ""
-    if configured:
-        return configured
+        pass
     return str(os.getenv("SEMANTIC_SCHOLAR_API_KEY") or "").strip()
 
 
@@ -289,7 +295,9 @@ def _normalize_authors(raw_authors: Any) -> List[str]:
     return out
 
 
-def _normalize_paper_item(item: Dict[str, Any], *, source: str = "semantic_scholar") -> Dict[str, Any]:
+def _normalize_paper_item(
+    item: Dict[str, Any], *, source: str = "semantic_scholar"
+) -> Dict[str, Any]:
     external_ids = item.get("externalIds") or {}
     return {
         "doi": _normalize_doi(external_ids.get("DOI")),
@@ -302,7 +310,9 @@ def _normalize_paper_item(item: Dict[str, Any], *, source: str = "semantic_schol
     }
 
 
-def get_paper_by_id(paper_id: str, fields: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def get_paper_by_id(
+    paper_id: str, fields: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
     paper_id = str(paper_id or "").strip()
     if not paper_id:
         return None
@@ -314,7 +324,9 @@ def get_paper_by_id(paper_id: str, fields: Optional[str] = None) -> Optional[Dic
     return data if isinstance(data, dict) else None
 
 
-def get_paper_by_doi(doi: str, fields: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def get_paper_by_doi(
+    doi: str, fields: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
     normalized_doi, paper_identifier = _doi_paper_identifier(doi)
     if not normalized_doi:
         return None
@@ -429,14 +441,8 @@ def get_citation_counts_for_dois(
     if not normalized_dois:
         return {}
 
-    key_by_doi = {
-        doi: _citation_count_cache_key(doi)
-        for doi in normalized_dois
-    }
-    paper_id_key_by_doi = {
-        doi: _paper_id_cache_key(doi)
-        for doi in normalized_dois
-    }
+    key_by_doi = {doi: _citation_count_cache_key(doi) for doi in normalized_dois}
+    paper_id_key_by_doi = {doi: _paper_id_cache_key(doi) for doi in normalized_dois}
     cached_values = cache.get_many(key_by_doi.values())
     cached_paper_ids = cache.get_many(paper_id_key_by_doi.values())
     counts_by_doi: Dict[str, int] = {}
@@ -460,7 +466,7 @@ def get_citation_counts_for_dois(
 
     if lookup_dois:
         for start in range(0, len(lookup_dois), CITATION_COUNT_BATCH_SIZE):
-            chunk = lookup_dois[start:start + CITATION_COUNT_BATCH_SIZE]
+            chunk = lookup_dois[start : start + CITATION_COUNT_BATCH_SIZE]
             try:
                 items = _request_semantic_scholar_json(
                     "POST",
@@ -502,10 +508,7 @@ def get_citation_counts_for_dois(
             if values_to_cache:
                 cache.set_many(values_to_cache, CITATION_COUNT_CACHE_TIMEOUT)
 
-    counts: Dict[str, int] = {
-        doi: counts_by_doi.get(doi, 0)
-        for doi in normalized_dois
-    }
+    counts: Dict[str, int] = {doi: counts_by_doi.get(doi, 0) for doi in normalized_dois}
     for raw_key, normalized_doi in raw_to_normalized.items():
         counts[raw_key] = counts_by_doi.get(normalized_doi, 0)
 
@@ -540,7 +543,9 @@ def get_citing_papers_for_doi(doi: str, limit: int = 10) -> List[CitingPaper]:
         )
     except SemanticScholarHTTPError as exc:
         if exc.status_code == 404:
-            raise SemanticScholarError(f"No se ha encontrado ningún paper con DOI '{doi}'.") from exc
+            raise SemanticScholarError(
+                f"No se ha encontrado ningún paper con DOI '{doi}'."
+            ) from exc
         suffix = f": {exc.detail}" if exc.detail else "."
         raise SemanticScholarError(
             f"Error en la API de Semantic Scholar (HTTP {exc.status_code}){suffix}"
@@ -581,7 +586,6 @@ def get_work_by_doi(doi: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
     if cached is not None:
         return cached
 
-    url = f"{SEMANTIC_SCHOLAR_API_URL}/paper/{paper_identifier}"
     fields = (
         "title,year,venue,externalIds,authors.name,url,"
         "references.title,references.year,references.venue,references.externalIds,references.authors.name,references.url,"
@@ -643,14 +647,18 @@ def get_paper_metadata_by_doi(doi: str, timeout: int = 15) -> Optional[Dict[str,
         data = _request_semantic_scholar_json(
             "GET",
             f"/paper/{paper_identifier}",
-            params={"fields": "title,year,venue,externalIds,authors.name,url,citationCount"},
+            params={
+                "fields": "title,year,venue,externalIds,authors.name,url,citationCount"
+            },
             timeout=timeout,
         )
     except SemanticScholarHTTPError as exc:
         if exc.status_code == 404:
             return None
         if exc.status_code == 429:
-            raise SemanticScholarError("Rate limit en Semantic Scholar. Espera unos segundos e inténtalo de nuevo.") from exc
+            raise SemanticScholarError(
+                "Rate limit en Semantic Scholar. Espera unos segundos e inténtalo de nuevo."
+            ) from exc
         suffix = f": {exc.detail}" if exc.detail else "."
         raise SemanticScholarError(
             f"Error en la API de Semantic Scholar (HTTP {exc.status_code}){suffix}"
@@ -692,7 +700,9 @@ def get_citing_papers_for_doi_paginated(
             )
         except SemanticScholarHTTPError as exc:
             if exc.status_code == 404:
-                raise SemanticScholarError(f"No se ha encontrado ningun paper con DOI '{normalized_doi}'.") from exc
+                raise SemanticScholarError(
+                    f"No se ha encontrado ningun paper con DOI '{normalized_doi}'."
+                ) from exc
             if exc.status_code == 429:
                 cached_page = cache.get(doi_page_cache_key)
                 if cached_page is not None:
@@ -761,7 +771,9 @@ def get_citing_papers_for_doi_paginated(
         cp = row.get("citingPaper") or {}
         external_ids = cp.get("externalIds") or {}
         authors = ", ".join(a.get("name", "") for a in (cp.get("authors") or []))
-        contexts = [c for c in (row.get("contexts") or []) if isinstance(c, str) and c.strip()]
+        contexts = [
+            c for c in (row.get("contexts") or []) if isinstance(c, str) and c.strip()
+        ]
         citing_papers.append(
             {
                 "title": cp.get("title") or "",

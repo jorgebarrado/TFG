@@ -59,7 +59,9 @@ class SemanticScholarClientTests(SimpleTestCase):
     def test_429_retries_with_retry_after(self, mock_session_factory):
         session = mock_session_factory.return_value
         session.get.side_effect = [
-            _response(status_code=429, text="rate limited", headers={"Retry-After": "3"}),
+            _response(
+                status_code=429, text="rate limited", headers={"Retry-After": "3"}
+            ),
             _response(payload={"paperId": "abc123"}),
         ]
 
@@ -350,9 +352,7 @@ class SemanticScholarClientTests(SimpleTestCase):
         )
 
         citing_papers, next_offset = (
-            semantic_scholar_client.get_citing_papers_for_doi_paginated(
-                "10.1000/with"
-            )
+            semantic_scholar_client.get_citing_papers_for_doi_paginated("10.1000/with")
         )
 
         self.assertEqual(session.get.call_count, 1)

@@ -1,12 +1,12 @@
 from django.test import SimpleTestCase
 
 from citations.services.references_data import (
+    _build_document_diagnostics,
     _build_numeric_reference_comparison_v2,
     _build_reference_rows_between_anchors_v2,
     _detect_numeric_anchor_candidates_v2,
     _detect_numeric_anchor_candidates_v3,
     _grow_reference_rows_from_anchor_v3,
-    _build_document_diagnostics,
     _match_reference_anchor_at_line_start,
     _split_reference_row_on_anchors,
     build_references_data,
@@ -601,7 +601,9 @@ class ReferenceAnchorDetectionTests(SimpleTestCase):
         )
 
         self.assertEqual(len(block["rows"]), 3)
-        self.assertEqual([row["id"] for row in block["rows"]], ["row-1", "row-2", "row-3"])
+        self.assertEqual(
+            [row["id"] for row in block["rows"]], ["row-1", "row-2", "row-3"]
+        )
         self.assertEqual(block["closure_reason"], "next_anchor_boundary_n_plus_1")
         self.assertEqual(block["boundary_end_reason"], "next_anchor_boundary_n_plus_1")
 
@@ -611,7 +613,10 @@ class ReferenceAnchorDetectionTests(SimpleTestCase):
                 "index": 4,
                 "structure_source": "rows_raw",
                 "rows": [{"page": 2}, {"page": 3}],
-                "final_decision": {"accepted": True, "reason": "rows_structure_consistent"},
+                "final_decision": {
+                    "accepted": True,
+                    "reason": "rows_structure_consistent",
+                },
                 "reference_validation": {"has_nested_anchor": False},
                 "text": "Current reference text.",
             }
@@ -621,7 +626,10 @@ class ReferenceAnchorDetectionTests(SimpleTestCase):
                 "index": 4,
                 "structure_source": "raw_reference_fallback",
                 "rows": [{"page": 2}],
-                "final_decision": {"accepted": False, "reason": "fallback_without_rows_structure"},
+                "final_decision": {
+                    "accepted": False,
+                    "reason": "fallback_without_rows_structure",
+                },
                 "reference_validation": {"has_nested_anchor": False},
                 "text": "Fallback text.",
             }
@@ -642,19 +650,55 @@ class ReferenceAnchorDetectionTests(SimpleTestCase):
 
     def test_build_references_data_exposes_v2_without_replacing_current_output(self):
         references = [
-            {"index": 1, "raw": "[1] Smith, J., 2020. First title. Journal of Testing 1(1), 1-10."},
-            {"index": 2, "raw": "[2] Doe, A., 2021. Second title. Conference on Testing, 11-20."},
+            {
+                "index": 1,
+                "raw": "[1] Smith, J., 2020. First title. Journal of Testing 1(1), 1-10.",
+            },
+            {
+                "index": 2,
+                "raw": "[2] Doe, A., 2021. Second title. Conference on Testing, 11-20.",
+            },
         ]
         layers = {
             "rows": [
-                {"id": "h1", "page": 0, "text": "References", "box": [0.1, 0.12, 0.2, 0.03]},
-                {"id": "r1", "page": 0, "text": "[1] Smith, J., 2020. First title.", "box": [0.1, 0.2, 0.75, 0.03]},
-                {"id": "r2", "page": 0, "text": "Journal of Testing 1(1), 1-10.", "box": [0.13, 0.24, 0.72, 0.03]},
-                {"id": "r3", "page": 1, "text": "[2] Doe, A., 2021. Second title.", "box": [0.1, 0.08, 0.75, 0.03]},
-                {"id": "r4", "page": 1, "text": "Conference on Testing, 11-20.", "box": [0.13, 0.12, 0.72, 0.03]},
+                {
+                    "id": "h1",
+                    "page": 0,
+                    "text": "References",
+                    "box": [0.1, 0.12, 0.2, 0.03],
+                },
+                {
+                    "id": "r1",
+                    "page": 0,
+                    "text": "[1] Smith, J., 2020. First title.",
+                    "box": [0.1, 0.2, 0.75, 0.03],
+                },
+                {
+                    "id": "r2",
+                    "page": 0,
+                    "text": "Journal of Testing 1(1), 1-10.",
+                    "box": [0.13, 0.24, 0.72, 0.03],
+                },
+                {
+                    "id": "r3",
+                    "page": 1,
+                    "text": "[2] Doe, A., 2021. Second title.",
+                    "box": [0.1, 0.08, 0.75, 0.03],
+                },
+                {
+                    "id": "r4",
+                    "page": 1,
+                    "text": "Conference on Testing, 11-20.",
+                    "box": [0.13, 0.12, 0.72, 0.03],
+                },
             ],
             "sections": [
-                {"id": "s1", "page": 0, "text": "References", "box": [0.1, 0.12, 0.2, 0.03]},
+                {
+                    "id": "s1",
+                    "page": 0,
+                    "text": "References",
+                    "box": [0.1, 0.12, 0.2, 0.03],
+                },
             ],
             "bibliographies": [
                 {"id": "b1", "page": 0, "text": "", "box": [0.08, 0.18, 0.8, 0.14]},
@@ -677,7 +721,11 @@ class ReferenceAnchorDetectionTests(SimpleTestCase):
         debug_payload = payload["debug_payload"]
         self.assertIn("numeric_pipeline_current_metrics", debug_payload)
         self.assertIn("numeric_reference_pipeline_v2", debug_payload)
-        self.assertFalse(debug_payload["numeric_reference_pipeline_v2"]["selected_as_default"])
+        self.assertFalse(
+            debug_payload["numeric_reference_pipeline_v2"]["selected_as_default"]
+        )
         self.assertIn("numeric_pipeline_current_metrics_v3", debug_payload)
         self.assertIn("numeric_reference_pipeline_v3", debug_payload)
-        self.assertFalse(debug_payload["numeric_reference_pipeline_v3"]["selected_as_default"])
+        self.assertFalse(
+            debug_payload["numeric_reference_pipeline_v3"]["selected_as_default"]
+        )

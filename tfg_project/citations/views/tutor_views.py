@@ -11,8 +11,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from ..models import IncorrectCitation, UserProfile
-from ..services.evidence import normalize_evidence_items
 from ..services.dblp_client import DBLPClientError, get_author_papers
+from ..services.evidence import normalize_evidence_items
 from ..services.semantic_scholar_client import (
     SemanticScholarError,
     get_citation_counts_for_dois,
@@ -72,9 +72,7 @@ def _filter_papers_with_citers(papers: list[dict]) -> list[dict]:
     papers_with_citers = []
     for paper in papers:
         doi = paper.get("doi")
-        paper["citation_count"] = (
-            citation_counts.get(str(doi).strip(), 0) if doi else 0
-        )
+        paper["citation_count"] = citation_counts.get(str(doi).strip(), 0) if doi else 0
         if paper["citation_count"] > 0:
             papers_with_citers.append(paper)
     return papers_with_citers
@@ -101,16 +99,22 @@ def citation_review_citers(request, paper_id: int):
         all_papers = get_author_papers(dblp_url)
     except DBLPClientError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
+        return redirect(
+            reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url})
+        )
 
     if paper_id < 0 or paper_id >= len(all_papers):
-        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
+        return redirect(
+            reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url})
+        )
 
     paper = all_papers[paper_id]
     paper["paper_id"] = paper_id
     if paper.get("doi"):
         return redirect(reverse("doi_search") + "?" + urlencode({"doi": paper["doi"]}))
-    messages.warning(request, "Este articulo no tiene DOI, así que no se puede buscar citadores.")
+    messages.warning(
+        request, "Este articulo no tiene DOI, así que no se puede buscar citadores."
+    )
     return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
 
 
@@ -126,17 +130,23 @@ def citation_review_random(request):
         all_papers = get_author_papers(dblp_url)
     except DBLPClientError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
+        return redirect(
+            reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url})
+        )
 
     _assign_paper_ids(all_papers)
     try:
         papers_with_citers = _filter_papers_with_citers(all_papers)
     except SemanticScholarError as exc:
         messages.error(request, str(exc))
-        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
+        return redirect(
+            reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url})
+        )
     if not papers_with_citers:
         messages.warning(request, "No hay articulos con citantes en este perfil DBLP.")
-        return redirect(reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url}))
+        return redirect(
+            reverse("dblp_articles") + "?" + urlencode({"dblp_url": dblp_url})
+        )
 
     paper = random.choice(papers_with_citers)
     return redirect(reverse("doi_search") + "?" + urlencode({"doi": paper["doi"]}))

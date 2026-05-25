@@ -28,4 +28,5 @@ tmp/reference_regression/
 tmp/reference_debug/
 tmp/grobid_debug/
 tmp/reference_anchor_baseline_*/
+tmp/
 *.zip

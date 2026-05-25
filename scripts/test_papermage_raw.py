@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from papermage.parsers.pdfplumber_parser import PDFPlumberParser
 from papermage.magelib import Document
+from papermage.parsers.pdfplumber_parser import PDFPlumberParser
 
 PDF_PATH = (
     r"C:\Users\jbarr\Downloads\2017-CT-development-computational-thinking_RG (1).pdf"

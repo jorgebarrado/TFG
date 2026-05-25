@@ -39,12 +39,13 @@ Limitaciones conocidas:
 - Abstract puede aparecer truncado si es muy largo.
 - Algunos campos de biblStruct pueden estar vacíos si GROBID no los detecta.
 """
+
 from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("citations.grobid")
 
@@ -81,7 +82,9 @@ def _parse_authors(parent: ET.Element) -> List[str]:
         if persname is None:
             continue
         surname = _text(persname.find(f"{_tag('surname')}"))
-        forenames = [_text(fn) for fn in persname.findall(f"{_tag('forename')}") if _text(fn)]
+        forenames = [
+            _text(fn) for fn in persname.findall(f"{_tag('forename')}") if _text(fn)
+        ]
         if surname:
             name = surname
             if forenames:
@@ -96,7 +99,11 @@ def _parse_authors(parent: ET.Element) -> List[str]:
 def _parse_bibstruct(bs: ET.Element) -> Dict[str, Any]:
     """Parsea un <biblStruct> y retorna un dict con los campos clave."""
     # xml:id puede venir con o sin namespace
-    ref_id = bs.get(f"{{{XML_NS}}}id") or bs.get("{http://www.w3.org/XML/1998/namespace}id") or ""
+    ref_id = (
+        bs.get(f"{{{XML_NS}}}id")
+        or bs.get("{http://www.w3.org/XML/1998/namespace}id")
+        or ""
+    )
 
     analytic = bs.find(f"{_tag('analytic')}")
     monogr = bs.find(f"{_tag('monogr')}")
@@ -213,7 +220,9 @@ def _parse_tei_root(tei_xml: str) -> ET.Element:
     return root
 
 
-def _extract_references(root: ET.Element, *, include_raw_citation: bool = False) -> List[Dict[str, Any]]:
+def _extract_references(
+    root: ET.Element, *, include_raw_citation: bool = False
+) -> List[Dict[str, Any]]:
     """
     Extrae referencias desde listBibl.
     Soporta biblStruct (habitual) y bibl (fallback mínimo).
@@ -240,7 +249,11 @@ def _extract_references(root: ET.Element, *, include_raw_citation: bool = False)
         raw_citation = _text(bibl)
         if not raw_citation:
             continue
-        ref_id = bibl.get(f"{{{XML_NS}}}id") or bibl.get("{http://www.w3.org/XML/1998/namespace}id") or ""
+        ref_id = (
+            bibl.get(f"{{{XML_NS}}}id")
+            or bibl.get("{http://www.w3.org/XML/1998/namespace}id")
+            or ""
+        )
         ref: Dict[str, Any] = {
             "id": ref_id,
             "title": "",
@@ -279,9 +292,7 @@ def parse_tei(tei_xml: str) -> Dict[str, Any]:
     metadata: Dict[str, Any] = {}
 
     # Título: buscar en teiHeader > titleStmt > title, o en el primer analytic
-    title_el = root.find(
-        f".//{_tag('teiHeader')}//{_tag('titleStmt')}/{_tag('title')}"
-    )
+    title_el = root.find(f".//{_tag('teiHeader')}//{_tag('titleStmt')}/{_tag('title')}")
     if title_el is None:
         title_el = root.find(f".//{_tag('analytic')}/{_tag('title')}")
     metadata["title"] = _text(title_el)
@@ -377,9 +388,7 @@ def parse_header_tei(tei_xml: str) -> Dict[str, Any]:
     warnings: List[str] = []
     root = _parse_tei_root(tei_xml)
 
-    title_el = root.find(
-        f".//{_tag('teiHeader')}//{_tag('titleStmt')}/{_tag('title')}"
-    )
+    title_el = root.find(f".//{_tag('teiHeader')}//{_tag('titleStmt')}/{_tag('title')}")
     if title_el is None:
         title_el = root.find(f".//{_tag('analytic')}/{_tag('title')}")
     title = _text(title_el)
@@ -427,7 +436,9 @@ def parse_header_tei(tei_xml: str) -> Dict[str, Any]:
     }
 
 
-def parse_references_tei(tei_xml: str, *, include_raw_citation: bool = True) -> Dict[str, Any]:
+def parse_references_tei(
+    tei_xml: str, *, include_raw_citation: bool = True
+) -> Dict[str, Any]:
     """
     Parser para TEI de /api/processReferences.
     Devuelve una estructura centrada en bibliografía.
@@ -437,7 +448,9 @@ def parse_references_tei(tei_xml: str, *, include_raw_citation: bool = True) -> 
     references = _extract_references(root, include_raw_citation=include_raw_citation)
 
     if not references:
-        warnings.append("GROBID no encontró referencias bibliográficas en /api/processReferences.")
+        warnings.append(
+            "GROBID no encontró referencias bibliográficas en /api/processReferences."
+        )
 
     return {
         "mode": "references",

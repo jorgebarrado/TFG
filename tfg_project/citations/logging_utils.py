@@ -8,17 +8,21 @@ from typing import Any
 # ContextVar para almacenar el ID de la petición de forma segura en entornos asíncronos o con threads
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 
+
 def get_request_id() -> str:
     """Devuelve el ID de la petición actual, o '-' si no hay ninguna."""
     return request_id_var.get()
+
 
 def generate_request_id() -> str:
     """Genera un nuevo ID de petición."""
     return str(uuid.uuid4())
 
+
 def get_logger(name: str) -> logging.Logger:
     """Obtiene un logger preconfigurado con el nombre dado."""
     return logging.getLogger(name)
+
 
 def log_event(logger: logging.Logger, level: int, message: str, **context: Any) -> None:
     """
@@ -42,16 +46,32 @@ def log_event(logger: logging.Logger, level: int, message: str, **context: Any) 
 
     logger.log(level, message, extra={"event_context": context})
 
+
 def log_phase_start(logger: logging.Logger, phase: str, **kwargs: Any) -> float:
     """Loggea el inicio de una fase y devuelve el tiempo de inicio."""
     log_event(logger, logging.DEBUG, f"Empezando fase: {phase}", phase=phase, **kwargs)
     return time.monotonic()
 
-def log_phase_end(logger: logging.Logger, phase: str, start_time: float, level: int = logging.INFO, **kwargs: Any) -> float:
+
+def log_phase_end(
+    logger: logging.Logger,
+    phase: str,
+    start_time: float,
+    level: int = logging.INFO,
+    **kwargs: Any,
+) -> float:
     """Loggea el fin de una fase incluyendo el tiempo invertido en milisegundos."""
     elapsed_ms = (time.monotonic() - start_time) * 1000.0
-    log_event(logger, level, f"Fase completada: {phase}", phase=phase, elapsed_ms=round(elapsed_ms, 2), **kwargs)
+    log_event(
+        logger,
+        level,
+        f"Fase completada: {phase}",
+        phase=phase,
+        elapsed_ms=round(elapsed_ms, 2),
+        **kwargs,
+    )
     return elapsed_ms
+
 
 @contextmanager
 def log_phase(logger: logging.Logger, phase: str, **kwargs: Any):
@@ -65,7 +85,14 @@ def log_phase(logger: logging.Logger, phase: str, **kwargs: Any):
     try:
         yield
     except Exception as e:
-        log_event(logger, logging.ERROR, f"Fase fallida: {phase}", phase=phase, error=str(e), **kwargs)
+        log_event(
+            logger,
+            logging.ERROR,
+            f"Fase fallida: {phase}",
+            phase=phase,
+            error=str(e),
+            **kwargs,
+        )
         raise
     finally:
         # Usamos INFO por defecto si termina correctamente, pero podría ser DEBUG

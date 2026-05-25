@@ -1,5 +1,5 @@
-from unittest.mock import Mock, patch
 from http.client import RemoteDisconnected
+from unittest.mock import Mock, patch
 
 import requests
 from django.core.cache import cache
@@ -119,9 +119,7 @@ class DBLPClientTests(SimpleTestCase):
         first = dblp_client.get_author_papers(
             "https://dblp.org/pid/r/GregorioRobles.html"
         )
-        second = dblp_client.get_author_papers(
-            "https://dblp.org/pid/r/GregorioRobles"
-        )
+        second = dblp_client.get_author_papers("https://dblp.org/pid/r/GregorioRobles")
 
         self.assertEqual(first, second)
         session.get.assert_called_once_with(
@@ -144,9 +142,7 @@ class DBLPClientTests(SimpleTestCase):
         mock_build_session.return_value = session
 
         with self.assertRaises(dblp_client.DBLPClientError) as ctx:
-            dblp_client.get_author_papers(
-                "https://dblp.org/pid/r/GregorioRobles.html"
-            )
+            dblp_client.get_author_papers("https://dblp.org/pid/r/GregorioRobles.html")
 
         message = str(ctx.exception)
         self.assertIn("DBLP esta limitando temporalmente las peticiones", message)

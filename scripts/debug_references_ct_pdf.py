@@ -10,6 +10,14 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
+import django  # noqa: E402
+
+from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
+from citations.services.reader_data import extract_pdf_references  # noqa: E402
+from citations.services.references_data import (  # noqa: E402
+    REFERENCE_NOISE_RE,
+    build_references_data,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = ROOT / "tfg_project"
@@ -19,16 +27,8 @@ if str(PROJECT_ROOT) not in sys.path:
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tfg_project.settings")
 os.environ.setdefault("TRANSFORMERS_CACHE", str(ROOT / ".cache" / "transformers"))
 
-import django  # noqa: E402
 
 django.setup()
-
-from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
-from citations.services.reader_data import extract_pdf_references  # noqa: E402
-from citations.services.references_data import (  # noqa: E402
-    REFERENCE_NOISE_RE,
-    build_references_data,
-)
 
 
 DEFAULT_PDF = (
@@ -61,7 +61,9 @@ def detect_alerts(entry: Dict[str, Any]) -> List[str]:
         if match.group(1).isdigit()
     }
     foreign = sorted(
-        value for value in anchor_values if entry_index is None or value != int(entry_index)
+        value
+        for value in anchor_values
+        if entry_index is None or value != int(entry_index)
     )
     if foreign:
         alerts.append(f"nested_anchors={foreign}")

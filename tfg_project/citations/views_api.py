@@ -1,6 +1,8 @@
 # citations/views_api.py
 from __future__ import annotations
 
+import json
+import logging
 import os
 import tempfile
 import time
@@ -13,10 +15,19 @@ from django.http import FileResponse, Http404, HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from citations.logging_utils import get_logger
+
+from .models import IncorrectCitation
 from .services.citation_extractor import process_manuscript
+from .services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
 from .services.engines import ALLOWED_ENGINES, list_extractor_engines
+from .services.papermage_extractor import ContextHit, extract_pdf_data
+from .services.pdf_citation_analyzer import (
+    PDFDownloadError,
+    analyze_pdf_citations_from_url,
+)
 from .services.reader_data import (
     build_mentions,
     build_references,
@@ -26,12 +37,7 @@ from .services.reader_data import (
     extract_pdf_references_from_url,
     resolve_pdf_url,
 )
-from .services.pdf_citation_analyzer import (
-    PDFDownloadError,
-    analyze_pdf_citations_from_url,
-)
-from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
-from .services.papermage_extractor import ContextHit, extract_pdf_data
+from .services.reference_reconciliation import reconcile_reference_sources
 from .services.references_data import (
     REFERENCE_DEBUG_DIR,
     _prepare_crossref_context,
@@ -39,9 +45,9 @@ from .services.references_data import (
     finalize_reference_detection_debug_payload,
     write_reference_detection_debug_json,
 )
-from .services.reference_reconciliation import reconcile_reference_sources
-from .services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
-from .models import IncorrectCitation
+from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
+from .services.semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
+from .trace import Trace
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
@@ -52,13 +58,6 @@ except Exception:
         # Fallback vacío para no romper el arranque; la vista seguirá viva.
         return []
 
-
-from .services.semanticscholar import get_openaccess_pdf_url, download_pdf_to_temp
-import logging
-import json
-from django.views.decorators.http import require_http_methods
-from .trace import Trace
-from citations.logging_utils import get_logger
 
 logger = get_logger("citations.api")
 context_logger = logging.getLogger("citations.context")
@@ -105,9 +104,7 @@ def _build_article_info_payload(
 
     try:
         references_count = int(
-            metadata.get("reference_count")
-            or crossref_reference_count
-            or 0
+            metadata.get("reference_count") or crossref_reference_count or 0
         )
     except (TypeError, ValueError):
         references_count = 0
@@ -121,7 +118,9 @@ def _build_article_info_payload(
 
     title = str(metadata.get("title") or "").strip()
     venue = str(metadata.get("venue") or "").strip()
-    resolved = bool(title or authors or year or venue or references_count or cited_by_count)
+    resolved = bool(
+        title or authors or year or venue or references_count or cited_by_count
+    )
 
     return {
         "doi": normalized_doi,
@@ -403,7 +402,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         "yes",
         "on",
     )
-    article_doi = (request.POST.get("article_doi") or request.POST.get("doi") or "").strip()
+    article_doi = (
+        request.POST.get("article_doi") or request.POST.get("doi") or ""
+    ).strip()
 
     suffix = ".pdf" if f.name.lower().endswith(".pdf") else ".txt"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -516,7 +517,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             references_data_payload = data.get("references_data")
             reference_debug_payload = None
             if isinstance(references_data_payload, dict):
-                reference_debug_payload = references_data_payload.pop("debug_payload", None)
+                reference_debug_payload = references_data_payload.pop(
+                    "debug_payload", None
+                )
                 data["reference_debug_steps"] = (
                     references_data_payload.pop("reference_debug_steps", None) or []
                 )
@@ -550,9 +553,11 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                 )
                 data["reference_reconciliation"] = reconciliation_summary
                 data["references"] = reconciliation.get("final_references", [])
-                data["citation_style"] = str(
-                    reconciliation.get("final_citation_style") or citation_style
-                ).strip().lower()
+                data["citation_style"] = (
+                    str(reconciliation.get("final_citation_style") or citation_style)
+                    .strip()
+                    .lower()
+                )
                 data["max_reference_index"] = int(
                     reconciliation.get("final_max_reference_index") or 0
                 )
@@ -726,7 +731,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
         return JsonResponse(data, status=status, safe=True)
     except Exception as e:
         logger.exception(f"Excepción en el procesamiento de api_extract_citations: {e}")
-        return JsonResponse({"ok": False, "error": "Error interno del servidor."}, status=500)
+        return JsonResponse(
+            {"ok": False, "error": "Error interno del servidor."}, status=500
+        )
     finally:
         try:
             os.remove(temp_path)

@@ -1,14 +1,15 @@
-from pathlib import Path
+# isort: skip_file
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
-
-from django.test import SimpleTestCase
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.compare_reference_sources import (
+from django.test import SimpleTestCase  # noqa: E402
+
+from scripts.compare_reference_sources import (  # noqa: E402
     compare_reference_sources,
     resolve_pdf_paths,
     summarize_base_source,
@@ -80,7 +81,9 @@ class CompareReferenceSourcesTests(SimpleTestCase):
 
         self.assertEqual(summary["total"], 2)
         self.assertEqual(summary["doi_count"], 1)
-        self.assertEqual(summary["source_counts"], {"rows_raw": 1, "raw_reference_fallback": 1})
+        self.assertEqual(
+            summary["source_counts"], {"rows_raw": 1, "raw_reference_fallback": 1}
+        )
         self.assertEqual(summary["fallback_count"], 1)
         self.assertEqual(summary["accepted_count"], 1)
         self.assertEqual(summary["rejected_count"], 1)
@@ -91,7 +94,9 @@ class CompareReferenceSourcesTests(SimpleTestCase):
             ["non_bibliographic_phrase", "structure_fallback"],
         )
 
-    def test_compare_reference_sources_reports_diffs_overlap_and_contamination_classification(self):
+    def test_compare_reference_sources_reports_diffs_overlap_and_contamination_classification(
+        self,
+    ):
         base_references = [
             {"index": 1, "raw": "[1] Smith, J. 2020. A useful paper."},
             {"index": 2, "raw": "[2] Doe, A. 2021. Another useful paper."},

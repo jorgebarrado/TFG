@@ -177,7 +177,9 @@ def validate_reference_against_metadata(
     local_tokens = _text_tokens(local_norm, min_len=4)
 
     candidate_doi = normalize_doi(metadata.get("doi"))
-    candidate_title = str(metadata.get("title") or metadata.get("raw_text") or "").strip()
+    candidate_title = str(
+        metadata.get("title") or metadata.get("raw_text") or ""
+    ).strip()
     candidate_authors = metadata.get("authors")
     candidate_year = extract_year(metadata.get("year"))
     candidate_venue = str(metadata.get("venue") or "").strip()
@@ -236,7 +238,9 @@ def validate_reference_against_metadata(
         year_mentions = {int(value.group(0)) for value in YEAR_RE.finditer(text)}
         if candidate_year in year_mentions:
             year_score = 1.0
-        elif (candidate_year - 1) in year_mentions or (candidate_year + 1) in year_mentions:
+        elif (candidate_year - 1) in year_mentions or (
+            candidate_year + 1
+        ) in year_mentions:
             year_score = 0.4
         weighted_score += 0.08 * year_score
 
@@ -257,7 +261,9 @@ def validate_reference_against_metadata(
         for match in NUMBERED_ANCHOR_RE.finditer(text)
         if match.group(1).isdigit()
     ]
-    foreign_anchors = [value for value in anchors if expected is None or value != expected]
+    foreign_anchors = [
+        value for value in anchors if expected is None or value != expected
+    ]
     has_nested_anchor = len(foreign_anchors) > 0
 
     mixed_score = 0.0
@@ -267,7 +273,9 @@ def validate_reference_against_metadata(
     if candidate_doi and local_dois:
         if not any(_doi_matches(candidate_doi, local_doi) for local_doi in local_dois):
             mixed_score += 0.35
-        elif len({doi for doi in local_dois if not _doi_matches(candidate_doi, doi)}) > 0:
+        elif (
+            len({doi for doi in local_dois if not _doi_matches(candidate_doi, doi)}) > 0
+        ):
             mixed_score += 0.2
 
     all_years = sorted({int(match.group(0)) for match in YEAR_RE.finditer(text)})
@@ -812,7 +820,9 @@ def reconcile_reference_sources(
 
     base_items = [item for item in base_references or [] if isinstance(item, dict)]
     structured_payload = (
-        structured_references_data if isinstance(structured_references_data, dict) else {}
+        structured_references_data
+        if isinstance(structured_references_data, dict)
+        else {}
     )
     structured_items = [
         item
@@ -835,9 +845,10 @@ def reconcile_reference_sources(
         base_stats or {},
         fallback=len(base_items),
     )
-    structured_max_reference_index = _coerce_expected_index(
-        structured_payload.get("max_reference_index")
-    ) or _index_diagnostics(structured_items)["max_index"]
+    structured_max_reference_index = (
+        _coerce_expected_index(structured_payload.get("max_reference_index"))
+        or _index_diagnostics(structured_items)["max_index"]
+    )
 
     base_index_info = _index_diagnostics(
         base_items,
@@ -851,7 +862,9 @@ def reconcile_reference_sources(
     structured_fallback_count = sum(
         1 for item in structured_items if _is_fallback_source(item)
     )
-    structured_empty_count = sum(1 for item in structured_items if not _reference_text(item))
+    structured_empty_count = sum(
+        1 for item in structured_items if not _reference_text(item)
+    )
     structured_rejected_count = sum(
         1 for item in structured_items if _validation_accepted(item) is False
     )
@@ -870,7 +883,9 @@ def reconcile_reference_sources(
     empty_pct = _pct(structured_empty_count, structured_total)
     usable_pct = _pct(len(usable_structured), structured_total)
     coverage_floor = max(1, int(max(base_total, 1) * 0.5))
-    duplicate_index_limit = max(10, int(max(structured_index_info["unique_count"], 1) * 0.2))
+    duplicate_index_limit = max(
+        10, int(max(structured_index_info["unique_count"], 1) * 0.2)
+    )
     structured_healthy = (
         structured_total > 0
         and len(usable_structured) >= coverage_floor
@@ -889,7 +904,8 @@ def reconcile_reference_sources(
         )
         final_structured_references = [dict(item) for item in selected_structured]
         final_references = [
-            _local_reference_from_structured(item) for item in final_structured_references
+            _local_reference_from_structured(item)
+            for item in final_structured_references
         ]
         selection_reasons.append("structured_healthy")
         if structured_fallback_count:
@@ -960,9 +976,7 @@ def reconcile_reference_sources(
     final_index_info = _index_diagnostics(
         final_references,
         expected_max_index=(
-            final_max_reference_index
-            if selected_citation_style == "numeric"
-            else None
+            final_max_reference_index if selected_citation_style == "numeric" else None
         ),
     )
     final_total = len(final_references)
