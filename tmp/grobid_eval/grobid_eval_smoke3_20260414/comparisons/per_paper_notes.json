@@ -1,9 +1,0 @@
-{
-  "2103_02202v3": [
-    "processReferences delta refs=+3, delta valid=+2, segmentacion=similar",
-    "PDF de bucket problematico: explicit_override.",
-    "fulltext delta refs=+0, delta valid=+0, inline=31",
-    "fulltext aporta valor adicional frente a processReferences en este PDF.",
-    "citation_list vs refextract delta: title=-1, authors=+19, year=-1, doi=+2, almost_empty=+0"
-  ]
-}
