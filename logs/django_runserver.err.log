@@ -1,6 +1,0 @@
-C:\Users\jbarr\Documents\TFG\.venv311\Lib\site-packages\ncls\__init__.py:2: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-  import pkg_resources
-[10/May/2026 19:36:20] "GET / HTTP/1.1" 200 57262
-[10/May/2026 19:36:21,035] - Broken pipe from ('127.0.0.1', 50642)
-Session data corrupted
-[10/May/2026 19:37:01] "GET / HTTP/1.1" 200 57262

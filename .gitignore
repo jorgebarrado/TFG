@@ -23,6 +23,14 @@ node_modules/
 .claude
 /design-system
 
+# --- macOS ---
+.DS_Store
+**/.DS_Store
+
+# --- Logs ---
+*.log
+logs/
+
 # --- ARTEFACTOS DE DEBUG Y REGRESIÓN (nunca deben ir a git) ---
 tmp/reference_regression/
 tmp/reference_debug/
