@@ -373,8 +373,7 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             También puede contener los siguientes campos en el cuerpo de
             la solicitud:
             - engine (str, optional): El motor de extracción a utilizar
-              ('papermage', 'papercraft' o 'generic'). Por defecto es
-              'papermage'.
+              ('papermage'). Por defecto es 'papermage'.
             - debug (bool, optional): Si se activa, incluye información
               adicional de depuración en la respuesta.
 
@@ -488,15 +487,13 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             try:
                 reader_data = extract_pdf_data(temp_path)
             except Exception as exc:
-                if engine == "papermage":
-                    return JsonResponse(
-                        {
-                            "ok": False,
-                            "error": f"No se pudieron preparar las capas del reader: {exc}",
-                        },
-                        status=500,
-                    )
-                reader_data = {"pages": [], "layers": {}}
+                return JsonResponse(
+                    {
+                        "ok": False,
+                        "error": f"No se pudieron preparar las capas del reader: {exc}",
+                    },
+                    status=500,
+                )
 
             data["pages"] = (
                 reader_data.get("pages", []) if isinstance(reader_data, dict) else []

@@ -32,14 +32,12 @@ Respuesta:
 ```json
 {
   "engines": [
-    { "key": "papermage", "label": "PaperMage", "available": true },
-    { "key": "generic", "label": "Generico (rapido)", "available": true },
-    { "key": "papercraft", "label": "PaperCraft", "available": true }
+    { "key": "papermage", "label": "PaperMage", "available": true }
   ]
 }
 ```
 
-`api_extract_citations` acepta `engine` con valores `papermage`, `papercraft` o `generic`. En `services/engines.py` también existe política `auto` para uso interno, pero la API valida contra `ALLOWED_ENGINES`, que no incluye `auto`.
+`api_extract_citations` acepta `engine` únicamente con el valor `papermage`. La API valida contra `ALLOWED_ENGINES`, que no incluye `auto`.
 
 ## Extraer Referencias de Manuscrito
 
@@ -52,7 +50,7 @@ Campos:
 | Campo | Tipo | Requerido | Descripción |
 | --- | --- | --- | --- |
 | `manuscript` | file | Sí | PDF o TXT a procesar. |
-| `engine` | string | No | `papermage` por defecto. También `papercraft` o `generic`. |
+| `engine` | string | No | `papermage` (valor por defecto y único motor disponible). |
 | `debug` | bool | No | Incluye datos de depuración del procesamiento base. |
 | `debug_reference_detection` | bool | No | Genera debug detallado de referencias y URL de descarga. |
 | `article_doi` / `doi` | string | No | DOI del artículo fuente para enriquecimiento Crossref/Semantic Scholar. |

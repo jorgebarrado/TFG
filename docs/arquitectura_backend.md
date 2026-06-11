@@ -58,7 +58,7 @@ La referencia completa está en [api_reference_completa.md](api_reference_comple
 `citations/services/` contiene la lógica que no debe estar en vistas:
 
 - clientes externos: Semantic Scholar, Crossref, DBLP y GROBID;
-- extracción: PaperMage, PaperCraft, fallback genérico y análisis de contextos;
+- extracción: PaperMage y análisis de contextos;
 - reader: construcción de capas, referencias, snippets y datos de inicialización;
 - reconciliación y enriquecimiento DOI;
 - notificaciones;

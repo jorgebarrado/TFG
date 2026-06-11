@@ -8,8 +8,6 @@ Los servicios de `tfg_project/citations/services/` concentran la lógica pesada:
 | --- | --- |
 | `engines.py` | Declara motores disponibles y política de ejecución. |
 | `papermage_extractor.py` | Extracción estructural con PaperMage. |
-| `papercraft_extractor.py` | Extractor alternativo basado en PyMuPDF/PyPDF2. |
-| `generic_extractor.py` | Fallback rápido basado en texto/regex. |
 | `citation_extractor.py` | Procesamiento de manuscrito y detección de citas. |
 | `citation_patterns.py` | Patrones y heurísticas de citas. |
 | `pdf_citation_analyzer.py` | Descarga PDF por URL y aplica extracción de contextos. |
@@ -28,16 +26,9 @@ Los servicios de `tfg_project/citations/services/` concentran la lógica pesada:
 
 `engines.py` expone:
 
-- `papermage`: motor preferente para estructura rica.
-- `papercraft`: motor alternativo experimental.
-- `generic`: fallback rápido si solo se necesita texto básico.
+- `papermage`: único motor disponible, extracción estructural rica.
 
-`run_engine(engine_requested, pdf_path)` soporta:
-
-- `papermage`: solo PaperMage, sin fallback.
-- `papercraft`: solo PaperCraft, sin fallback.
-- `generic`: solo genérico.
-- `auto`: PaperMage -> PaperCraft -> genérico.
+`run_engine(engine_requested, pdf_path)` ejecuta siempre PaperMage (incluida la política `auto`); si falla o no está disponible devuelve error, sin fallback.
 
 Nota: la API pública `api_extract_citations` valida `engine` contra `ALLOWED_ENGINES`, que contiene las claves declaradas en `ENGINE_LABELS` y no incluye `auto`.
 

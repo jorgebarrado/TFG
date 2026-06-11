@@ -1097,7 +1097,7 @@ def citation_extract_contexts(request, pk):
         )
         return redirect("citation_detail", pk=pk)
 
-    engine = (request.POST.get("engine") or "generic").strip().lower()
+    engine = (request.POST.get("engine") or "papermage").strip().lower()
     if engine not in ALLOWED_ENGINES:
         messages.error(request, "Herramienta de extraccion no valida.")
         return redirect("citation_detail", pk=pk)

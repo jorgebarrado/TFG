@@ -17,7 +17,7 @@ La aplicación está pensada como una herramienta de apoyo: automatiza búsqueda
    - Renderiza PDFs, muestra capas de texto, extrae referencias y conecta referencias con menciones.
 
 3. **Servicios de extracción y enriquecimiento**
-   - Motores: `papermage`, `papercraft` y `generic`.
+   - Motor: `papermage`.
    - Pipeline semántico con Semantic Scholar para buscar citadores open access.
    - Enriquecimiento DOI con Crossref y Semantic Scholar.
    - Herramientas de regresión para comparar resultados sobre PDFs reales.

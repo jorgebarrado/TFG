@@ -166,7 +166,7 @@ python scripts/run_reference_regression.py --cleanup-keep-days 3
 | --- | --- |
 | `--dataset-type all|exploratory` | Filtra el subconjunto autodetectado. |
 | `--paper-id <id>` | Puede repetirse para ejecutar varios PDFs concretos. |
-| `--engine papermage|papercraft|generic|auto` | Motor usado por `process_manuscript`. |
+| `--engine papermage|auto` | Motor usado por `process_manuscript`. |
 | `--limit N` | Limita cantidad de PDFs tras filtros. |
 | `--output-dir DIR` | Directorio de salida manual. |
 | `--run-name NAME` | Nombre bajo `tmp/reference_regression/`. |

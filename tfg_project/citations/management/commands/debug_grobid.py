@@ -15,7 +15,7 @@ Con comparación:
 Opciones completas:
     --pdf PATH              Ruta al PDF (obligatorio)
     --compare-current       Ejecuta el extractor actual y guarda comparación
-    --engine ENGINE         Motor para el extractor actual: auto|papermage|papercraft|generic
+    --engine ENGINE         Motor para el extractor actual: auto|papermage
     --output-dir DIR        Directorio de salida (default: tmp/grobid_debug/)
     --grobid-url URL        Override de la URL base de GROBID
     --timeout N             Override del timeout en segundos
@@ -106,7 +106,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--engine",
             default="auto",
-            choices=["auto", "papermage", "papercraft", "generic"],
+            choices=["auto", "papermage"],
             metavar="ENGINE",
             help="Motor para el extractor actual en la comparación (default: auto).",
         )

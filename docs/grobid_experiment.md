@@ -82,7 +82,7 @@ python manage.py debug_grobid --pdf /ruta/paper.pdf --grobid-url http://localhos
 | --- | --- |
 | `--pdf PATH` | PDF obligatorio. |
 | `--compare-current` | Ejecuta también el extractor actual y genera comparación. |
-| `--engine auto|papermage|papercraft|generic` | Motor del extractor actual en la comparación. |
+| `--engine auto|papermage` | Motor del extractor actual en la comparación. |
 | `--output-dir DIR` | Directorio de salida. |
 | `--grobid-url URL` | URL base de GROBID. |
 | `--timeout N` | Timeout en segundos. |

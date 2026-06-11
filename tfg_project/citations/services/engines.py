@@ -2,11 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
-from .generic_extractor import (
-    GENERIC_AVAILABLE,
-    generic_extract_paragraphs_with_positions,
-)
-
 # ---- Declaraciones de disponibilidad e import seguro ----
 try:
     from .papermage_extractor import (
@@ -19,24 +14,11 @@ except Exception:
     pm_extract_paragraphs = None  # type: ignore
     pm_extract_paragraphs_with_positions = None  # type: ignore
 
-try:
-    from .papercraft_extractor import (
-        PC_AVAILABLE,
-        pc_extract_paragraphs,
-        pc_extract_paragraphs_with_positions,
-    )
-except Exception:
-    PC_AVAILABLE = False
-    pc_extract_paragraphs = None  # type: ignore
-    pc_extract_paragraphs_with_positions = None  # type: ignore
-
 
 EngineAttempt = Dict[str, Any]
 
 ENGINE_LABELS = {
     "papermage": "PaperMage",
-    "generic": "Generico (rapido)",
-    "papercraft": "PaperCraft",
 }
 
 ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
@@ -48,16 +30,6 @@ def list_extractor_engines() -> List[Dict[str, Any]]:
             "key": "papermage",
             "label": ENGINE_LABELS["papermage"],
             "available": PM_AVAILABLE,
-        },
-        {
-            "key": "generic",
-            "label": ENGINE_LABELS["generic"],
-            "available": GENERIC_AVAILABLE,
-        },
-        {
-            "key": "papercraft",
-            "label": ENGINE_LABELS["papercraft"],
-            "available": PC_AVAILABLE,
         },
     ]
 
@@ -112,55 +84,12 @@ def run_engine(
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
     """
     Política:
-      - 'papermage' -> solo papermage; si falla o no está, ERROR (no fallback genérico).
-      - 'papercraft' -> solo papercraft; si falla o no está, ERROR.
-      - 'auto' -> intenta papermage, luego papercraft, y por último generic (fallback).
+      - PaperMage es el único motor disponible ('auto' también lo usa).
+      - Si falla o no está disponible, ERROR (no hay fallback).
     Retorna: (engine_used, paragraphs, attempts, error_message, paragraphs_with_positions)
     """
-    engine = (engine_requested or "auto").lower().strip()
     attempts: List[EngineAttempt] = []
 
-    if engine == "papermage":
-        paras, with_pos, att, err = _attempt(
-            "papermage",
-            PM_AVAILABLE,
-            pm_extract_paragraphs,
-            pm_extract_paragraphs_with_positions,
-            pdf_path,
-        )
-        attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "papermage", paras, attempts, None, with_pos
-
-    if engine == "papercraft":
-        paras, with_pos, att, err = _attempt(
-            "papercraft",
-            PC_AVAILABLE,
-            pc_extract_paragraphs,
-            pc_extract_paragraphs_with_positions,
-            pdf_path,
-        )
-        attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "papercraft", paras, attempts, None, with_pos
-
-    if engine == "generic":
-        paras, with_pos, att, err = _attempt(
-            "generic",
-            GENERIC_AVAILABLE,
-            None,
-            generic_extract_paragraphs_with_positions,
-            pdf_path,
-        )
-        attempts.append(att)
-        if err:
-            return None, [], attempts, err, []
-        return "generic", paras, attempts, None, with_pos
-
-    # AUTO
-    # 1) PaperMage
     paras, with_pos, att, err = _attempt(
         "papermage",
         PM_AVAILABLE,
@@ -169,29 +98,6 @@ def run_engine(
         pdf_path,
     )
     attempts.append(att)
-    if not err:
-        return "papermage", paras, attempts, None, with_pos
-
-    # 2) PaperCraft
-    paras, with_pos, att, err2 = _attempt(
-        "papercraft",
-        PC_AVAILABLE,
-        pc_extract_paragraphs,
-        pc_extract_paragraphs_with_positions,
-        pdf_path,
-    )
-    attempts.append(att)
-    if not err2:
-        return "papercraft", paras, attempts, None, with_pos
-
-    # 3) Generic (siempre)
-    paras, with_pos, att, err3 = _attempt(
-        "generic",
-        GENERIC_AVAILABLE,
-        None,
-        generic_extract_paragraphs_with_positions,
-        pdf_path,
-    )
-    attempts.append(att)
-    # Generic no debería errar; si viniera vacío, es lo que hay
-    return "generic", paras, attempts, None, with_pos
+    if err:
+        return None, [], attempts, err, []
+    return "papermage", paras, attempts, None, with_pos

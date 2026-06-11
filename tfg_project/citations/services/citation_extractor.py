@@ -25,20 +25,6 @@ try:
 except Exception:
     pm_ctx = None
 
-# PaperCraft (si no existe, quedará None)
-try:
-    from .papercraft_extractor import (
-        extract_contexts_from_pdf as pc_extract,  # type: ignore
-    )
-except Exception:
-    pc_extract = None
-
-# ====== Dependencia ligera para el extractor genérico ======
-try:
-    import PyPDF2
-except Exception:
-    PyPDF2 = None
-
 # ====== Regex básicos: [n] y Autor (Año) ======
 # Alias historico del AUTHOR_YEAR original. La logica viva esta en
 # `citation_patterns.NARRATIVE_AUTHOR_YEAR_REGEX`.
@@ -75,23 +61,6 @@ def _find_hits(
         citation_style=citation_style,
         total_references=total_references,
     )
-
-
-def _extract_text_from_pdf_generic(path: str) -> str:
-    if PyPDF2 is None:
-        return ""
-    text_parts: list[str] = []
-    try:
-        with open(path, "rb") as f:
-            reader = PyPDF2.PdfReader(f)
-            for page in reader.pages:
-                try:
-                    text_parts.append(page.extract_text() or "")
-                except Exception:
-                    pass
-    except Exception:
-        return ""
-    return "\n".join(text_parts)
 
 
 def _build_results(
@@ -142,21 +111,6 @@ def _build_results(
     return flat, total
 
 
-def _split_paragraphs(text: str) -> list[str]:
-    # separa por doble salto o líneas largas
-    raw = re.split(r"\n\s*\n", text)
-    paras: list[str] = []
-    for p in raw:
-        p = p.strip()
-        if not p:
-            continue
-        # une líneas cortadas
-        p = re.sub(r"[ \t]*\n[ \t]*", " ", p).strip()
-        if p:
-            paras.append(p)
-    return paras
-
-
 def _find_citations_in_paragraph(
     p: str,
     citation_style: str = "",
@@ -165,7 +119,7 @@ def _find_citations_in_paragraph(
     """Variante legacy con shape `{ref, pattern, ...}` para callers viejos.
 
     Convierte la salida de `find_citation_matches` al formato historico que
-    usaba `_generic_extract_contexts` y `_pm_loose_extract`.
+    usa `_pm_loose_extract`.
     """
     out: list[dict] = []
     for hit in find_citation_matches(
@@ -204,18 +158,6 @@ def _find_citations_in_paragraph(
                 }
             )
     return out
-
-
-def _generic_extract_contexts(path: str) -> list[dict]:
-    text = _extract_text_from_pdf_generic(path)
-    if not text:
-        return []
-    contexts: list[dict] = []
-    for p in _split_paragraphs(text):
-        hits = _find_citations_in_paragraph(p)
-        if hits:
-            contexts.extend(hits)
-    return contexts
 
 
 def _pm_loose_extract(path: str) -> list[dict]:
@@ -266,8 +208,8 @@ def process_manuscript(
         engine, pdf_path
     )
 
-    # Si NO estamos en 'auto' y hubo error → NO hay fallback, devolvemos error
-    if engine.lower() != "auto" and err:
+    # PaperMage es el único motor: si hubo error, no hay fallback
+    if err:
         payload: Dict[str, Any] = {
             "ok": False,
             "engine_requested": engine,
@@ -278,7 +220,7 @@ def process_manuscript(
             payload["trace"] = {"engines": attempts}
         return payload
 
-    # AUTO (o motor explícito sin error): construimos resultados (aunque paragraphs pueda estar vacío)
+    # Sin error: construimos resultados (aunque paragraphs pueda estar vacío)
     results, total = _build_results(
         paragraphs,
         paragraphs_with_positions,
