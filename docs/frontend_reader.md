@@ -70,7 +70,7 @@ En desarrollo, si `READER_VITE_DEV_SERVER` está definido y `DJANGO_DEBUG=1`, ca
 - `react-pdf`;
 - Less.
 
-El `package.json` de la raíz contiene dependencias frontend históricas y no sustituye al paquete real del reader.
+El `package.json` de la raíz declara React 18 para scripts estáticos sueltos (por ejemplo `citations/static/js/semantic_citations_react.js`) y no afecta al reader; el paquete real del reader es `frontend_reader/package.json`.
 
 ## Build y Desarrollo
 

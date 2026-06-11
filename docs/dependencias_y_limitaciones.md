@@ -18,10 +18,10 @@ CiteCheck depende de APIs externas, librerías pesadas de PDF/NLP y disponibilid
 
 | Componente | Uso | Riesgo |
 | --- | --- | --- |
-| PaperMage | Extracción estructural de PDFs | Instalación pesada, PyTorch, cambios upstream. |
+| PaperMage | Único motor de extracción estructural de PDFs | Instalación pesada (se instala desde un commit fijo de GitHub), PyTorch, cambios upstream. Sin fallback: si falla, la extracción devuelve error. |
 | PyTorch CPU | Dependencia de PaperMage/modelos | Instalación lenta; requiere índice CPU en pip. |
 | PyMuPDF (`fitz`) | Texto, referencias y capas | Diferencias por versión en extracción de texto. |
-| pdfplumber/pdfminer | Fallbacks de texto | Puede fallar con PDFs protegidos o layouts complejos. |
+| pdfplumber/pdfminer | Dependencias de PaperMage y utilidades de texto | Puede fallar con PDFs protegidos o layouts complejos. |
 | Vite/React reader | UI de PDF | Bundle debe estar compilado o Vite disponible. |
 
 ## Limitaciones de PDF
@@ -63,7 +63,9 @@ Riesgos actuales:
 | --- | --- |
 | `LOG_CITATIONS=1` | Activa logging de `citations` y `citations.context`. |
 | `LOG_CITATIONS_LEVEL=DEBUG` | Aumenta detalle del logger de contexto. |
-| `TRACE_CITATIONS=1` | Activa trazas internas en algunos servicios. |
+| `TRACE_CITATIONS=1` | Activa trazas internas en `reader_data.py` y servicios asociados. |
+| `TRACE_REFERENCES=1` | Activa trazas internas en `references_data.py`. |
+| `INCLUDE_TRACE_IN_RESPONSE=1` | Incluye la traza interna en respuestas de `views_api.py`. |
 | `debug=1` | En endpoints compatibles, incluye información adicional. |
 | `debug_reference_detection=1` | Genera debug profundo de referencias en extracción de reader. |
 

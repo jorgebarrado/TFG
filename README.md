@@ -14,6 +14,8 @@ CiteCheck es una aplicación web para registrar, revisar y contextualizar citas 
 
 Requisitos recomendados: Python 3.11, Node.js/npm para el reader, Git y Docker opcional para GROBID o para ejecutar el servicio web en contenedor.
 
+Windows (PowerShell):
+
 ```powershell
 python -m venv .venv311
 .\.venv311\Scripts\Activate.ps1
@@ -22,6 +24,19 @@ python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r 
 python tfg_project/manage.py migrate
 python tfg_project/manage.py runserver
 ```
+
+Linux/macOS:
+
+```bash
+python3.11 -m venv .venv311
+source .venv311/bin/activate
+python -m pip install --upgrade pip
+python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+python tfg_project/manage.py migrate
+python tfg_project/manage.py runserver
+```
+
+Notas para Linux/macOS: `requirements.txt` está codificado en UTF-16 (pip lo lee gracias al BOM; el Dockerfile lo re-codifica automáticamente) e incluye `pywin32`, que solo aplica a Windows. Si la instalación falla por estos motivos, consulta [docs/instalacion.md](docs/instalacion.md).
 
 La aplicación queda disponible en `http://127.0.0.1:8000/`.
 
@@ -74,6 +89,7 @@ El índice mantenido está en [docs/README.md](docs/README.md). Lecturas princip
 - [Referencia de API](docs/api_reference_completa.md)
 - [Frontend Reader](docs/frontend_reader.md)
 - [Servicios de extracción](docs/servicios_extraccion.md)
+- [Tests y verificación](docs/tests_y_verificacion.md)
 - [Manual de usuario](docs/manual_usuario.md)
 
 Los directorios `tmp/` y `docs/superpowers/` contienen artefactos de pruebas, experimentos o planes históricos; no sustituyen a la documentación mantenida.
@@ -82,7 +98,8 @@ Los directorios `tmp/` y `docs/superpowers/` contienen artefactos de pruebas, ex
 
 ```powershell
 python tfg_project/manage.py check
+python tfg_project/manage.py test citations
 python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
 ```
 
-El segundo comando ejecuta una línea base pesada sobre PDFs reales. Úsalo cuando toques extracción, referencias o el reader.
+El último comando ejecuta una línea base pesada sobre PDFs reales. Úsalo cuando toques extracción, referencias o el reader. La guía completa de tests está en [docs/tests_y_verificacion.md](docs/tests_y_verificacion.md).

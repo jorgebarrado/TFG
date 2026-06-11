@@ -1,8 +1,10 @@
 # Estado del Sistema
 
-Estado revisado: 2026-05-23.
+Estado revisado: 2026-06-11.
 
 Este documento resume la madurez técnica de los módulos principales. Úsalo para decidir qué piezas son flujo principal, cuáles están en beta y cuáles son experimentos aislados.
+
+Cambio reciente relevante: desde junio de 2026 PaperMage es el único motor de extracción. Los motores PaperCraft y genérico (fallback) fueron eliminados; si PaperMage falla, la extracción devuelve error en lugar de degradar a otro motor.
 
 ## Mapa de Módulos
 

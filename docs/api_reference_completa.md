@@ -21,7 +21,20 @@ Esta referencia documenta los endpoints mantenidos en `citations/urls.py`, `view
 | `/citations/api/semantic-citation-analysis/` | GET | `views_api.api_semantic_citation_analysis` | Ejecuta análisis completo de citadores por DOI. |
 | `/citations/api/doi/` | GET | `ajax_views.fetch_doi_metadata` | Obtiene metadatos para un DOI. |
 
-Los endpoints AJAX no estrictamente REST (`ajax_submit/`, `vote/`, `citations/toggle_saved/`, etc.) se consumen desde plantillas y pueden devolver HTML parcial o JSON específico de UI.
+### Endpoints AJAX de UI
+
+Estos endpoints se consumen desde plantillas y pueden devolver HTML parcial o JSON específico de UI. No están pensados como API pública estable.
+
+| Endpoint | Método | Vista | Uso |
+| --- | --- | --- | --- |
+| `/citations/ajax_submit/` | POST | `ajax_views.ajax_submit_citation` | Crea un reporte desde el modal de envío. |
+| `/citations/vote/` | POST | `ajax_views.vote_view` | Registra upvote/downvote sobre un reporte. |
+| `/citations/citations/toggle_saved/` | POST | `ajax_views.toggle_saved` | Guarda o quita un reporte de guardados. |
+| `/citations/comments/delete/<pk>/` | POST | `ajax_views.delete_comment` | Borra un comentario propio. |
+| `/citations/get_all_metadata/` | GET | `ajax_views.get_all_metadata_from_doi` | Metadatos Crossref completos de un DOI. |
+| `/citations/search_suggest/` | GET | `ajax_views.citation_suggest` | Sugerencias de búsqueda del listado. |
+| `/citations/ajax/register/` | POST | `ajax_views.register_ajax` | Registro de usuario desde modal. |
+| `/citations/reports/create/ajax/` | POST | `views_reports.ajax_submit_report` | Envío del wizard legacy (inactivo). |
 
 ## Motores de Extracción
 
@@ -110,7 +123,7 @@ Errores comunes:
 
 - `400`: falta `manuscript` o motor inválido.
 - `422`: procesamiento ejecutado pero `ok=false`.
-- `500`: error interno o capas del reader no preparadas para `papermage`.
+- `500`: error interno o capas del reader no preparadas.
 
 ## Detectar DOI del Artículo
 
@@ -259,7 +272,7 @@ Ejecuta el pipeline de búsqueda inversa:
 
 1. resuelve citadores en Semantic Scholar;
 2. filtra PDFs open access;
-3. analiza contextos con PaperMage/fallbacks;
+3. analiza contextos de cita en cada PDF;
 4. devuelve estructura agregada del servicio.
 
 Errores:

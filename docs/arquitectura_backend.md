@@ -97,15 +97,19 @@ Detalles en [modelos_y_relaciones.md](modelos_y_relaciones.md).
 - perfiles: `/citations/perfil/`, `/citations/perfil/ajustes/`, `/citations/perfil/dblp-articulos/`;
 - revisión: `/citations/revision-citas/`;
 - AJAX: votos, guardados, comentarios, DOI metadata;
-- APIs: `/citations/api/...`.
+- APIs: `/citations/api/...`;
+- autenticación propia: `/citations/login/`, `/citations/register/`, `/citations/logout/`.
+
+Nota: las rutas de mensajes están registradas dos veces, en la raíz (`/messages/...`) y bajo `/citations/messages/...`. La UI usa los nombres de ruta (`messages_inbox`, etc.), por lo que ambas resuelven; si se consolidan, hay que revisar enlaces y redirects.
 
 ## Configuración Relevante
 
 - Base de datos: SQLite por defecto (`BASE_DIR / "db.sqlite3"`).
-- Idioma: español por defecto, inglés disponible.
+- Idioma: español por defecto, inglés disponible (`locale/`, `LocaleMiddleware`).
 - Static: `citations/static/`, con build del reader en `citations/static/reader/`.
 - Media: `tfg_project/media/`.
-- Logs: `tfg_project/logs/citations_context.log`.
+- Logs: `tfg_project/logs/citations_context.log`, en formato JSON estructurado con rotación (10 MB, 5 backups). Cada petición lleva un request id inyectado por `citations/middleware.py`.
+- Caché: `LocMemCache` en memoria (no persistente entre procesos).
 - GROBID: `GROBID_BASE_URL` y `GROBID_TIMEOUT`.
 - Semantic Scholar: `SEMANTIC_SCHOLAR_API_KEY`.
 

@@ -11,6 +11,11 @@ Esta guía prepara un entorno local para ejecutar CiteCheck, compilar el reader 
 
 En Windows, `requirements.txt` incluye `pywin32`. En Linux/macOS, usa Docker o crea una copia local de requirements sin `pywin32==311` si la instalación directa falla.
 
+Detalles a tener en cuenta con `requirements.txt`:
+
+- Está codificado en UTF-16 con BOM. `pip` lo lee correctamente, pero herramientas que asumen UTF-8 (grep, scripts propios) pueden fallar; el Dockerfile lo re-codifica automáticamente al construir la imagen.
+- `papermage` se instala desde un commit fijo de GitHub, por lo que la instalación requiere `git` y acceso a `github.com`.
+
 ## Backend Django
 
 Desde la raíz del repositorio:
@@ -43,7 +48,7 @@ URL local: `http://127.0.0.1:8000/`.
 
 ## Variables de Entorno
 
-Crea un `.env` en la raíz desde la que ejecutes Django. `python-dotenv` lo carga al iniciar `settings.py`.
+Crea un `.env` en la raíz desde la que ejecutes Django. `python-dotenv` lo carga al iniciar `settings.py`. Hay una plantilla mínima en `tfg_project/.env.example`.
 
 ```env
 DJANGO_DEBUG=1
@@ -119,7 +124,8 @@ Requiere `gettext` instalado en el sistema.
 
 ```powershell
 python tfg_project/manage.py check
+python tfg_project/manage.py test citations
 python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
 ```
 
-La baseline de referencias usa PDFs reales y puede tardar más que un check de Django.
+La baseline de referencias usa PDFs reales y puede tardar más que un check de Django. El detalle de qué cubre cada módulo de test está en [tests_y_verificacion.md](tests_y_verificacion.md).

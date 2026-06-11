@@ -17,8 +17,13 @@ Los servicios de `tfg_project/citations/services/` concentran la lógica pesada:
 | `doi_enrichment_service.py` | Enriquecimiento con Crossref/Semantic Scholar. |
 | `semantic_citation_pipeline.py` | Búsqueda inversa de citadores y análisis automático. |
 | `semantic_scholar_client.py` / `semanticscholar.py` | Clientes Semantic Scholar. |
+| `semantic_fetch.py` | Utilidades de obtención de datos de Semantic Scholar. |
 | `crossref_client.py` | Cliente Crossref. |
 | `dblp_client.py` | Cliente DBLP. |
+| `external_api.py` | Utilidades compartidas para llamadas a APIs externas. |
+| `evidence.py` | Normalización y etiquetado de evidencias de reportes. |
+| `notifications.py` | Construcción de notificaciones de comunidad/sistema. |
+| `report_tags.py` | Etiquetas derivadas de reportes. |
 | `grobid_*` | Experimento GROBID aislado. |
 | `ai_*` | Funciones IA experimentales. |
 

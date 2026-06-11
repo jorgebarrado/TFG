@@ -22,17 +22,18 @@ Esta carpeta contiene la documentación mantenida de CiteCheck. Si estás entran
 
 | Documento | Contenido |
 | --- | --- |
+| [tests_y_verificacion.md](tests_y_verificacion.md) | Suite de tests, qué cubre cada módulo y qué ejecutar según el cambio. |
 | [extractor_referencias_y_regresion.md](extractor_referencias_y_regresion.md) | `references_data.py` y runner de regresión sobre PDFs reales. |
 | [reference_pipeline_baseline.md](reference_pipeline_baseline.md) | Test de baseline del pipeline de referencias. |
 | [reference_parsing_experiment.md](reference_parsing_experiment.md) | Comparativa aislada entre refextract, AnyStyle y LLM. |
 | [grobid_experiment.md](grobid_experiment.md) | Integración experimental completa con GROBID. |
 | [grobid_pdf_debug.md](grobid_pdf_debug.md) | Comando simple para probar un PDF contra GROBID. |
+| [../STYLE.md](../STYLE.md) | Estilo de código, Black/isort/Flake8 y pre-commit. |
 
 ## Qué No Es Documentación Viva
 
 - `tmp/`: resultados de ejecuciones, comparativas y artefactos de debug. Pueden ser útiles como evidencia histórica, pero no son manuales.
 - `docs/superpowers/`: especificaciones y planes de trabajo de sesiones anteriores.
-- `testfile.txt`: archivo de prueba sin contenido documental.
 
 ## Regla de Mantenimiento
 
