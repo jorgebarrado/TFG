@@ -1,3 +1,5 @@
+# Vuelca en JSON el resultado de extract_pdf_data (capas papermage) para un PDF dado.
+# Útil para inspeccionar qué páginas y capas (tokens, rows, bibliographies…) devuelve el extractor.
 from __future__ import annotations
 
 import json

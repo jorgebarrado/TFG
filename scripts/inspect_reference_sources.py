@@ -1,3 +1,6 @@
+# Inspecciona y compara todas las fuentes de referencias para un PDF:
+# extractor propio, GROBID, refextract, Crossref y Semantic Scholar.
+# Salida en tmp/reference_source_inspection/<pdf_stem>/ con un JSON unificado por fuente.
 from __future__ import annotations
 
 import argparse

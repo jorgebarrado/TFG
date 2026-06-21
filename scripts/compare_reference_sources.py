@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Compara las referencias extraídas por reader_data (fuente base) y references_data
+# (fuente estructurada) sobre PDFs reales y clasifica el resultado por PDF.
+# Salida en tmp/reference_source_compare/<run-id>/summary.json y summary.md
 from __future__ import annotations
 
 import argparse

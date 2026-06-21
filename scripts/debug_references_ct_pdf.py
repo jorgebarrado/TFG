@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Muestra por consola las referencias finales de un PDF (fuente, alertas, validación)
+# tal como las ve build_references_data. Opcionalmente escribe el payload completo en JSON.
 from __future__ import annotations
 
 import argparse

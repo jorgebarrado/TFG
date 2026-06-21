@@ -66,6 +66,8 @@ Variables opcionales:
 
 ## Docker
 
+Ver [docker.md](docker.md) para la descripción completa de los archivos y su función.
+
 Ejecutar el backend:
 
 ```powershell

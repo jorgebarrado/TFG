@@ -1,6 +1,69 @@
 # Frontend Reader
 
-El reader es una aplicación React/Vite integrada en Django para visualizar PDFs, extraer referencias, mostrar menciones y navegar entre contexto y bibliografía.
+App React/Vite integrada en Django para visualizar PDFs, extraer referencias, mostrar menciones y navegar entre contexto y bibliografía.
+
+## Arquitectura visual
+
+Dos paneles fijos:
+
+```
+┌────────────────────┬──────────────────────────┐
+│  Sidebar (360px)   │      PDF Viewer           │
+│                    │                           │
+│  Tab: Extraer      │  + Overlay citas          │
+│  Tab: Snippets     │  + Overlay referencias    │
+│  Tab: Referencias  │  + Overlay capas v2       │
+└────────────────────┴──────────────────────────┘
+```
+
+Las tres pestañas del sidebar:
+
+- **Extraer** — dropzone para subir PDF, botón para lanzar extracción, barra de progreso.
+- **Snippets** — lista citas encontradas en el texto. Al clicar una, el PDF hace scroll y resalta el fragmento.
+- **Referencias** — lista referencias bibliográficas con mapa cita↔referencia. Al clicar, se resalta en el PDF con un overlay SVG.
+
+## Flujo de datos
+
+```
+1. Django abre el reader en ventana nueva y pone el PDF en IndexedDB
+2. main.jsx lee IndexedDB, monta ReaderApp
+3. Usuario sube PDF (o viene precargado) → se renderiza con @allenai/pdf-components
+4. Usuario pulsa "Extraer" → POST /citations/api/extract-citations/ con el PDF
+5. Backend devuelve snippets + referencias + datos visuales
+6. El reader pinta overlays SVG encima del PDF
+7. Clic en snippet → scroll + highlight en PDF
+   Clic en referencia → resaltado + popover con metadata
+```
+
+## Bootstrap (main.jsx)
+
+Antes de montar React hace tres cosas:
+
+1. Lee config del HTML (`apiUrl`, `pdfUrl`, `reportId`…) desde atributos `data-*`.
+2. Recupera el PDF de **IndexedDB** y la metadata de **sessionStorage** (la ventana padre los deposita ahí antes de abrir el reader).
+3. Notifica al opener con `postMessage` que está listo (`reader:ready`).
+
+## Detección de citas en el PDF
+
+Busca patrones con regex sobre el `textLayer` de cada página:
+
+| Tipo | Ejemplo |
+|---|---|
+| Numérica | `[12]`, `[1,3]`, `[1-4]` |
+| Autor-año narrativo | `Smith et al. (2020)` |
+| Autor-año parentético | `(Smith, 2020; Jones, 2021)` |
+| DOI desnudo | `10.1234/algo` |
+
+## Sistema de overlays
+
+Capas SVG apiladas sobre el PDF (z-index):
+
+| z-index | Capa | Contenido |
+|---|---|---|
+| 24 | `reader-v2-overlay` | Tokens, párrafos, filas (capas papermage) |
+| 25 | `reader-ref-overlay` | Referencias y contextos (azul/cyan) |
+| 26 | `reader-paragraph-layer` | Snippet resaltado actual (naranja) |
+| 28 | `reader-citation-layer` | Citas detectadas en el texto |
 
 ## Ubicación
 
