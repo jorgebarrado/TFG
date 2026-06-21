@@ -46,8 +46,8 @@ from typing import Any, Dict, List, Optional
 
 from django.core.management.base import BaseCommand, CommandError
 
-from citations.services.grobid_client import check_grobid_alive, get_base_url
-from citations.services.grobid_extractor import (
+from citations.experimental.grobid.grobid_client import check_grobid_alive, get_base_url
+from citations.experimental.grobid.grobid_extractor import (
     DEFAULT_OUTPUT_DIR,
     run_grobid_extraction,
 )
