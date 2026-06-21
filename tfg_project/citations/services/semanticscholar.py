@@ -1,4 +1,4 @@
-# citations/services/semanticscholar.py
+# Utilidades legacy para descargar PDFs en abierto desde Semantic Scholar (implementación anterior al cliente actual).
 from __future__ import annotations
 
 import os
@@ -7,8 +7,7 @@ from typing import Optional
 
 import requests
 
-
-S2_GRAPH = "https://api.semanticscholar.org/graph/v1"
+from .semantic_scholar_client import SemanticScholarError, get_paper_by_doi
 
 
 def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
@@ -22,12 +21,10 @@ def get_openaccess_pdf_url(doi: str, timeout: int = 15) -> Optional[str]:
     Returns:
         Optional[str]: La URL del PDF si se encuentra, de lo contrario None.
     """
-    # Nota: DOI debe ir con el prefijo DOI:
-    url = f"{S2_GRAPH}/paper/DOI:{doi}?fields=openAccessPdf"
-    r = requests.get(url, timeout=timeout, headers={"User-Agent": "CiteCheck/1.0"})
-    if r.status_code != 200:
+    try:
+        data = get_paper_by_doi(doi, fields="openAccessPdf")
+    except SemanticScholarError:
         return None
-    data = r.json() or {}
     pdf = data.get("openAccessPdf") or {}
     return pdf.get("url")
 

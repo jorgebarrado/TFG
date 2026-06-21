@@ -1,108 +1,127 @@
-# Guía de Instalación y Configuración
+# Instalación y Configuración
 
-Esta guía detalla los pasos necesarios para configurar el entorno de desarrollo de CiteCheck, tanto para el backend (Django) como para el frontend (React).
+Esta guía prepara un entorno local para ejecutar CiteCheck, compilar el reader React y activar herramientas opcionales como GROBID.
 
-## Requisitos Previos
+## Requisitos
 
-*   **Python 3.13** o superior.
-*   **Node.js** y **npm** (para el frontend).
-*   **Git**.
+- Python 3.11 recomendado. `docker/Dockerfile` usa `python:3.11-slim`.
+- Node.js y npm para `frontend_reader/`.
+- Git.
+- Docker opcional para ejecutar la app o GROBID en contenedores.
 
-## Configuración del Backend (Django)
+En Windows, `requirements.txt` incluye `pywin32`. En Linux/macOS, usa Docker o crea una copia local de requirements sin `pywin32==311` si la instalación directa falla.
 
-1.  **Clonar el repositorio:**
+## Backend Django
 
-    ```bash
-    git clone <url-del-repositorio>
-    cd <nombre-del-directorio>
-    ```
+Desde la raíz del repositorio:
 
-2.  **Crear un entorno virtual:**
+```powershell
+python -m venv .venv311
+.\.venv311\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+```
 
-    Es recomendable usar un entorno virtual para aislar las dependencias.
+En Linux/macOS:
 
-    ```bash
-    python -m venv venv
-    # Activar en Linux/macOS
-    source venv/bin/activate
-    # Activar en Windows
-    venv\Scripts\activate
-    ```
+```bash
+python3.11 -m venv .venv311
+source .venv311/bin/activate
+python -m pip install --upgrade pip
+python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+```
 
-3.  **Instalar dependencias:**
+Aplica migraciones y arranca el servidor:
 
-    El proyecto requiere dependencias específicas, incluyendo versiones de PyTorch para CPU (si no dispones de GPU).
+```powershell
+python tfg_project/manage.py migrate
+python tfg_project/manage.py createsuperuser
+python tfg_project/manage.py runserver
+```
 
-    ```bash
-    pip install -r requirements-3.13.txt --extra-index-url https://download.pytorch.org/whl/cpu
-    ```
+URL local: `http://127.0.0.1:8000/`.
 
-4.  **Configurar variables de entorno:**
+## Variables de Entorno
 
-    Crea un archivo `.env` en la raíz del proyecto (`tfg_project/`) o configura las variables en tu sistema. Las variables principales son:
+Crea un `.env` en la raíz desde la que ejecutes Django. `python-dotenv` lo carga al iniciar `settings.py`.
 
-    *   `DJANGO_SECRET_KEY`: Clave secreta de Django.
-    *   `DJANGO_DEBUG`: `True` para desarrollo, `False` para producción.
-    *   `ALLOWED_HOSTS`: Lista de hosts permitidos (ej. `localhost,127.0.0.1`).
-    *   `LOG_CITATIONS`: `1` para activar logs detallados de extracción.
+```env
+DJANGO_DEBUG=1
+DJANGO_SECRET_KEY=dev-only-change-me
+ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+LOG_CITATIONS=1
+LOG_CITATIONS_LEVEL=INFO
+SEMANTIC_SCHOLAR_API_KEY=
+READER_VITE_DEV_SERVER=
+GROBID_BASE_URL=http://localhost:8070
+GROBID_TIMEOUT=120
+```
 
-5.  **Migrar la base de datos:**
+Variables opcionales:
 
-    ```bash
-    python tfg_project/manage.py migrate
-    ```
+- `SEMANTIC_SCHOLAR_API_KEY`: mejora cuotas y estabilidad de Semantic Scholar.
+- `OPENAI_API_KEY`: requerida solo por el parser LLM experimental y evaluador IA.
+- `GOOGLE_API_KEY`: requerida solo por el detector IA experimental basado en Google Generative AI.
+- `READER_VITE_DEV_SERVER`: si vale `http://localhost:5173`, Django cargará el reader desde Vite durante desarrollo.
 
-6.  **Crear un superusuario (Administrador):**
+## Docker
 
-    ```bash
-    python tfg_project/manage.py createsuperuser
-    ```
+Ver [docker.md](docker.md) para la descripción completa de los archivos y su función.
 
-7.  **Compilar archivos de traducción (Opcional):**
-    Si necesitas asegurar que las traducciones estén actualizadas.
-    ```bash
-    # Requiere gettext instalado en el sistema
-    python tfg_project/manage.py compilemessages
-    ```
+Ejecutar el backend:
 
-8.  **Iniciar el servidor de desarrollo:**
+```powershell
+docker compose -f docker/compose.yml up -d web
+```
 
-    ```bash
-    python tfg_project/manage.py runserver
-    ```
-    El backend estará disponible en `http://127.0.0.1:8000/`.
+Levantar GROBID experimental:
 
-## Configuración del Frontend (Lector PDF - React)
+```powershell
+docker compose -f docker/compose.yml --profile experimental up -d grobid
+```
 
-El proyecto incluye un visor de PDF avanzado basado en React ubicado en `frontend_reader/`.
+`docker/compose.yml` expone Django en `8000` y GROBID en `8070`.
 
-1.  **Navegar al directorio del frontend:**
+## Frontend Reader
 
-    ```bash
-    cd frontend_reader
-    ```
+El reader vive en `frontend_reader/` y genera los estáticos finales en `tfg_project/citations/static/reader`.
 
-2.  **Instalar dependencias de Node:**
+```powershell
+cd frontend_reader
+npm install
+npm run build
+```
 
-    ```bash
-    npm install
-    ```
+Para desarrollo con Vite:
 
-3.  **Ejecutar en modo desarrollo:**
+```powershell
+cd frontend_reader
+npm run dev
+```
 
-    ```bash
-    npm run dev
-    ```
+Después define:
 
-4.  **Compilar para producción:**
+```env
+READER_VITE_DEV_SERVER=http://localhost:5173
+```
 
-    Para integrar los cambios en Django, debes compilar el proyecto. Los archivos generados se deben mover/referenciar en los estáticos de Django (según la configuración de despliegue específica).
+Con esa variable y `DJANGO_DEBUG=1`, las plantillas `reader.html` y `reader_preview.html` cargarán los módulos desde Vite. Sin esa variable, cargarán `static/reader/reader.js` y `static/reader/reader.css`.
 
-    ```bash
-    npm run build
-    ```
+## Traducciones
 
-## Notas Adicionales
+El proyecto usa `locale/` y `LocaleMiddleware`. Para recompilar mensajes:
 
-*   **Logs:** Los logs de extracción de citas se guardan en `tfg_project/logs/citations_context.log`.
-*   **APIs Externas:** Algunas funcionalidades dependen de la disponibilidad de la API de Semantic Scholar. Asegúrate de tener conexión a internet.
+```powershell
+python tfg_project/manage.py compilemessages
+```
+
+Requiere `gettext` instalado en el sistema.
+
+## Verificación Inicial
+
+```powershell
+python tfg_project/manage.py check
+python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
+```
+
+La baseline de referencias usa PDFs reales y puede tardar más que un check de Django.

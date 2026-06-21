@@ -1,3 +1,4 @@
+# Modelos de la BD: IncorrectCitation, Comment, Vote, SavedCitation, UserProfile, Notification, Conversation, Message.
 """Models for citations app."""
 
 from django.contrib.auth.models import User
@@ -259,7 +260,9 @@ class Message(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        return f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        return (
+            f"Mensaje de {self.sender.username} en conversación {self.conversation_id}"
+        )
 
 
 class Notification(models.Model):
@@ -298,29 +301,35 @@ class Notification(models.Model):
         return f"{self.title} -> {self.user.username}"
 
 
-# TODO: futuro flujo avanzado de reportes (CitationReport).
-# Ahora mismo no se usa en produccion, el flujo real va con IncorrectCitation.
+# Modelo legacy conservado por compatibilidad de migraciones.
+# El producto final crea y muestra reportes con IncorrectCitation.
 class CitationReport(models.Model):
     """
-    Flujo de wizard: reporte enriquecido con metadatos, PDFs y párrafos.
+    Flujo antiguo de wizard. No forma parte del flujo productivo actual.
     """
 
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     # Artículo original (A)
     original_doi = models.CharField(max_length=255)
     original_metadata = models.JSONField(null=True, blank=True)
     original_pdf_url = models.URLField(null=True, blank=True)
-    original_pdf_uploaded = models.FileField(upload_to="original_pdfs/", null=True, blank=True)
+    original_pdf_uploaded = models.FileField(
+        upload_to="original_pdfs/", null=True, blank=True
+    )
     original_snippet = models.TextField(null=True, blank=True)
 
     # Artículo que cita (B)
     citing_doi = models.CharField(max_length=255)
     citing_metadata = models.JSONField(null=True, blank=True)
     citing_pdf_url = models.URLField(null=True, blank=True)
-    citing_pdf_uploaded = models.FileField(upload_to="citing_pdfs/", null=True, blank=True)
+    citing_pdf_uploaded = models.FileField(
+        upload_to="citing_pdfs/", null=True, blank=True
+    )
 
-    # Párrafos seleccionados donde aparece la cita
+    # Campo legacy de párrafos seleccionados donde aparecía la cita
     citing_paragraphs = models.JSONField(null=True, blank=True)  # lista de dicts
     citing_pages = models.JSONField(null=True, blank=True)
 
@@ -335,4 +344,3 @@ class CitationReport(models.Model):
 
     def __str__(self):
         return f"Reporte: {self.original_doi} vs {self.citing_doi}"
-

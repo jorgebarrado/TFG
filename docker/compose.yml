@@ -1,0 +1,23 @@
+name: citecheck
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app/tfg_project
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ..:/app
+    environment:
+      DJANGO_DEBUG: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+  grobid:
+    image: lfoppiano/grobid:0.8.1
+    ports:
+      - "8070:8070"
+    profiles:
+      - experimental

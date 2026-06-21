@@ -1,3 +1,5 @@
+# Indica a Git cómo tratar los finales de línea y archivos binarios al hacer checkout/commit.
+
 # Normaliza terminadores de línea a LF en el repositorio
 * text=auto eol=lf
 

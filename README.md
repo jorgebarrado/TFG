@@ -1,30 +1,88 @@
-# Proyecto de Fin de Grado: CiteCheck
+# CiteCheck
 
-CiteCheck es una aplicación web desarrollada en Django que permite a los investigadores identificar y reportar citas incorrectas en artículos académicos.
+CiteCheck es una aplicación web para registrar, revisar y contextualizar citas académicas potencialmente incorrectas. El proyecto combina un backend Django, una interfaz HTML con Bootstrap, un lector PDF en React y servicios de extracción/enriquecimiento bibliográfico.
+
+## Capacidades Principales
+
+- Reportes de citas incorrectas basados en `IncorrectCitation`, con DOI original, DOI citador, tipo de error, área de publicación, explicación y contextos extraídos.
+- Comunidad: comentarios con respuestas, votos, reportes guardados, perfiles públicos, mensajes privados y notificaciones.
+- Integración académica: búsqueda de metadatos DOI, DBLP para publicaciones de usuario, Semantic Scholar para citadores y PDFs open access, y Crossref como fuente complementaria.
+- Reader PDF: visor React/Vite integrado en Django para subir PDFs, extraer referencias, detectar menciones y navegar entre referencia y contexto.
+- Herramientas de ingeniería: runner de regresión para referencias, experimentos aislados con GROBID y comparativas de parsers de referencias.
+
+## Inicio Rápido
+
+Requisitos recomendados: Python 3.11, Node.js/npm para el reader, Git y Docker opcional para GROBID o para ejecutar el servicio web en contenedor.
+
+```powershell
+python -m venv .venv311
+.\.venv311\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+python tfg_project/manage.py migrate
+python tfg_project/manage.py runserver
+```
+
+La aplicación queda disponible en `http://127.0.0.1:8000/`.
+
+Para compilar el reader React integrado en Django:
+
+```powershell
+cd frontend_reader
+npm install
+npm run build
+```
+
+Para desarrollo con Docker:
+
+```powershell
+docker compose -f docker/compose.yml up -d web
+```
+
+Para levantar GROBID, que es experimental y no forma parte del flujo principal:
+
+```powershell
+docker compose -f docker/compose.yml --profile experimental up -d grobid
+```
+
+## Configuración
+
+El backend carga variables desde `.env` mediante `python-dotenv`. Las más relevantes son:
+
+| Variable | Uso |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Clave secreta de Django. En desarrollo se genera una si falta. |
+| `DJANGO_DEBUG` | `1`, `true` o `yes` para modo desarrollo. |
+| `ALLOWED_HOSTS` | Hosts separados por coma. Valor por defecto: `localhost,127.0.0.1,[::1]`. |
+| `SEMANTIC_SCHOLAR_API_KEY` | Opcional. Mejora estabilidad y cuotas de Semantic Scholar. |
+| `LOG_CITATIONS` / `LOG_CITATIONS_LEVEL` | Activa y ajusta logs de extracción. |
+| `READER_VITE_DEV_SERVER` | URL del Vite dev server, por ejemplo `http://localhost:5173`. |
+| `GROBID_BASE_URL` / `GROBID_TIMEOUT` | Configuración del experimento GROBID. |
+| `OPENAI_API_KEY` / `GOOGLE_API_KEY` | Solo para módulos IA experimentales. |
+
+No subas claves reales al repositorio.
 
 ## Documentación
 
-La documentación completa del proyecto se encuentra en el directorio `docs/`:
+El índice mantenido está en [docs/README.md](docs/README.md). Lecturas principales:
 
--   [**Introducción**](docs/introduccion.md): Visión general del proyecto y sus objetivos.
--   [**Guía de Instalación**](docs/instalacion.md): Pasos para configurar el entorno de desarrollo.
--   [**Manual de Usuario**](docs/manual_usuario.md): Guía para registrarse, reportar citas y usar la plataforma.
--   [**Arquitectura del Backend**](docs/arquitectura_backend.md): Estructura del proyecto Django.
--   [**Modelos de Datos**](docs/modelos_datos.md): Descripción de la base de datos.
--   [**Servicios de Extracción**](docs/servicios_extraccion.md): Detalles técnicos sobre la extracción de citas y uso de APIs.
--   [**API REST**](docs/api_rest.md): Documentación de los endpoints disponibles.
--   [**Frontend Reader**](docs/frontend_reader.md): Información sobre el visor de documentos en React.
+- [Introducción](docs/introduccion.md)
+- [Instalación](docs/instalacion.md)
+- [Estado del sistema](docs/estado_del_sistema.md)
+- [Arquitectura backend](docs/arquitectura_backend.md)
+- [Modelos y relaciones](docs/modelos_y_relaciones.md)
+- [Referencia de API](docs/api_reference_completa.md)
+- [Frontend Reader](docs/frontend_reader.md)
+- [Servicios de extracción](docs/servicios_extraccion.md)
+- [Manual de usuario](docs/manual_usuario.md)
 
-## Características Rápidas
+Los directorios `tmp/` y `docs/superpowers/` contienen artefactos de pruebas, experimentos o planes históricos; no sustituyen a la documentación mantenida.
 
--   **Registro de usuarios y perfiles:** Los usuarios pueden registrarse, iniciar sesión y gestionar sus perfiles.
--   **Integración con DBLP:** Los usuarios pueden vincular sus perfiles de DBLP para ver sus publicaciones.
--   **Reporte de citas incorrectas:** Los usuarios pueden reportar citas incorrectas proporcionando los DOIs de los artículos implicados.
--   **Sistema de comentarios y votos:** Los usuarios pueden comentar y votar en los reportes de citas incorrectas.
--   **Extracción de contexto:** La aplicación puede extraer el contexto de las citas de archivos PDF.
--   **API REST:** Proporciona endpoints para la extracción de citas y contextos.
+## Verificación Básica
 
-## Uso Rápido
+```powershell
+python tfg_project/manage.py check
+python tfg_project/manage.py test citations.tests.test_reference_pipeline_baseline
+```
 
-1.  **Iniciar servidor:** `python tfg_project/manage.py runserver`
-2.  **Acceder:** `http://127.0.0.1:8000/`
+El segundo comando ejecuta una línea base pesada sobre PDFs reales. Úsalo cuando toques extracción, referencias o el reader.

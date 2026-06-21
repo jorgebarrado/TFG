@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Buscar citadores - CiteCheck{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <section class="hero-card mb-4">
+    <div>
+      <p class="muted-label mb-1">Buscar citadores</p>
+      <h1 class="fw-bold mb-2">Artículo original y artículos citadores</h1>
+      <p class="text-muted mb-0">
+        Introduce el DOI de un artículo original para ver trabajos citadores y crear un reporte verificable.
+      </p>
+    </div>
+  </section>
+
+  <div class="card glass-card mb-4">
+    <div class="card-body">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <input
+          type="text"
+          name="doi"
+          value="{{ doi }}"
+          class="form-control"
+          placeholder="Ej: 10.1145/3639477"
+          style="max-width: 480px;"
+          autofocus
+        >
+        <button class="btn btn-primary" type="submit">Buscar citadores</button>
+        {% if doi %}
+          <a href="{% url 'doi_search' %}" class="btn btn-outline-secondary">Limpiar</a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  {% if error_message %}
+    <div class="alert alert-warning">{{ error_message }}</div>
+  {% endif %}
+
+  {% if paper %}
+    <section class="hero-card mb-4">
+      <div>
+        <p class="muted-label mb-1">Artículo original</p>
+        <h2 class="fw-bold mb-2">{{ paper.title }}</h2>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          {% if paper.year %}
+            <span class="badge text-bg-light">{{ paper.year }}</span>
+          {% endif %}
+          {% if paper.venue %}
+            <span class="badge text-bg-secondary">{{ paper.venue }}</span>
+          {% endif %}
+          <span class="badge text-bg-info">DOI: {{ doi }}</span>
+          {% if total %}
+            <span class="badge text-bg-primary">{{ total }} citador{{ total|pluralize:"es" }}</span>
+          {% endif %}
+        </div>
+        {% if paper.authors %}
+          <p class="text-muted mb-0">{{ paper.authors|join:", " }}</p>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if citing_papers %}
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Artículos citadores</h4>
+        {% if total %}
+          <span class="text-muted small">
+            Mostrando {{ range_start }}–{{ range_end }} / {{ total }}
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="row g-3">
+        {% for citing in citing_papers %}
+          <div class="col-12">
+            <div class="card glass-card">
+              <div class="card-body d-flex flex-column flex-md-row justify-content-between gap-3">
+                <div>
+                  <h5 class="mb-2">{{ citing.title }}</h5>
+                  <div class="d-flex flex-wrap gap-2 mb-2">
+                    {% if citing.year %}
+                      <span class="badge text-bg-light">{{ citing.year }}</span>
+                    {% endif %}
+                    {% if citing.doi %}
+                      <span class="badge text-bg-secondary">DOI</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">Sin DOI</span>
+                    {% endif %}
+                  </div>
+                  {% if citing.authors %}
+                    <div class="text-muted small mb-2">{{ citing.authors }}</div>
+                  {% endif %}
+                  <div class="small">
+                    {% if citing.doi %}
+                      <a href="https://doi.org/{{ citing.doi }}" target="_blank" rel="noopener">Ver DOI</a>
+                    {% endif %}
+                    {% if citing.url %}
+                      <span class="mx-2 text-muted">|</span>
+                      <a href="{{ citing.url }}" target="_blank" rel="noopener">Ver en Semantic Scholar</a>
+                    {% endif %}
+                  </div>
+                  {% if citing.contexts %}
+                    <div class="mt-3">
+                      <p class="small fw-semibold text-muted mb-1">Evidencias devueltas por Semantic Scholar:</p>
+                      {% for evidence in citing.evidence_items %}
+                        <blockquote class="blockquote-sm border-start border-3 border-warning ps-3 py-1 mb-2">
+                          <p class="small mb-0 fst-italic text-body">{{ evidence.text }}</p>
+                        </blockquote>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="d-flex flex-column gap-2 text-md-end">
+                  <button type="button"
+                          class="btn btn-primary js-open-report flex-shrink-0" 
+                          style="white-space:nowrap;"
+                          data-original-doi="{{ doi }}"
+                          data-incorrect-doi="{{ citing.doi|default:'' }}"
+                          data-original-metadata="{{ paper_metadata_json|escape }}"
+                          data-incorrect-metadata="{{ citing.metadata_json|escape }}"
+                          data-evidence-json="{{ citing.evidence_json|escape }}">
+                    Crear reporte
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if next_offset %}
+        <div class="d-flex justify-content-center mt-4">
+          <a class="btn btn-outline-primary" href="?doi={{ doi }}&offset={{ next_offset }}">
+            Cargar más
+          </a>
+        </div>
+      {% endif %}
+
+    {% elif not error_message %}
+      <div class="card surface-card">
+        <div class="card-body">
+          <p class="text-muted mb-0">No hay citadores registrados para este artículo en Semantic Scholar.</p>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('reportModal');
+    if (!modalEl || typeof prefillReportModal !== 'function') return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    document.querySelectorAll('.js-open-report').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        prefillReportModal({
+          originalDoi: btn.dataset.originalDoi || '',
+          incorrectDoi: btn.dataset.incorrectDoi || '',
+          originalMetadata: btn.dataset.originalMetadata || '',
+          incorrectMetadata: btn.dataset.incorrectMetadata || '',
+          evidenceJson: btn.dataset.evidenceJson || '',
+        });
+        modal.show();
+      });
+    });
+  });
+</script>
+{% endblock %}

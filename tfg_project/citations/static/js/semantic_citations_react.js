@@ -8,7 +8,7 @@ const SemanticCitationsViewer = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const root = document.getElementById('papercraft-root');
+        const root = document.getElementById('semantic-citations-root');
         const doiFromData = root.getAttribute('data-doi');
         setDoi(doiFromData);
     }, []);
@@ -59,6 +59,6 @@ const SemanticCitationsViewer = () => {
     );
 };
 
-const container = document.getElementById('papercraft-root');
+const container = document.getElementById('semantic-citations-root');
 const root = ReactDOM.createRoot(container);
 root.render(<SemanticCitationsViewer />);

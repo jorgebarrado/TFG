@@ -1,39 +1,93 @@
 # Dependencias y Limitaciones
 
-Este documento describe las fronteras técnicas del sistema, las dependencias externas críticas y las condiciones bajo las cuales la funcionalidad puede degradarse.
+CiteCheck depende de APIs externas, librerías pesadas de PDF/NLP y disponibilidad de PDFs open access. Este documento describe qué puede degradarse y cómo diagnosticarlo.
 
-## Resumen de Dependencias Externas
+## Dependencias Externas
 
-| Servicio | Criticidad | Uso Principal | Riesgo Principal | Fallback |
-| :--- | :--- | :--- | :--- | :--- |
-| **Semantic Scholar API** | 🔴 Alta | Búsqueda de papers, grafo de citas, enlaces a PDF. | Rate Limits, API Downtime. | CrossRef (Parcial/Lento), Entrada Manual. |
-| **CrossRef API** | 🟡 Media | Metadatos bibliográficos complementarios. | Lenta, datos incompletos. | Semantic Scholar. |
-| **DBLP API** | 🟢 Baja | Importación de perfil de usuario. | Fallo en importación. | Edición manual de perfil. |
-| **Google/ORCID Auth** | 🔴 Alta | Login de usuarios. | Credenciales inválidas. | Login local (si habilitado). |
+| Servicio | Uso | Variable | Fallback |
+| --- | --- | --- | --- |
+| Semantic Scholar | Metadatos, citadores y PDFs open access | `SEMANTIC_SCHOLAR_API_KEY` opcional | Crossref parcial, entrada manual o PDF subido. |
+| Crossref | Metadatos DOI, referencias y cited-by | Ninguna | Semantic Scholar o datos locales. |
+| DBLP | Publicaciones de perfiles | Ninguna | Edición manual de perfil. |
+| Google/ORCID auth | Login social vía allauth | Configuración allauth/admin | Login local si está habilitado. |
+| GROBID | Experimento de comparación TEI | `GROBID_BASE_URL`, `GROBID_TIMEOUT` | Pipeline actual sin GROBID. |
+| OpenAI | Parser LLM experimental y evaluador IA | `OPENAI_API_KEY` | El experimento omite LLM si falta la clave. |
+| Google Generative AI | Detector IA experimental | `GOOGLE_API_KEY` | No ejecutar acción IA. |
 
-## Limitaciones de Procesamiento de PDF
+## Dependencias Locales Pesadas
 
-El sistema de extracción de contexto (`papermage_extractor.py`) tiene limitaciones inherentes a la naturaleza de los archivos PDF.
+| Componente | Uso | Riesgo |
+| --- | --- | --- |
+| PaperMage | Extracción estructural de PDFs | Instalación pesada, PyTorch, cambios upstream. |
+| PyTorch CPU | Dependencia de PaperMage/modelos | Instalación lenta; requiere índice CPU en pip. |
+| PyMuPDF (`fitz`) | Texto, referencias y capas | Diferencias por versión en extracción de texto. |
+| pdfplumber/pdfminer | Fallbacks de texto | Puede fallar con PDFs protegidos o layouts complejos. |
+| Vite/React reader | UI de PDF | Bundle debe estar compilado o Vite disponible. |
 
-| Tipo de PDF | Comportamiento | Causa Técnica | Solución Potencial |
-| :--- | :--- | :--- | :--- |
-| **PDF Nativo (Texto seleccionable)** | ✅ Funciona | PaperMage extrae el texto correctamente. | - |
-| **PDF Escaneado (Imagen)** | ❌ Falla | No hay capa de texto. `pages.spans` vacío. | Implementar OCR (Tesseract) previo. |
-| **PDF Encriptado/Protegido** | ❌ Falla | `PDFPlumber` lanza excepción de seguridad. | Desencriptar (si legal) o pedir otro archivo. |
-| **Doble Columna Compleja** | ⚠️ Parcial | A veces mezcla líneas de col. izq. con der. | Mejorar heurística de layout en PaperMage. |
+## Limitaciones de PDF
 
-## Limitaciones de Acceso (Open Access)
+| Tipo de PDF | Comportamiento esperado | Motivo |
+| --- | --- | --- |
+| Texto seleccionable | Mejor caso | Las librerías pueden leer spans/texto. |
+| Escaneado/imagen | Normalmente falla o devuelve 0 contextos | No hay OCR integrado. |
+| Protegido/encriptado | Puede fallar al abrir | Restricciones del archivo. |
+| Dos columnas complejo | Parcial | La reconstrucción de orden de lectura puede mezclar columnas. |
+| Bibliografía sin encabezado claro | Parcial | Se usan heurísticas de últimas páginas. |
+| Referencias no numeradas | Parcial | Matching y cobertura son más difíciles que en estilo numérico. |
 
-El sistema **solo puede analizar automáticamente el texto de artículos Open Access**.
+## Limitaciones de Open Access
 
-*   **Paywalls (IEEE, Elsevier, Springer):** Si un artículo citador está detrás de un muro de pago, Semantic Scholar no devolverá un `openAccessPdf`.
-*   **Consecuencia:** El sistema detectará que la cita existe (por metadatos), pero **no podrá extraer el contexto** ni mostrar qué se dice.
-*   **Acción de Usuario:** Debe subir el PDF manualmente si tiene acceso legal.
+El pipeline automático de citadores solo puede analizar texto cuando Semantic Scholar devuelve un `openAccessPdf` válido o cuando el usuario sube un PDF legalmente accesible.
 
-## Fallbacks del Sistema
+Si un citador está detrás de paywall:
 
-| Fallo | Comportamiento del Sistema | Acción del Usuario |
-| :--- | :--- | :--- |
-| **API Semantic Scholar Caída** | Error 502 en endpoints de búsqueda. | Debe introducir metadatos manualmente (si la UI lo permite) o esperar. |
-| **PDF no descargable** | Error en extracción, el reporte se crea sin contextos. | Puede intentar subir el PDF manualmente si lo tiene. |
-| **PDF sin texto (Imagen)** | Proceso termina con 0 contextos encontrados. | Debe copiar y pegar el texto manualmente en la descripción del reporte. |
+- puede aparecer como citador en metadatos;
+- no se podrá extraer contexto automáticamente;
+- el reporte puede crearse con explicación manual;
+- el usuario puede subir un PDF si tiene derecho a usarlo.
+
+## Rate Limits y Latencia
+
+Semantic Scholar y Crossref pueden devolver errores, respuestas incompletas o latencia alta. La clave `SEMANTIC_SCHOLAR_API_KEY` mejora estabilidad, pero no elimina límites.
+
+Riesgos actuales:
+
+- extracciones síncronas durante una petición web;
+- falta de cola de trabajos para análisis largos;
+- caché local en memoria, no persistente;
+- errores JSON no totalmente estandarizados.
+
+## Variables de Diagnóstico
+
+| Variable | Efecto |
+| --- | --- |
+| `LOG_CITATIONS=1` | Activa logging de `citations` y `citations.context`. |
+| `LOG_CITATIONS_LEVEL=DEBUG` | Aumenta detalle del logger de contexto. |
+| `TRACE_CITATIONS=1` | Activa trazas internas en algunos servicios. |
+| `debug=1` | En endpoints compatibles, incluye información adicional. |
+| `debug_reference_detection=1` | Genera debug profundo de referencias en extracción de reader. |
+
+Logs:
+
+- `tfg_project/logs/citations_context.log`
+- consola del servidor Django
+- artefactos bajo `tmp/reference_debug/` y `tmp/reference_regression/`
+
+## Fallbacks Funcionales
+
+| Fallo | Resultado | Acción recomendada |
+| --- | --- | --- |
+| Semantic Scholar no responde | Error en búsqueda/descarga | Reintentar, usar DOI manual o subir PDF. |
+| Crossref no resuelve DOI | Enriquecimiento incompleto | Mantener referencia local y revisar manualmente. |
+| PaperMage no disponible | Motor no disponible o error | Revisar instalación de PaperMage. |
+| PDF sin texto | 0 snippets/contextos | Añadir OCR fuera del sistema o copiar contexto manual. |
+| Vite no está levantado | Reader no carga en modo dev | Borrar `READER_VITE_DEV_SERVER` o arrancar `npm run dev`. |
+| GROBID no responde | Experimento falla | Levantar Docker local o ignorar GROBID. |
+
+## Qué No Garantiza El Sistema
+
+- Que un PDF descargado o subido corresponda inequívocamente al DOI indicado.
+- Que una cita encontrada sea incorrecta; la decisión sigue siendo humana.
+- Que todas las referencias del PDF puedan reconstruirse en orden.
+- Que APIs externas tengan datos completos o consistentes entre sí.
+- Que los módulos IA sean reproducibles o aptos para producción.

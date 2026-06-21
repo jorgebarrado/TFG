@@ -1,4 +1,6 @@
+# Objeto Trace: registra paso a paso la ejecución de un análisis de citas para el modo debug de la API.
 from __future__ import annotations
+
 import json
 import time
 import uuid

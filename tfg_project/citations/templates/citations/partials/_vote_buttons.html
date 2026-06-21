@@ -20,3 +20,11 @@
         </button>
     {% endif %}
 </div>
+{% if oob_vote_net %}
+    <div
+        id="vote-net-{{ citation.id }}"
+        hx-swap-oob="true"
+        class="vote-net {% if net_votes > 0 %}vote-positive{% elif net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
+        <i class="bi bi-arrow-up-short"></i>{% if net_votes > 0 %}+{% endif %}{{ net_votes }}
+    </div>
+{% endif %}

@@ -1,58 +1,105 @@
 {% load i18n %}
 <div class="modal fade" id="extractModal" tabindex="-1" aria-labelledby="extractModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="extractModalLabel">{% trans "Extraer citas de un PDF" %}</h5>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-content cc-extract-modal">
+
+      <!-- Header -->
+      <div class="modal-header cc-extract-header">
+        <div class="cc-header-text">
+          <h5 class="modal-title" id="extractModalLabel">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+            {% trans "Extraer citas de un PDF" %}
+          </h5>
+          <p class="cc-subtitle">{% trans "Sube un manuscrito para extraer automáticamente sus referencias bibliográficas." %}</p>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Cerrar' %}"></button>
       </div>
 
-      <div class="modal-body">
+      <!-- Body -->
+      <div class="modal-body cc-extract-body">
         <form id="extract-form">
-          <div class="mb-3">
-            <label for="extract-file" class="form-label">{% trans "Archivo PDF" %}</label>
-            <input id="extract-file" class="form-control" type="file" accept="application/pdf" required>
-            <div class="form-text">{% trans "Sube el manuscrito en PDF para intentar extraer las citas." %}</div>
-          </div>
 
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">{% trans "Motor de extracción" %}</label>
-              <select id="extract-engine" class="form-select">
-                <option value="" selected disabled>Selecciona una herramienta...</option>
-              </select>
+          <section class="cc-section">
+            <div class="cc-section-title" data-step="1">{% trans "Archivo PDF" %}</div>
+            <input id="extract-file" class="form-control" type="file" accept="application/pdf" required>
+            <div class="form-text mt-2">
+              <i class="fa-solid fa-circle-info me-1"></i>{% trans "Sube el manuscrito en PDF para intentar extraer las citas." %}
             </div>
-            <div class="col-md-6 d-flex align-items-end">
-              <div class="d-flex flex-column gap-2">
-                <div class="form-check">
+          </section>
+
+          <section class="cc-section">
+            <div class="cc-section-title" data-step="2">{% trans "Opciones de extracción" %}</div>
+            <div class="row g-3 align-items-end">
+              <div class="col-md-7">
+                <label class="form-label text-secondary fw-semibold" for="extract-engine">{% trans "Motor de extracción" %}</label>
+                <select id="extract-engine" class="form-select">
+                  <option value="" selected disabled>{% trans "Selecciona una herramienta..." %}</option>
+                </select>
+              </div>
+              <div class="col-md-5">
+                <div class="form-check form-switch pb-2">
                   <input class="form-check-input" type="checkbox" id="extract-debug">
-                  <label class="form-check-label" for="extract-debug">{% trans "Incluir depuración" %}</label>
+                  <label class="form-check-label text-secondary" for="extract-debug">
+                    {% trans "Guardar JSON de depuración de referencias" %}
+                  </label>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="mt-3 d-flex gap-2">
+          <!-- Acciones -->
+          <div class="cc-actions">
             <button id="extract-btn" type="submit" class="btn btn-primary" disabled>
-              {% trans "Extraer citas" %}
+              <i class="fa-solid fa-bolt me-1" aria-hidden="true"></i> {% trans "Extraer citas" %}
             </button>
             <button id="extract-reader-btn" type="button" class="btn btn-outline-secondary">
-              Abrir visor
+              <i class="fa-solid fa-book me-1" aria-hidden="true"></i> {% trans "Abrir visor" %}
             </button>
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <button
+              id="extract-debug-download-btn"
+              type="button"
+              class="btn btn-outline-secondary d-none"
+              disabled
+              data-download-url=""
+              data-filename="reference_debug.json"
+            >
+              <i class="fa-solid fa-download me-1" aria-hidden="true"></i> {% trans "Descargar depuración" %}
+            </button>
+            <button type="button" class="btn btn-light ms-auto border" data-bs-dismiss="modal">
               {% trans "Cerrar" %}
             </button>
           </div>
         </form>
 
-        <hr class="my-4">
+        <!-- Progress UI -->
+        <div id="extract-progress" class="extract-progress d-none mt-3" role="status" aria-live="polite">
+          <div class="extract-progress-head">
+            <div
+              id="extract-progress-spinner"
+              class="spinner-border spinner-border-sm text-primary extract-progress-spinner"
+              role="status"
+              aria-hidden="true"
+            ></div>
+            <div class="extract-progress-copy">
+              <div id="extract-progress-label" class="extract-progress-label">{% trans "Preparando extracción..." %}</div>
+              <div id="extract-progress-meta" class="extract-progress-meta">{% trans "Progreso aproximado" %}</div>
+            </div>
+            <div id="extract-progress-value" class="extract-progress-value">0%</div>
+          </div>
+          <div class="progress extract-progress-track" aria-hidden="true">
+            <div
+              id="extract-progress-bar"
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              style="width: 0%;"
+            ></div>
+          </div>
+        </div>
 
-        <div id="extract-alert" class="alert alert-danger d-none" role="alert"></div>
+        <!-- Alertas y Resultados -->
+        <div id="extract-alert" class="alert alert-danger d-none mt-3" role="alert"></div>
 
         <div id="extract-summary" class="mb-2 small text-muted d-none"></div>
-        <div id="extract-results" class="d-none">
-          <!-- Aquí se insertará la lista de resultados -->
-        </div>
+        <div id="extract-results" class="d-none"></div>
 
         <pre id="extract-trace" class="mt-3 small text-muted d-none"
              style="white-space: pre-wrap; background:#f8f9fa; padding:12px; border-radius:8px;"></pre>

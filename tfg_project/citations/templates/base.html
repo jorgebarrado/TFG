@@ -87,13 +87,8 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'home' %}#home-reportes-card">
-              {% trans "Ir a sección" %}
-            </a>
-          </li>
-          <li>
             <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">
-              {% trans "Manual" %}
+              {% trans "Crear reporte" %}
             </button>
           </li>
           <li>
@@ -118,14 +113,14 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'home' %}#pdf-upload-card">
-              {% trans "Ir a sección" %}
-            </a>
+            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractModal">
+              {% trans "Extraer citas" %}
+            </button>
           </li>
           <li>
-            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#extractModal">
-              {% trans "Extraer citas (PDF)" %}
-            </button>
+            <a class="dropdown-item" href="{% url 'citation_reader_preview' %}">
+              {% trans "Visualizar PDF" %}
+            </a>
           </li>
         </ul>
       </div>
@@ -139,18 +134,13 @@
         </a>
         <ul class="dropdown-menu shadow-sm">
           <li>
-            <a class="dropdown-item" href="{% url 'home' %}#home-dblp-card">
-              {% trans "Ir a sección" %}
+            <a class="dropdown-item" href="{% url 'doi_search' %}">
+              {% trans "Buscar citadores" %}
             </a>
           </li>
           <li>
             <a class="dropdown-item" href="{% url 'dblp_articles' %}">
-              {% trans "Explorar DBLP" %}
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="{% url 'citation_review_papers' %}">
-              {% trans "Revisión de citas (DBLP)" %}
+              {% trans "Usar perfil DBLP para elegir un artículo" %}
             </a>
           </li>
         </ul>
@@ -243,7 +233,7 @@
       </div>
       {% else %}
         <button
-  class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-3 py-1 text-sm text-slate-700 hover:bg-white hover:shadow-md transition me-2"
+  class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-3 py-1 text-sm text-slate-700 hover:bg-white hover:shadow-md transition me-0"
   data-bs-toggle="modal"
   data-bs-target="#loginModal">
   <i class="fa-solid fa-right-to-bracket text-xs"></i>
