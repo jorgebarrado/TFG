@@ -1,3 +1,4 @@
+# Helpers de entrada compartidos entre experimentos: extrae referencias base de PDFs y carga fixtures JSON.
 from __future__ import annotations
 
 import json

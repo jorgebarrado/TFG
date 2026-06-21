@@ -1,3 +1,4 @@
+# Extractor basado en PaperMage: segmenta PDFs en páginas, párrafos, filas y bibliografías con coordenadas geométricas.
 from __future__ import annotations
 
 import re

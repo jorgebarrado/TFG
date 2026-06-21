@@ -1,3 +1,4 @@
+# Vistas del módulo tutor: explora papers por autor en DBLP y detecta citas incorrectas en sus artículos.
 from __future__ import annotations
 
 import json

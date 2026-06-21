@@ -1,3 +1,4 @@
+# Utilidades compartidas: descarga de PDFs open-access, enriquecimiento de metadatos DOI y consulta de citas Semantic Scholar.
 import logging
 import xml.etree.ElementTree as ET
 

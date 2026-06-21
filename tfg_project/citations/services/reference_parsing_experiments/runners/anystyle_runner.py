@@ -1,3 +1,4 @@
+# Runner experimental de AnyStyle: invoca la CLI Ruby de AnyStyle para parsear referencias bibliográficas.
 from __future__ import annotations
 
 import json

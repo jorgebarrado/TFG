@@ -1,3 +1,4 @@
+# Helpers para la evidencia de reportes: normaliza, etiqueta y serializa los contextos de cita de IncorrectCitation.
 """Helpers for report evidence stored in IncorrectCitation.citation_contexts."""
 
 from __future__ import annotations

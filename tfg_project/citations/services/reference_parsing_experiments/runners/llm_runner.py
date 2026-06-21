@@ -1,3 +1,4 @@
+# Runner experimental de LLM (Claude): parsea referencias bibliográficas usando un modelo de lenguaje.
 from __future__ import annotations
 
 import json

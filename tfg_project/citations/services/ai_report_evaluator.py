@@ -1,3 +1,4 @@
+# Servicio de evaluación de reportes con IA (Claude): valida y enriquece la descripción de citas incorrectas.
 import json
 import os
 from typing import Any, Dict, List

@@ -1,3 +1,4 @@
+# Construye referencias estructuradas, anclas numéricas y diagnósticos de extracción para el reader de PDF.
 """ConstrucciÃ³n de referencias, anclajes y diagnÃ³sticos para el reader.
 
 Este mÃ³dulo concentra heurÃ­sticas de extracciÃ³n que dependen de geometrÃ­a del

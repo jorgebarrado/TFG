@@ -1,3 +1,4 @@
+# Patrones regex de citas in-text (numérico, autor-año narrativo y parentético) compartidos por backend y reader.
 """Patrones y utilidades de deteccion de citas in-text en textos academicos.
 
 Este modulo concentra todos los regex de citas para que tanto el backend

@@ -1,3 +1,4 @@
+# Orquestador de extracción de citas: localiza menciones in-text en el manuscrito y las asocia a referencias de la bibliografía.
 from __future__ import annotations
 
 from typing import Any, Dict, List, Sequence, Tuple

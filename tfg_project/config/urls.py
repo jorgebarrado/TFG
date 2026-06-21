@@ -1,3 +1,4 @@
+# Enrutador raíz: conecta todas las URLs del proyecto con las vistas de citations y el panel de administración.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin

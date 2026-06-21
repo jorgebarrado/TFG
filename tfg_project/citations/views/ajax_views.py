@@ -1,3 +1,4 @@
+# Vistas AJAX: login, registro, submit de reportes, edición, votación, guardado y metadatos de DOI vía JSON.
 """Views that handle AJAX requests and return JSON responses."""
 
 import json

@@ -1,3 +1,4 @@
+# Parser experimental de TEI XML producido por GROBID: convierte el XML en estructuras Python inspeccionables.
 """
 Parser de TEI XML producido por GROBID (integración EXPERIMENTAL).
 

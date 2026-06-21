@@ -1,3 +1,4 @@
+# Tests de reconciliación de fuentes de referencias: contrasta la salida del pipeline con la fuente base.
 from pathlib import Path
 from unittest.mock import patch
 
@@ -13,7 +14,7 @@ from citations.services.reference_reconciliation import reconcile_reference_sour
 from citations.services.references_data import build_references_data
 
 PDF_FIXTURE_DIR = (
-    Path(__file__).resolve().parent / "static" / "citations" / "PDFs-Reales"
+    Path(__file__).resolve().parents[1] / "static" / "citations" / "PDFs-Reales"
 )
 
 

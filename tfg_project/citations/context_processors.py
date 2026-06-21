@@ -1,3 +1,4 @@
+# Procesadores de contexto: inyectan formularios de login/registro, notificaciones y número de reporte en todas las plantillas.
 from .forms import LoginForm, RegisterForm
 from .models import IncorrectCitation, Notification
 

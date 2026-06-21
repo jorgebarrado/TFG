@@ -1,3 +1,4 @@
+# Logger especializado que coordina la extracción de contextos de cita desde PDFs y registra el resultado con trazas.
 import logging
 import os
 import time

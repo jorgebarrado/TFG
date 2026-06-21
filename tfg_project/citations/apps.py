@@ -1,3 +1,4 @@
+# Configuración de la app citations: nombre, campo auto y carga de señales al arrancar Django.
 from django.apps import AppConfig
 
 

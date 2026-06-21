@@ -1,3 +1,4 @@
+# Servicio de notificaciones: crea registros Notification para comentarios, votos, mensajes y nuevos reportes.
 from django.urls import reverse
 
 from ..models import Notification

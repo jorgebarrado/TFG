@@ -1,3 +1,4 @@
+# Servicio de detección de citas con IA (Claude): analiza el PDF citante y extrae evidencia de citas incorrectas.
 import json
 import os
 import re

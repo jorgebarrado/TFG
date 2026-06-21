@@ -1,3 +1,4 @@
+# Tests de regresión del detector de patrones de cita in-text: estilos numéricos, autor-año y falsos positivos.
 """Tests de regresion para `citations.services.citation_patterns`.
 
 El objetivo es cubrir todas las formas de cita in-text que un humano resaltaria

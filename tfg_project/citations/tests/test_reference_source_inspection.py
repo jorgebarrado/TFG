@@ -1,10 +1,11 @@
+# Tests del script inspect_reference_sources: helpers de inspección de fuentes de referencia.
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 from django.test import SimpleTestCase
 
 SCRIPT_PATH = (
-    Path(__file__).resolve().parents[2] / "scripts" / "inspect_reference_sources.py"
+    Path(__file__).resolve().parents[3] / "scripts" / "inspect_reference_sources.py"
 )
 
 

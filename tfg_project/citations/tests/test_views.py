@@ -1,3 +1,4 @@
+# Tests de integración Django: vistas de páginas, reportes, comentarios, votaciones, mensajes y APIs de metadatos.
 import json
 import tempfile
 from pathlib import Path
@@ -9,7 +10,7 @@ from django.contrib.sites.models import Site
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Comment, Conversation, IncorrectCitation, SavedCitation
+from ..models import Comment, Conversation, IncorrectCitation, SavedCitation
 
 
 @override_settings(

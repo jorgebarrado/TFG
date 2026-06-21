@@ -1,3 +1,4 @@
+# Tests del cliente DBLP: búsqueda de artículos por autor, manejo de errores HTTP y caché.
 from http.client import RemoteDisconnected
 from unittest.mock import Mock, patch
 

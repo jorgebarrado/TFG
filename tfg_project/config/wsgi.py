@@ -1,3 +1,4 @@
+# Punto de entrada WSGI para servidores de producción (Gunicorn, uWSGI).
 """
 WSGI config for tfg_project project.
 

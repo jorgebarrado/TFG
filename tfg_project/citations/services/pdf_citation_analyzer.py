@@ -1,3 +1,4 @@
+# Descarga PDFs en abierto y localiza fragmentos de texto que citan un DOI objetivo dentro del documento.
 from __future__ import annotations
 
 import tempfile
