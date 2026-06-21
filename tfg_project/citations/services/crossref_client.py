@@ -1,3 +1,4 @@
+# Cliente Crossref: consulta metadatos de DOIs mediante la API pública de Crossref con caché y manejo de errores.
 from __future__ import annotations
 
 import logging

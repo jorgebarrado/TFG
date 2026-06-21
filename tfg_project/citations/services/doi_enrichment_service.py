@@ -1,3 +1,4 @@
+# Servicio de enriquecimiento de referencias con DOI: valida y asigna DOIs a referencias usando Crossref y Semantic Scholar.
 from __future__ import annotations
 
 import logging

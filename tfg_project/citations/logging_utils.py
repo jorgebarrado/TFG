@@ -1,3 +1,4 @@
+# Utilidades de logging: request_id por ContextVar, temporizadores de fases y helpers de logger con contexto.
 import logging
 import time
 import uuid

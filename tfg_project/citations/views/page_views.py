@@ -1,3 +1,4 @@
+# Vistas de página completa: home, listado/detalle de reportes, reader de PDF, citas semánticas y búsqueda DOI.
 """Views for pages that render complete HTML pages."""
 
 import json

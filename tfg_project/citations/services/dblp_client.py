@@ -1,3 +1,4 @@
+# Cliente DBLP: busca artículos por autor y DOI en la API XML de DBLP con caché SHA-1 y reintentos.
 from __future__ import annotations
 
 import time

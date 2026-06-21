@@ -1,3 +1,4 @@
+# Modelos de la BD: IncorrectCitation, Comment, Vote, SavedCitation, UserProfile, Notification, Conversation, Message.
 """Models for citations app."""
 
 from django.contrib.auth.models import User

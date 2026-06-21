@@ -1,3 +1,4 @@
+# Cliente HTTP experimental para GROBID: envía PDFs a la instancia local y recibe el TEI XML resultante.
 """
 Cliente HTTP para GROBID (integración EXPERIMENTAL).
 

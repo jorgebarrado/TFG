@@ -1,3 +1,4 @@
+# Formateadores de logging: colores para consola y salida JSON estructurada para ficheros de log.
 import json
 import logging
 

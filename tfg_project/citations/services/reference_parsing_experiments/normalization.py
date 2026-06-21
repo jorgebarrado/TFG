@@ -1,3 +1,4 @@
+# Normalización de texto para comparación de referencias en experimentos: limpieza, DOIs, años y campos estructurados.
 from __future__ import annotations
 
 import re

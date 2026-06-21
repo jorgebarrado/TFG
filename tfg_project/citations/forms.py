@@ -1,3 +1,4 @@
+# Formularios Django: registro, login, comentarios, mensajes y edición de perfil de usuario.
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (

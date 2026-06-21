@@ -1,3 +1,4 @@
+# Helpers de clasificación multi-etiqueta de reportes: asigna y consulta áreas de publicación sin cambios de esquema.
 """Helpers to handle multi-tag report classification without schema changes."""
 
 from __future__ import annotations

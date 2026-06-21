@@ -1,3 +1,4 @@
+# Extractor experimental basado en GROBID: orquesta cliente, parser TEI y guardado de artefactos de debug.
 """
 Extractor EXPERIMENTAL basado en GROBID.
 

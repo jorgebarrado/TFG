@@ -1,3 +1,4 @@
+# Envoltorio sobre semantic_scholar_client: obtiene lista de artículos que citan un DOI con fallback entre fuentes.
 import requests
 
 from .semantic_scholar_client import (

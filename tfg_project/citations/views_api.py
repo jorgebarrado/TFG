@@ -1,4 +1,4 @@
-# citations/views_api.py
+# API interna: extracción de contextos de cita desde PDFs, análisis de manuscritos, referencias y descarga de debug.
 from __future__ import annotations
 
 import json

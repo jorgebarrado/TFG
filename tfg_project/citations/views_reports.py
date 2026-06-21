@@ -1,3 +1,4 @@
+# Vistas de gestión de reportes: creación vía wizard, subida de PDFs adjuntos y exportación JSON.
 import json
 import uuid
 

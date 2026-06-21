@@ -1,3 +1,4 @@
+# Reconcilia la fuente base de referencias con la salida estructurada del pipeline, filtrando fallbacks y rescatando índices faltantes.
 from __future__ import annotations
 
 import re

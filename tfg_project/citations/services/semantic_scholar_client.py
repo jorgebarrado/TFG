@@ -1,3 +1,4 @@
+# Cliente defensivo para la API de Semantic Scholar: centraliza caché, cuotas, reintentos y normalización de DOI.
 """Cliente defensivo para Semantic Scholar.
 
 Todas las llamadas pasan por este mÃ³dulo para centralizar cachÃ©, cuotas,

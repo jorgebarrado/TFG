@@ -1,4 +1,4 @@
-# citations/services/semanticscholar.py
+# Utilidades legacy para descargar PDFs en abierto desde Semantic Scholar (implementación anterior al cliente actual).
 from __future__ import annotations
 
 import os

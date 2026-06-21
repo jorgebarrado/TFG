@@ -1,3 +1,4 @@
+# Tests del cliente Semantic Scholar: peticiones, caché, reintentos y manejo de errores de la API.
 from unittest.mock import Mock, patch
 
 from django.core.cache import cache

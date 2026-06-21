@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Punto de entrada de la CLI de Django: arranca el servidor, ejecuta migraciones, tests y otros comandos.
 """Django's command-line utility for administrative tasks."""
 
 import os

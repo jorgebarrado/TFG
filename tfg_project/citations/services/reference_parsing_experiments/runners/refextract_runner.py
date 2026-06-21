@@ -1,3 +1,4 @@
+# Runner experimental de refextract: parsea referencias bibliográficas usando la librería Python refextract.
 from __future__ import annotations
 
 import importlib

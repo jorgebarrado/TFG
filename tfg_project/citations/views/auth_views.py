@@ -1,3 +1,4 @@
+# Vistas de autenticación: login, logout y registro de nuevos usuarios.
 """Views for handling user authentication (login, logout, registration)."""
 
 from django.contrib.auth import authenticate, login, logout

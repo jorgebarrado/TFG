@@ -1,3 +1,4 @@
+# Pipeline end-to-end: descarga el PDF citante, extrae contextos con PaperMage y los asocia al DOI objetivo.
 from __future__ import annotations
 
 from typing import List, Optional, TypedDict

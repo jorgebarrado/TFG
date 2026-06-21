@@ -1,3 +1,4 @@
+# Filtros de plantilla personalizados: conteo de votos positivos/negativos y otras utilidades para templates Django.
 from django import template
 
 register = template.Library()

@@ -1,4 +1,4 @@
-# citations/urls.py
+# URLs de la app citations: mapea todas las rutas de la aplicación a sus vistas correspondientes.
 from django.urls import path
 
 from . import views_ai, views_api, views_reports

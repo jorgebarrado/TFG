@@ -1,3 +1,4 @@
+# Tests de integración del indicador de carga de DBLP en la vista de perfil.
 from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialApp

@@ -1,3 +1,4 @@
+# Sesión HTTP compartida para llamadas a APIs externas, con bypass de proxies de entorno local rotos.
 from __future__ import annotations
 
 import requests

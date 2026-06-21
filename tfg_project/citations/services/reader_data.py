@@ -1,3 +1,4 @@
+# Adaptadores que convierten la salida de los extractores backend al formato estable que consume el reader React.
 """Adaptadores que preparan datos de PDF para el reader React.
 
 El reader espera pÃ¡ginas, capas y cajas en un formato estable; este mÃ³dulo

@@ -1,3 +1,4 @@
+# Configuración central de Django: apps instaladas, bases de datos, middleware, i18n y variables de entorno.
 """
 Django settings for tfg_project project.
 

@@ -1,3 +1,4 @@
+# Middleware que asigna un UUID único a cada petición HTTP y lo propaga via ContextVar para el logging.
 import uuid
 from typing import Callable
 

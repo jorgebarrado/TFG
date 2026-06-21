@@ -1,3 +1,4 @@
+# Orquestador de experimentos de parsing: ejecuta runners sobre PDFs y guarda resultados JSON comparativos.
 from __future__ import annotations
 
 import json

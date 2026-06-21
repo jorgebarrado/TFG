@@ -1,3 +1,4 @@
+# Comando de gestión experimental: prueba GROBID sobre un PDF local y compara con el extractor actual.
 """
 Management command: debug_grobid
 ================================

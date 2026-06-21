@@ -1,3 +1,4 @@
+# Tests de regresión del pipeline completo de extracción de referencias sobre PDFs reales.
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,7 +13,7 @@ from citations.services.reader_data import (
 from citations.services.references_data import build_references_data
 
 PDF_FIXTURE_DIR = (
-    Path(__file__).resolve().parent / "static" / "citations" / "PDFs-Reales"
+    Path(__file__).resolve().parents[1] / "static" / "citations" / "PDFs-Reales"
 )
 
 

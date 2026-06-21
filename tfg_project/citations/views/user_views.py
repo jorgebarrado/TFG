@@ -1,3 +1,4 @@
+# Vistas de usuario: perfil público, configuración de cuenta, mis reportes, comentarios y guardados.
 """Views related to user profiles and personalized content."""
 
 import json

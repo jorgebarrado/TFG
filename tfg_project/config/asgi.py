@@ -1,3 +1,4 @@
+# Punto de entrada ASGI para servidores asíncronos (Daphne, Uvicorn).
 """
 ASGI config for tfg_project project.
 

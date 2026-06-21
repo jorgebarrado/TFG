@@ -1,3 +1,4 @@
+# Vistas de mensajería: bandeja de entrada, conversaciones y envío de mensajes entre usuarios.
 """Views for simple user-to-user messaging."""
 
 from django.contrib.auth import get_user_model

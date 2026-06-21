@@ -1,3 +1,4 @@
+# Métricas de comparación entre parsers de referencias en experimentos: resumen por campos y diferencias.
 from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List

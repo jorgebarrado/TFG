@@ -1,3 +1,4 @@
+# Comando de gestión experimental: envía un PDF a GROBID y vuelca el XML TEI resultante para inspección.
 """
 Management command: debug_grobid_pdf
 ====================================

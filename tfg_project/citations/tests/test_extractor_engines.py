@@ -1,3 +1,4 @@
+# Tests del contrato público de extractor engines: motores disponibles, eliminados y respuesta ante entradas inválidas.
 from django.test import SimpleTestCase
 
 from citations.services.engines import (

@@ -1,3 +1,4 @@
+# Señales Django: crea UserProfile al registrar usuario y dispara notificaciones ante comentarios, votos y mensajes.
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
