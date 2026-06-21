@@ -17,8 +17,8 @@ __pycache__/
 
 # --- OTROS ---
 *.sqlite3
-/staticfiles/
-/media/
+staticfiles/
+media/
 node_modules/
 .cache/
 .pip-cache/
