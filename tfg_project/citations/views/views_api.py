@@ -19,16 +19,16 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from citations.logging_utils import get_logger
 
-from .models import IncorrectCitation
-from .services.citation_extractor import process_manuscript
-from .services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
-from .services.engines import ALLOWED_ENGINES, list_extractor_engines
-from .services.papermage_extractor import ContextHit, extract_pdf_data
-from .services.pdf_citation_analyzer import (
+from ..models import IncorrectCitation
+from ..services.citation_extractor import process_manuscript
+from ..services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
+from ..services.engines import ALLOWED_ENGINES, list_extractor_engines
+from ..services.papermage_extractor import ContextHit, extract_pdf_data
+from ..services.pdf_citation_analyzer import (
     PDFDownloadError,
     analyze_pdf_citations_from_url,
 )
-from .services.reader_data import (
+from ..services.reader_data import (
     build_mentions,
     build_references,
     build_snippets_from_mentions,
@@ -37,21 +37,21 @@ from .services.reader_data import (
     extract_pdf_references_from_url,
     resolve_pdf_url,
 )
-from .services.reference_reconciliation import reconcile_reference_sources
-from .services.references_data import (
+from ..services.reference_reconciliation import reconcile_reference_sources
+from ..services.references_data import (
     REFERENCE_DEBUG_DIR,
     _prepare_crossref_context,
     build_references_data,
     finalize_reference_detection_debug_payload,
     write_reference_detection_debug_json,
 )
-from .services.semantic_citation_pipeline import analyze_citations_for_original_doi
-from .services.semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
-from .trace import Trace
+from ..services.semantic_citation_pipeline import analyze_citations_for_original_doi
+from ..services.semanticscholar import download_pdf_to_temp, get_openaccess_pdf_url
+from ..trace import Trace
 
 # --- PaperMage "context" (targeted) import, tolerante si no existe aún
 try:
-    from .services.papermage_extractor import extract_contexts_from_pdf
+    from ..services.papermage_extractor import extract_contexts_from_pdf
 except Exception:
 
     def extract_contexts_from_pdf(*args, **kwargs):
