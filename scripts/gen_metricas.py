@@ -4,7 +4,7 @@ Recuento de magnitudes del proyecto CiteCheck para la tabla de la memoria
 (sección «Dimensión del sistema»).
 
 Uso (desde la RAÍZ del repositorio, en la rama de trabajo):
-    python gen_metricas.py
+    python scripts/gen_metricas.py
 
 Funciona en Windows, Linux y macOS. Solo usa la biblioteca estándar.
 Pega la salida completa en el chat para rellenar la tabla.
@@ -126,7 +126,7 @@ def main():
     primero = primero.splitlines()[0] if primero else "?"
     ultimo = dias.splitlines()[0] if dias else "?"
     print(f"Commits:                  {n_commits}")
-    print(f"Días con actividad:       {n_dias}  ({primero} → {ultimo})")
+    print(f"Días con actividad:       {n_dias}  ({primero} -> {ultimo})")
     print("-" * 56)
     print("Pega esta salida completa en el chat.")
 

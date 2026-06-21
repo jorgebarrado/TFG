@@ -1,3 +1,5 @@
+# Archivos y carpetas que Git no debe rastrear ni incluir en commits.
+
 # --- ENTORNOS VIRTUALES ---
 .venv/
 .venv311/

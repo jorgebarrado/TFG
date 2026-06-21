@@ -21,7 +21,7 @@ No reemplaza PaperMage, no cambia el flujo principal, no añade migraciones y no
 Opción recomendada con compose:
 
 ```powershell
-docker compose --profile experimental up -d grobid
+docker compose -f docker/compose.yml --profile experimental up -d grobid
 ```
 
 Verificación:

@@ -1,3 +1,6 @@
+# Configura automáticamente el editor (indent, charset, saltos de línea) al abrir ficheros del proyecto.
+# Compatible con VSCode (extensión EditorConfig), IntelliJ, Vim y otros.
+
 # EditorConfig helps developers define and maintain consistent
 # coding styles between different editors and IDEs.
 root = true

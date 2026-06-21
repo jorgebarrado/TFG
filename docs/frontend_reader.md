@@ -70,7 +70,7 @@ En desarrollo, si `READER_VITE_DEV_SERVER` está definido y `DJANGO_DEBUG=1`, ca
 - `react-pdf`;
 - Less.
 
-El `package.json` de la raíz contiene dependencias frontend históricas y no sustituye al paquete real del reader.
+El único paquete npm mantenido está en `frontend_reader/`.
 
 ## Build y Desarrollo
 

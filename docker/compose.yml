@@ -1,14 +1,16 @@
+name: citecheck
+
 services:
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     working_dir: /app/tfg_project
     command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ..:/app
     environment:
       DJANGO_DEBUG: "1"
       PYTHONDONTWRITEBYTECODE: "1"
