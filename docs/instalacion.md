@@ -4,7 +4,7 @@ Esta guía prepara un entorno local para ejecutar CiteCheck, compilar el reader 
 
 ## Requisitos
 
-- Python 3.11 recomendado. El Dockerfile usa `python:3.11-slim` y `pyproject.toml` apunta a `py311`.
+- Python 3.11 recomendado. `docker/Dockerfile` usa `python:3.11-slim`.
 - Node.js y npm para `frontend_reader/`.
 - Git.
 - Docker opcional para ejecutar la app o GROBID en contenedores.
@@ -69,16 +69,16 @@ Variables opcionales:
 Ejecutar el backend:
 
 ```powershell
-docker compose up -d web
+docker compose -f docker/compose.yml up -d web
 ```
 
 Levantar GROBID experimental:
 
 ```powershell
-docker compose --profile experimental up -d grobid
+docker compose -f docker/compose.yml --profile experimental up -d grobid
 ```
 
-`compose.yml` expone Django en `8000` y GROBID en `8070`.
+`docker/compose.yml` expone Django en `8000` y GROBID en `8070`.
 
 ## Frontend Reader
 

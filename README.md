@@ -36,13 +36,13 @@ npm run build
 Para desarrollo con Docker:
 
 ```powershell
-docker compose up -d web
+docker compose -f docker/compose.yml up -d web
 ```
 
 Para levantar GROBID, que es experimental y no forma parte del flujo principal:
 
 ```powershell
-docker compose --profile experimental up -d grobid
+docker compose -f docker/compose.yml --profile experimental up -d grobid
 ```
 
 ## Configuración

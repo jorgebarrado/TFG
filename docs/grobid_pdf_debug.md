@@ -9,7 +9,7 @@ Para el comando completo con comparación, consulta [grobid_experiment.md](grobi
 Levanta GROBID:
 
 ```powershell
-docker compose --profile experimental up -d grobid
+docker compose -f docker/compose.yml --profile experimental up -d grobid
 ```
 
 O manualmente:

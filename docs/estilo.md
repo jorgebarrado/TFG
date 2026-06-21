@@ -1,29 +1,7 @@
-# Código, Estilo y Calidad
-
-El proyecto usa Black, isort, Flake8 y pre-commit. La configuración de formato vive en `pyproject.toml`; los hooks están en `.pre-commit-config.yaml`.
-
-## Instalación
-
-```powershell
-python -m pip install -U black isort flake8 pre-commit
-pre-commit install
-```
-
-## Comandos Habituales
-
-```powershell
-python -m black .
-python -m isort .
-python -m flake8
-pre-commit run --all-files
-```
+# Código y Estilo
 
 ## Convenciones
 
-- Línea máxima: 88 caracteres.
-- Formato Python: Black.
-- Orden de imports: isort con perfil Black.
-- Excepciones Flake8: `E203` y `W503`, para compatibilidad con Black.
 - Evita mezclar refactors de estilo con cambios funcionales o de documentación.
 - Mantén los artefactos generados fuera de commits salvo que sean fixtures deliberados.
 
