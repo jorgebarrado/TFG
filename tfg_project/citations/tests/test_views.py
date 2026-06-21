@@ -633,10 +633,10 @@ class SemanticCitationsViewTests(SocialAppTestCase):
 
 
 class ContextLoggingTests(TestCase):
-    @patch("citations.views_api.extract_contexts_from_pdf")
-    @patch("citations.views_api.download_pdf_to_temp")
-    @patch("citations.views_api.get_openaccess_pdf_url")
-    @patch("citations.views_api.logger")
+    @patch("citations.views.views_api.extract_contexts_from_pdf")
+    @patch("citations.views.views_api.download_pdf_to_temp")
+    @patch("citations.views.views_api.get_openaccess_pdf_url")
+    @patch("citations.views.views_api.logger")
     def test_logging_and_debug_mode(
         self,
         mock_logger,
@@ -674,7 +674,7 @@ class ReferenceDebugDownloadTests(TestCase):
             target_file = target_dir / "debug-123.json"
             target_file.write_text('{"ok": true}', encoding="utf-8")
 
-            with patch("citations.views_api.REFERENCE_DEBUG_DIR", debug_root):
+            with patch("citations.views.views_api.REFERENCE_DEBUG_DIR", debug_root):
                 response = self.client.get(
                     reverse("api_reference_debug_download"),
                     {"file": "paper/debug-123.json"},
@@ -692,7 +692,7 @@ class ReferenceDebugDownloadTests(TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             debug_root = Path(temp_dir)
 
-            with patch("citations.views_api.REFERENCE_DEBUG_DIR", debug_root):
+            with patch("citations.views.views_api.REFERENCE_DEBUG_DIR", debug_root):
                 response = self.client.get(
                     reverse("api_reference_debug_download"),
                     {"file": "../secret.json"},

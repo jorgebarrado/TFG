@@ -1,7 +1,7 @@
 # URLs de la app citations: mapea todas las rutas de la aplicación a sus vistas correspondientes.
 from django.urls import path
 
-from . import views_api, views_reports
+from .views import views_api, views_reports
 from .experimental.ai import views_ai
 from .views import (
     ajax_views,
