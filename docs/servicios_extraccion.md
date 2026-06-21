@@ -1,73 +1,64 @@
-# Servicios de Extracción y Procesamiento
+# Servicios de Extraccion y Procesamiento
 
-Los servicios de `tfg_project/citations/services/` concentran la lógica pesada: lectura de PDFs, extracción de referencias, detección de menciones, enriquecimiento DOI, clientes externos y experimentos.
+Los servicios de `tfg_project/citations/services/` concentran la logica pesada:
+lectura de PDFs, extraccion de referencias, deteccion de menciones,
+enriquecimiento DOI, clientes externos y experimentos.
 
 ## Mapa de Servicios
 
 | Archivo | Responsabilidad |
 | --- | --- |
-| `engines.py` | Declara motores disponibles y política de ejecución. |
-| `papermage_extractor.py` | Extracción estructural con PaperMage. |
-| `papercraft_extractor.py` | Extractor alternativo basado en PyMuPDF/PyPDF2. |
-| `generic_extractor.py` | Fallback rápido basado en texto/regex. |
-| `citation_extractor.py` | Procesamiento de manuscrito y detección de citas. |
-| `citation_patterns.py` | Patrones y heurísticas de citas. |
-| `pdf_citation_analyzer.py` | Descarga PDF por URL y aplica extracción de contextos. |
+| `engines.py` | Declara PaperMage como unico motor disponible. |
+| `papermage_extractor.py` | Extraccion estructural con PaperMage. |
+| `citation_extractor.py` | Procesamiento de manuscrito y deteccion de citas. |
+| `citation_patterns.py` | Patrones y heuristicas de citas. |
+| `pdf_citation_analyzer.py` | Descarga PDF por URL y aplica extraccion de contextos. |
 | `reader_data.py` | Referencias base, DOI/PDF metadata y snippets para reader. |
-| `references_data.py` | Reconstrucción avanzada de referencias y debug. |
+| `references_data.py` | Reconstruccion avanzada de referencias y debug. |
 | `reference_reconciliation.py` | Decide referencias finales combinando fuentes. |
 | `doi_enrichment_service.py` | Enriquecimiento con Crossref/Semantic Scholar. |
-| `semantic_citation_pipeline.py` | Búsqueda inversa de citadores y análisis automático. |
+| `semantic_citation_pipeline.py` | Busqueda inversa de citadores y analisis automatico. |
 | `semantic_scholar_client.py` / `semanticscholar.py` | Clientes Semantic Scholar. |
 | `crossref_client.py` | Cliente Crossref. |
 | `dblp_client.py` | Cliente DBLP. |
 | `grobid_*` | Experimento GROBID aislado. |
 | `ai_*` | Funciones IA experimentales. |
 
-## Motores
+## Motor
 
-`engines.py` expone:
+`engines.py` expone solo `papermage`. `run_engine(engine_requested, pdf_path)`
+rechaza cualquier otro valor y no aplica fallback a otros extractores.
 
-- `papermage`: motor preferente para estructura rica.
-- `papercraft`: motor alternativo experimental.
-- `generic`: fallback rápido si solo se necesita texto básico.
-
-`run_engine(engine_requested, pdf_path)` soporta:
-
-- `papermage`: solo PaperMage, sin fallback.
-- `papercraft`: solo PaperCraft, sin fallback.
-- `generic`: solo genérico.
-- `auto`: PaperMage -> PaperCraft -> genérico.
-
-Nota: la API pública `api_extract_citations` valida `engine` contra `ALLOWED_ENGINES`, que contiene las claves declaradas en `ENGINE_LABELS` y no incluye `auto`.
-
-## Flujo de Extracción del Reader
+## Flujo de Extraccion del Reader
 
 `POST /citations/api/extract-citations/` ejecuta una cadena de servicios:
 
 1. `reader_data.extract_pdf_references()`
-   - Usa PyMuPDF para localizar bibliografía y referencias base.
+   - Usa PyMuPDF para localizar bibliografia y referencias base.
 2. `citation_extractor.process_manuscript()`
-   - Ejecuta el motor solicitado.
+   - Ejecuta PaperMage.
    - Devuelve resultados de menciones/snippets.
 3. `reader_data.build_snippets_from_results()`
    - Normaliza snippets para el frontend.
-4. `papermage_extractor.extract_pdf_data()` o equivalente
-   - Prepara páginas y capas visuales.
+4. `papermage_extractor.extract_pdf_data()`
+   - Prepara paginas y capas visuales.
 5. `references_data.build_references_data()`
-   - Reconstruye referencias finales con capas, bibliografía y citas.
+   - Reconstruye referencias finales con capas, bibliografia y citas.
 6. `reference_reconciliation.reconcile_reference_sources()`
    - Combina referencias base y estructuradas.
 7. `doi_enrichment_service.enrich_extraction_with_doi()`
-   - Añade DOI, título, autores, año, venue y citadores cuando hay datos externos confiables.
+   - Anade DOI, titulo, autores, ano, venue y citadores cuando hay datos
+     externos confiables.
 
 ## `references_data.py`
 
-Es la pieza más crítica del pipeline de referencias. No descarga PDFs ni selecciona motor; trabaja con datos ya extraídos:
+Es la pieza mas critica del pipeline de referencias. No descarga PDFs ni
+selecciona motor; trabaja con datos ya extraidos:
 
 - referencias base;
 - snippets;
-- capas del reader: `tokens`, `rows`, `paragraphs`, `bibliographies`, `sections`.
+- capas del reader: `tokens`, `rows`, `paragraphs`, `bibliographies`,
+  `sections`.
 
 Devuelve:
 
@@ -81,29 +72,32 @@ Devuelve:
 - `debug_payload` opcional;
 - `reference_debug_steps`.
 
-Tócalo cuando necesites mejorar:
+Tocalo cuando necesites mejorar:
 
-- segmentación de bibliografía;
-- detección de anchors;
-- unión de rows;
-- validación de referencias;
-- diagnósticos de contaminación o ruido;
+- segmentacion de bibliografia;
+- deteccion de anchors;
+- union de rows;
+- validacion de referencias;
+- diagnosticos de contaminacion o ruido;
 - enlace entre menciones y referencias.
 
-No lo toques para cambios de descarga, selección de motor, UI o clientes externos.
+No lo toques para cambios de descarga, seleccion de motor, UI o clientes
+externos.
 
 ## Enriquecimiento DOI
 
-`doi_enrichment_service.py` resuelve el DOI del artículo fuente y usa Crossref/Semantic Scholar para:
+`doi_enrichment_service.py` resuelve el DOI del articulo fuente y usa
+Crossref/Semantic Scholar para:
 
 - traer metadatos del paper;
 - traer referencias externas;
 - traer citadores;
 - intentar enriquecer referencias locales.
 
-El servicio valida coincidencias para evitar mezclar referencias. No debe asignar un DOI externo solo por parecido débil de texto.
+El servicio valida coincidencias para evitar mezclar referencias. No debe
+asignar un DOI externo solo por parecido debil de texto.
 
-## Pipeline Semántico
+## Pipeline Semantico
 
 `semantic_citation_pipeline.py` implementa el flujo:
 
@@ -118,21 +112,23 @@ Limitaciones:
 
 - depende de Semantic Scholar;
 - solo analiza PDFs open access;
-- es síncrono y puede tardar;
-- no sustituye la revisión humana.
+- es sincrono y puede tardar;
+- no sustituye la revision humana.
 
 ## GROBID
 
-Los servicios `grobid_client.py`, `grobid_parser.py` y `grobid_extractor.py` son experimentales. Sirven para comparar GROBID contra el extractor actual, no para el flujo principal.
+Los servicios `grobid_client.py`, `grobid_parser.py` y `grobid_extractor.py`
+son experimentales. Sirven para comparar GROBID contra el extractor actual, no
+para el flujo principal.
 
 Consulta:
 
 - [grobid_experiment.md](grobid_experiment.md)
 - [grobid_pdf_debug.md](grobid_pdf_debug.md)
 
-## Pruebas y Regresión
+## Pruebas y Regresion
 
-Para validar cambios de extracción:
+Para validar cambios de extraccion:
 
 ```powershell
 python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
@@ -145,4 +141,5 @@ Para cambios profundos en `references_data.py`, ejecuta una muestra mayor:
 python scripts/run_reference_regression.py --engine papermage --run-name refs_check --overwrite
 ```
 
-Revisa `summary.md`, `summary.json`, `metrics.json` y `reference_debug.json` del paper problemático.
+Revisa `summary.md`, `summary.json`, `metrics.json` y `reference_debug.json`
+del paper problematico.

@@ -266,7 +266,7 @@
                         {% if can_edit_report %}
                         <form method="post" action="{% url 'citation_extract_contexts' citation.id %}" class="mb-3 d-inline">
                             {% csrf_token %}
-                            <input type="hidden" name="engine" value="generic">
+                            <input type="hidden" name="engine" value="papermage">
                             <button class="btn btn-outline-primary btn-sm">
                                 {% trans "Detectar evidencias con extractor" %}
                             </button>

@@ -50,7 +50,7 @@ except Exception:  # pragma: no cover - compat defensiva entre ramas
     finalize_reference_detection_debug_payload = None
 
 
-SUPPORTED_RUNNER_ENGINES = tuple(sorted(set(ALLOWED_ENGINES) | {"auto"}))
+SUPPORTED_RUNNER_ENGINES = tuple(sorted(ALLOWED_ENGINES))
 AUTO_RUN_DIR_PATTERN = re.compile(r"^\d{8}-\d{6}$")
 RUN_RETENTION_DAYS = 7
 TAIL_NOISE_MARKERS = (

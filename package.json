@@ -4,7 +4,6 @@
   "description": "Frontend dependencies for TFG project",
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "papercraft": "latest"
+    "react-dom": "^18.3.1"
   }
 }

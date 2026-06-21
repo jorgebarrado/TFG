@@ -79,7 +79,7 @@ Logs:
 | --- | --- | --- |
 | Semantic Scholar no responde | Error en búsqueda/descarga | Reintentar, usar DOI manual o subir PDF. |
 | Crossref no resuelve DOI | Enriquecimiento incompleto | Mantener referencia local y revisar manualmente. |
-| PaperMage no disponible | Motor no disponible o error | Probar `generic` o revisar instalación. |
+| PaperMage no disponible | Motor no disponible o error | Revisar instalación de PaperMage. |
 | PDF sin texto | 0 snippets/contextos | Añadir OCR fuera del sistema o copiar contexto manual. |
 | Vite no está levantado | Reader no carga en modo dev | Borrar `READER_VITE_DEV_SERVER` o arrancar `npm run dev`. |
 | GROBID no responde | Experimento falla | Levantar Docker local o ignorar GROBID. |
