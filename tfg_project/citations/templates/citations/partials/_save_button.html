@@ -1,24 +1,61 @@
 {% load i18n %}
-<div id="save-button-{{ citation.id }}">
+<div id="save-button-{{ citation.id }}"{% if variant == "table_redesign" %} class="d-inline-block"{% endif %}>
     {% trans "Guardado" as saved_text %}
     {% trans "Guardar" as save_text %}
-    {% if user.is_authenticated %}
-        {% if is_saved %}
-            <button hx-post="{% url 'toggle_saved' %}" hx-target="#save-button-{{ citation.id }}" hx-swap="outerHTML"
-                    hx-vals='{"citation_id": "{{ citation.id }}"}'
-                    class="btn btn-sm btn-success">
-                <i class="bi bi-bookmark-fill"></i> {{ saved_text }}
-            </button>
+    {% if variant == "table_redesign" %}
+        {% if user.is_authenticated %}
+            {% if is_saved %}
+                <button
+                    hx-post="{% url 'toggle_saved' %}"
+                    hx-target="#save-button-{{ citation.id }}"
+                    hx-swap="outerHTML"
+                    hx-vals='{"citation_id": "{{ citation.id }}", "variant": "table_redesign"}'
+                    class="btn-save-new btn-save-new--active"
+                    title="{{ saved_text }}"
+                    aria-label="{{ saved_text }}">
+                    <i class="bi bi-bookmark-fill"></i>
+                </button>
+            {% else %}
+                <button
+                    hx-post="{% url 'toggle_saved' %}"
+                    hx-target="#save-button-{{ citation.id }}"
+                    hx-swap="outerHTML"
+                    hx-vals='{"citation_id": "{{ citation.id }}", "variant": "table_redesign"}'
+                    class="btn-save-new"
+                    title="{{ save_text }}"
+                    aria-label="{{ save_text }}">
+                    <i class="bi bi-bookmark"></i>
+                </button>
+            {% endif %}
         {% else %}
-            <button hx-post="{% url 'toggle_saved' %}" hx-target="#save-button-{{ citation.id }}" hx-swap="outerHTML"
-                    hx-vals='{"citation_id": "{{ citation.id }}"}'
-                    class="btn btn-sm btn-outline-success">
-                <i class="bi bi-bookmark"></i> {{ save_text }}
+            <button
+                class="btn-save-new"
+                data-bs-toggle="modal"
+                data-bs-target="#loginModal"
+                title="{{ save_text }}"
+                aria-label="{{ save_text }}">
+                <i class="bi bi-bookmark"></i>
             </button>
         {% endif %}
     {% else %}
-        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#loginModal">
-            <i class="bi bi-bookmark"></i> {{ save_text }}
-        </button>
+        {% if user.is_authenticated %}
+            {% if is_saved %}
+                <button hx-post="{% url 'toggle_saved' %}" hx-target="#save-button-{{ citation.id }}" hx-swap="outerHTML"
+                        hx-vals='{"citation_id": "{{ citation.id }}"}'
+                        class="btn btn-sm btn-success">
+                    <i class="bi bi-bookmark-fill"></i> {{ saved_text }}
+                </button>
+            {% else %}
+                <button hx-post="{% url 'toggle_saved' %}" hx-target="#save-button-{{ citation.id }}" hx-swap="outerHTML"
+                        hx-vals='{"citation_id": "{{ citation.id }}"}'
+                        class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-bookmark"></i> {{ save_text }}
+                </button>
+            {% endif %}
+        {% else %}
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#loginModal">
+                <i class="bi bi-bookmark"></i> {{ save_text }}
+            </button>
+        {% endif %}
     {% endif %}
 </div>

@@ -1,3 +1,5 @@
+# Archivos y carpetas que Git no debe rastrear ni incluir en commits.
+
 # --- ENTORNOS VIRTUALES ---
 .venv/
 .venv311/
@@ -7,6 +9,7 @@ myenv/
 __pycache__/
 *.py[cod]
 *.pyo
+.pytest_cache/
 
 # --- ARCHIVOS DE ENTORNO ---
 .env
@@ -14,6 +17,26 @@ __pycache__/
 
 # --- OTROS ---
 *.sqlite3
-/staticfiles/
-/media/
+staticfiles/
+media/
 node_modules/
+.cache/
+.pip-cache/
+.claude
+/design-system
+
+# --- macOS ---
+.DS_Store
+**/.DS_Store
+
+# --- Logs ---
+*.log
+logs/
+
+# --- ARTEFACTOS DE DEBUG Y REGRESIÓN (nunca deben ir a git) ---
+tmp/reference_regression/
+tmp/reference_debug/
+tmp/grobid_debug/
+tmp/reference_anchor_baseline_*/
+tmp/
+*.zip

@@ -1,7 +1,9 @@
+# Vistas AJAX: login, registro, submit de reportes, edición, votación, guardado y metadatos de DOI vía JSON.
 """Views that handle AJAX requests and return JSON responses."""
 
 import json
 import uuid
+
 import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
@@ -15,6 +17,7 @@ from django.views.decorators.http import require_POST
 
 from ..forms import IncorrectCitationForm, RegisterForm
 from ..models import Comment, IncorrectCitation, SavedCitation, Vote
+from ..services.evidence import normalize_evidence_items
 from ..services.report_tags import (
     CITATION_TYPE_CHOICES,
     PUBLICATION_AREA_LABELS,
@@ -70,10 +73,10 @@ def vote_view(request):
         "upvotes": upvotes,
         "downvotes": downvotes,
         "user_vote": user_vote,
+        "net_votes": upvotes - downvotes,
+        "oob_vote_net": True,
     }
-    return render(
-        request, "citations/partials/_vote_buttons.html", context
-    )
+    return render(request, "citations/partials/_vote_buttons.html", context)
 
 
 @require_POST
@@ -95,10 +98,12 @@ def toggle_saved(request):
     else:
         is_saved = True
 
-    context = {"citation": citation, "is_saved": is_saved}
-    return render(
-        request, "citations/partials/_save_button.html", context
-    )
+    context = {
+        "citation": citation,
+        "is_saved": is_saved,
+        "variant": (request.POST.get("variant") or "").strip(),
+    }
+    return render(request, "citations/partials/_save_button.html", context)
 
 
 def ajax_submit_citation(request):
@@ -108,9 +113,10 @@ def ajax_submit_citation(request):
     """
 
     def _is_ajax(req):
-        return req.headers.get("HX-Request") == "true" or req.headers.get(
-            "X-Requested-With"
-        ) == "XMLHttpRequest"
+        return (
+            req.headers.get("HX-Request") == "true"
+            or req.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
     if request.method != "POST":
         if _is_ajax(request):
@@ -134,7 +140,9 @@ def ajax_submit_citation(request):
         if not report_title:
             error_msg = _("El titulo del reporte es obligatorio.")
             if _is_ajax(request):
-                return JsonResponse({"errors": {"report_title": [error_msg]}}, status=400)
+                return JsonResponse(
+                    {"errors": {"report_title": [error_msg]}}, status=400
+                )
             messages.error(request, error_msg)
             return redirect("home")
 
@@ -158,24 +166,41 @@ def ajax_submit_citation(request):
             except json.JSONDecodeError:
                 pass
 
-        # Contextos seleccionados donde aparece la cita
-        raw_contexts = request.POST.get("citing_paragraphs_json")
-        if raw_contexts:
-            try:
-                citation.citation_contexts = json.loads(raw_contexts)
-            except json.JSONDecodeError:
-                pass
+        # Evidencias del reporte. Mantiene compatibilidad con el antiguo
+        # campo citing_paragraphs_json, pero normaliza todo a citation_contexts.
+        raw_contexts = request.POST.get("citation_contexts_json") or request.POST.get(
+            "citing_paragraphs_json"
+        )
+        evidence_items = normalize_evidence_items(
+            raw_contexts,
+            default_source="semantic_scholar",
+            default_article="citing",
+            default_kind="citation_context",
+            default_doi=citation.doi_incorrect,
+        )
+        manual_evidence = normalize_evidence_items(
+            request.POST.get("manual_evidence_text"),
+            default_source="manual",
+            default_article="citing",
+            default_kind="manual_text",
+        )
+        if evidence_items or manual_evidence:
+            citation.citation_contexts = evidence_items + manual_evidence
 
         apply_report_tags(citation, selected_types, selected_areas)
         citation.save()
 
         metadata_fields_to_update = []
         updated_original = (
-            citation.metadata_original if isinstance(citation.metadata_original, dict) else {}
+            citation.metadata_original
+            if isinstance(citation.metadata_original, dict)
+            else {}
         )
         updated_original = dict(updated_original)
         updated_incorrect = (
-            citation.metadata_incorrect if isinstance(citation.metadata_incorrect, dict) else {}
+            citation.metadata_incorrect
+            if isinstance(citation.metadata_incorrect, dict)
+            else {}
         )
         updated_incorrect = dict(updated_incorrect)
 
@@ -199,7 +224,9 @@ def ajax_submit_citation(request):
             if "metadata_original" not in metadata_fields_to_update:
                 metadata_fields_to_update.append("metadata_original")
 
-        uploaded_incorrect_pdf = request.FILES.get("uploaded_pdf_incorrect_file") or request.FILES.get("uploaded_pdf_file")
+        uploaded_incorrect_pdf = request.FILES.get(
+            "uploaded_pdf_incorrect_file"
+        ) or request.FILES.get("uploaded_pdf_file")
         if uploaded_incorrect_pdf:
             incorrect_name = uploaded_incorrect_pdf.name or "uploaded_incorrect.pdf"
             if not incorrect_name.lower().endswith(".pdf"):
@@ -322,7 +349,9 @@ def get_semantic_citations(request):
     registered_citations = IncorrectCitation.objects.filter(
         doi_original=doi, doi_incorrect__in=citing_dois
     ).values("doi_incorrect", "id")
-    registered_map = {item["doi_incorrect"]: item["id"] for item in registered_citations}
+    registered_map = {
+        item["doi_incorrect"]: item["id"] for item in registered_citations
+    }
 
     for c in citations:
         citing_doi = c.get("doi")
@@ -332,9 +361,11 @@ def get_semantic_citations(request):
         else:
             c["is_registered"] = False
 
-    return JsonResponse({
-        "doi": doi,
-        "citation_count": citation_count,
-        "citations": citations,
-        "source": source,
-    })
+    return JsonResponse(
+        {
+            "doi": doi,
+            "citation_count": citation_count,
+            "citations": citations,
+            "source": source,
+        }
+    )

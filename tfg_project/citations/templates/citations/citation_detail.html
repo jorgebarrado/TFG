@@ -5,20 +5,21 @@
 {% block title %} {% trans "Reporte" %} #{{ citation.id }} - CiteCheck{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5 report-detail-page">
 
     <div class="mb-4 text-start">
-        <a href="{% url 'citation_list' %}" class="btn btn-outline-primary">
-            &larr; {% trans "Volver al listado" %}
+        <a id="backToCitationListBtn" href="{% url 'citation_list' %}" class="report-back-link">
+            <i class="bi bi-arrow-left me-2"></i>{% trans "Volver al listado" %}
         </a>
     </div>
 
     {% trans "Título no disponible" as fallback_title %}
-    <section class="hero-card mb-5">
+    <section class="hero-card report-hero-section mb-5">
+        <div class="report-hero-glow" aria-hidden="true"></div>
         <div class="report-edit-block report-hero-inline" data-edit-block="header">
             <div class="report-edit-display{% if report_edit_mode %} d-none{% endif %}">
                 <div class="row g-4 align-items-start">
-                    <div class="col-lg-8">
+                    <div class="col-lg-9">
                         {% if can_edit_report %}
                         <div class="mb-2">
                             <a href="{% url 'citation_detail' citation.id %}?edit=1" class="btn btn-outline-secondary btn-sm report-hero-inline__edit-btn">
@@ -30,7 +31,7 @@
                         <p class="lead mb-3" id="reportOriginalTitle">
                             {{ citation.metadata_original_title|default:citation.doi_original|default:fallback_title }}
                         </p>
-                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center report-hero-tags">
                             {% for area_label in display_publication_area_tags %}
                             <span class="badge text-bg-info">{{ area_label }}</span>
                             {% endfor %}
@@ -39,23 +40,51 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+                    <div class="col-lg-3">
+                        <div class="d-flex flex-wrap justify-content-lg-end gap-2 report-hero-actions">
                             {% include 'citations/partials/_vote_buttons.html' with citation=citation upvotes=citation.votes.all|count_upvotes downvotes=citation.votes.all|count_downvotes user_vote=citation.votes.all|user_vote:request.user %}
                             {% include 'citations/partials/_save_button.html' with citation=citation is_saved=citation|is_saved_by:request.user %}
                         </div>
                     </div>
                 </div>
+                <div class="report-hero-meta-row report-hero-meta-row--bottom">
+                    <span class="report-hero-report-pill">{% trans "Reporte" %} #{{ citation.id }}</span>
+                    <span class="report-hero-meta-item">
+                        <i class="bi bi-person"></i>
+                        {% if citation.author %}
+                            {{ citation.author.username }}
+                        {% else %}
+                            {% trans "Anónimo" %}
+                        {% endif %}
+                    </span>
+                    <span class="report-hero-meta-item">
+                        <i class="bi bi-clock-history"></i>
+                        {{ citation.created_at|date:"d/m/Y" }}
+                    </span>
+                </div>
             </div>
 
             {% if can_edit_report %}
+            <form id="report-delete-form" method="post" action="{% url 'citation_delete' citation.id %}" class="d-none">
+                {% csrf_token %}
+            </form>
             <form id="report-global-edit-form" method="post" action="{% url 'citation_edit' citation.id %}" enctype="multipart/form-data" class="report-edit-form{% if not report_edit_mode %} d-none{% endif %}" data-edit-form="header">
                 {% csrf_token %}
                 <input type="hidden" name="section" value="{% if report_edit_mode %}all{% else %}header{% endif %}">
                 <div class="row g-4 align-items-start">
                     <div class="col-lg-8">
-                        <p class="text-uppercase text-muted small mb-1">{% trans "Reporte" %}</p>
-                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input mb-3" value="{{ report_title }}" required>
+                        <div class="mb-2">
+                            <button
+                                type="submit"
+                                form="report-delete-form"
+                                class="btn btn-outline-danger btn-sm report-hero-inline__edit-btn"
+                                onclick="return confirm('{% trans '¿Seguro que quieres eliminar este reporte?' %}')"
+                                title="{% trans 'Eliminar reporte' %}"
+                                aria-label="{% trans 'Eliminar reporte' %}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <input type="text" name="report_title" class="form-control form-control-lg report-hero-edit__title-input report-hero-edit__title-input--plain mb-3" value="{{ report_title }}" placeholder="{% trans 'Titulo...' %}" required>
                         <div class="row g-2 mb-3 align-items-start">
                             <div class="col-12 col-md-6">
                                 <label class="form-label small mb-1">{% trans "Area de publicacion" %}</label>
@@ -102,7 +131,7 @@
             </form>
             {% endif %}
         </div>
-        <div class="text-muted small mt-3">
+        <div class="text-muted small mt-3 report-hero-byline">
             {% if citation.author %}
                 {% url 'profile' citation.author.username as author_profile_url %}
                 {% blocktrans trimmed with username_link='<a href="'|add:author_profile_url|add:'">'|add:citation.author.username|add:'</a>'|safe created_at=citation.created_at|date:"d/m/Y H:i" %}
@@ -116,24 +145,24 @@
         </div>
     </section>
 
-    <section class="mb-4">
+    <section class="mb-4 report-section report-documents-section">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">{% trans "Artículos implicados" %}</h4>
+                    <h4 class="mb-0"><i class="bi bi-journal-richtext me-2 text-primary"></i>{% trans "Artículos implicados" %}</h4>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="card h-100 surface-card">
+                        <div class="card h-100 surface-card report-doc-card report-doc-card--original">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Artículo original" %}</h6>
                                 {% if can_edit_report %}
                                 <div class="mt-3 report-edit-block" data-edit-block="original">
                                     <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="original">
                                         <label class="form-label small mb-1">{% trans "DOI original" %}</label>
-                                        <input id="report_doi_original_input" type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" class="form-control form-control-sm" required>
+                                        <input id="report_doi_original_input" type="text" name="doi_original" form="report-global-edit-form" value="{{ citation.doi_original }}" placeholder="10.1000/xyz123" class="form-control form-control-sm" required>
                                     </div>
                                 </div>
                                 {% endif %}
-                                <div class="border rounded-3 p-3 mt-3" id="metadataOriginal">
+                                <div class="border rounded-3 p-3 mt-3 report-metadata-shell" id="metadataOriginal">
                                 </div>
                                 {% if original_pdf_url %}
                                     <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
@@ -174,18 +203,18 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card h-100 surface-card">
+                        <div class="card h-100 surface-card report-doc-card report-doc-card--incorrect">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted small mb-2">{% trans "Cita incorrecta" %}</h6>
                                 {% if can_edit_report %}
                                 <div class="mt-3 report-edit-block" data-edit-block="incorrect">
                                     <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="incorrect">
                                         <label class="form-label small mb-1">{% trans "DOI incorrecto" %}</label>
-                                        <input id="report_doi_incorrect_input" type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" class="form-control form-control-sm" required>
+                                        <input id="report_doi_incorrect_input" type="text" name="doi_incorrect" form="report-global-edit-form" value="{{ citation.doi_incorrect }}" placeholder="10.1000/err456" class="form-control form-control-sm" required>
                                     </div>
                                 </div>
                                 {% endif %}
-                                <div class="border rounded-3 p-3 mt-3" id="metadataIncorrect">
+                                <div class="border rounded-3 p-3 mt-3 report-metadata-shell" id="metadataIncorrect">
                                 </div>
                                 {% if incorrect_pdf_url %}
                                     <h6 class="mt-3 mb-2">{% trans "Vista previa" %}</h6>
@@ -231,56 +260,81 @@
     <div class="row g-4">
         <div class="col-12">
             <section class="mb-4">
-                <div class="card surface-card">
+                <div class="card surface-card report-content-card">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">{% trans "Párrafos donde aparece la cita" %}</h5>
+                        <h5 class="card-title mb-3"><i class="bi bi-quote me-2 text-secondary"></i>{% trans "Evidencias del reporte" %}</h5>
                         {% if can_edit_report %}
                         <form method="post" action="{% url 'citation_extract_contexts' citation.id %}" class="mb-3 d-inline">
                             {% csrf_token %}
-                            <input type="hidden" name="engine" value="generic">
+                            <input type="hidden" name="engine" value="papermage">
                             <button class="btn btn-outline-primary btn-sm">
-                                {% trans "Detectar parrafos con extractor" %}
+                                {% trans "Detectar evidencias con extractor" %}
                             </button>
                         </form>
                         {% endif %}
-                        {% if citation.citation_contexts %}
+                        {% if evidence_items %}
                             {% if can_edit_report %}
                             <form method="post" action="{% url 'citation_extract_contexts' citation.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="context_selection" value="1">
                                 <div class="list-group list-group-flush">
-                                    {% for ctx in citation.citation_contexts %}
+                                    {% for ctx in evidence_items %}
                                         <label class="list-group-item px-0 d-flex gap-2 align-items-start">
                                             <input type="checkbox" class="form-check-input mt-1" name="selected_context_index" value="{{ forloop.counter0 }}" checked>
                                             <div>
-                                                <div class="small text-muted mb-1">
-                                                    {% trans "Página" %} {{ ctx.page }}{% if ctx.pattern %} · {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code>{% endif %}
+                                                <div class="small text-muted mb-1 d-flex flex-wrap gap-2">
+                                                    <span>{{ ctx.source_label }}</span>
+                                                    {% if ctx.article_label %}<span>· {{ ctx.article_label }}</span>{% endif %}
+                                                    {% if ctx.page %}<span>· {% trans "Página" %} {{ ctx.page }}</span>{% endif %}
+                                                    {% if ctx.pattern %}<span>· {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code></span>{% endif %}
                                                 </div>
-                                                <div class="small" style="white-space: pre-wrap;">{{ ctx.paragraph }}</div>
+                                                <div class="small" style="white-space: pre-wrap;">{{ ctx.text }}</div>
+                                                {% if ctx.pdf_url %}
+                                                <a class="small" href="{{ ctx.pdf_url }}" target="_blank" rel="noopener">{% trans "Abrir PDF" %}</a>
+                                                {% endif %}
                                             </div>
                                         </label>
                                     {% endfor %}
                                 </div>
                                 <div class="mt-3">
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                        {% trans "Guardar selección de párrafos" %}
+                                        {% trans "Guardar selección de evidencias" %}
                                     </button>
                                 </div>
                             </form>
                             {% else %}
                             <div class="list-group list-group-flush">
-                                {% for ctx in citation.citation_contexts %}
+                                {% for ctx in evidence_items %}
                                     <div class="list-group-item px-0">
-                                        <div class="small text-muted mb-1">
-                                            {% trans "Página" %} {{ ctx.page }}{% if ctx.pattern %} · {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code>{% endif %}
+                                        <div class="small text-muted mb-1 d-flex flex-wrap gap-2">
+                                            <span>{{ ctx.source_label }}</span>
+                                            {% if ctx.article_label %}<span>· {{ ctx.article_label }}</span>{% endif %}
+                                            {% if ctx.page %}<span>· {% trans "Página" %} {{ ctx.page }}</span>{% endif %}
+                                            {% if ctx.pattern %}<span>· {% trans "Patrón" %}: <code>{{ ctx.pattern }}</code></span>{% endif %}
                                         </div>
-                                        <div class="small" style="white-space: pre-wrap;">{{ ctx.paragraph }}</div>
+                                        <div class="small" style="white-space: pre-wrap;">{{ ctx.text }}</div>
+                                        {% if ctx.pdf_url %}
+                                        <a class="small" href="{{ ctx.pdf_url }}" target="_blank" rel="noopener">{% trans "Abrir PDF" %}</a>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
                             {% endif %}
                         {% else %}
-                            <p class="text-muted mb-0">{% trans "Este reporte se creó sin seleccionar párrafos concretos del artículo que cita." %}</p>
+                            <p class="text-muted mb-0">{% trans "Este reporte todavía no tiene evidencias textuales asociadas." %}</p>
+                        {% endif %}
+                        {% if can_edit_report %}
+                        <form method="post" action="{% url 'citation_add_evidence' citation.id %}" class="mt-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="source" value="manual">
+                            <input type="hidden" name="article" value="citing">
+                            <input type="hidden" name="kind" value="manual_text">
+                            <label for="manual-evidence-text" class="form-label small">{% trans "Añadir evidencia manual" %}</label>
+                            <textarea id="manual-evidence-text" name="text" class="form-control form-control-sm" rows="3" placeholder="{% trans 'Pega un fragmento textual relevante...' %}"></textarea>
+                            <button type="submit" class="btn btn-outline-primary btn-sm mt-2">
+                                {% trans "Añadir evidencia" %}
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
@@ -291,15 +345,15 @@
     <div class="row g-4">
         <div class="col-12">
             <section class="mb-4">
-                <div class="card surface-card">
+                <div class="card surface-card report-content-card">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">{% trans "Motivo / Explicación" %}</h5>
+                        <h5 class="card-title mb-3"><i class="bi bi-info-circle me-2 text-secondary"></i>{% trans "Motivo / Explicación" %}</h5>
                         <p class="mb-0{% if report_edit_mode %} d-none{% endif %}">{{ citation.incorrect_reason }}</p>
                         {% if can_edit_report %}
                         <div class="mt-3 report-edit-block" data-edit-block="reason">
                             <div class="report-edit-form{% if not report_edit_mode %} d-none{% endif %} mt-2" data-edit-form="reason">
                                 <label class="form-label small mb-1">{% trans "Explicación" %}</label>
-                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3" required>{{ citation.incorrect_reason }}</textarea>
+                                <textarea name="incorrect_reason" form="report-global-edit-form" class="form-control form-control-sm" rows="3" placeholder="{% trans 'Describa el motivo del reporte...' %}" required>{{ citation.incorrect_reason }}</textarea>
                             </div>
                         </div>
                         {% endif %}
@@ -313,25 +367,19 @@
     <div class="row g-4">
         <div class="col-lg-8">
             <section class="mb-4">
-                <div class="card surface-card">
+                <div class="card surface-card report-comments-card">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">{% trans "Comentarios" %}</h5>
+                        <h5 class="card-title mb-3"><i class="bi bi-chat-dots me-2 text-primary"></i>{% trans "Comentarios" %}</h5>
 
-                        <div id="comment-list">
-                            {% if comments %}
-                                {% for comment in comments %}
-                                    {% include 'citations/partials/_comment.html' with comment=comment %}
-                                {% endfor %}
-                            {% else %}
-                                <p id="no-comments" class="text-muted">{% trans "Aún no hay comentarios." %}</p>
-                            {% endif %}
+                        <div id="comment-list" class="report-comment-list">
+                            {% include 'citations/partials/_comment_list.html' with comments=comments %}
                         </div>
 
                         {% if user.is_authenticated %}
                         <form hx-post="{% url 'citation_detail' citation.id %}"
                               hx-target="#comment-list"
-                              hx-swap="beforeend"
-                              class="mt-4"
+                              hx-swap="innerHTML"
+                              class="mt-4 report-comment-form"
                               id="commentForm">
                             {% csrf_token %}
                             <div id="replyIndicator" class="alert alert-info d-none p-2 py-1 small mb-3">
@@ -358,7 +406,7 @@
                             <button type="submit" class="btn btn-primary">{% trans "Enviar comentario" %}</button>
                         </form>
                         {% else %}
-                        <div class="alert alert-warning mt-4">
+                        <div class="alert alert-warning mt-4 report-comment-auth-alert">
                             <strong>{% trans "Inicia sesión" %}</strong> {% trans "para añadir un comentario" %}
                             <br>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-sm btn-outline-primary mt-2">{% trans "Iniciar sesión" %}</a>
@@ -371,13 +419,13 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card surface-card mb-4">
+            <div class="card surface-card mb-4 report-related-card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3">{% trans "Otros reportes de la misma área" %}</h5>
+                    <h5 class="card-title mb-3"><i class="bi bi-collection me-2 text-secondary"></i>{% trans "Otros reportes de la misma área" %}</h5>
                     {% if other_area_reports %}
                         <div class="list-group list-group-flush">
                             {% for report in other_area_reports %}
-                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0">
+                            <a href="{% url 'citation_detail' report.id %}" class="list-group-item list-group-item-action px-0 report-related-item">
                                 <div class="mb-2 d-flex flex-wrap gap-2">
                                     {% for area_label in report.publication_area_display_tags %}
                                     <span class="badge text-bg-info">{{ area_label }}</span>
@@ -497,80 +545,461 @@
 
 {% block scripts %}
 <style>
-  .metadata-journal-chip {
-    display: inline-block;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    background: #e9edf3;
-    color: #1f2b3d;
+  .report-detail-page {
+    color: #334155;
+  }
+
+  .report-detail-page .report-back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .report-detail-page .report-back-link:hover {
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .report-detail-page .report-hero-section {
+    position: relative;
+    overflow: visible;
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(147,51,234,0.12));
+    box-shadow: 0 18px 55px rgba(15,23,42,0.14);
+  }
+
+  .report-detail-page .report-hero-glow {
+    display: none;
+  }
+
+  .report-detail-page .report-hero-inline {
+    position: relative;
+    z-index: 1;
+  }
+
+  .report-detail-page .report-hero-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .report-detail-page .report-hero-meta-row--bottom {
+    margin-top: 0.8rem;
+    margin-bottom: 0;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.28);
+  }
+
+  .report-detail-page .report-hero-report-pill {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .report-detail-page .report-hero-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #475569;
     font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 0.8rem;
   }
-  .metadata-title {
-    margin: 0 0 0.55rem 0;
-    font-size: 1.75rem;
-    line-height: 1.15;
+
+  .report-detail-page .report-hero-meta-item .bi {
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .report-detail-page .report-hero-section h1 {
+    margin-bottom: 0.4rem;
+    color: #0f172a;
+    font-size: clamp(2.3rem, 3.2vw, 3.5rem);
+    letter-spacing: -0.02em;
+  }
+
+  .report-detail-page #reportOriginalTitle {
+    color: #334155;
+    font-size: 1.03rem;
+    line-height: 1.45;
+    margin-bottom: 1rem;
+    word-break: break-word;
+  }
+
+  .report-detail-page .report-hero-tags .badge {
+    border-radius: 0.65rem;
+    border: 1px solid #d5deea;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    padding: 0.42rem 0.68rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .report-detail-page .report-hero-tags .text-bg-info {
+    background: rgba(255, 255, 255, 0.7) !important;
+    color: #334155 !important;
+  }
+
+  .report-detail-page .report-hero-tags .text-bg-secondary {
+    background: rgba(254, 242, 242, 0.9) !important;
+    border-color: #fecaca;
+    color: #9f1239 !important;
+  }
+
+  .report-detail-page .report-hero-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.72rem !important;
+  }
+
+  .report-detail-page .report-hero-actions [id^="vote-buttons-"] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem !important;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    min-height: auto;
+  }
+
+  .report-detail-page .report-hero-actions [id^="vote-buttons-"] .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .report-detail-page .report-hero-actions [id^="save-button-"] .btn {
+    border-radius: 0.6rem;
+    border-color: #d6dfeb;
+    background: rgba(255, 255, 255, 0.6);
+    color: #334155;
+    font-weight: 600;
+    padding: 0.5rem 0.8rem;
+    min-width: 7.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .report-detail-page .report-hero-actions [id^="save-button-"] .btn-success,
+  .report-detail-page .report-hero-actions [id^="save-button-"] .btn-outline-success:hover {
+    background: #14532d;
+    border-color: #14532d;
+    color: #ffffff;
+  }
+
+  .report-detail-page .report-hero-section > .text-muted.small.mt-3.report-hero-byline {
+    margin-top: 1.15rem !important;
+    font-size: 0.82rem;
+    color: #64748b !important;
+    display: none;
+  }
+
+  .report-detail-page .report-hero-section > .text-muted.small.mt-3.report-hero-byline a {
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .report-detail-page .report-documents-section h4 {
+    color: #0f172a;
     font-weight: 700;
-    color: #101828;
+    font-size: 1.2rem;
   }
-  .metadata-authors {
-    margin: 0 0 1rem 0;
-    color: #3d4a5c;
-    font-size: 1.15rem;
+
+  .report-detail-page .report-doc-card {
+    border: 1px solid #dbe4f2;
+    border-radius: 1.05rem;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
   }
-  .metadata-doi-box {
-    border: 1px solid #98a2b3;
+
+  .report-detail-page .report-doc-card .card-body > h6 {
+    font-size: 0.73rem;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    color: #64748b !important;
+  }
+
+  .report-detail-page .report-doc-card--incorrect {
+    border-color: #fecdd3;
+    box-shadow: 0 12px 34px rgba(190, 24, 93, 0.08);
+  }
+
+  .report-detail-page .report-metadata-shell {
+    border-radius: 0.9rem !important;
+    border-color: #d7e0ec !important;
+    background: #f8fafc;
+  }
+
+  .report-detail-page .pdf-preview-shell {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
+    background: #f1f5f9;
+  }
+
+  .report-detail-page .report-content-card,
+  .report-detail-page .report-comments-card,
+  .report-detail-page .report-related-card {
+    border-radius: 1.05rem;
+    border: 1px solid #dbe4f2;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+  }
+
+  .report-detail-page .report-content-card .card-title,
+  .report-detail-page .report-comments-card .card-title,
+  .report-detail-page .report-related-card .card-title {
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+  }
+
+  .report-detail-page .report-content-card .card-title {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.65rem;
+  }
+
+  .report-detail-page .report-comment-list > .mb-3.border {
+    border-radius: 1rem !important;
+    border: 1px solid #dbe3ef !important;
+    background: #f8fafc !important;
+    padding: 0.95rem 1rem !important;
+    margin-bottom: 0.85rem !important;
+    position: relative;
+  }
+
+  .report-detail-page .report-comment-list > .mb-3.border.ms-4 {
+    margin-left: 2.4rem !important;
+    background: #ffffff !important;
+  }
+
+  .report-detail-page .report-comment-list > .mb-3.border.ms-4::before {
+    content: "";
+    position: absolute;
+    left: -1.3rem;
+    top: 1.2rem;
+    width: 1rem;
+    height: 2px;
+    background: #d5dfe9;
+  }
+
+  .report-detail-page .report-comment-list a.fw-semibold {
+    color: #0f172a;
+  }
+
+  .report-detail-page .report-comment-list small.text-muted {
+    display: inline-block;
+    margin-left: 0.48rem;
+    font-size: 0.73rem;
+    color: #94a3b8 !important;
+  }
+
+  .report-detail-page .report-comment-list .reply-link {
+    color: #64748b !important;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .report-detail-page .report-comment-list .reply-link:hover {
+    color: #2563eb !important;
+  }
+
+  .report-detail-page .report-comment-form .form-control {
     border-radius: 0.8rem;
-    padding: 0.75rem 0.9rem;
+    border-color: #cfd9e7;
+    min-height: 7.4rem;
+  }
+
+  .report-detail-page .report-comment-form .form-control:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.16);
+  }
+
+  .report-detail-page .report-comment-form .btn-primary {
+    border-radius: 999px;
+    padding: 0.48rem 1rem;
+    font-weight: 600;
+  }
+
+  .report-detail-page .report-comment-auth-alert {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    color: #334155;
+    border-radius: 0.95rem;
+  }
+
+  .report-detail-page .report-comment-auth-alert .btn {
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .report-detail-page .report-related-card .list-group-item {
+    border: 0;
+    border-top: 1px solid #eef2f7;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .report-detail-page .report-related-card .list-group-item:first-child {
+    border-top: 0;
+  }
+
+  .report-detail-page .report-related-item:hover {
+    background: #f8fafc;
+  }
+
+  .report-detail-page .report-related-item p {
+    color: #0f172a;
+    font-size: 0.9rem;
+  }
+
+  .report-detail-page .report-related-item .badge {
+    border-radius: 0.45rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.44rem;
+  }
+
+  .report-detail-page .report-related-item .text-bg-info {
+    background: #e2e8f0 !important;
+    color: #334155 !important;
+  }
+
+  .report-detail-page .report-related-item .text-bg-secondary {
+    background: #fce7f3 !important;
+    color: #9d174d !important;
+  }
+
+  #pdfPreviewOriginalModal .modal-content,
+  #pdfPreviewModal .modal-content {
+    border: 0;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  #pdfPreviewOriginalModal .modal-header,
+  #pdfPreviewModal .modal-header {
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .metadata-journal-chip {
+    display: inline-block;
+    padding: 0.28rem 0.72rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 0.84rem;
+    font-weight: 600;
+    margin-bottom: 0.72rem;
+  }
+
+  .metadata-title {
+    margin: 0 0 0.45rem 0;
+    font-size: 1.2rem;
+    line-height: 1.35;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .metadata-authors {
+    margin: 0 0 0.9rem 0;
+    color: #475569;
+    font-size: 0.93rem;
+  }
+
+  .metadata-doi-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.6rem;
+    padding: 0.5rem 0.72rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    background: rgba(255, 255, 255, 0.55);
+    gap: 0.7rem;
+    margin-bottom: 0.86rem;
+    background: #f8fafc;
   }
+
   .metadata-doi-link {
-    color: #0a6b8a;
-    font-size: 0.95rem;
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    color: #2563eb;
+    font-size: 0.86rem;
+    text-decoration: none;
     word-break: break-all;
+    font-weight: 500;
   }
+
+  .metadata-doi-link:hover {
+    text-decoration: underline;
+  }
+
   .metadata-copy-btn {
     border: 0;
     background: transparent;
-    color: #475467;
+    color: #64748b;
     padding: 0;
     line-height: 1;
   }
+
   .metadata-facts {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.7rem 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem 0.95rem;
+    margin-top: 0.6rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #e2e8f0;
   }
+
   .metadata-fact {
     min-width: 0;
   }
+
   .metadata-fact-head {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    font-weight: 700;
-    color: #101828;
-    margin-bottom: 0.1rem;
+    gap: 0.38rem;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
+
   .metadata-fact-icon {
-    color: #667085;
-    font-size: 1rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
   }
+
   .metadata-fact-value {
-    color: #344054;
-    padding-left: 1.45rem;
+    color: #0f172a;
+    font-size: 0.86rem;
+    margin-top: 0.14rem;
+    padding-left: 1.25rem;
     word-break: break-word;
   }
+
   .metadata-toggle-btn {
-    color: #0a6b8a;
+    color: #2563eb;
     text-decoration: none;
     font-weight: 600;
     display: inline-flex;
@@ -580,26 +1009,86 @@
     height: 2rem;
     border-radius: 999px;
   }
+
   .metadata-toggle-btn:hover {
     text-decoration: none;
-    background: rgba(10, 107, 138, 0.08);
+    background: rgba(37, 99, 235, 0.12);
   }
+
   .metadata-toggle-wrap {
     text-align: center;
-    margin: 0.25rem 0 0.5rem 0;
+    margin: 0.1rem 0 0.38rem 0;
   }
+
+  @media (min-width: 992px) {
+    .report-detail-page .report-related-card {
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .report-detail-page .report-hero-actions {
+      justify-content: flex-end;
+    }
+  }
+
   @media (max-width: 991px) {
+    .report-detail-page .report-hero-section {
+      padding: 1.35rem;
+    }
+
+    .report-detail-page .report-hero-actions {
+      justify-content: flex-start;
+      align-items: flex-start;
+      width: auto;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .report-detail-page .report-comment-list > .mb-3.border.ms-4 {
+      margin-left: 1.2rem !important;
+    }
+
     .metadata-facts {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+
   @media (max-width: 767px) {
+    .report-detail-page .report-hero-section {
+      border-radius: 1.2rem;
+      padding: 1.1rem;
+    }
+
+    .report-detail-page .report-hero-meta-row {
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .report-detail-page .report-hero-report-pill {
+      font-size: 0.72rem;
+      padding: 0;
+    }
+
+    .report-detail-page .report-hero-meta-item {
+      font-size: 0.83rem;
+    }
+
+    .report-detail-page .report-hero-section h1 {
+      font-size: clamp(1.45rem, 7vw, 2rem);
+    }
+
+    .report-detail-page .report-comment-list > .mb-3.border.ms-4 {
+      margin-left: 0.7rem !important;
+    }
+
     .metadata-title {
-      font-size: 1.35rem;
+      font-size: 1.04rem;
     }
+
     .metadata-authors {
-      font-size: 1rem;
+      font-size: 0.88rem;
     }
+
     .metadata-facts {
       grid-template-columns: 1fr;
     }
@@ -1213,17 +1702,41 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 </script>
 
+<script>
+  document.addEventListener('click', function (event) {
+    const toggleBtn = event.target.closest('.comment-replies-toggle');
+    if (!toggleBtn) return;
+    event.preventDefault();
+
+    const targetId = toggleBtn.getAttribute('data-target');
+    const repliesBox = targetId ? document.getElementById(targetId) : null;
+    if (!repliesBox) return;
+
+    const isCollapsed = repliesBox.classList.contains('d-none');
+    repliesBox.classList.toggle('d-none');
+    toggleBtn.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+    toggleBtn.textContent = isCollapsed
+      ? (toggleBtn.getAttribute('data-expanded-label') || 'Ocultar respuestas')
+      : (toggleBtn.getAttribute('data-collapsed-label') || '');
+  });
+</script>
+
 {% if creation_guard_enabled %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const reportEditMode = {{ report_edit_mode|yesno:"true,false" }};
   const creationGuardEnabled = {{ creation_guard_enabled|yesno:"true,false" }};
   const reportForm = document.getElementById('report-global-edit-form');
+  const reportDeleteForm = document.getElementById('report-delete-form');
   const feedback = document.getElementById('creationGuardFeedback');
   const discardUrl = "{{ discard_draft_url|escapejs }}";
+  const backToListLink = document.getElementById('backToCitationListBtn');
   const guardModalEl = document.getElementById('creationGuardModal');
   const guardConfirmBtn = document.getElementById('creationGuardConfirmLeaveBtn');
   let allowUnload = false;
+  let skipNextPopstate = false;
+  let isHandlingPopstate = false;
+  let isSubmittingReport = false;
 
   if (!reportEditMode || !creationGuardEnabled || !reportForm) return;
 
@@ -1372,7 +1885,8 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const askLeaveConfirmation = async () => {
-    if (getMissingFields().length === 0) return true;
+    if (isSubmittingReport) return true;
+    const missing = getMissingFields();
     const shouldLeave = await new Promise((resolve) => {
       if (!guardModalEl || typeof bootstrap === 'undefined') {
         resolve(
@@ -1405,13 +1919,106 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (!shouldLeave) {
-      showMissingState();
+      if (missing.length) {
+        showMissingState();
+      } else {
+        clearMissingState();
+      }
       return false;
     }
     allowUnload = true;
     await discardDraft();
     return true;
   };
+
+  const discardDraftBackground = () => {
+    if (!discardUrl || allowUnload || isSubmittingReport) return;
+    const csrfToken = typeof getCookie === 'function' ? getCookie('csrftoken') : '';
+    if (!csrfToken) return;
+    try {
+      if (navigator.sendBeacon) {
+        const payload = new URLSearchParams();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        navigator.sendBeacon(discardUrl, payload);
+        return;
+      }
+    } catch (err) {
+      // noop
+    }
+    try {
+      fetch(discardUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: `csrfmiddlewaretoken=${encodeURIComponent(csrfToken)}`,
+      });
+    } catch (err) {
+      // noop
+    }
+  };
+
+  const pushPopstateGuard = () => {
+    if (!window.history || typeof window.history.pushState !== 'function') return false;
+    const state =
+      window.history.state && typeof window.history.state === 'object'
+        ? window.history.state
+        : {};
+    window.history.pushState(
+      { ...state, __creationGuardTrap: Date.now() },
+      document.title,
+      window.location.href
+    );
+    return true;
+  };
+
+  if (pushPopstateGuard()) {
+    window.addEventListener('popstate', async () => {
+      if (skipNextPopstate) {
+        skipNextPopstate = false;
+        return;
+      }
+      if (isHandlingPopstate) {
+        pushPopstateGuard();
+        return;
+      }
+      isHandlingPopstate = true;
+
+      try {
+        const fallbackUrl = backToListLink?.href || '';
+
+        if (allowUnload || isSubmittingReport) {
+          allowUnload = true;
+          if (fallbackUrl) {
+            window.location.href = fallbackUrl;
+            return;
+          }
+          skipNextPopstate = true;
+          window.history.back();
+          return;
+        }
+
+        pushPopstateGuard();
+        const allowLeave = await askLeaveConfirmation();
+        if (!allowLeave) {
+          return;
+        }
+
+        if (fallbackUrl) {
+          window.location.href = fallbackUrl;
+          return;
+        }
+        skipNextPopstate = true;
+        window.history.back();
+      } finally {
+        isHandlingPopstate = false;
+      }
+    });
+  }
 
   document.addEventListener('click', async (event) => {
     if (event.defaultPrevented) return;
@@ -1438,7 +2045,16 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
-    if (form.id === reportForm.id) return;
+    if (reportDeleteForm && form.id === reportDeleteForm.id) {
+      allowUnload = true;
+      isSubmittingReport = true;
+      return;
+    }
+    if (form.id === reportForm.id) {
+      isSubmittingReport = true;
+      allowUnload = true;
+      return;
+    }
     if (form.hasAttribute('hx-post') || form.hasAttribute('hx-get') || form.hasAttribute('data-hx-post') || form.hasAttribute('data-hx-get')) return;
     event.preventDefault();
     const allowLeave = await askLeaveConfirmation();
@@ -1446,18 +2062,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }, true);
 
   window.addEventListener('beforeunload', (event) => {
-    if (allowUnload) return;
-    if (getMissingFields().length === 0) return;
+    if (allowUnload || isSubmittingReport) return;
     event.preventDefault();
     event.returnValue = '';
+  });
+
+  window.addEventListener('pagehide', () => {
+    discardDraftBackground();
   });
 });
 </script>
 {% endif %}
 
 {% endblock %}
-
-
-
-
-

@@ -3,70 +3,429 @@
 {% block title %}{% trans "Conversación" %} - CiteCheck{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <p class="text-uppercase text-muted small mb-1">{% trans "Mensajes" %}</p>
-      <h2 class="mb-0">
-        {% trans "Conversacion con" %}
+<style>
+  .conv-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Header */
+  .conv-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(37, 99, 235, 0.15);
+  }
+
+  .conv-header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .conv-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #2563EB;
+  }
+
+  .conv-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1E1B4B;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .conv-participants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+  }
+
+  .conv-participant-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    color: #1D4ED8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 200ms ease;
+    cursor: pointer;
+  }
+
+  .conv-participant-badge:hover {
+    background: rgba(37, 99, 235, 0.14);
+    color: #1E40AF;
+    text-decoration: none;
+  }
+
+  .conv-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1.5px solid rgba(124, 58, 237, 0.3);
+    color: #2563EB;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 200ms ease;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .conv-back-btn:hover {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: #2563EB;
+    color: #1D4ED8;
+    text-decoration: none;
+  }
+
+  /* Message thread */
+  .conv-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.06);
+    backdrop-filter: blur(10px);
+  }
+
+  .conv-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: #6B7280;
+    font-size: 0.9rem;
+  }
+
+  .conv-empty svg {
+    display: block;
+    margin: 0 auto 0.75rem;
+    opacity: 0.35;
+  }
+
+  /* Individual message bubble */
+  .msg-bubble {
+    display: flex;
+    flex-direction: column;
+    max-width: 72%;
+  }
+
+  .msg-bubble--mine {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .msg-bubble--theirs {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .msg-sender {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4B5563;
+    text-decoration: none;
+  }
+
+  .msg-sender:hover {
+    color: #2563EB;
+    text-decoration: none;
+  }
+
+  .msg-time {
+    font-size: 0.67rem;
+    color: #9CA3AF;
+  }
+
+  .msg-read-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #059669;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(5, 150, 105, 0.1);
+    border: 1px solid rgba(5, 150, 105, 0.2);
+  }
+
+  .msg-body {
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #1E1B4B;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .msg-body--mine {
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  }
+
+  .msg-body--theirs {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  /* Compose form */
+  .conv-compose {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    backdrop-filter: blur(10px);
+  }
+
+  .conv-compose-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1E1B4B;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .conv-compose-title svg {
+    color: #2563EB;
+  }
+
+  .conv-compose textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #1E1B4B;
+    background: #FAFAFA;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+    line-height: 1.55;
+  }
+
+  .conv-compose textarea:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #fff;
+  }
+
+  /* Override Django's as_p styling */
+  .conv-compose p {
+    margin-bottom: 0;
+  }
+
+  .conv-compose p textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #1E1B4B;
+    background: #FAFAFA;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+    line-height: 1.55;
+  }
+
+  .conv-compose p textarea:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #fff;
+  }
+
+  .conv-compose-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.85rem;
+  }
+
+  .conv-send-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.35rem;
+    border-radius: 8px;
+    background: #06B6D4;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 200ms ease;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  }
+
+  .conv-send-btn:hover {
+    background: #0891B2;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+  }
+
+  .conv-send-btn:focus-visible {
+    outline: 2px solid #06B6D4;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 600px) {
+    .conv-header {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .conv-back-btn {
+      align-self: flex-start;
+    }
+    .msg-bubble {
+      max-width: 88%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .conv-back-btn, .conv-send-btn, .conv-participant-badge {
+      transition: none;
+    }
+  }
+</style>
+
+<div class="conv-page">
+
+  <!-- Header -->
+  <div class="conv-header">
+    <div class="conv-header-meta">
+      <span class="conv-eyebrow">{% trans "Mensajes" %}</span>
+      <h1 class="conv-title">
+        {% trans "Conversación con" %}
         {% for participant in conversation.other_participants %}
           {% if not forloop.first %}, {% endif %}
           @{{ participant.username }}
         {% empty %}
           @{{ user.username }}
         {% endfor %}
-      </h2>
-      <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+      </h1>
+      <div class="conv-participants">
         {% for participant in conversation.other_participants %}
-          <a href="{% url 'profile' participant.username %}" class="badge bg-light text-dark border">@{{ participant.username }}</a>
+          <a href="{% url 'profile' participant.username %}" class="conv-participant-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            @{{ participant.username }}
+          </a>
         {% empty %}
-          <span class="badge bg-light text-dark border">@{{ user.username }}</span>
+          <span class="conv-participant-badge">@{{ user.username }}</span>
         {% endfor %}
       </div>
     </div>
-    <div class="d-flex gap-2">
-      <a href="{% url 'messages_inbox' %}" class="btn btn-outline-secondary">{% trans "Volver a mensajes" %}</a>
-    </div>
+    <a href="{% url 'messages_inbox' %}" class="conv-back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+      </svg>
+      {% trans "Mensajes" %}
+    </a>
   </div>
 
-  <div class="card surface-card mb-4">
-    <div class="card-body">
-      {% if messages|length %}
-        <div class="d-flex flex-column gap-3">
-          {% for message in messages %}
-            <div class="p-3 rounded-3 glass-card border {% if message.sender == user %}bg-primary bg-opacity-10 ms-auto{% else %}bg-white{% endif %}" style="max-width: 720px;">
-              <div class="d-flex justify-content-between align-items-start mb-1">
-                <div class="d-flex align-items-center gap-2">
-                  <a href="{% url 'profile' message.sender.username %}" class="fw-semibold text-decoration-none">{{ message.sender.username }}</a>
-                  <small class="text-muted">{{ message.created_at|date:"d/m/Y H:i" }}</small>
-                </div>
-                {% if message.is_read and message.sender == user %}
-                  <span class="badge bg-success bg-opacity-75">{% trans "Leído" %}</span>
-                {% endif %}
-              </div>
-              <p class="mb-0">{{ message.content|linebreaksbr }}</p>
+  <!-- Thread -->
+  <div class="conv-thread">
+    {% if messages|length %}
+      {% for message in messages %}
+        {% if message.sender == user %}
+          <div class="msg-bubble msg-bubble--mine">
+            <div class="msg-meta">
+              {% if message.is_read %}
+                <span class="msg-read-badge">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  {% trans "Leído" %}
+                </span>
+              {% endif %}
+              <span class="msg-time">{{ message.created_at|date:"d/m/Y H:i" }}</span>
+              <a href="{% url 'profile' message.sender.username %}" class="msg-sender">{{ message.sender.username }}</a>
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="text-muted mb-0">{% trans "Aún no hay mensajes en esta conversación." %}</p>
-      {% endif %}
-    </div>
+            <div class="msg-body msg-body--mine">{{ message.content|linebreaksbr }}</div>
+          </div>
+        {% else %}
+          <div class="msg-bubble msg-bubble--theirs">
+            <div class="msg-meta">
+              <a href="{% url 'profile' message.sender.username %}" class="msg-sender">{{ message.sender.username }}</a>
+              <span class="msg-time">{{ message.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="msg-body msg-body--theirs">{{ message.content|linebreaksbr }}</div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <div class="conv-empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        {% trans "Aún no hay mensajes en esta conversación." %}
+      </div>
+    {% endif %}
   </div>
 
-  <div class="card surface-card">
-    <div class="card-body">
-      <h5 class="card-title">{% trans "Enviar un mensaje" %}</h5>
-      <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-primary">{% trans "Enviar" %}</button>
-        </div>
-      </form>
+  <!-- Compose -->
+  <div class="conv-compose">
+    <div class="conv-compose-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      {% trans "Enviar mensaje" %}
     </div>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="conv-compose-actions">
+        <button type="submit" class="conv-send-btn">
+          {% trans "Enviar" %}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
+          </svg>
+        </button>
+      </div>
+    </form>
   </div>
+
 </div>
 {% endblock %}
-
-

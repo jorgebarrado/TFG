@@ -7,22 +7,121 @@
   const debugChk   = document.getElementById('extract-debug');
   const btnSubmit  = document.getElementById('extract-btn');
   const readerBtn  = document.getElementById('extract-reader-btn');
+  const debugDownloadBtn = document.getElementById('extract-debug-download-btn');
 
   const alertBox   = document.getElementById('extract-alert');
   const summaryBox = document.getElementById('extract-summary');
   const resultsBox = document.getElementById('extract-results');
   const tracePre   = document.getElementById('extract-trace');
+  const progressBox = document.getElementById('extract-progress');
+  const progressBar = document.getElementById('extract-progress-bar');
+  const progressLabel = document.getElementById('extract-progress-label');
+  const progressMeta = document.getElementById('extract-progress-meta');
+  const progressValue = document.getElementById('extract-progress-value');
+  const progressSpinner = document.getElementById('extract-progress-spinner');
   const modalEl    = document.getElementById('extractModal');
 
   const ENDPOINT = '/citations/api/extract-citations/';
   const ENGINES_ENDPOINT = '/citations/api/extractor-engines/';
   const READER_PREVIEW = '/citations/reader/preview/';
+  const READER_PAYLOAD_DB = 'citecheck-reader-payloads';
+  const READER_PAYLOAD_STORE = 'payloads';
+  const READER_PAYLOAD_SESSION_KEY = 'citecheck.reader.payload';
 
   if (!form) return; // por si la modal no está en esta vista
 
   let extractionResult = null;
+  let progressTimer = null;
+  let progressPercent = 0;
+
+  function getApproxProgressStep(value) {
+    if (value < 18) return 5;
+    if (value < 36) return 4;
+    if (value < 54) return 3;
+    if (value < 74) return 2;
+    if (value < 88) return 1;
+    return 0.4;
+  }
+
+  function getApproxProgressLabel(value) {
+    if (value < 12) return 'Preparando PDF...';
+    if (value < 28) return 'Subiendo PDF y preparando extraccion...';
+    if (value < 46) return 'Leyendo paginas del documento...';
+    if (value < 66) return 'Detectando referencias y citas...';
+    if (value < 84) return 'Relacionando resultados...';
+    return 'Finalizando la extraccion...';
+  }
+
+  function clearProgressTimer() {
+    if (progressTimer) {
+      window.clearInterval(progressTimer);
+      progressTimer = null;
+    }
+  }
+
+  function renderProgress(percent, label, meta, { complete = false } = {}) {
+    if (!progressBox || !progressBar || !progressLabel || !progressMeta || !progressValue) {
+      return;
+    }
+    const safePercent = Math.max(0, Math.min(100, Number(percent || 0)));
+    progressBox.classList.remove('d-none');
+    progressBox.classList.toggle('is-complete', complete);
+    progressLabel.textContent = label || 'Extraccion en curso...';
+    progressMeta.textContent = meta || 'Progreso aproximado';
+    progressValue.textContent = `${Math.round(safePercent)}%`;
+    progressBar.style.width = `${safePercent}%`;
+    progressBar.classList.toggle('progress-bar-striped', !complete);
+    progressBar.classList.toggle('progress-bar-animated', !complete);
+    progressBar.classList.toggle('bg-success', complete);
+    if (progressSpinner) {
+      progressSpinner.classList.toggle('d-none', complete);
+    }
+    if (btnSubmit && btnSubmit.disabled) {
+      btnSubmit.textContent = complete
+        ? 'Extraccion completada'
+        : `Extrayendo... ${Math.round(safePercent)}%`;
+    }
+  }
+
+  function resetProgress() {
+    clearProgressTimer();
+    progressPercent = 0;
+    if (!progressBox || !progressBar || !progressLabel || !progressMeta || !progressValue) {
+      return;
+    }
+    progressBox.classList.add('d-none');
+    progressBox.classList.remove('is-complete');
+    progressLabel.textContent = 'Preparando extraccion...';
+    progressMeta.textContent = 'Progreso aproximado';
+    progressValue.textContent = '0%';
+    progressBar.style.width = '0%';
+    progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
+    progressBar.classList.remove('bg-success');
+    if (progressSpinner) {
+      progressSpinner.classList.remove('d-none');
+    }
+  }
+
+  function startProgress() {
+    clearProgressTimer();
+    progressPercent = 6;
+    renderProgress(progressPercent, getApproxProgressLabel(progressPercent), 'Progreso aproximado');
+    progressTimer = window.setInterval(() => {
+      progressPercent = Math.min(94, progressPercent + getApproxProgressStep(progressPercent));
+      renderProgress(progressPercent, getApproxProgressLabel(progressPercent), 'Progreso aproximado');
+    }, 450);
+  }
+
+  function completeProgress() {
+    clearProgressTimer();
+    progressPercent = 100;
+    renderProgress(progressPercent, 'Extraccion completada.', 'Progreso aproximado', {
+      complete: true,
+    });
+  }
 
   function hideAllFeedback() {
+    resetProgress();
     alertBox.classList.add('d-none');
     summaryBox.classList.add('d-none');
     resultsBox.classList.add('d-none');
@@ -31,6 +130,22 @@
     summaryBox.textContent = '';
     resultsBox.innerHTML = '';
     tracePre.textContent = '';
+    if (debugDownloadBtn) {
+      debugDownloadBtn.dataset.downloadUrl = '';
+      debugDownloadBtn.dataset.filename = '';
+      debugDownloadBtn.disabled = true;
+      debugDownloadBtn.classList.add('d-none');
+    }
+  }
+
+  function enableDebugDownload(referenceDebug) {
+    if (!debugDownloadBtn) return;
+    const downloadUrl = String(referenceDebug?.download_url || '').trim();
+    const filename = String(referenceDebug?.filename || 'reference_debug.json').trim();
+    debugDownloadBtn.dataset.downloadUrl = downloadUrl;
+    debugDownloadBtn.dataset.filename = filename || 'reference_debug.json';
+    debugDownloadBtn.disabled = !downloadUrl;
+    debugDownloadBtn.classList.toggle('d-none', !downloadUrl);
   }
 
   function syncButton() {
@@ -85,7 +200,11 @@
       references_numbered: Boolean(baseStats.references_numbered),
     };
     const references = Array.isArray(data?.references) ? data.references : [];
-    return { snippets, stats, references };
+    const enrichment =
+      data?.enrichment && typeof data.enrichment === 'object' ? data.enrichment : null;
+    const articleInfo =
+      data?.article_info && typeof data.article_info === 'object' ? data.article_info : null;
+    return { snippets, stats, references, enrichment, articleInfo };
   }
 
   function buildEngineOptions(engines) {
@@ -232,68 +351,70 @@
     }, { once: true }); // nos suscribimos una vez por apertura de modal
   }
 
-  function openReaderPreview() {
+  function openPayloadDb() {
+    return new Promise((resolve, reject) => {
+      const req = window.indexedDB.open(READER_PAYLOAD_DB, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(READER_PAYLOAD_STORE)) {
+          db.createObjectStore(READER_PAYLOAD_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('indexeddb_open_failed'));
+    });
+  }
+
+  function writePayloadToDb(db, key, payload) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(READER_PAYLOAD_STORE, 'readwrite');
+      tx.objectStore(READER_PAYLOAD_STORE).put(payload, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('indexeddb_write_failed'));
+    });
+  }
+
+  async function persistReaderPayload(file, dataPayload) {
+    const payloadKey = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const db = await openPayloadDb();
+    await writePayloadToDb(db, payloadKey, {
+      file,
+      createdAt: Date.now(),
+    });
+    db.close();
+    try {
+      sessionStorage.setItem(
+        `${READER_PAYLOAD_SESSION_KEY}:${payloadKey}`,
+        JSON.stringify(dataPayload)
+      );
+    } catch (e) {
+      // noop
+    }
+    return payloadKey;
+  }
+
+  async function openReaderPreview() {
     const file = fileInput?.files?.[0];
     if (!file) {
       alertBox.textContent = 'Selecciona un PDF.';
       alertBox.classList.remove('d-none');
       return;
     }
-    const previewWin = window.open(READER_PREVIEW, '_blank');
-    if (!previewWin) {
-      alertBox.textContent = 'No se pudo abrir el visor.';
-      alertBox.classList.remove('d-none');
-      return;
-    }
 
     const payload = {
-      type: 'reader:payload',
-      file,
       snippets: extractionResult?.snippets || [],
       references: extractionResult?.references || [],
       stats: extractionResult?.stats || null,
+      enrichment: extractionResult?.enrichment || null,
+      articleInfo: extractionResult?.articleInfo || null,
     };
-    const targetOrigin = window.location.origin;
-    let attempts = 0;
-    let timerId = null;
-
-    const sendPayload = () => {
-      try {
-        previewWin.postMessage(payload, targetOrigin);
-      } catch (e) {
-        // noop
-      }
-    };
-
-    const cleanup = () => {
-      if (timerId) {
-        clearInterval(timerId);
-        timerId = null;
-      }
-      window.removeEventListener('message', onReady);
-    };
-
-    const onReady = (event) => {
-      if (event.origin !== targetOrigin) return;
-      if (!event.data || event.data.type !== 'reader:ready') return;
-      sendPayload();
-      cleanup();
-    };
-
-    window.addEventListener('message', onReady);
-    sendPayload();
-    timerId = setInterval(() => {
-      if (!previewWin || previewWin.closed) {
-        cleanup();
-        return;
-      }
-      attempts += 1;
-      if (attempts > 10) {
-        cleanup();
-        return;
-      }
-      sendPayload();
-    }, 800);
+    try {
+      const payloadKey = await persistReaderPayload(file, payload);
+      const readerUrl = `${READER_PREVIEW}?payload=${encodeURIComponent(payloadKey)}`;
+      window.location.assign(readerUrl);
+    } catch (e) {
+      window.location.assign(READER_PREVIEW);
+    }
   }
 
   if (engineSel) {
@@ -302,9 +423,24 @@
   if (readerBtn) {
     readerBtn.addEventListener('click', openReaderPreview);
   }
+  if (debugDownloadBtn) {
+    debugDownloadBtn.addEventListener('click', () => {
+      const downloadUrl = String(debugDownloadBtn.dataset.downloadUrl || '').trim();
+      if (!downloadUrl) return;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      if (debugDownloadBtn.dataset.filename) {
+        link.download = debugDownloadBtn.dataset.filename;
+      }
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
   if (fileInput) {
     fileInput.addEventListener('change', () => {
       extractionResult = null;
+      resetProgress();
     });
   }
   if (modalEl) {
@@ -341,19 +477,22 @@
 
     btnSubmit.disabled = true;
     const originalText = btnSubmit.textContent;
-    btnSubmit.textContent = 'Procesando…';
+    btnSubmit.textContent = 'Extrayendo... 0%';
+    startProgress();
 
     try {
       const fd = new FormData();
       fd.append('manuscript', file);
       fd.append('engine', engineSel.value);
       fd.append('debug', debugChk.checked ? '1' : '0');
+      fd.append('debug_reference_detection', debugChk.checked ? '1' : '0');
 
       const res  = await fetch(ENDPOINT, { method: 'POST', body: fd });
       const data = await res.json();
 
       // --- Manejo de error del servidor (ok:false) ---
       if (!data.ok) {
+        resetProgress();
         alertBox.textContent = data.error || 'No se pudo extraer citas con el motor seleccionado.';
         alertBox.classList.remove('d-none');
 
@@ -367,6 +506,11 @@
       // --- OK: pintar resumen, resultados y (si procede) la traza ---
       renderResults(data);
       extractionResult = buildExtractionResult(data);
+      completeProgress();
+      if (data.reference_debug?.output_path) {
+        summaryBox.textContent = `${summaryBox.textContent} · debug: ${data.reference_debug.output_path}`;
+      }
+      enableDebugDownload(data.reference_debug);
 
       if (data.trace) {
         tracePre.textContent = JSON.stringify(data.trace, null, 2);
@@ -375,6 +519,7 @@
 
       wireCardActions();
     } catch (e) {
+      resetProgress();
       alertBox.textContent = 'Error de red o de servidor al extraer citas.';
       alertBox.classList.remove('d-none');
     } finally {

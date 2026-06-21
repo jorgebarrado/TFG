@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n custom_filters %}
+{% load i18n %}
 
 {% block title %}{% trans "Listado de reportes" %}{% endblock %}
 
@@ -13,16 +13,16 @@
           {% trans "Citas cuestionadas por la comunidad" %}
         </h1>
         <p class="text-muted mb-3">
-          {% trans "Navega los reportes enviados por otros autores y filtra por area, tipo de error o anio. El diseno sigue la home con tarjetas glass y gradientes suaves." %}
+          {% trans "Navega los reportes enviados por otros autores y filtra por área, tipo de error o año." %}
         </p>
         <div class="d-flex flex-wrap gap-2">
           <span class="stat-pill">
             <i class="fa-solid fa-flag-checkered text-primary"></i>
-            {{ citations|length }} {% trans "reportes" %}
+            {{ reports_total }} {% trans "reportes" %}
           </span>
           <span class="stat-pill">
             <i class="fa-solid fa-layer-group text-indigo-500"></i>
-            {{ areas|length }} {% trans "Areas" %}
+            {{ areas|length }} {% trans "Áreas" %}
           </span>
           <span class="stat-pill">
             <i class="fa-solid fa-bug text-amber-500"></i>
@@ -44,39 +44,47 @@
   <div class="surface-card p-4 mb-3">
     <div class="section-heading">
       <span class="pill"><i class="fa-solid fa-sliders"></i> {% trans "Filtros" %}</span>
-      <small class="text-muted">{% trans "Refina la tabla en tiempo real" %}</small>
+      <small class="text-muted">{% trans "Aplica filtros y navega entre paginas" %}</small>
     </div>
-    <form class="row g-3" method="get">
-      <div class="col-lg-5">
-        <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, titulo o autor" %}</label>
+    <form id="reportFiltersForm" class="row g-3 align-items-end" method="get">
+      <div class="col-lg-4">
+        <label class="form-label small text-muted" for="searchInput">{% trans "Buscar DOI, título o autor" %}</label>
         <input id="searchInput" type="text"
+              name="q"
               class="form-control"
-              placeholder="{% trans 'Buscar DOI, titulo o autor' %}">
+              value="{{ request.GET.q|default:'' }}"
+              placeholder="{% trans 'Buscar DOI, título o autor' %}">
       </div>
 
-      <div class="col-lg-3">
-        <label class="form-label small text-muted" for="areaFilter">{% trans "Area" %}</label>
-        <select id="areaFilter" class="form-select">
+      <div class="col-lg-2">
+        <label class="form-label small text-muted" for="areaFilter">{% trans "Área" %}</label>
+        <select id="areaFilter" name="area" class="form-select">
           <option value="">{% trans "Todas" %}</option>
           {% for code,label in areas %}
-            <option value="{{ label }}">{{ label }}</option>
+            <option value="{{ code }}"
+                    {% if request.GET.area == code %}selected{% endif %}>
+              {{ label }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <div class="col-lg-2">
-        <label class="form-label small text-muted" for="ctypeFilter">{% trans "Tipo" %}</label>
-        <select id="ctypeFilter" class="form-select">
+        <label class="form-label small text-muted" for="typeFilter">{% trans "Tipo" %}</label>
+        <select id="typeFilter" name="ctype" class="form-select">
           <option value="">{% trans "Todos" %}</option>
           {% for code,label in citation_types %}
-            <option value="{{ label }}">{{ label }}</option>
+            <option value="{{ code }}"
+                    {% if request.GET.ctype == code %}selected{% endif %}>
+              {{ label }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <div class="col-lg-2">
-        <label class="form-label small text-muted" for="yearFilter">{% trans "Anio" %}</label>
-        <select id="yearFilter" class="form-select">
+        <label class="form-label small text-muted" for="yearFilter">{% trans "Año" %}</label>
+        <select id="yearFilter" name="year" class="form-select">
           <option value=""
                   {% if not request.GET.year %}selected{% endif %}>
               {% trans "Todos" %}
@@ -91,116 +99,168 @@
         </select>
 
       </div>
+
+      <div class="col-lg-2">
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-dark w-100">
+            <i class="fa-solid fa-filter me-1"></i>
+            {% trans "Aplicar filtros" %}
+          </button>
+          <a href="{% url 'citation_list' %}" class="btn btn-outline-secondary w-100">
+            <i class="fa-solid fa-filter-circle-xmark me-1"></i>
+            {% trans "Borrar filtros" %}
+          </a>
+        </div>
+      </div>
     </form>
   </div>
 
-  {% if citations %}
-  <div class="table-modern">
-    <table id="citationsTable"
-           class="table align-middle mb-0">
-      <thead>
-        <tr>
-          <th>{% trans "Reportado por" %}</th>
-          <th>{% trans "DOI" %}</th>
-          <th>{% trans "Tipo de error" %}</th>
-          <th>{% trans "Area" %}</th>
-          <th>{% trans "ID" %}</th>
-          <th>{% trans "Fecha" %}</th>
-          <th>{% trans "Acciones" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in citations %}
+  <div id="reportListResults">
+    {% if citations %}
+    <div class="table-modern">
+      <table id="citationsTable" class="table align-middle mb-0 table-redesign">
+        <thead>
           <tr>
-            <td>
-              {% if c.author %}
-                <a href="{% url 'profile' c.author.username %}" class="text-decoration-none">{{ c.author.username }}</a>
-              {% else %}
-                {% trans "Anonimo" %}{% endif %}</td>
-            <td>
-              <a href="#" class="doi-link" data-doi="{{ c.doi_original }}">
-                <code>{{ c.doi_original }}</code>
-              </a>
-            </td>
-            <td>{{ c.get_citation_type_display }}</td>
-            <td>{{ c.get_publication_area_display }}</td>
-            <td data-order="{{ c.id }}">#{{ c.id }}</td>
-            <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="d-flex flex-wrap gap-2">
-                {% include 'citations/partials/_vote_buttons.html' with citation=c upvotes=c.votes.all|count_upvotes downvotes=c.votes.all|count_downvotes user_vote=c.votes.all|user_vote:request.user %}
-                {% include 'citations/partials/_save_button.html' with citation=c is_saved=c|is_saved_by:request.user %}
-                <a href="{% url 'citation_detail' c.id %}"
-                  class="btn btn-sm btn-outline-primary"
-                  hx-get="{% url 'citation_preview' c.id %}"
-                  hx-target="#citationPreviewModalContent"
-                  hx-swap="innerHTML"
-                  data-bs-toggle="modal"
-                  data-bs-target="#citationPreviewModal">
-                    {% trans "Ver" %}
-                </a>
-            </td>
+            <th style="width: 40%;">{% trans "Reporte" %}</th>
+            <th style="width: 18%;">{% trans "Tipo de error" %}</th>
+            <th style="width: 12%; text-align: center;">{% trans "Votos" %}</th>
+            <th style="width: 15%;">{% trans "Fecha" %}</th>
+            <th style="width: 15%; text-align: right;">{% trans "Acciones" %}</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          {% for c in citations %}
+            <tr
+              data-area-values="{{ c.publication_area_filter_values }}"
+              data-type-values="{{ c.citation_type_filter_values }}"
+              data-year="{{ c.created_at|date:'Y' }}"
+              data-search="{{ c.report_search_text }}">
+              <td>
+                <a href="{% url 'citation_detail' c.id %}" class="report-title">
+                  {{ c.report_title_display }}
+                </a>
+                <div class="report-meta">
+                  {% trans "por" %}
+                  {% if c.author %}
+                    <a href="{% url 'profile' c.author.username %}">{{ c.author.username }}</a>
+                  {% else %}
+                    {% trans "Anónimo" %}
+                  {% endif %}
+                  · <span class="badge-area">{{ c.get_publication_area_display|default:"—" }}</span>
+                </div>
+                <a href="#" class="report-doi doi-link" data-doi="{{ c.doi_original }}" title="{{ c.doi_original }}">
+                  {% if c.doi_original %}
+                    {{ c.doi_original|cut:"https://doi.org/" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </a>
+              </td>
 
-  {% else %}
-    <div class="alert alert-info text-center">
-        {% trans "No hay reportes aun." %}
+              <td>
+                {% if c.citation_type == "misinterpretation" %}
+                  <span class="badge-error badge-misinterpretation">{{ c.get_citation_type_display }}</span>
+                {% elif c.citation_type == "contextual misattribution" %}
+                  <span class="badge-error badge-contextual">{{ c.get_citation_type_display }}</span>
+                {% elif c.citation_type %}
+                  <span class="badge-error badge-not-said">{{ c.get_citation_type_display }}</span>
+                {% else %}
+                  <span class="badge-error badge-not-said">—</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <div
+                  id="vote-net-{{ c.id }}"
+                  class="vote-net {% if c.net_votes > 0 %}vote-positive{% elif c.net_votes < 0 %}vote-negative{% else %}vote-zero{% endif %}">
+                  <i class="bi bi-arrow-up-short"></i>
+                  {% if c.net_votes > 0 %}+{% endif %}{{ c.net_votes|default:"0" }}
+                </div>
+              </td>
+
+              <td>
+                <span class="date-relative">{{ c.created_at|timesince }} {% trans "atrás" %}</span>
+                <span class="date-exact">{{ c.created_at|date:"d/m/Y" }}</span>
+              </td>
+
+              <td class="text-end">
+                <div class="d-inline-flex align-items-center gap-2">
+                  {% include 'citations/partials/_save_button.html' with citation=c is_saved=c.is_saved %}
+                  <a href="{% url 'citation_detail' c.id %}"
+                    class="btn-ver-new"
+                    hx-get="{% url 'citation_preview' c.id %}"
+                    hx-target="#citationPreviewModalContent"
+                    hx-swap="innerHTML"
+                    data-bs-toggle="modal"
+                    data-bs-target="#citationPreviewModal">
+                      {% trans "Ver" %}
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  {% endif %}
+
+    {% if citations.has_other_pages %}
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4">
+        <p class="text-muted mb-0">
+          {% blocktrans with start=citations.start_index end=citations.end_index total=citations.paginator.count %}
+            Mostrando {{ start }}-{{ end }} de {{ total }} reportes
+          {% endblocktrans %}
+        </p>
+        <div class="d-flex justify-content-center align-items-center gap-2">
+          {% if citations.has_previous %}
+            <a class="btn btn-outline-secondary" href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ citations.previous_page_number }}">
+              <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Anterior" %}
+            </a>
+          {% endif %}
+          <span class="btn btn-light disabled border">
+            {% blocktrans with current=citations.number total=citations.paginator.num_pages %}
+              Pagina {{ current }} de {{ total }}
+            {% endblocktrans %}
+          </span>
+          {% if citations.has_next %}
+            <a class="btn btn-outline-primary" href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ citations.next_page_number }}">
+              {% trans "Siguiente" %}<i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% else %}
+      <div class="alert alert-info text-center">
+          {% trans "No hay reportes aún." %}
+      </div>
+    {% endif %}
+  </div>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
 <script>
 $(function () {
-  const languageMap = {
-    es: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
-    en: '//cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json',
-  };
-  const userLang = "{{ LANGUAGE_CODE|default:'en' }}";
-
-  const table = $('#citationsTable').DataTable({
-    language: { url: languageMap[userLang] || languageMap.en },
-    order: [[4, 'desc']],
-    dom: 'lrtip',
-    pageLength: 10
-  });
-
-  $('#searchInput').on('keyup', function () {
-    table.search(this.value).draw();
-  });
-
-  $('#areaFilter').on('change', e => table.column(3).search(e.target.value).draw());
-
-  $('#ctypeFilter').on('change', e => {
-    const v = e.target.value ? '^' + e.target.value + '$' : '';
-    table.column(2).search(v, true, false).draw();
-  });
-
-  $('#yearFilter').on('change', e => table.column(5).search(e.target.value).draw());
-
   $(document).on('click', '.doi-link', function (e) {
     e.preventDefault();
     const doi = $(this).data('doi');
     $('#doiMetadataContent').html('<p>{% trans "Cargando metadatos..." %}</p>');
-    new bootstrap.Modal('#doiModal').show();
+    const doiModalEl = document.getElementById('doiModal');
+    if (doiModalEl) {
+      new bootstrap.Modal(doiModalEl).show();
+    }
 
     $.get('/citations/get_all_metadata/', { doi })
       .done(function (data) {
         const html = `
-          <p><strong>{% trans "Titulo" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
+          <p><strong>{% trans "Título" %}:</strong> ${data.title?.[0] || '{% trans "N/A" %}'}</p>
           <p><strong>{% trans "Autores" %}:</strong> ${
             data.author?.map(a => a.given + ' ' + a.family).join(', ') || 'N/A'
           }</p>
           <p><strong>{% translate "Revista" %}:</strong> ${data['container-title']?.[0] || '{% translate "N/A" %}'}</p>
-          <p><strong>{% translate "Anio" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
+          <p><strong>{% translate "Año" %}:</strong> ${data.issued?.['date-parts']?.[0]?.[0] || '{% translate "N/A" %}'}</p>
           <p><strong>DOI:</strong> <code>${doi}</code></p>
           <p><strong>{% translate "Enlace" %}:</strong> <a href="${data.URL}" target="_blank">${data.URL}</a></p>`;
         $('#doiMetadataContent').html(html);
@@ -210,6 +270,70 @@ $(function () {
           '<p class="text-danger">{% translate "No se pudo obtener informacion para este DOI." %}</p>'
         );
       });
+  });
+
+  const updateVoteNetBadge = (citationId, voteButtonsRoot) => {
+    if (!citationId || !voteButtonsRoot) return;
+    const voteNetEl = document.getElementById(`vote-net-${citationId}`);
+    if (!voteNetEl) return;
+
+    const upButton = Array.from(voteButtonsRoot.querySelectorAll('button')).find(
+      (btn) => btn.querySelector('.bi-arrow-up')
+    );
+    const downButton = Array.from(voteButtonsRoot.querySelectorAll('button')).find(
+      (btn) => btn.querySelector('.bi-arrow-down')
+    );
+
+    const parseCount = (buttonEl) => {
+      if (!buttonEl) return 0;
+      const text = (buttonEl.textContent || '').trim();
+      const matches = text.match(/\d+/g);
+      if (!matches || !matches.length) return 0;
+      return Number.parseInt(matches[matches.length - 1], 10) || 0;
+    };
+
+    const upvotes = parseCount(upButton);
+    const downvotes = parseCount(downButton);
+    const netVotes = upvotes - downvotes;
+
+    voteNetEl.classList.remove('vote-positive', 'vote-negative', 'vote-zero');
+    if (netVotes > 0) {
+      voteNetEl.classList.add('vote-positive');
+    } else if (netVotes < 0) {
+      voteNetEl.classList.add('vote-negative');
+    } else {
+      voteNetEl.classList.add('vote-zero');
+    }
+    voteNetEl.innerHTML = `<i class="bi bi-arrow-up-short"></i>${netVotes > 0 ? '+' : ''}${netVotes}`;
+  };
+
+  document.body.addEventListener('htmx:afterSwap', function (event) {
+    const target = event.detail && event.detail.target ? event.detail.target : null;
+    if (!target || !target.id) return;
+
+    if (target.id.startsWith('save-button-')) {
+      const citationId = target.id.replace('save-button-', '');
+      if (!citationId) return;
+
+      const syncedHtml = target.outerHTML;
+      document.querySelectorAll(`[id="save-button-${citationId}"]`).forEach((node) => {
+        if (node === target) return;
+        node.outerHTML = syncedHtml;
+      });
+      return;
+    }
+
+    if (target.id.startsWith('vote-buttons-')) {
+      const citationId = target.id.replace('vote-buttons-', '');
+      if (!citationId) return;
+
+      const syncedHtml = target.outerHTML;
+      document.querySelectorAll(`[id="vote-buttons-${citationId}"]`).forEach((node) => {
+        if (node === target) return;
+        node.outerHTML = syncedHtml;
+      });
+      updateVoteNetBadge(citationId, target);
+    }
   });
 });
 </script>

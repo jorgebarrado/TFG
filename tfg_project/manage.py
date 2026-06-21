@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Punto de entrada de la CLI de Django: arranca el servidor, ejecuta migraciones, tests y otros comandos.
 """Django's command-line utility for administrative tasks."""
 
 import os
@@ -7,7 +8,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tfg_project.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

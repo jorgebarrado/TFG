@@ -1,30 +1,199 @@
-# Referencia Completa de la API
+# Referencia Completa de API
 
-Esta referencia documenta los endpoints REST expuestos por la aplicación `citations`. Estos endpoints están definidos en `citations/urls.py` y servidos principalmente por `citations/views_api.py`.
+Base de la app: `/citations/`. Los endpoints JSON principales cuelgan de `/citations/api/`.
 
-**Base URL:** `/citations/api/` (relativo a la raíz del sitio)
+Esta referencia documenta los endpoints mantenidos en `citations/urls.py`, `views_api.py` y `views/ajax_views.py`.
 
-## Endpoints de Contexto y Extracción
+## Resumen
 
-### 1. Obtener Contexto de Citas (PaperMage + Semantic Scholar)
+| Endpoint | Método | Vista | Uso |
+| --- | --- | --- | --- |
+| `/citations/api/extract-citations/` | POST | `views_api.api_extract_citations` | Extrae referencias, snippets, capas y enriquecimiento desde un PDF/TXT subido. |
+| `/citations/api/detect-article-doi/` | POST | `views_api.api_detect_article_doi` | Intenta detectar DOI del artículo a partir de un PDF. |
+| `/citations/api/extractor-engines/` | GET | `views_api.api_extractor_engines` | Lista motores disponibles. |
+| `/citations/api/reference-debug-download/` | GET | `views_api.api_reference_debug_download` | Descarga JSON de debug de referencias. |
+| `/citations/api/reader-data/<report_id>/` | GET | `views_api.api_reader_data` | Inicializa el reader para un reporte existente. |
+| `/citations/api/get-citation-context/` | GET/POST | `views_api.get_citation_context` | Busca contextos en un citador open access. |
+| `/citations/api/pdf-contexts/` | GET | `views_api.api_pdf_citation_contexts` | Extrae contextos desde URL directa de PDF. |
+| `/citations/api/pdf-contexts-upload/` | POST | `views_api.api_pdf_citation_contexts_upload` | Extrae contextos desde PDF subido. |
+| `/citations/api/pdf-reader-v2-upload/` | POST | `views_api.api_pdf_reader_v2_upload` | Devuelve `pages` y `layers` para overlays del reader. |
+| `/citations/api/get-semantic-citations/` | GET | `ajax_views.get_semantic_citations` | Consulta citadores para UI semántica. |
+| `/citations/api/semantic-citation-analysis/` | GET | `views_api.api_semantic_citation_analysis` | Ejecuta análisis completo de citadores por DOI. |
+| `/citations/api/doi/` | GET | `ajax_views.fetch_doi_metadata` | Obtiene metadatos para un DOI. |
 
-Busca un artículo por DOI, intenta descargar su PDF open access y extrae las frases donde se cita a un artículo "objetivo".
+Los endpoints AJAX no estrictamente REST (`ajax_submit/`, `vote/`, `citations/toggle_saved/`, etc.) se consumen desde plantillas y pueden devolver HTML parcial o JSON específico de UI.
 
-*   **Ruta:** `/citations/api/get-citation-context/`
-*   **Vista:** `citations.views_api.get_citation_context`
-*   **Métodos:** `GET`, `POST`
-*   **Parámetros (QueryString o JSON Body):**
+## Motores de Extracción
 
-| Parámetro | Tipo | Obligatorio | Descripción |
-| :--- | :--- | :--- | :--- |
-| `citing_doi` | String | **Sí** | DOI del artículo que contiene la cita (el "citador"). |
-| `target_doi` | String | No | DOI del artículo citado (para búsqueda exacta). |
-| `target_title` | String | No | Título del artículo citado (ayuda al matcher). |
-| `target_first_author` | String | No | Apellido del primer autor del citado. |
-| `target_year` | String | No | Año de publicación del citado. |
-| `debug` | Bool | No | Si `1`, incluye traza de ejecución en la respuesta. |
+`GET /citations/api/extractor-engines/`
 
-*   **Respuesta Exitosa (200 OK):**
+Respuesta:
+
+```json
+{
+  "engines": [
+    { "key": "papermage", "label": "PaperMage", "available": true }
+  ]
+}
+```
+
+`api_extract_citations` acepta `engine=papermage`. Si se omite, se usa PaperMage por defecto.
+
+## Extraer Referencias de Manuscrito
+
+`POST /citations/api/extract-citations/`
+
+Content-Type: `multipart/form-data`
+
+Campos:
+
+| Campo | Tipo | Requerido | Descripción |
+| --- | --- | --- | --- |
+| `manuscript` | file | Sí | PDF o TXT a procesar. |
+| `engine` | string | No | `papermage` por defecto. |
+| `debug` | bool | No | Incluye datos de depuración del procesamiento base. |
+| `debug_reference_detection` | bool | No | Genera debug detallado de referencias y URL de descarga. |
+| `article_doi` / `doi` | string | No | DOI del artículo fuente para enriquecimiento Crossref/Semantic Scholar. |
+
+Respuesta parcial:
+
+```json
+{
+  "ok": true,
+  "engine_used": "papermage",
+  "references": [
+    {
+      "index": 1,
+      "raw": "[1] Doe, J. ...",
+      "doi": "10.1000/example",
+      "confidence": 1.0,
+      "numbered": true
+    }
+  ],
+  "snippets": [
+    {
+      "id": "snippet-1",
+      "page": 3,
+      "snippet": "... [1] ...",
+      "type": "numeric",
+      "confidence": 0.8
+    }
+  ],
+  "pages": [],
+  "layers": {},
+  "references_data": {},
+  "stats": {
+    "pages_total": 12,
+    "snippets_total": 20,
+    "references_total": 35,
+    "dois_total": 18,
+    "engine_used": "papermage",
+    "time_ms": 1500,
+    "citation_style": "numeric",
+    "max_reference_index": 35,
+    "bibliography_start_page": 10
+  },
+  "cited_by": [],
+  "enrichment": {
+    "doi_provided": true,
+    "doi_normalized": "10.1000/example",
+    "paper_resolved": true,
+    "references_enriched": 4,
+    "cited_by_count": 12,
+    "sources_used": ["crossref", "semantic_scholar"]
+  },
+  "article_info": {}
+}
+```
+
+Errores comunes:
+
+- `400`: falta `manuscript` o motor inválido.
+- `422`: procesamiento ejecutado pero `ok=false`.
+- `500`: error interno o capas del reader no preparadas para `papermage`.
+
+## Detectar DOI del Artículo
+
+`POST /citations/api/detect-article-doi/`
+
+Campo requerido: `manuscript` con PDF.
+
+Respuesta:
+
+```json
+{
+  "ok": true,
+  "detected": true,
+  "article_doi": "10.1000/example",
+  "article_info": {},
+  "crossref_available": true
+}
+```
+
+## Datos Para Reader
+
+`GET /citations/api/reader-data/<report_id>/`
+
+Inicializa un reader para un `IncorrectCitation` existente.
+
+Respuesta:
+
+```json
+{
+  "pdf_url": "https://example.org/paper.pdf",
+  "snippets": [],
+  "references": [],
+  "mentions": [],
+  "stats": {
+    "pages_total": 0,
+    "snippets_total": 0,
+    "references_total": 1,
+    "dois_total": 1,
+    "engine_used": "",
+    "time_ms": null,
+    "references_numbered": false,
+    "citation_style": "non_numeric",
+    "max_reference_index": 0,
+    "bibliography_start_page": null
+  }
+}
+```
+
+## Capas del Reader V2
+
+`POST /citations/api/pdf-reader-v2-upload/`
+
+Campos: `pdf_file` o `manuscript`.
+
+Respuesta:
+
+```json
+{
+  "ok": true,
+  "pages": [],
+  "layers": {},
+  "time_ms": 800
+}
+```
+
+## Contextos de Cita
+
+### DOI Citador
+
+`GET|POST /citations/api/get-citation-context/`
+
+Parámetros por querystring o JSON:
+
+| Parámetro | Requerido | Descripción |
+| --- | --- | --- |
+| `citing_doi` | Sí | DOI del artículo que contiene la cita. |
+| `target_doi` | No | DOI del artículo citado. |
+| `target_title` | No | Título del citado. |
+| `target_first_author` | No | Primer autor del citado. |
+| `target_year` | No | Año del citado. |
+| `debug` | No | `1` para incluir traza pública. |
+
+Respuesta:
 
 ```json
 {
@@ -34,8 +203,8 @@ Busca un artículo por DOI, intenta descargar su PDF open access y extrae las fr
   "count": 2,
   "contexts": [
     {
-      "paragraph": "Como se menciona en Smith et al. (2020) [12], el algoritmo falla...",
-      "snippet": "...Smith et al. (2020) [12], el algoritmo...",
+      "paragraph": "Texto completo...",
+      "snippet": "... fragmento ...",
       "page": 3,
       "start": 25,
       "end": 45,
@@ -46,129 +215,66 @@ Busca un artículo por DOI, intenta descargar su PDF open access y extrae las fr
 }
 ```
 
----
+Errores:
 
-### 2. Extracción de Manuscrito (Subida de PDF)
+- `400`: falta `citing_doi`.
+- `404`: no hay PDF open access.
+- `502`: error de Semantic Scholar o descarga.
 
-Procesa un archivo PDF subido por el usuario para extraer *todas* las referencias bibliográficas. Usado en el "Reader".
+### PDF por URL
 
-*   **Ruta:** `/citations/api/extract-citations/`
-*   **Vista:** `citations.views_api.api_extract_citations`
-*   **Métodos:** `POST`
-*   **Content-Type:** `multipart/form-data`
-*   **Parámetros:**
+`GET /citations/api/pdf-contexts/?pdf_url=<url>&pattern=<regex>`
 
-| Campo | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `manuscript` | File | El archivo PDF a procesar. |
-| `engine` | String | Motor de extracción (ver listado de motores). Default: `auto`. |
-| `debug` | Bool | Opcional. |
+`pattern` puede repetirse. Si no se envía, se usan patrones por defecto del servicio.
 
-*   **Respuesta Exitosa (200 OK):**
+Respuesta:
 
 ```json
 {
-  "ok": true,
-  "references": [
-    {
-      "id": "ref-1",
-      "index": 1,
-      "raw": "[1] J. Doe, 'Title', 2020.",
-      "doi": "10.1000/xyz",
-      "confidence": 1.0,
-      "numbered": true
-    }
-  ],
-  "snippets": [...],
-  "stats": {
-    "pages_total": 12,
-    "references_total": 40,
-    "dois_total": 35,
-    "time_ms": 1500,
-    "engine_used": "papermage"
-  }
+  "count": 3,
+  "contexts": []
 }
 ```
 
----
+### PDF Subido
 
-### 3. Motores de Extracción Disponibles
+`POST /citations/api/pdf-contexts-upload/`
 
-Lista los motores de extracción soportados y detectados en el entorno (ver `citations/services/engines.py`).
+Campo requerido: `pdf_file`.
 
-*   **Ruta:** `/citations/api/extractor-engines/`
-*   **Vista:** `citations.views_api.api_extractor_engines`
-*   **Métodos:** `GET`
-
-*   **Respuesta Típica:**
+Respuesta:
 
 ```json
 {
-  "engines": [
-    { "key": "papermage", "label": "PaperMage", "available": true },
-    { "key": "generic", "label": "Generico (rapido)", "available": true },
-    { "key": "papercraft", "label": "PaperCraft", "available": false }
-  ]
+  "count": 3,
+  "contexts": []
 }
 ```
 
-*   **Nota de Ingeniería:**
-    *   `papermage`: Usa `papermage` library. Más lento, más preciso.
-    *   `generic`: Usa regex simples sobre texto plano extraído (rápido, menos contexto).
-    *   `papercraft`: Experimental.
-    *   `auto`: Intenta `papermage` -> `papercraft` -> `generic`.
+## Análisis Semántico
 
----
+`GET /citations/api/semantic-citation-analysis/?doi=<doi>&max_citing=5`
 
-### 4. Análisis de Citas en PDF por URL (PaperMage Directo)
+Ejecuta el pipeline de búsqueda inversa:
 
-Descarga un PDF arbitrario de una URL y devuelve contextos de cita encontrados.
+1. resuelve citadores en Semantic Scholar;
+2. filtra PDFs open access;
+3. analiza contextos con PaperMage/fallbacks;
+4. devuelve estructura agregada del servicio.
 
-*   **Ruta:** `/citations/api/pdf-contexts/`
-*   **Vista:** `citations.views_api.api_pdf_citation_contexts`
-*   **Métodos:** `GET`
-*   **Parámetros:**
-    *   `pdf_url` (String, Obligatorio): URL directa al PDF.
-    *   `pattern` (String, Opcional, Múltiple): Patrones regex personalizados.
+Errores:
 
----
+- `400`: falta `doi` o `max_citing` no es entero.
+- `500`: error interno del pipeline.
 
-### 5. Upload PDF para Contextos (PaperMage Directo)
+## Debug de Referencias
 
-Igual que el anterior, pero subiendo el binario del PDF.
+`GET /citations/api/reference-debug-download/?file=<relative-path>`
 
-*   **Ruta:** `/citations/api/pdf-contexts-upload/`
-*   **Vista:** `citations.views_api.api_pdf_citation_contexts_upload`
-*   **Métodos:** `POST` (`multipart/form-data`)
-*   **Parámetros:**
-    *   `pdf_file` (File, Obligatorio).
+Descarga un JSON generado por `debug_reference_detection=1`. La ruta se resuelve siempre dentro de `tmp/reference_debug/`; rutas fuera de ese directorio devuelven 404.
 
----
+## Notas de Seguridad
 
-### 6. Cargar Datos para el Reader (Reporte Existente)
-
-Carga los datos iniciales para el visor (Viewer) cuando se abre un reporte existente.
-
-*   **Ruta:** `/citations/api/reader-data/<int:report_id>/`
-*   **Vista:** `citations.views_api.api_reader_data`
-*   **Métodos:** `GET`
-
----
-
-### 7. Análisis de Citación Semántica (Pipeline Completo)
-
-Ejecuta el pipeline de búsqueda inversa: Dado un DOI original, busca quién lo cita y analiza esos PDFs.
-
-*   **Ruta:** `/citations/api/semantic-citation-analysis/`
-*   **Vista:** `citations.views_api.api_semantic_citation_analysis`
-*   **Métodos:** `GET`
-*   **Parámetros:**
-    *   `doi` (String, Obligatorio): DOI original.
-    *   `max_citing` (Int, Default 5): Número máximo de artículos citadores a analizar.
-
----
-
-## Notas de Implementación
-
-*   **Autenticación:** La mayoría de estos endpoints están marcados con `@csrf_exempt` en `views_api.py` para facilitar pruebas desde herramientas externas (Postman), pero en producción deberían estar protegidos.
-*   **Errores:** El formato de error estándar es `{"ok": false, "error": "Mensaje descriptivo"}` o `{"error": "Mensaje"}` dependiendo de la vista. Se recomienda estandarizar esto en el futuro.
+- Algunos endpoints están marcados con `@csrf_exempt` para facilitar pruebas y uso desde el reader. No asumas que están listos para exposición pública sin revisar CSRF, auth y límites.
+- Las APIs que descargan PDFs deben tratar URLs externas como entrada no confiable.
+- Los errores no están estandarizados en todo el módulo; revisa cada consumidor antes de cambiar payloads.

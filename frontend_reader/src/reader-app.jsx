@@ -34,9 +34,131 @@ const DOI_REGEX = /10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+/i;
 const DOI_URL_REGEX = /https?:\/\/(?:dx\.)?doi\.org\/([^\s]+)/i;
 const BRACKET_REGEX = /\[\s*(\d+)\s*\]/;
 const INLINE_CITATION_REGEX = /\[\s*(\d+(?:\s*[,;]\s*\d+|\s*[-\u2013\u2014]\s*\d+)*)\s*\]/g;
-const ENGINES_ENDPOINT = "/citations/api/extractor-engines/";
+
+// Patrones autor-anio y DOI (espejo de citation_patterns.py). Necesitan
+// soportar marcas combinantes (\u0300-\u036f) porque el texto del PDF se
+// normaliza a NFKD antes de matchear.
+// Mantenerlos alineados con el backend evita que el reader resalte citas que
+// luego el servidor no puede reconciliar.
+const _NAME_TOKEN =
+  "[A-Z\\u00C0-\\u00DC\\u0100-\\u017F]" +
+  "[A-Za-z\\u00C0-\\u00FF\\u0100-\\u017F\\u0300-\\u036F'\\-]+";
+const _AUTHOR_GROUP =
+  `${_NAME_TOKEN}` +
+  `(?:` +
+  `\\s+et\\s+al\\.?` +
+  `|\\s+(?:and|&)\\s+${_NAME_TOKEN}` +
+  `|(?:,\\s+${_NAME_TOKEN}){1,3}(?:,?\\s+(?:and|&)\\s+${_NAME_TOKEN})?` +
+  `)?`;
+const _YEAR = "(?:1[5-9]|20)\\d{2}[a-z]?";
+const _YEAR_LIST = `${_YEAR}(?:\\s*,\\s*${_YEAR})*`;
+const NARRATIVE_AUTHOR_YEAR_REGEX = new RegExp(
+  `\\b${_AUTHOR_GROUP}\\s*\\(\\s*${_YEAR_LIST}\\s*\\)`,
+  "g"
+);
+const _PAREN_ITEM = `${_AUTHOR_GROUP}(?:\\s*,)?\\s+${_YEAR}`;
+const PARENTHETICAL_AUTHOR_YEAR_REGEX = new RegExp(
+  `\\(\\s*${_PAREN_ITEM}(?:\\s*[;]\\s*${_PAREN_ITEM})*\\s*\\)`,
+  "g"
+);
+const INLINE_DOI_REGEX = /10\.\d{4,9}\/[^\s"<>]+/gi;
+const AUTHOR_YEAR_FALSE_HEADS = new Set([
+  "figure", "fig", "figures", "figs",
+  "table", "tables", "tab",
+  "section", "sections", "sec",
+  "chapter", "chapters", "ch",
+  "page", "pages", "pg",
+  "equation", "equations", "eq", "eqs",
+  "theorem", "theorems",
+  "lemma", "lemmas",
+  "corollary", "corollaries",
+  "definition", "definitions",
+  "proposition", "propositions",
+  "algorithm", "algorithms", "alg",
+  "listing", "listings",
+  "appendix", "appendices", "app",
+  "volume", "volumes", "vol",
+  "issue", "no", "number", "numbers",
+  "part", "parts",
+  "step", "steps",
+  "phase", "phases",
+  "case", "cases",
+  "example", "examples", "ex",
+]);
+
+function looksLikeFalseAuthorHead(text) {
+  const head = String(text || "").trim().split(/\s+/)[0] || "";
+  return AUTHOR_YEAR_FALSE_HEADS.has(head.toLowerCase());
+}
+
+function getCookieValue(name) {
+  const target = `${name}=`;
+  return String(document.cookie || "")
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(target))
+    ?.slice(target.length) || "";
+}
+
+function elementFromSelectionNode(node) {
+  if (!node) return null;
+  return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+}
+
+function getReaderSelectionPayload(viewerEl) {
+  const selection = window.getSelection?.();
+  const text = String(selection?.toString() || "").trim();
+  if (!selection || !text || !selection.rangeCount) {
+    return null;
+  }
+
+  const anchorEl = elementFromSelectionNode(selection.anchorNode);
+  const focusEl = elementFromSelectionNode(selection.focusNode);
+  const pageEl =
+    anchorEl?.closest?.(".pdf-reader__page") ||
+    focusEl?.closest?.(".pdf-reader__page") ||
+    null;
+  if (viewerEl && pageEl && !viewerEl.contains(pageEl)) {
+    return null;
+  }
+
+  const pageNumber = Number(
+    pageEl?.dataset?.pageNumber || pageEl?.getAttribute?.("data-page-number")
+  );
+  const page = Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : null;
+  const range = selection.getRangeAt(0);
+  const pageRect = pageEl?.getBoundingClientRect?.();
+  const boxes =
+    pageRect
+      ? Array.from(range.getClientRects())
+          .filter((rect) => rect.width > 0 && rect.height > 0)
+          .slice(0, 24)
+          .map((rect) => ({
+            left: Math.max(0, rect.left - pageRect.left),
+            top: Math.max(0, rect.top - pageRect.top),
+            width: rect.width,
+            height: rect.height,
+          }))
+      : [];
+
+  return { text, page, boxes };
+}
+
+function stripDoiTrailing(value) {
+  let cleaned = String(value || "");
+  while (cleaned.length) {
+    const last = cleaned[cleaned.length - 1];
+    if (".,;:!?)]}>".indexOf(last) === -1) break;
+    if (last === ")" && (cleaned.match(/\(/g) || []).length > (cleaned.match(/\)/g) || []).length) {
+      break;
+    }
+    cleaned = cleaned.slice(0, -1);
+  }
+  return cleaned;
+}
 const EXTRACT_ENDPOINT = "/citations/api/extract-citations/";
-const READER_V2_ENDPOINT = "/citations/api/pdf-reader-v2-upload/";
+const DETECT_ARTICLE_DOI_ENDPOINT = "/citations/api/detect-article-doi/";
+const PREVIEW_EXTRACT_ENGINE = "papermage";
 
 const MAX_CITATION_RANGE = 50;
 const HIGHLIGHT_TOKEN_LIMIT = 60;
@@ -49,6 +171,24 @@ const READER_V2_LAYER_LABELS = Object.freeze({
   bibliographies: "Bibliographies",
   sections: "Sections",
 });
+
+function getApproxExtractProgressStep(value) {
+  if (value < 18) return 5;
+  if (value < 36) return 4;
+  if (value < 54) return 3;
+  if (value < 74) return 2;
+  if (value < 88) return 1;
+  return 0.4;
+}
+
+function getApproxExtractProgressLabel(value) {
+  if (value < 12) return "Preparando PDF...";
+  if (value < 28) return "Subiendo PDF y preparando extraccion...";
+  if (value < 46) return "Leyendo paginas del documento...";
+  if (value < 66) return "Detectando referencias y citas...";
+  if (value < 84) return "Relacionando resultados...";
+  return "Finalizando la extraccion...";
+}
 
 function getReaderV2LayerKeys(data) {
   const rawLayers = data?.layers;
@@ -76,6 +216,38 @@ function getReaderV2ItemId(item, index, layerKey = "layer") {
   const pageValue = Number(item?.page);
   const safePage = Number.isFinite(pageValue) ? pageValue : "x";
   return `${layerKey}-${safePage}-${index}`;
+}
+
+function getReaderV2SourceId(item, index, layerKey = "layer") {
+  if (String(layerKey || "").toLowerCase() === "tokens") {
+    const tokenId = item?.token_id;
+    if (tokenId !== undefined && tokenId !== null && String(tokenId).trim()) {
+      return String(tokenId);
+    }
+  }
+  return getReaderV2ItemId(item, index, layerKey);
+}
+
+function normalizeOverlayPage(value) {
+  const page = Number(value);
+  if (!Number.isFinite(page) || page < 0) return null;
+  return page;
+}
+
+function normalizeOverlayBox(box) {
+  if (!Array.isArray(box) || box.length < 4) return null;
+  const x = Number(box[0]);
+  const y = Number(box[1]);
+  const width = Number(box[2]);
+  const height = Number(box[3]);
+  if (![x, y, width, height].every((value) => Number.isFinite(value))) return null;
+  if (width <= 0 || height <= 0) return null;
+  const clampedX = Math.max(0, Math.min(1, x));
+  const clampedY = Math.max(0, Math.min(1, y));
+  const clampedWidth = Math.max(0, Math.min(1 - clampedX, width));
+  const clampedHeight = Math.max(0, Math.min(1 - clampedY, height));
+  if (clampedWidth <= 0 || clampedHeight <= 0) return null;
+  return [clampedX, clampedY, clampedWidth, clampedHeight];
 }
 
 const READER_V2_SHRINK_BY_LAYER = Object.freeze({
@@ -199,6 +371,66 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function normalizeForMatch(text) {
+  return (text || "")
+    .normalize("NFKD")
+    .replace(/[\u00AD\u200B]/g, "")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildNormalizedMatchIndex(text) {
+  const source = String(text || "");
+  let normalizedText = "";
+  const indexMap = [];
+  let pendingSpace = false;
+
+  for (let sourceIndex = 0; sourceIndex < source.length; sourceIndex += 1) {
+    const normalizedChunk = String(source[sourceIndex] || "")
+      .normalize("NFKD")
+      .replace(/[\u00AD\u200B]/g, "")
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"');
+    if (!normalizedChunk) continue;
+
+    for (let chunkIndex = 0; chunkIndex < normalizedChunk.length; chunkIndex += 1) {
+      const char = normalizedChunk[chunkIndex];
+      if (/\s/.test(char)) {
+        pendingSpace = true;
+        continue;
+      }
+      if (pendingSpace && normalizedText.length > 0) {
+        normalizedText += " ";
+        indexMap.push(sourceIndex);
+      }
+      pendingSpace = false;
+      normalizedText += char;
+      indexMap.push(sourceIndex);
+    }
+  }
+
+  return { text: normalizedText, indexMap };
+}
+
+function normalizedOffsetToRawOffset(indexMap, normalizedOffset, rawLength) {
+  if (!Array.isArray(indexMap) || !indexMap.length) {
+    return 0;
+  }
+  if (!Number.isFinite(normalizedOffset) || normalizedOffset <= 0) {
+    return Math.max(0, Math.min(rawLength, indexMap[0]));
+  }
+  if (normalizedOffset >= indexMap.length) {
+    return rawLength;
+  }
+  const mapped = indexMap[normalizedOffset];
+  if (Number.isFinite(mapped)) {
+    return Math.max(0, Math.min(rawLength, mapped));
+  }
+  return rawLength;
+}
+
 function normalizeDoi(value) {
   if (!value) return "";
   let doi = String(value).trim();
@@ -294,7 +526,7 @@ function normalizeReference(raw, index) {
   const rawText =
     typeof raw === "string"
       ? raw
-      : raw.raw || raw.text || raw.reference || "";
+      : raw.text || raw.raw || raw.reference || "";
   const cleanedRaw = String(rawText || "").trim();
   if (!cleanedRaw) return null;
   const idxValue = Number(raw.index);
@@ -308,6 +540,38 @@ function normalizeReference(raw, index) {
     doi_source: raw.doi_source || (doi ? "regex" : null),
     confidence: Number(raw.confidence || (doi ? 1.0 : 0.5)),
     numbered: Boolean(raw.numbered),
+  };
+}
+
+function normalizeArticleInfo(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const doi = normalizeDoi(raw.doi || raw.article_doi || "");
+  if (!doi) return null;
+  const authors = Array.isArray(raw.authors)
+    ? raw.authors
+        .map((author) => String(author || "").trim())
+        .filter(Boolean)
+    : [];
+  const sourcesUsed = Array.isArray(raw.sources_used)
+    ? raw.sources_used
+        .map((source) => String(source || "").trim())
+        .filter(Boolean)
+    : [];
+  const year = Number(raw.year);
+  const referencesCount = Number(raw.references_count);
+  const citedByCount = Number(raw.cited_by_count);
+  return {
+    doi,
+    title: String(raw.title || "").trim(),
+    authors,
+    year: Number.isFinite(year) ? year : null,
+    venue: String(raw.venue || "").trim(),
+    source: String(raw.source || "").trim(),
+    sources_used: sourcesUsed,
+    references_count: Number.isFinite(referencesCount) ? referencesCount : 0,
+    cited_by_count: Number.isFinite(citedByCount) ? citedByCount : 0,
+    resolved: Boolean(raw.resolved || raw.title || authors.length || raw.venue),
+    url: String(raw.url || `https://doi.org/${doi}`).trim(),
   };
 }
 
@@ -346,6 +610,34 @@ function parseCitationNumbers(raw) {
   return Array.from(new Set(numbers));
 }
 
+function normalizeLayerItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item, index) => {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        return item;
+      }
+      if (item === null || item === undefined) {
+        return null;
+      }
+      return {
+        id: `layer-item-${index + 1}`,
+        text: String(item),
+        page: null,
+        box: null,
+      };
+    })
+    .filter(Boolean);
+}
+
+function countLayerItems(layers) {
+  if (!layers || typeof layers !== "object") return 0;
+  return Object.values(layers).reduce((total, list) => {
+    if (!Array.isArray(list)) return total;
+    return total + normalizeLayerItems(list).length;
+  }, 0);
+}
+
 function buildTextLayerIndex(textLayer) {
   const spans = Array.from(textLayer.querySelectorAll("span"));
   const nodes = [];
@@ -372,58 +664,161 @@ function findNodeAtOffset(nodes, offset) {
   return null;
 }
 
-function collectCitationHitsForPage(pageEl) {
+function collectCitationHitsForPage(pageEl, options = {}) {
   if (!pageEl) return [];
   const textLayer = pageEl.querySelector(".textLayer");
   if (!textLayer) return [];
   const { text, nodes } = buildTextLayerIndex(textLayer);
   if (!text) return [];
 
+  const citationStyle = String(options.citationStyle || "").trim().toLowerCase();
+  const maxReferenceIndex = Number(options.maxReferenceIndex);
+  const hasMaxReferenceIndex =
+    Number.isFinite(maxReferenceIndex) && maxReferenceIndex > 0;
+  const bibliographyStartPage = Number(options.bibliographyStartPage);
+  const hasBibliographyStartPage =
+    Number.isFinite(bibliographyStartPage) && bibliographyStartPage > 0;
   const pageNumber = Number(pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number"));
-  const pageRect = pageEl.getBoundingClientRect();
-  const hits = [];
-  const regex = new RegExp(INLINE_CITATION_REGEX.source, "g");
+  if (
+    hasBibliographyStartPage &&
+    Number.isFinite(pageNumber) &&
+    pageNumber >= bibliographyStartPage
+  ) {
+    return [];
+  }
 
-  let match = regex.exec(text);
-  while (match) {
-    const startOffset = match.index;
-    const endOffset = startOffset + match[0].length;
+  const pageRect = pageEl.getBoundingClientRect();
+  const { text: normalizedText, indexMap } = buildNormalizedMatchIndex(text);
+  if (!normalizedText || !indexMap.length) return [];
+
+  const spansTaken = [];
+  const overlaps = (start, end) => {
+    for (let i = 0; i < spansTaken.length; i += 1) {
+      const [s, e] = spansTaken[i];
+      if (start < e && end > s) return true;
+    }
+    return false;
+  };
+
+  const buildHitFromMatch = (match, kind, extra = {}) => {
+    const startOffset = normalizedOffsetToRawOffset(indexMap, match.index, text.length);
+    let endOffset = normalizedOffsetToRawOffset(
+      indexMap,
+      match.index + match[0].length,
+      text.length
+    );
+    if (endOffset <= startOffset) {
+      endOffset = Math.min(text.length, startOffset + Math.max(1, match[0].length));
+    }
+    if (overlaps(startOffset, endOffset)) return null;
     const startNode = findNodeAtOffset(nodes, startOffset);
     const endNode = findNodeAtOffset(nodes, endOffset);
+    if (!startNode || !endNode) return null;
+    const range = document.createRange();
+    range.setStart(startNode.node, Math.max(0, startOffset - startNode.start));
+    range.setEnd(endNode.node, Math.max(0, endOffset - endNode.start));
+    const rects = Array.from(range.getClientRects())
+      .filter((rect) => rect.width > 1 && rect.height > 1)
+      .map((rect) => ({
+        left: rect.left - pageRect.left,
+        top: rect.top - pageRect.top,
+        width: rect.width,
+        height: rect.height,
+      }));
+    if (!rects.length) return null;
     const snippetStart = Math.max(0, startOffset - 180);
     const snippetEnd = Math.min(text.length, endOffset + 180);
     const snippet = text
       .slice(snippetStart, snippetEnd)
       .replace(/\s+/g, " ")
       .trim();
-    if (startNode && endNode) {
-      const range = document.createRange();
-      range.setStart(startNode.node, Math.max(0, startOffset - startNode.start));
-      range.setEnd(endNode.node, Math.max(0, endOffset - endNode.start));
+    spansTaken.push([startOffset, endOffset]);
+    return {
+      id: `cite-${kind}-${pageNumber}-${startOffset}`,
+      page: Number.isFinite(pageNumber) ? pageNumber : null,
+      label: match[0],
+      kind,
+      numbers: Array.isArray(extra.numbers) ? extra.numbers : [],
+      snippet,
+      rects,
+      anchorRect: rects[0],
+      ...extra,
+    };
+  };
 
-      const rects = Array.from(range.getClientRects())
-        .filter((rect) => rect.width > 1 && rect.height > 1)
-        .map((rect) => ({
-          left: rect.left - pageRect.left,
-          top: rect.top - pageRect.top,
-          width: rect.width,
-          height: rect.height,
-        }));
+  const hits = [];
 
-      if (rects.length) {
-        hits.push({
-          id: `cite-${pageNumber}-${startOffset}`,
-          page: Number.isFinite(pageNumber) ? pageNumber : null,
-          label: match[0],
-          numbers: parseCitationNumbers(match[0]),
-          snippet,
-          rects,
-          anchorRect: rects[0],
-        });
-      }
+  // 1) Numericas: [12], [1, 2-3].
+  const numericRegex = new RegExp(INLINE_CITATION_REGEX.source, "g");
+  let nm = numericRegex.exec(normalizedText);
+  while (nm) {
+    const parsedNumbers = parseCitationNumbers(nm[0]).filter(
+      (value) => Number.isFinite(value) && value > 0
+    );
+    let acceptedNumbers = parsedNumbers;
+    if (citationStyle === "numeric" && hasMaxReferenceIndex) {
+      acceptedNumbers = acceptedNumbers.filter((value) => value <= maxReferenceIndex);
     }
-    match = regex.exec(text);
+    if (citationStyle === "numeric" && !acceptedNumbers.length) {
+      nm = numericRegex.exec(normalizedText);
+      continue;
+    }
+    if (acceptedNumbers.length) {
+      const hit = buildHitFromMatch(nm, "numeric", { numbers: acceptedNumbers });
+      if (hit) hits.push(hit);
+    }
+    nm = numericRegex.exec(normalizedText);
   }
+
+  // 2) DOI desnudos. Antes que autor-anio para que no se solapen.
+  const doiRegex = new RegExp(INLINE_DOI_REGEX.source, "gi");
+  let dm = doiRegex.exec(normalizedText);
+  while (dm) {
+    const cleaned = stripDoiTrailing(dm[0]);
+    if (cleaned.length >= "10.1/a".length) {
+      const fakeMatch = { 0: cleaned, index: dm.index };
+      const hit = buildHitFromMatch(fakeMatch, "doi", { doi: cleaned.toLowerCase() });
+      if (hit) hits.push(hit);
+    }
+    dm = doiRegex.exec(normalizedText);
+  }
+
+  // 3) Autor-anio narrativo: "Smith et al. (2020)".
+  const narrativeRegex = new RegExp(NARRATIVE_AUTHOR_YEAR_REGEX.source, "g");
+  let am = narrativeRegex.exec(normalizedText);
+  while (am) {
+    const head = am[0].split("(", 1)[0];
+    if (!looksLikeFalseAuthorHead(head)) {
+      const hit = buildHitFromMatch(am, "authoryear", {
+        authoryearStyle: "narrative",
+        authors: head.trim(),
+      });
+      if (hit) hits.push(hit);
+    }
+    am = narrativeRegex.exec(normalizedText);
+  }
+
+  // 4) Autor-anio parentetico: "(Smith, 2020; Jones, 2021)".
+  const parenRegex = new RegExp(PARENTHETICAL_AUTHOR_YEAR_REGEX.source, "g");
+  let pm = parenRegex.exec(normalizedText);
+  while (pm) {
+    const inner = pm[0].replace(/^[(\s]+|[)\s]+$/g, "");
+    if (!looksLikeFalseAuthorHead(inner)) {
+      const hit = buildHitFromMatch(pm, "authoryear", {
+        authoryearStyle: "parenthetical",
+        authors: inner,
+      });
+      if (hit) hits.push(hit);
+    }
+    pm = parenRegex.exec(normalizedText);
+  }
+
+  hits.sort((a, b) => {
+    const aTop = a.anchorRect?.top || 0;
+    const bTop = b.anchorRect?.top || 0;
+    if (aTop !== bTop) return aTop - bTop;
+    return (a.anchorRect?.left || 0) - (b.anchorRect?.left || 0);
+  });
   return hits;
 }
 
@@ -474,6 +869,17 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
 
       const { text, nodes } = buildTextLayerIndex(textLayer);
       if (!text) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimer = window.setTimeout(run, retryDelayMs);
+        } else if (typeof onHighlight === "function") {
+          onHighlight({ matched: false, page: pageNumber, anchorRect: null });
+        }
+        return;
+      }
+      const { text: normalizedText, indexMap: normalizedIndexMap } =
+        buildNormalizedMatchIndex(text);
+      if (!normalizedText || !normalizedIndexMap.length) {
         if (attempts < maxAttempts) {
           attempts += 1;
           retryTimer = window.setTimeout(run, retryDelayMs);
@@ -654,12 +1060,26 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
 
       if (highlightMode === "paragraph" && Number.isFinite(referenceIndex)) {
         const regex = new RegExp(INLINE_CITATION_REGEX.source, "g");
-        let match = regex.exec(text);
+        let match = regex.exec(normalizedText);
         while (match) {
           const numbers = parseCitationNumbers(match[0]);
           if (numbers.includes(referenceIndex)) {
-            const startOffset = match.index;
-            const endOffset = startOffset + match[0].length;
+            const startOffset = normalizedOffsetToRawOffset(
+              normalizedIndexMap,
+              match.index,
+              text.length
+            );
+            let endOffset = normalizedOffsetToRawOffset(
+              normalizedIndexMap,
+              match.index + match[0].length,
+              text.length
+            );
+            if (endOffset <= startOffset) {
+              endOffset = Math.min(
+                text.length,
+                startOffset + Math.max(1, match[0].length)
+              );
+            }
             const matchedIndices = [];
             nodes.forEach((node, index) => {
               if (node.start < endOffset && node.end > startOffset) {
@@ -670,52 +1090,71 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
             applyParagraphHighlight(matchedIndices);
             break;
           }
-          match = regex.exec(text);
+          match = regex.exec(normalizedText);
         }
       }
 
       if (snippetText) {
-        const normalizedSnippetText = snippetText
-          .replace(/^\s*\.{2,}\s*/, "")
-          .replace(/\s*\.{2,}\s*$/, "")
-          .trim();
+        const normalizedSnippetText = normalizeForMatch(
+          snippetText
+            .replace(/^\s*\.{2,}\s*/, "")
+            .replace(/\s*\.{2,}\s*$/, "")
+        );
         const tokenLimit = highlightMode === "paragraph" ? 16 : HIGHLIGHT_TOKEN_LIMIT;
-        const tokens = normalizedSnippetText.split(/\s+/).slice(0, tokenLimit);
+        const tokens = normalizedSnippetText
+          ? normalizedSnippetText.split(/\s+/).slice(0, tokenLimit)
+          : [];
         const pattern = tokens.map(escapeRegExp).join("\\s+");
-        try {
-          const regex = new RegExp(pattern, "i");
-          const match = regex.exec(text);
-          if ((highlightMode === "paragraph" || !matched) && match) {
-            const startOffset = match.index;
-            const endOffset = match.index + match[0].length;
-            const matchedIndices = [];
-            nodes.forEach((node, index) => {
-              if (node.start < endOffset && node.end > startOffset) {
-                matched = true;
-                matchedIndices.push(index);
+        if (pattern) {
+          try {
+            const regex = new RegExp(pattern, "i");
+            const match = regex.exec(normalizedText);
+            if ((highlightMode === "paragraph" || !matched) && match) {
+              const startOffset = normalizedOffsetToRawOffset(
+                normalizedIndexMap,
+                match.index,
+                text.length
+              );
+              let endOffset = normalizedOffsetToRawOffset(
+                normalizedIndexMap,
+                match.index + match[0].length,
+                text.length
+              );
+              if (endOffset <= startOffset) {
+                endOffset = Math.min(
+                  text.length,
+                  startOffset + Math.max(1, match[0].length)
+                );
               }
-            });
-            if (highlightMode === "paragraph") {
-              applyParagraphHighlight(matchedIndices);
-            } else {
-              captureAnchorFromIndices(matchedIndices);
-              matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
+              const matchedIndices = [];
+              nodes.forEach((node, index) => {
+                if (node.start < endOffset && node.end > startOffset) {
+                  matched = true;
+                  matchedIndices.push(index);
+                }
+              });
+              if (highlightMode === "paragraph") {
+                applyParagraphHighlight(matchedIndices);
+              } else {
+                captureAnchorFromIndices(matchedIndices);
+                matchedIndices.forEach((idx) => nodes[idx].span.classList.add("reader-highlight"));
+              }
             }
+          } catch (err) {
+            matched = false;
           }
-        } catch (err) {
-          matched = false;
         }
       }
 
       if (snippetText && (!matched || highlightMode === "paragraph")) {
-        const normalized = snippetText.toLowerCase().replace(/\s+/g, " ").trim();
+        const normalized = normalizeForMatch(snippetText).toLowerCase();
         const keywords = normalized
           .split(" ")
           .filter((word) => word.length > 3)
           .slice(0, 8);
         const matchedIndices = [];
         nodes.forEach((node, index) => {
-          const spanText = (node.span.textContent || "").toLowerCase();
+          const spanText = normalizeForMatch(node.span.textContent || "").toLowerCase();
           if (keywords.some((word) => spanText.includes(word))) {
             matched = true;
             matchedIndices.push(index);
@@ -748,6 +1187,180 @@ function useHighlightedSnippet(mention, onHighlight, viewerRef) {
       }
     };
   }, [mention, onHighlight, viewerRef]);
+}
+
+function getPageOverlayAnchorRect(pageEl) {
+  if (!pageEl || typeof pageEl.querySelector !== "function") {
+    return {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    };
+  }
+
+  const selectors = [
+    ".react-pdf__Page__canvas",
+    ".react-pdf__Page canvas",
+    ".react-pdf__Page__textContent",
+  ];
+
+  let anchorEl = null;
+  for (let index = 0; index < selectors.length; index += 1) {
+    const candidate = pageEl.querySelector(selectors[index]);
+    if (candidate) {
+      anchorEl = candidate;
+      break;
+    }
+  }
+
+  const pageRect = pageEl.getBoundingClientRect();
+  const fallbackWidth = pageEl.clientWidth || pageRect.width || 0;
+  const fallbackHeight = pageEl.clientHeight || pageRect.height || 0;
+
+  if (!anchorEl || typeof anchorEl.getBoundingClientRect !== "function") {
+    return {
+      left: 0,
+      top: 0,
+      width: fallbackWidth,
+      height: fallbackHeight,
+    };
+  }
+
+  const anchorRect = anchorEl.getBoundingClientRect();
+  const left = anchorRect.left - pageRect.left;
+  const top = anchorRect.top - pageRect.top;
+  const width = anchorRect.width || fallbackWidth;
+  const height = anchorRect.height || fallbackHeight;
+
+  return {
+    left: Number.isFinite(left) ? left : 0,
+    top: Number.isFinite(top) ? top : 0,
+    width: Number.isFinite(width) ? width : fallbackWidth,
+    height: Number.isFinite(height) ? height : fallbackHeight,
+  };
+}
+
+function getPrimaryPdfPageElements(viewerEl) {
+  if (!viewerEl || typeof viewerEl.querySelectorAll !== "function") {
+    return [];
+  }
+
+  const pageNodes = Array.from(
+    viewerEl.querySelectorAll(".pdf-reader__page[data-page-number]")
+  );
+  const byPageNumber = new Map();
+
+  pageNodes.forEach((pageEl) => {
+    const rawPageNumber = Number(
+      pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
+    );
+    if (!Number.isFinite(rawPageNumber) || rawPageNumber <= 0) {
+      return;
+    }
+    const area = Math.max(0, pageEl.clientWidth) * Math.max(0, pageEl.clientHeight);
+    const prev = byPageNumber.get(rawPageNumber);
+    if (!prev || area >= prev.area) {
+      byPageNumber.set(rawPageNumber, { pageEl, area });
+    }
+  });
+
+  return Array.from(byPageNumber.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([pageNumber, entry]) => ({
+      pageNumber,
+      pageIndex: pageNumber - 1,
+      pageEl: entry.pageEl,
+    }));
+}
+
+function collectVisibleTextRectsNormalized(pageEl, anchorRect) {
+  if (!pageEl || !anchorRect) return [];
+  const textLayer =
+    pageEl.querySelector(".textLayer") ||
+    pageEl.querySelector(".react-pdf__Page__textContent");
+  if (!textLayer) return [];
+
+  const anchorWidth = Number(anchorRect.width);
+  const anchorHeight = Number(anchorRect.height);
+  if (!Number.isFinite(anchorWidth) || !Number.isFinite(anchorHeight)) return [];
+  if (anchorWidth <= 0 || anchorHeight <= 0) return [];
+
+  const pageRect = pageEl.getBoundingClientRect();
+  const anchorLeft = pageRect.left + Number(anchorRect.left || 0);
+  const anchorTop = pageRect.top + Number(anchorRect.top || 0);
+  const spans = Array.from(textLayer.querySelectorAll("span"));
+  const rects = [];
+
+  spans.forEach((span) => {
+    if (!span) return;
+    const text = String(span.textContent || "").trim();
+    if (!text) return;
+    const rect = span.getBoundingClientRect();
+    if (rect.width < 0.8 || rect.height < 0.8) return;
+
+    const x = (rect.left - anchorLeft) / anchorWidth;
+    const y = (rect.top - anchorTop) / anchorHeight;
+    const width = rect.width / anchorWidth;
+    const height = rect.height / anchorHeight;
+    if (![x, y, width, height].every((value) => Number.isFinite(value))) return;
+    if (width <= 0 || height <= 0) return;
+
+    const clampedX = Math.max(0, Math.min(1, x));
+    const clampedY = Math.max(0, Math.min(1, y));
+    const clampedWidth = Math.max(0, Math.min(1 - clampedX, width));
+    const clampedHeight = Math.max(0, Math.min(1 - clampedY, height));
+    if (clampedWidth <= 0 || clampedHeight <= 0) return;
+    rects.push({
+      x: clampedX,
+      y: clampedY,
+      width: clampedWidth,
+      height: clampedHeight,
+    });
+  });
+
+  return rects;
+}
+
+function buildVisibleTextRectBuckets(rects, bucketSize = 0.02) {
+  const safeBucket = Math.max(0.005, Number(bucketSize) || 0.02);
+  const buckets = new Map();
+  rects.forEach((rect) => {
+    const start = Math.max(0, Math.floor(rect.y / safeBucket));
+    const end = Math.max(start, Math.floor((rect.y + rect.height) / safeBucket));
+    for (let index = start; index <= end; index += 1) {
+      const list = buckets.get(index) || [];
+      list.push(rect);
+      buckets.set(index, list);
+    }
+  });
+  return { buckets, bucketSize: safeBucket };
+}
+
+function isOverlayCenterOnVisibleText(item, rectBuckets, tolerance = 0.0035) {
+  const cx = Number(item?.x) + Number(item?.width) / 2;
+  const cy = Number(item?.y) + Number(item?.height) / 2;
+  if (!Number.isFinite(cx) || !Number.isFinite(cy)) return false;
+  const safeTolerance = Math.max(0, Number(tolerance) || 0);
+  const bucketSize = rectBuckets?.bucketSize || 0.02;
+  const buckets = rectBuckets?.buckets;
+  if (!(buckets instanceof Map) || buckets.size === 0) return true;
+  const bucketIndex = Math.max(0, Math.floor(cy / bucketSize));
+
+  const candidates = [
+    ...(buckets.get(bucketIndex - 1) || []),
+    ...(buckets.get(bucketIndex) || []),
+    ...(buckets.get(bucketIndex + 1) || []),
+  ];
+  if (!candidates.length) return false;
+
+  return candidates.some((rect) => {
+    const left = rect.x - safeTolerance;
+    const right = rect.x + rect.width + safeTolerance;
+    const top = rect.y - safeTolerance;
+    const bottom = rect.y + rect.height + safeTolerance;
+    return cx >= left && cx <= right && cy >= top && cy <= bottom;
+  });
 }
 
 function useReaderV2Overlay(
@@ -866,10 +1479,18 @@ function useReaderV2Overlay(
       const normalizedId = String(
         item?.__v2id || getReaderV2ItemId(item, fallbackIndex, readerV2Layer || "layer")
       );
+      const sourceId = String(
+        item?.__v2sourceId ||
+          getReaderV2SourceId(item, fallbackIndex, readerV2Layer || "layer")
+      );
       const list = itemsByPage.get(pageIndex) || [];
+      if (list.some((entry) => entry.id === normalizedId)) {
+        return;
+      }
       list.push({
         ...adjusted,
         id: normalizedId,
+        sourceId,
         text: String(item?.text || ""),
         typeClass: sanitizedType || "item",
       });
@@ -880,17 +1501,29 @@ function useReaderV2Overlay(
     const rawOpacity = Number(readerV2Opacity);
     const opacity = Number.isFinite(rawOpacity)
       ? Math.max(0, Math.min(1, rawOpacity))
-      : 0.35;
+      : 1;
+    const shouldFilterByVisibleText =
+      String(readerV2Layer || "").toLowerCase() === "tokens";
     const render = () => {
       rafId = null;
-      const pages = viewerEl.querySelectorAll(".pdf-reader__page");
-      pages.forEach((pageEl) => {
-        const pageNumber = Number(
-          pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
-        );
-        const pageIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+      const primaryPages = getPrimaryPdfPageElements(viewerEl);
+      const primaryPageSet = new Set(primaryPages.map((entry) => entry.pageEl));
+      viewerEl.querySelectorAll(".reader-v2-overlay").forEach((overlayEl) => {
+        const hostPage = overlayEl.closest(".pdf-reader__page");
+        if (!hostPage || !primaryPageSet.has(hostPage)) {
+          overlayEl.remove();
+        }
+      });
+
+      primaryPages.forEach(({ pageIndex, pageEl }) => {
         const pageItems = pageIndex >= 0 ? itemsByPage.get(pageIndex) || [] : [];
-        let overlay = pageEl.querySelector(".reader-v2-overlay");
+        const existingOverlays = Array.from(
+          pageEl.querySelectorAll(".reader-v2-overlay")
+        );
+        let overlay = existingOverlays.length ? existingOverlays[0] : null;
+        if (existingOverlays.length > 1) {
+          existingOverlays.slice(1).forEach((extraOverlay) => extraOverlay.remove());
+        }
 
         if (!pageItems.length) {
           if (overlay) {
@@ -910,25 +1543,50 @@ function useReaderV2Overlay(
           pageEl.appendChild(overlay);
         }
 
+        const anchorRect = getPageOverlayAnchorRect(pageEl);
+        overlay.style.left = `${Math.max(0, anchorRect.left)}px`;
+        overlay.style.top = `${Math.max(0, anchorRect.top)}px`;
+        overlay.style.right = "auto";
+        overlay.style.bottom = "auto";
+        overlay.style.width = `${Math.max(0, anchorRect.width)}px`;
+        overlay.style.height = `${Math.max(0, anchorRect.height)}px`;
         overlay.style.opacity = `${opacity}`;
+
+        let filteredPageItems = pageItems;
+        if (shouldFilterByVisibleText) {
+          const visibleTextRects = collectVisibleTextRectsNormalized(pageEl, anchorRect);
+          if (visibleTextRects.length) {
+            const rectBuckets = buildVisibleTextRectBuckets(visibleTextRects);
+            filteredPageItems = pageItems.filter((item) =>
+              isOverlayCenterOnVisibleText(item, rectBuckets)
+            );
+          }
+        }
+
+        if (!filteredPageItems.length) {
+          overlay.remove();
+          return;
+        }
+
         while (overlay.firstChild) {
           overlay.removeChild(overlay.firstChild);
         }
 
-        pageItems.forEach((entry) => {
+        filteredPageItems.forEach((entry) => {
           const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
           const classNames = [
             "reader-v2-box",
             `reader-v2-box--${entry.typeClass}`,
           ];
-          if (entry.id === hoveredItemIdRef.current) {
+          if (entry.sourceId === hoveredItemIdRef.current) {
             classNames.push("is-hovered");
           }
-          if (entry.id === selectedItemIdRef.current) {
+          if (entry.sourceId === selectedItemIdRef.current) {
             classNames.push("is-selected");
           }
           rect.setAttribute("class", classNames.join(" "));
           rect.setAttribute("data-v2-id", entry.id);
+          rect.setAttribute("data-v2-source-id", entry.sourceId);
           rect.setAttribute("x", `${entry.x}`);
           rect.setAttribute("y", `${entry.y}`);
           rect.setAttribute("width", `${entry.width}`);
@@ -936,7 +1594,7 @@ function useReaderV2Overlay(
           rect.setAttribute("title", entry.text || entry.id);
           rect.addEventListener("mouseenter", () => {
             if (typeof onHoverItemChange === "function") {
-              onHoverItemChange(entry.id);
+              onHoverItemChange(entry.sourceId);
             }
           });
           rect.addEventListener("mouseleave", () => {
@@ -948,7 +1606,7 @@ function useReaderV2Overlay(
             event.preventDefault();
             event.stopPropagation();
             if (typeof onSelectItem === "function") {
-              onSelectItem(entry.id);
+              onSelectItem(entry.sourceId);
             }
           });
           overlay.appendChild(rect);
@@ -994,9 +1652,11 @@ function useReaderV2Overlay(
 
     const boxes = viewerEl.querySelectorAll(".reader-v2-box");
     boxes.forEach((boxEl) => {
-      const itemId = boxEl.getAttribute("data-v2-id");
-      const isHovered = Boolean(hoveredItemId) && itemId === hoveredItemId;
-      const isSelected = Boolean(selectedItemId) && itemId === selectedItemId;
+      const sourceId =
+        boxEl.getAttribute("data-v2-source-id") ||
+        boxEl.getAttribute("data-v2-id");
+      const isHovered = Boolean(hoveredItemId) && sourceId === hoveredItemId;
+      const isSelected = Boolean(selectedItemId) && sourceId === selectedItemId;
       boxEl.classList.toggle("is-hovered", isHovered);
       boxEl.classList.toggle("is-selected", isSelected);
     });
@@ -1008,6 +1668,397 @@ function useReaderV2Overlay(
     readerV2Data,
     readerV2LayerItems,
     showReaderV2,
+  ]);
+}
+
+// ── Reference Debug Overlay ──────────────────────────────────────────────────
+
+const REF_DEBUG_STEP_COLORS = Object.freeze({
+  assign_column_ids:                    { fill: "rgba(148,163,184,0.18)", stroke: "rgba(100,116,139,0.85)" },
+  detect_page_column_split:             { fill: "rgba(245,158,11,0.18)",  stroke: "rgba(217,119,6,0.90)"  },
+  detect_reference_heading_candidates: { fill: "rgba(167,139,250,0.22)", stroke: "rgba(124,58,237,0.88)" },
+  selected_heading:                     { fill: "rgba(124,58,237,0.28)",  stroke: "rgba(109,40,217,0.95)" },
+  bibliography_segments:                { fill: "rgba(56,189,248,0.20)",  stroke: "rgba(14,165,233,0.88)" },
+  rows_in_bibliography_zone:            { fill: "rgba(74,222,128,0.18)",  stroke: "rgba(34,197,94,0.85)"  },
+  reference_anchors:                    { fill: "rgba(251,146,60,0.22)",  stroke: "rgba(234,88,12,0.90)"  },
+  reference_block_rows:                 { fill: "rgba(244,114,182,0.18)", stroke: "rgba(219,39,119,0.85)" },
+  accepted_references:                  { fill: "rgba(52,211,153,0.22)",  stroke: "rgba(16,185,129,0.90)" },
+  rejected_references:                  { fill: "rgba(248,113,113,0.22)", stroke: "rgba(239,68,68,0.90)"  },
+});
+
+const REF_DEBUG_STEP_DEFAULT_COLOR = { fill: "rgba(99,102,241,0.18)", stroke: "rgba(79,70,229,0.85)" };
+
+function useRefDebugOverlay(
+  viewerRef,
+  readerV2Data,
+  refDebugSteps,
+  activeRefDebugKeys,
+  showRefDebug,
+  refDebugOpacity,
+) {
+  useEffect(() => {
+    const viewerEl = viewerRef?.current;
+    if (!viewerEl) return;
+
+    const OVERLAY_CLASS = "reader-ref-debug-overlay";
+
+    const removeOverlays = () => {
+      viewerEl.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((el) => el.remove());
+    };
+
+    const activeSteps = (refDebugSteps || []).filter(
+      (step) => activeRefDebugKeys.has(step.key)
+    );
+
+    if (!showRefDebug || activeSteps.length === 0) {
+      removeOverlays();
+      return;
+    }
+
+    const pagesSource = Array.isArray(readerV2Data?.pages) ? readerV2Data.pages : [];
+    const pageMetaByIndex = new Map();
+    pagesSource.forEach((page, index) => {
+      const rawPage = Number(page?.page);
+      const pageIndex = Number.isFinite(rawPage) ? rawPage : index;
+      pageMetaByIndex.set(pageIndex, {
+        width: Number(page?.width) || 0,
+        height: Number(page?.height) || 0,
+      });
+    });
+
+    const normalizeBox = (box, pageMeta) => {
+      if (!Array.isArray(box) || box.length < 4) return null;
+      let x = Number(box[0]), y = Number(box[1]);
+      let width = Number(box[2]), height = Number(box[3]);
+      if (![x, y, width, height].every((v) => Number.isFinite(v))) return null;
+      if (width <= 0 || height <= 0) return null;
+      const looksNormalized = x >= 0 && y >= 0 && x <= 1.05 && y <= 1.05 && width <= 1.05 && height <= 1.05;
+      if (!looksNormalized) {
+        const pw = Number(pageMeta?.width), ph = Number(pageMeta?.height);
+        if (!Number.isFinite(pw) || !Number.isFinite(ph) || pw <= 0 || ph <= 0) return null;
+        x /= pw; y /= ph; width /= pw; height /= ph;
+      }
+      const cx = Math.max(0, Math.min(1, x));
+      const cy = Math.max(0, Math.min(1, y));
+      const cw = Math.max(0, Math.min(1 - cx, width));
+      const ch = Math.max(0, Math.min(1 - cy, height));
+      if (cw <= 0 || ch <= 0) return null;
+      return { x: cx, y: cy, width: cw, height: ch };
+    };
+
+    // Build per-page render entries: { kind, box/x, color, stepKey, label }
+    const entriesByPage = new Map();
+
+    for (const step of activeSteps) {
+      const color = REF_DEBUG_STEP_COLORS[step.key] || REF_DEBUG_STEP_DEFAULT_COLOR;
+      const kind = step.kind || "boxes";
+
+      for (const item of (step.items || [])) {
+        const pageIndex = Number(item?.page);
+        if (!Number.isFinite(pageIndex) || pageIndex < 0) continue;
+        const pageMeta = pageMetaByIndex.get(pageIndex);
+        const list = entriesByPage.get(pageIndex) || [];
+
+        if (kind === "vertical_guides") {
+          const rawX = Number(item?.x);
+          if (!Number.isFinite(rawX)) continue;
+          list.push({ kind: "guide", x: rawX, color, stepKey: step.key, label: String(item?.label || "") });
+        } else {
+          const normalized = normalizeBox(item?.box, pageMeta);
+          if (!normalized) continue;
+          list.push({ kind: "box", ...normalized, color, stepKey: step.key, label: String(item?.label || "") });
+        }
+
+        entriesByPage.set(pageIndex, list);
+      }
+    }
+
+    let rafId = null;
+    const opacity = Math.max(0, Math.min(1, Number(refDebugOpacity) || 0.75));
+
+    const render = () => {
+      rafId = null;
+      const primaryPages = getPrimaryPdfPageElements(viewerEl);
+      const primaryPageSet = new Set(primaryPages.map((e) => e.pageEl));
+
+      viewerEl.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlayEl) => {
+        const hostPage = overlayEl.closest(".pdf-reader__page");
+        if (!hostPage || !primaryPageSet.has(hostPage)) overlayEl.remove();
+      });
+
+      primaryPages.forEach(({ pageIndex, pageEl }) => {
+        const pageEntries = pageIndex >= 0 ? (entriesByPage.get(pageIndex) || []) : [];
+        const existingOverlays = Array.from(pageEl.querySelectorAll(`.${OVERLAY_CLASS}`));
+        let overlay = existingOverlays.length ? existingOverlays[0] : null;
+        existingOverlays.slice(1).forEach((e) => e.remove());
+
+        if (!pageEntries.length) {
+          if (overlay) overlay.remove();
+          return;
+        }
+
+        if (!overlay) {
+          overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          overlay.classList.add(OVERLAY_CLASS);
+          overlay.setAttribute("viewBox", "0 0 1 1");
+          overlay.setAttribute("preserveAspectRatio", "none");
+          if (window.getComputedStyle(pageEl).position === "static") {
+            pageEl.style.position = "relative";
+          }
+          pageEl.appendChild(overlay);
+        }
+
+        const anchorRect = getPageOverlayAnchorRect(pageEl);
+        overlay.style.left = `${Math.max(0, anchorRect.left)}px`;
+        overlay.style.top = `${Math.max(0, anchorRect.top)}px`;
+        overlay.style.right = "auto";
+        overlay.style.bottom = "auto";
+        overlay.style.width = `${Math.max(0, anchorRect.width)}px`;
+        overlay.style.height = `${Math.max(0, anchorRect.height)}px`;
+        overlay.style.opacity = `${opacity}`;
+
+        while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
+
+        for (const entry of pageEntries) {
+          if (entry.kind === "guide") {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", `${entry.x}`);
+            line.setAttribute("y1", "0");
+            line.setAttribute("x2", `${entry.x}`);
+            line.setAttribute("y2", "1");
+            line.setAttribute("stroke", entry.color.stroke);
+            line.setAttribute("stroke-width", "0.002");
+            line.setAttribute("stroke-dasharray", "0.008 0.004");
+            line.setAttribute("vector-effect", "non-scaling-stroke");
+            if (entry.label) line.setAttribute("title", entry.label);
+            overlay.appendChild(line);
+          } else {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", `${entry.x}`);
+            rect.setAttribute("y", `${entry.y}`);
+            rect.setAttribute("width", `${entry.width}`);
+            rect.setAttribute("height", `${entry.height}`);
+            rect.setAttribute("fill", entry.color.fill);
+            rect.setAttribute("stroke", entry.color.stroke);
+            rect.setAttribute("stroke-width", "0.003");
+            rect.setAttribute("vector-effect", "non-scaling-stroke");
+            if (entry.label) rect.setAttribute("title", entry.label);
+            overlay.appendChild(rect);
+          }
+        }
+      });
+    };
+
+    const schedule = () => { if (rafId) return; rafId = window.requestAnimationFrame(render); };
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(viewerEl, { childList: true, subtree: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(viewerEl);
+    window.addEventListener("resize", schedule);
+    schedule();
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", schedule);
+      removeOverlays();
+    };
+  }, [viewerRef, readerV2Data, refDebugSteps, activeRefDebugKeys, showRefDebug, refDebugOpacity]);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
+function useReferencesOverlay(
+  viewerRef,
+  {
+    visible,
+    items,
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+    onHoverItem,
+    onSelectItem,
+  }
+) {
+  const selectedReferenceIdRef = useRef(selectedReferenceId);
+  const hoveredReferenceIdRef = useRef(hoveredReferenceId);
+  const selectedCitationIdRef = useRef(selectedCitationId);
+  const hoveredCitationIdRef = useRef(hoveredCitationId);
+
+  useEffect(() => {
+    selectedReferenceIdRef.current = selectedReferenceId;
+    hoveredReferenceIdRef.current = hoveredReferenceId;
+    selectedCitationIdRef.current = selectedCitationId;
+    hoveredCitationIdRef.current = hoveredCitationId;
+  }, [
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+  ]);
+
+  useEffect(() => {
+    const viewerEl = viewerRef?.current;
+    if (!viewerEl) return;
+
+    const removeOverlays = () => {
+      viewerEl
+        .querySelectorAll(".reader-ref-overlay")
+        .forEach((overlay) => overlay.remove());
+    };
+
+    if (!visible) {
+      removeOverlays();
+      return;
+    }
+
+    const overlayItems = Array.isArray(items) ? items : [];
+    const itemsByPage = new Map();
+    overlayItems.forEach((item, index) => {
+      const page = normalizeOverlayPage(item?.page);
+      const box = normalizeOverlayBox(item?.box);
+      if (page === null || !box) return;
+      const itemId = String(item?.id || `ref-overlay-${index}`);
+      const refId = String(item?.ref_id || "");
+      const itemType = String(item?.item_type || "entry")
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-");
+      const list = itemsByPage.get(page) || [];
+      list.push({
+        id: itemId,
+        refId,
+        itemType,
+        box,
+        text: String(item?.text || ""),
+      });
+      itemsByPage.set(page, list);
+    });
+
+    let rafId = null;
+    const render = () => {
+      rafId = null;
+      const pageEls = viewerEl.querySelectorAll(".pdf-reader__page");
+      pageEls.forEach((pageEl) => {
+        const pageNumber = Number(
+          pageEl.dataset.pageNumber || pageEl.getAttribute("data-page-number")
+        );
+        const pageIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+        const pageItems = pageIndex >= 0 ? itemsByPage.get(pageIndex) || [] : [];
+        let overlay = pageEl.querySelector(".reader-ref-overlay");
+
+        if (!pageItems.length) {
+          if (overlay) overlay.remove();
+          return;
+        }
+
+        if (!overlay) {
+          overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          overlay.classList.add("reader-ref-overlay");
+          overlay.setAttribute("viewBox", "0 0 1 1");
+          overlay.setAttribute("preserveAspectRatio", "none");
+          if (window.getComputedStyle(pageEl).position === "static") {
+            pageEl.style.position = "relative";
+          }
+          pageEl.appendChild(overlay);
+        }
+
+        while (overlay.firstChild) {
+          overlay.removeChild(overlay.firstChild);
+        }
+
+        pageItems.forEach((entry) => {
+          const selectedRefId = String(selectedReferenceIdRef.current || "");
+          if (!selectedRefId || entry.refId !== selectedRefId) {
+            return;
+          }
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          const isSelectedRef = true;
+          const isReferenceEntry = entry.itemType === "reference-entry";
+          const isCitationMention = entry.itemType === "citation-mention";
+          const isCitationContext = entry.itemType === "citation-context";
+          const isSelectedCitation =
+            Boolean(selectedCitationIdRef.current) &&
+            entry.id === selectedCitationIdRef.current;
+          const isHoveredCitation =
+            Boolean(hoveredCitationIdRef.current) &&
+            entry.id === hoveredCitationIdRef.current;
+
+          const classNames = [
+            "reader-ref-box",
+            `reader-ref-box--${entry.itemType}`,
+          ];
+          if (isHoveredCitation) classNames.push("is-hovered");
+          if (isSelectedRef) {
+            if (isCitationContext) {
+              classNames.push("is-selected-context");
+            } else if (isCitationMention) {
+              classNames.push("is-selected-mention");
+            } else if (isReferenceEntry) {
+              classNames.push("is-selected-reference");
+            } else {
+              classNames.push("is-selected");
+            }
+          }
+          if (isSelectedCitation) classNames.push("is-selected-citation");
+
+          rect.setAttribute("class", classNames.join(" "));
+          rect.setAttribute("data-ref-item-id", entry.id);
+          rect.setAttribute("x", `${entry.box[0]}`);
+          rect.setAttribute("y", `${entry.box[1]}`);
+          rect.setAttribute("width", `${entry.box[2]}`);
+          rect.setAttribute("height", `${entry.box[3]}`);
+          rect.setAttribute("title", entry.text || entry.id);
+          rect.addEventListener("mouseenter", () => {
+            if (typeof onHoverItem === "function") {
+              onHoverItem(entry);
+            }
+          });
+          rect.addEventListener("mouseleave", () => {
+            if (typeof onHoverItem === "function") {
+              onHoverItem(null);
+            }
+          });
+          rect.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof onSelectItem === "function") {
+              onSelectItem(entry);
+            }
+          });
+          overlay.appendChild(rect);
+        });
+      });
+    };
+
+    const schedule = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(render);
+    };
+
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(viewerEl, { childList: true, subtree: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(viewerEl);
+    window.addEventListener("resize", schedule);
+    schedule();
+
+    return () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", schedule);
+      removeOverlays();
+    };
+  }, [
+    viewerRef,
+    visible,
+    items,
+    onHoverItem,
+    onSelectItem,
   ]);
 }
 
@@ -1139,10 +2190,74 @@ function PageNavigator({ viewerRef }) {
   );
 }
 
+function SelectionEvidenceButton({ viewerRef, evidenceUrl }) {
+  const [status, setStatus] = useState({ tone: "idle", text: "" });
+  const [saving, setSaving] = useState(false);
+
+  if (!evidenceUrl) return null;
+
+  const saveSelection = async () => {
+    const payload = getReaderSelectionPayload(viewerRef?.current);
+    if (!payload?.text) {
+      setStatus({ tone: "warning", text: "Selecciona texto del PDF primero." });
+      return;
+    }
+    setSaving(true);
+    setStatus({ tone: "idle", text: "" });
+    try {
+      const response = await fetch(evidenceUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookieValue("csrftoken"),
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+          source: "reader_selection",
+          article: "citing",
+          kind: "pdf_selection",
+          text: payload.text,
+          page: payload.page,
+          boxes: payload.boxes,
+        }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) {
+        setStatus({ tone: "error", text: "No se pudo guardar la evidencia." });
+        return;
+      }
+      window.getSelection?.().removeAllRanges?.();
+      setStatus({ tone: "success", text: "Evidencia guardada." });
+    } catch (err) {
+      setStatus({ tone: "error", text: "Error de red al guardar." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="reader-toolbar-group reader-evidence-toolbar">
+      <button
+        type="button"
+        className="reader-tool-btn"
+        onClick={saveSelection}
+        disabled={saving}
+      >
+        {saving ? "Guardando..." : "Usar como evidencia"}
+      </button>
+      {status.text && (
+        <span className={`reader-selection-status is-${status.tone}`}>
+          {status.text}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function PdfPages() {
   const { numPages } = React.useContext(DocumentContext);
   if (!numPages) {
-    return <div className="reader-loading">Loading PDF...</div>;
+    return <div className="reader-loading">Cargando PDF...</div>;
   }
   return (
     <div className="reader-pages">
@@ -1159,6 +2274,7 @@ function PdfPages() {
 
 function PdfViewer({
   pdfUrl,
+  evidenceUrl,
   selectedMention,
   onHighlight,
   viewerRef,
@@ -1171,6 +2287,18 @@ function PdfViewer({
   selectedItemId,
   onHoverItemChange,
   onSelectItem,
+  referenceOverlayVisible,
+  referenceOverlayItems,
+  selectedReferenceId,
+  hoveredReferenceId,
+  selectedCitationId,
+  hoveredCitationId,
+  onReferenceOverlayHover,
+  onReferenceOverlaySelect,
+  refDebugSteps,
+  activeRefDebugKeys,
+  showRefDebug,
+  refDebugOpacity,
 }) {
   useHighlightedSnippet(selectedMention, onHighlight, viewerRef);
   useReaderV2Overlay(
@@ -1185,9 +2313,31 @@ function PdfViewer({
     onHoverItemChange,
     onSelectItem
   );
+  useReferencesOverlay(viewerRef, {
+    visible: referenceOverlayVisible,
+    items: referenceOverlayItems,
+    selectedReferenceId,
+    hoveredReferenceId,
+    selectedCitationId,
+    hoveredCitationId,
+    onHoverItem: onReferenceOverlayHover,
+    onSelectItem: onReferenceOverlaySelect,
+  });
+  useRefDebugOverlay(
+    viewerRef,
+    readerV2Data,
+    refDebugSteps,
+    activeRefDebugKeys,
+    showRefDebug,
+    refDebugOpacity,
+  );
 
   if (!pdfUrl) {
-    return <div className="reader-empty">No hay PDF disponible.</div>;
+    return (
+      <div className="reader-empty">
+        No hay PDF cargado. Selecciona un PDF en la pestaña "Extraer".
+      </div>
+    );
   }
 
   return (
@@ -1197,6 +2347,7 @@ function PdfViewer({
         <div className="reader-toolbar">
           <ZoomControls />
           <PageNavigator viewerRef={viewerRef} />
+          <SelectionEvidenceButton viewerRef={viewerRef} evidenceUrl={evidenceUrl} />
         </div>
         <div className="reader-scroll" ref={viewerRef}>
           <DocumentWrapper file={pdfUrl} renderType={RENDER_TYPE.MULTI_CANVAS}>
@@ -1212,12 +2363,15 @@ export default function ReaderApp({
   apiUrl,
   pdfUrl,
   reportId,
+  evidenceUrl = "",
   reportOriginalDoi = "",
   reportIncorrectDoi = "",
   previewFile,
   previewSnippets = [],
   previewStats = null,
   previewReferences = [],
+  previewEnrichment = null,
+  previewArticleInfo = null,
 }) {
   const [loading, setLoading] = useState(Boolean(apiUrl));
   const [error, setError] = useState("");
@@ -1229,8 +2383,16 @@ export default function ReaderApp({
   const [referencesData, setReferencesData] = useState(
     Array.isArray(previewReferences) ? previewReferences : []
   );
+  const [referencesVisualData, setReferencesVisualData] = useState({
+    references: [],
+    citations: [],
+    contexts: [],
+    citation_style: "",
+    max_reference_index: null,
+    bibliography_start_page: null,
+  });
   const [stats, setStats] = useState(previewStats || null);
-  const [activeTab, setActiveTab] = useState("snippets");
+  const [activeTab, setActiveTab] = useState("extract");
   const [snippetQuery, setSnippetQuery] = useState("");
   const [referenceQuery, setReferenceQuery] = useState("");
   const [snippetFilter, setSnippetFilter] = useState("all");
@@ -1248,24 +2410,50 @@ export default function ReaderApp({
   const [highlightReferenceId, setHighlightReferenceId] = useState(null);
   const [inlineCitations, setInlineCitations] = useState([]);
   const [popoverExpanded, setPopoverExpanded] = useState(false);
-  const [engineOptions, setEngineOptions] = useState([]);
-  const [engineValue, setEngineValue] = useState("");
+  const [selectedReferenceId, setSelectedReferenceId] = useState("");
+  const [hoveredReferenceId, setHoveredReferenceId] = useState("");
+  const [selectedCitationId, setSelectedCitationId] = useState("");
+  const [hoveredCitationId, setHoveredCitationId] = useState("");
   const [extractStatus, setExtractStatus] = useState({
     loading: false,
     error: "",
     message: "",
+    hint: "",
+    tone: "idle",
   });
-  const [readerV2Data, setReaderV2Data] = useState(null);
-  const [readerV2Status, setReaderV2Status] = useState({
+  const [extractProgress, setExtractProgress] = useState({
+    value: 0,
+    label: "",
+  });
+  const [articleDoiInput, setArticleDoiInput] = useState(
+    String(reportOriginalDoi || "").trim()
+  );
+  const [debugReferenceDetection, setDebugReferenceDetection] = useState(false);
+  const [extractEnrichment, setExtractEnrichment] = useState(
+    previewEnrichment && typeof previewEnrichment === "object"
+      ? previewEnrichment
+      : null
+  );
+  const [articleInfo, setArticleInfo] = useState(
+    normalizeArticleInfo(previewArticleInfo)
+  );
+  const [articleDoiLookup, setArticleDoiLookup] = useState({
     loading: false,
-    error: "",
     message: "",
+    tone: "idle",
   });
+  const [extractionExportData, setExtractionExportData] = useState(null);
+  const [referenceDebugDownload, setReferenceDebugDownload] = useState(null);
+  const [readerV2Data, setReaderV2Data] = useState(null);
   const [showReaderV2, setShowReaderV2] = useState(false);
-  const [readerV2Opacity, setReaderV2Opacity] = useState(0.35);
+  const [readerV2Opacity, setReaderV2Opacity] = useState(1);
   const [readerV2Layer, setReaderV2Layer] = useState("");
   const [hoveredItemId, setHoveredItemId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
+  const [refDebugSteps, setRefDebugSteps] = useState([]);
+  const [activeRefDebugKeys, setActiveRefDebugKeys] = useState(new Set());
+  const [showRefDebug, setShowRefDebug] = useState(false);
+  const [refDebugOpacity, setRefDebugOpacity] = useState(0.75);
   const [activeFile, setActiveFile] = useState(previewFile || null);
   const [dropActive, setDropActive] = useState(false);
 
@@ -1278,6 +2466,44 @@ export default function ReaderApp({
   const inlineCitationsKeyRef = useRef("");
   const fileInputRef = useRef(null);
   const readerV2ItemRefs = useRef(new Map());
+  const extractProgressTimerRef = useRef(null);
+  const articleDoiRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    if (!extractStatus.loading) {
+      if (extractProgressTimerRef.current) {
+        window.clearInterval(extractProgressTimerRef.current);
+        extractProgressTimerRef.current = null;
+      }
+      setExtractProgress({ value: 0, label: "" });
+      return;
+    }
+
+    setExtractProgress({
+      value: 6,
+      label: getApproxExtractProgressLabel(6),
+    });
+    extractProgressTimerRef.current = window.setInterval(() => {
+      setExtractProgress((current) => {
+        const nextValue = Math.min(
+          94,
+          Math.max(6, Number(current.value || 0)) +
+            getApproxExtractProgressStep(Number(current.value || 0))
+        );
+        return {
+          value: nextValue,
+          label: getApproxExtractProgressLabel(nextValue),
+        };
+      });
+    }, 450);
+
+    return () => {
+      if (extractProgressTimerRef.current) {
+        window.clearInterval(extractProgressTimerRef.current);
+        extractProgressTimerRef.current = null;
+      }
+    };
+  }, [extractStatus.loading]);
 
   useEffect(() => {
     if (!previewFile) {
@@ -1286,14 +2512,38 @@ export default function ReaderApp({
     const objectUrl = URL.createObjectURL(previewFile);
     setPreviewUrl(objectUrl);
     setActiveFile(previewFile);
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
+    setExtractEnrichment(null);
+    setArticleInfo(normalizeArticleInfo(previewArticleInfo));
+    setArticleDoiLookup({
+      loading: false,
+      message: "",
+      tone: "idle",
+    });
+    setExtractionExportData(null);
+    setReferenceDebugDownload(null);
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setReaderV2Data(null);
     setReaderV2Layer("");
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
+    setReaderV2Opacity(1);
+    if (previewArticleInfo?.doi) {
+      setArticleDoiInput(String(previewArticleInfo.doi));
+    }
     return () => URL.revokeObjectURL(objectUrl);
-  }, [previewFile]);
+  }, [previewFile, previewArticleInfo]);
 
   useEffect(() => {
     if (Array.isArray(previewSnippets)) {
@@ -1308,6 +2558,30 @@ export default function ReaderApp({
   }, [previewReferences]);
 
   useEffect(() => {
+    setExtractEnrichment(
+      previewEnrichment && typeof previewEnrichment === "object"
+        ? previewEnrichment
+        : null
+    );
+  }, [previewEnrichment]);
+
+  useEffect(() => {
+    const nextArticleInfo = normalizeArticleInfo(previewArticleInfo);
+    setArticleInfo(nextArticleInfo);
+    if (nextArticleInfo?.doi) {
+      setArticleDoiInput(nextArticleInfo.doi);
+    }
+  }, [previewArticleInfo]);
+
+  useEffect(() => {
+    const normalized = String(reportOriginalDoi || "").trim();
+    if (!normalized) return;
+    setArticleDoiInput((current) =>
+      String(current || "").trim() ? current : normalized
+    );
+  }, [reportOriginalDoi]);
+
+  useEffect(() => {
     setStats(previewStats || null);
   }, [previewStats]);
 
@@ -1317,12 +2591,34 @@ export default function ReaderApp({
       if (!file) return;
       const objectUrl = URL.createObjectURL(file);
       setActiveFile(file);
+      setReferencesVisualData({
+        references: [],
+        citations: [],
+        contexts: [],
+        citation_style: "",
+        max_reference_index: null,
+        bibliography_start_page: null,
+      });
+      setExtractEnrichment(null);
+      setArticleInfo(null);
+      setArticleDoiLookup({
+        loading: false,
+        message: "",
+        tone: "idle",
+      });
+      setExtractionExportData(null);
+      setReferenceDebugDownload(null);
+      setSelectedReferenceId("");
+      setHoveredReferenceId("");
+      setSelectedCitationId("");
+      setHoveredCitationId("");
       setReaderV2Data(null);
       setReaderV2Layer("");
       setHoveredItemId(null);
       setSelectedItemId(null);
       setShowReaderV2(false);
-      setReaderV2Status({ loading: false, error: "", message: "" });
+      setReaderV2Opacity(1);
+      setArticleDoiInput("");
       setPreviewUrl((current) => {
         if (current) {
           URL.revokeObjectURL(current);
@@ -1342,10 +2638,58 @@ export default function ReaderApp({
       const nextReferences = Array.isArray(event.detail?.references)
         ? event.detail.references
         : [];
+      const nextReferencesVisual =
+        event.detail?.references_data &&
+        typeof event.detail.references_data === "object"
+          ? {
+              references: Array.isArray(event.detail.references_data.references)
+                ? event.detail.references_data.references
+                : [],
+              citations: Array.isArray(event.detail.references_data.citations)
+                ? event.detail.references_data.citations
+                : [],
+              contexts: Array.isArray(event.detail.references_data.contexts)
+                ? event.detail.references_data.contexts
+                : [],
+              citation_style: String(
+                event.detail.references_data.citation_style || ""
+              )
+                .trim()
+                .toLowerCase(),
+              max_reference_index: Number.isFinite(
+                Number(event.detail.references_data.max_reference_index)
+              )
+                ? Number(event.detail.references_data.max_reference_index)
+                : null,
+              bibliography_start_page: Number.isFinite(
+                Number(event.detail.references_data.bibliography_start_page)
+              )
+                ? Number(event.detail.references_data.bibliography_start_page)
+                : null,
+            }
+          : {
+              references: [],
+              citations: [],
+              contexts: [],
+              citation_style: "",
+              max_reference_index: null,
+              bibliography_start_page: null,
+            };
       const nextStats = event.detail?.stats || null;
+      const nextEnrichment =
+        event.detail?.enrichment && typeof event.detail.enrichment === "object"
+          ? event.detail.enrichment
+          : null;
+      const nextArticleInfo = normalizeArticleInfo(event.detail?.article_info);
       setSnippetsData(nextSnippets);
       setReferencesData(nextReferences);
+      setReferencesVisualData(nextReferencesVisual);
       setStats(nextStats);
+      setExtractEnrichment(nextEnrichment);
+      setArticleInfo(nextArticleInfo);
+      if (nextArticleInfo?.doi) {
+        setArticleDoiInput(nextArticleInfo.doi);
+      }
     };
     window.addEventListener("reader:data", handler);
     return () => window.removeEventListener("reader:data", handler);
@@ -1360,7 +2704,16 @@ export default function ReaderApp({
 
     setLoading(true);
     fetch(apiUrl, { method: "GET" })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP_${res.status}`);
+        }
+        const contentType = String(res.headers.get("content-type") || "");
+        if (!contentType.includes("application/json")) {
+          throw new Error("INVALID_RESPONSE_FORMAT");
+        }
+        return res.json();
+      })
       .then((payload) => {
         if (!active) return;
         setData(payload);
@@ -1368,7 +2721,7 @@ export default function ReaderApp({
       })
       .catch(() => {
         if (!active) return;
-        setError("Failed to load reader data.");
+        setError("No se pudieron cargar los datos iniciales del reader.");
       })
       .finally(() => {
         if (!active) return;
@@ -1379,6 +2732,50 @@ export default function ReaderApp({
       active = false;
     };
   }, [apiUrl]);
+
+  useEffect(() => {
+    if (!data || typeof data !== "object") return;
+    const rawReferencesData =
+      data.references_data && typeof data.references_data === "object"
+        ? data.references_data
+        : null;
+    if (rawReferencesData) {
+      setReferencesVisualData({
+        references: Array.isArray(rawReferencesData.references)
+          ? rawReferencesData.references
+          : [],
+        citations: Array.isArray(rawReferencesData.citations)
+          ? rawReferencesData.citations
+          : [],
+        contexts: Array.isArray(rawReferencesData.contexts)
+          ? rawReferencesData.contexts
+          : [],
+        citation_style: String(rawReferencesData.citation_style || "")
+          .trim()
+          .toLowerCase(),
+        max_reference_index: Number.isFinite(
+          Number(rawReferencesData.max_reference_index)
+        )
+          ? Number(rawReferencesData.max_reference_index)
+          : null,
+        bibliography_start_page: Number.isFinite(
+          Number(rawReferencesData.bibliography_start_page)
+        )
+          ? Number(rawReferencesData.bibliography_start_page)
+          : null,
+      });
+    }
+    setExtractEnrichment(
+      data.enrichment && typeof data.enrichment === "object"
+        ? data.enrichment
+        : null
+    );
+    const nextArticleInfo = normalizeArticleInfo(data.article_info);
+    setArticleInfo(nextArticleInfo);
+    if (nextArticleInfo?.doi) {
+      setArticleDoiInput(nextArticleInfo.doi);
+    }
+  }, [data]);
 
   useEffect(() => {
     setSelectedSnippet(null);
@@ -1403,26 +2800,6 @@ export default function ReaderApp({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    fetch(ENGINES_ENDPOINT, { method: "GET" })
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((payload) => {
-        if (!active) return;
-        const engines = Array.isArray(payload?.engines) ? payload.engines : [];
-        setEngineOptions(engines);
-      })
-      .catch(() => {
-        if (!active) return;
-        setEngineOptions([]);
-      });
-
-    return () => {
-      active = false;
-    };
   }, []);
 
   const apiSnippetsSource =
@@ -1455,7 +2832,18 @@ export default function ReaderApp({
 
   const effectiveStats = useMemo(() => {
     const base = stats || data?.stats || {};
+    const visualMeta = referencesVisualData || {};
     const doisTotal = normalizedReferences.filter((ref) => ref.doi).length;
+    const rawCitationStyle =
+      base.citation_style || data?.citation_style || visualMeta.citation_style || "";
+    const rawMaxReferenceIndex =
+      base.max_reference_index ??
+      data?.max_reference_index ??
+      visualMeta.max_reference_index;
+    const rawBibliographyStartPage =
+      base.bibliography_start_page ??
+      data?.bibliography_start_page ??
+      visualMeta.bibliography_start_page;
     return {
       pages_total: base.pages_total || 0,
       snippets_total:
@@ -1471,12 +2859,83 @@ export default function ReaderApp({
       engine_used: base.engine_used || "",
       time_ms: base.time_ms ?? null,
       references_numbered: Boolean(base.references_numbered),
+      citation_style: String(rawCitationStyle || "").trim().toLowerCase(),
+      max_reference_index: Number.isFinite(Number(rawMaxReferenceIndex))
+        ? Number(rawMaxReferenceIndex)
+        : 0,
+      bibliography_start_page: Number.isFinite(Number(rawBibliographyStartPage))
+        ? Number(rawBibliographyStartPage)
+        : null,
     };
-  }, [stats, data, normalizedSnippets, normalizedReferences]);
+  }, [stats, data, normalizedSnippets, normalizedReferences, referencesVisualData]);
 
   const referencesNumbered =
     effectiveStats.references_numbered ||
     normalizedReferences.some((ref) => ref.numbered);
+  const citationStyle = String(
+    effectiveStats.citation_style || (referencesNumbered ? "numeric" : "non_numeric")
+  )
+    .trim()
+    .toLowerCase();
+  const maxReferenceIndex = useMemo(() => {
+    const explicit = Number(effectiveStats.max_reference_index);
+    if (Number.isFinite(explicit) && explicit > 0) {
+      return explicit;
+    }
+    const indexedMax = normalizedReferences.reduce((max, ref) => {
+      const next = Number(ref?.index);
+      if (Number.isFinite(next) && next > max) {
+        return next;
+      }
+      return max;
+    }, 0);
+    if (indexedMax > 0) {
+      return indexedMax;
+    }
+    const fallbackCount = Number(effectiveStats.references_total);
+    return Number.isFinite(fallbackCount) && fallbackCount > 0 ? fallbackCount : 0;
+  }, [
+    effectiveStats.max_reference_index,
+    effectiveStats.references_total,
+    normalizedReferences,
+  ]);
+  const bibliographyStartPage = useMemo(() => {
+    const value = Number(effectiveStats.bibliography_start_page);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }, [effectiveStats.bibliography_start_page]);
+  const normalizedArticleDoiInput = useMemo(
+    () => normalizeDoi(articleDoiInput),
+    [articleDoiInput]
+  );
+  const effectiveArticleInfo = useMemo(() => {
+    const normalized = normalizeArticleInfo(articleInfo);
+    if (normalized) {
+      return normalized;
+    }
+    if (!normalizedArticleDoiInput) {
+      return null;
+    }
+    return {
+      doi: normalizedArticleDoiInput,
+      title: "",
+      authors: [],
+      year: null,
+      venue: "",
+      source: "",
+      sources_used: [],
+      references_count: 0,
+      cited_by_count: 0,
+      resolved: false,
+      url: `https://doi.org/${normalizedArticleDoiInput}`,
+    };
+  }, [articleInfo, normalizedArticleDoiInput]);
+  const hasArticleInfoTab = Boolean(effectiveArticleInfo?.doi);
+
+  useEffect(() => {
+    if (activeTab === "info" && !hasArticleInfoTab) {
+      setActiveTab("extract");
+    }
+  }, [activeTab, hasArticleInfoTab]);
 
   const referenceByDoi = useMemo(() => {
     const map = new Map();
@@ -1617,9 +3076,9 @@ export default function ReaderApp({
   }, [derivedSnippets, referenceByDoi, referenceByIndex]);
 
   const resolvedPdfUrl = previewUrl || data?.pdf_url || pdfUrl || "";
-  const canExtract = Boolean(engineValue) && !extractStatus.loading;
-  const canGenerateReaderV2 =
-    !readerV2Status.loading && Boolean(activeFile || resolvedPdfUrl);
+  const canExtract = !extractStatus.loading && Boolean(activeFile || resolvedPdfUrl);
+  const canDownloadExtraction = Boolean(extractionExportData);
+  const canDownloadDebug = Boolean(referenceDebugDownload?.url);
   const readerV2LayerOptions = useMemo(
     () => getReaderV2LayerKeys(readerV2Data),
     [readerV2Data]
@@ -1630,41 +3089,88 @@ export default function ReaderApp({
     if (readerV2LayerOptions.includes("tokens")) return "tokens";
     return readerV2LayerOptions[0];
   }, [readerV2LayerOptions, readerV2Layer]);
-  const readerV2LayerItems = useMemo(() => {
+  const readerV2RawLayerItems = useMemo(() => {
     if (!activeReaderV2Layer) return [];
     if (
       readerV2Data?.layers &&
       typeof readerV2Data.layers === "object" &&
       Array.isArray(readerV2Data.layers[activeReaderV2Layer])
     ) {
-      return readerV2Data.layers[activeReaderV2Layer];
+      return normalizeLayerItems(readerV2Data.layers[activeReaderV2Layer]);
     }
     if (activeReaderV2Layer === "tokens" && Array.isArray(readerV2Data?.items)) {
-      return readerV2Data.items;
+      return normalizeLayerItems(readerV2Data.items);
     }
     return [];
   }, [readerV2Data, activeReaderV2Layer]);
-  const currentLayerItems = useMemo(() => {
-    const withSourceIndex = readerV2LayerItems.map((item, index) => ({
+  const currentLayerOverlayItems = useMemo(() => {
+    const withSourceIndex = readerV2RawLayerItems.map((item, index) => ({
       ...item,
       __sourceIndex: index,
     }));
     const orderedItems = sortItemsByReadingOrder(withSourceIndex, activeReaderV2Layer);
     return orderedItems.map((item, visualIndex) => ({
       ...item,
-      __v2id: getReaderV2ItemId(
-        item,
-        Number.isFinite(Number(item?.__sourceIndex))
+      __v2id: (() => {
+        const sourceIndex = Number.isFinite(Number(item?.__sourceIndex))
           ? Number(item.__sourceIndex)
-          : visualIndex,
-        activeReaderV2Layer || "layer"
-      ),
+          : visualIndex;
+        return getReaderV2ItemId(item, sourceIndex, activeReaderV2Layer || "layer");
+      })(),
+      __v2sourceId: (() => {
+        const sourceIndex = Number.isFinite(Number(item?.__sourceIndex))
+          ? Number(item.__sourceIndex)
+          : visualIndex;
+        return getReaderV2SourceId(item, sourceIndex, activeReaderV2Layer || "layer");
+      })(),
     }));
-  }, [readerV2LayerItems, activeReaderV2Layer]);
+  }, [readerV2RawLayerItems, activeReaderV2Layer]);
+  const currentLayerItems = useMemo(() => {
+    if (activeReaderV2Layer !== "tokens") {
+      return currentLayerOverlayItems;
+    }
+
+    const groupedItems = [];
+    const groupedIndexById = new Map();
+
+    currentLayerOverlayItems.forEach((item, index) => {
+      const sourceId = String(item?.__v2sourceId || item?.__v2id || `token-${index}`);
+      const existingIndex = groupedIndexById.get(sourceId);
+      if (existingIndex === undefined) {
+        groupedIndexById.set(sourceId, groupedItems.length);
+        groupedItems.push({
+          ...item,
+          __v2id: sourceId,
+          __v2sourceId: sourceId,
+          __fragmentCount: 1,
+          __firstVisualIndex: index,
+        });
+        return;
+      }
+
+      const existing = groupedItems[existingIndex];
+      existing.__fragmentCount = Number(existing.__fragmentCount || 1) + 1;
+
+      const existingPage = Number(existing?.page);
+      const nextPage = Number(item?.page);
+      if (
+        Number.isFinite(nextPage) &&
+        (!Number.isFinite(existingPage) || nextPage < existingPage)
+      ) {
+        existing.page = nextPage;
+      }
+    });
+
+    return groupedItems;
+  }, [currentLayerOverlayItems, activeReaderV2Layer]);
   const readerV2PagesTotal = Array.isArray(readerV2Data?.pages)
     ? readerV2Data.pages.length
     : 0;
   const readerV2ItemsTotal = currentLayerItems.length;
+  const readerV2AllItemsTotal = useMemo(
+    () => countLayerItems(readerV2Data?.layers),
+    [readerV2Data]
+  );
 
   const handleReaderV2ItemHover = useCallback((itemId) => {
     setHoveredItemId(itemId || null);
@@ -1706,7 +3212,9 @@ export default function ReaderApp({
 
   useEffect(() => {
     if (!hoveredItemId) return;
-    const exists = currentLayerItems.some((item) => item.__v2id === hoveredItemId);
+    const exists = currentLayerItems.some(
+      (item) => (item.__v2sourceId || item.__v2id) === hoveredItemId
+    );
     if (!exists) {
       setHoveredItemId(null);
     }
@@ -1714,7 +3222,9 @@ export default function ReaderApp({
 
   useEffect(() => {
     if (!selectedItemId) return;
-    const exists = currentLayerItems.some((item) => item.__v2id === selectedItemId);
+    const exists = currentLayerItems.some(
+      (item) => (item.__v2sourceId || item.__v2id) === selectedItemId
+    );
     if (!exists) {
       setSelectedItemId(null);
       return;
@@ -1770,7 +3280,10 @@ export default function ReaderApp({
       return;
     }
     if (Number(selectedSnippet.page) === Number(inlineSnippet.page)) {
-      if (selectedSnippet.highlight_snippet === inlineSnippet.snippet) {
+      if (
+        normalizeForMatch(selectedSnippet.highlight_snippet || "") ===
+        normalizeForMatch(inlineSnippet.snippet || "")
+      ) {
         return;
       }
     }
@@ -1816,6 +3329,249 @@ export default function ReaderApp({
     citationStatsByReference,
     referenceSnippetByIndex,
     inlineSnippetByIndex,
+  ]);
+
+  const visualReferenceEntries = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.references)
+        ? referencesVisualData.references
+        : [],
+    [referencesVisualData]
+  );
+  const visualCitationMentions = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.citations)
+        ? referencesVisualData.citations
+        : [],
+    [referencesVisualData]
+  );
+  const visualCitationContexts = useMemo(
+    () =>
+      Array.isArray(referencesVisualData?.contexts)
+        ? referencesVisualData.contexts
+        : [],
+    [referencesVisualData]
+  );
+  const visualReferenceTotal = visualReferenceEntries.length;
+  const visualCitationTotal = visualCitationMentions.length;
+  const visualContextTotal = visualCitationContexts.length;
+
+  const parseRefIndex = (refId) => {
+    const match = String(refId || "").match(/^ref-(\d+)$/);
+    if (!match) return null;
+    const value = Number(match[1]);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+
+  const mentionCountByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationMentions.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      map.set(refId, (map.get(refId) || 0) + 1);
+    });
+    return map;
+  }, [visualCitationMentions]);
+
+  const referencesByRefId = useMemo(() => {
+    const map = new Map();
+    visualReferenceEntries.forEach((entry, index) => {
+      const refId = String(entry?.ref_id || "");
+      if (!refId) return;
+      const indexFromRefId = parseRefIndex(refId);
+      const baseRef =
+        indexFromRefId && referenceByIndex.has(indexFromRefId)
+          ? referenceByIndex.get(indexFromRefId)
+          : null;
+      const referenceText = String(entry?.text || baseRef?.raw || "").trim();
+      const summary = extractReferenceSummary(referenceText);
+      const pageValue = Number(entry?.page);
+      map.set(refId, {
+        ref_id: refId,
+        index: indexFromRefId || Number(entry?.index) || index + 1,
+        text: referenceText,
+        title: summary.title,
+        author: summary.author,
+        doi: entry?.doi || baseRef?.doi || null,
+        page: Number.isFinite(pageValue) ? pageValue : null,
+        box: normalizeOverlayBox(entry?.box),
+        structure_source: String(entry?.structure_source || "").trim(),
+      });
+    });
+    if (!map.size) {
+      referencesWithStats.forEach((ref, index) => {
+        const refId = `ref-${Number(ref?.index) || index + 1}`;
+        map.set(refId, {
+          ref_id: refId,
+          index: Number(ref?.index) || index + 1,
+          text: String(ref?.raw || ""),
+          title: ref?.display_title || "",
+          author: ref?.display_author || "",
+          doi: ref?.doi || null,
+          page:
+            Number.isFinite(Number(ref?.display_page)) && Number(ref.display_page) > 0
+              ? Number(ref.display_page) - 1
+              : null,
+          box: null,
+        });
+      });
+    }
+    return map;
+  }, [visualReferenceEntries, referenceByIndex, referencesWithStats]);
+
+  const referenceRows = useMemo(() => {
+    const rows = Array.from(referencesByRefId.values()).map((row) => ({
+      ...row,
+      mentions_total: mentionCountByRefId.get(row.ref_id) || 0,
+    }));
+    rows.sort((a, b) => (a.index || 0) - (b.index || 0));
+    return rows;
+  }, [referencesByRefId, mentionCountByRefId]);
+
+  const filteredReferenceRows = useMemo(() => {
+    const query = referenceQuery.trim().toLowerCase();
+    if (!query) return referenceRows;
+    return referenceRows.filter((row) => {
+      return (
+        row.text.toLowerCase().includes(query) ||
+        (row.doi && row.doi.toLowerCase().includes(query)) ||
+        (row.title && row.title.toLowerCase().includes(query))
+      );
+    });
+  }, [referenceRows, referenceQuery]);
+
+  const citationMentionsByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationMentions.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      const list = map.get(refId) || [];
+      list.push(item);
+      map.set(refId, list);
+    });
+    return map;
+  }, [visualCitationMentions]);
+  const selectedReferenceMentions = useMemo(() => {
+    if (!selectedReferenceId) return [];
+    const mentions = citationMentionsByRefId.get(selectedReferenceId) || [];
+    return [...mentions].sort((mentionA, mentionB) => {
+      const pageA = Number(mentionA?.page);
+      const pageB = Number(mentionB?.page);
+      if (Number.isFinite(pageA) && Number.isFinite(pageB) && pageA !== pageB) {
+        return pageA - pageB;
+      }
+      const boxA = normalizeOverlayBox(mentionA?.box);
+      const boxB = normalizeOverlayBox(mentionB?.box);
+      const yA = boxA ? Number(boxA[1]) : Number.MAX_SAFE_INTEGER;
+      const yB = boxB ? Number(boxB[1]) : Number.MAX_SAFE_INTEGER;
+      if (yA !== yB) {
+        return yA - yB;
+      }
+      const xA = boxA ? Number(boxA[0]) : Number.MAX_SAFE_INTEGER;
+      const xB = boxB ? Number(boxB[0]) : Number.MAX_SAFE_INTEGER;
+      return xA - xB;
+    });
+  }, [selectedReferenceId, citationMentionsByRefId]);
+
+  const citationContextsByRefId = useMemo(() => {
+    const map = new Map();
+    visualCitationContexts.forEach((item) => {
+      const refId = String(item?.ref_id || "");
+      if (!refId) return;
+      const list = map.get(refId) || [];
+      list.push(item);
+      map.set(refId, list);
+    });
+    return map;
+  }, [visualCitationContexts]);
+
+  const referencesOverlayItems = useMemo(() => {
+    if (activeTab !== "references") return [];
+    const items = [];
+    visualReferenceEntries.forEach((entry) =>
+      items.push({ ...entry, item_type: "reference-entry" })
+    );
+    visualCitationMentions.forEach((mention) =>
+      items.push({ ...mention, item_type: "citation-mention" })
+    );
+    visualCitationContexts.forEach((context) =>
+      items.push({ ...context, item_type: "citation-context" })
+    );
+    return items;
+  }, [
+    activeTab,
+    visualReferenceEntries,
+    visualCitationMentions,
+    visualCitationContexts,
+  ]);
+  const referencesPanelNotice = useMemo(() => {
+    if (!referenceRows.length) {
+      if (extractStatus.loading) {
+        return {
+          tone: "info",
+          text: "Extraccion en curso. Las referencias apareceran al finalizar.",
+        };
+      }
+      if (extractStatus.error) {
+        return {
+          tone: "error",
+          text: "No se han podido cargar referencias para este PDF.",
+        };
+      }
+      return {
+        tone: "warning",
+        text: "No se detectaron referencias. Prueba con otro PDF o revisa la calidad del texto extraible.",
+      };
+    }
+    if (!visualCitationTotal) {
+      return {
+        tone: "warning",
+        text: "Se detectaron referencias, pero no citas enlazables en el cuerpo del documento.",
+      };
+    }
+    return {
+      tone: "success",
+      text: `${visualCitationTotal} citas enlazables y ${visualContextTotal} contextos listos para navegacion.`,
+    };
+  }, [
+    referenceRows.length,
+    extractStatus.loading,
+    extractStatus.error,
+    visualCitationTotal,
+    visualContextTotal,
+  ]);
+  const layersPanelNotice = useMemo(() => {
+    if (!readerV2Data) {
+      return {
+        tone: "info",
+        text: 'Ejecuta "Extraer" para preparar capas visuales.',
+      };
+    }
+    if (!readerV2LayerOptions.length || !readerV2AllItemsTotal) {
+      return {
+        tone: "warning",
+        text: "Extraccion completada sin capas visuales utilizables para este PDF.",
+      };
+    }
+    if (!currentLayerItems.length) {
+      const layerLabel = activeReaderV2Layer
+        ? (READER_V2_LAYER_LABELS[activeReaderV2Layer] || activeReaderV2Layer)
+        : "seleccionada";
+      return {
+        tone: "warning",
+        text: `La capa ${layerLabel} esta vacia. Cambia a otra capa si esta disponible.`,
+      };
+    }
+    return {
+      tone: "success",
+      text: `${currentLayerItems.length} elementos en la capa activa. ${readerV2AllItemsTotal} elementos totales en capas.`,
+    };
+  }, [
+    readerV2Data,
+    readerV2LayerOptions,
+    readerV2AllItemsTotal,
+    currentLayerItems.length,
+    activeReaderV2Layer,
   ]);
 
   const activeCitationRefIndex = useMemo(() => {
@@ -2027,6 +3783,14 @@ export default function ReaderApp({
   useEffect(() => {
     const viewerEl = viewerRef.current;
     if (!viewerEl) return;
+    if (visualCitationMentions.length > 0) {
+      viewerEl
+        .querySelectorAll(".reader-citation-layer")
+        .forEach((layer) => layer.remove());
+      setInlineCitations([]);
+      setActiveCitation(null);
+      return;
+    }
     let rafId = null;
 
     const schedule = () => {
@@ -2038,7 +3802,11 @@ export default function ReaderApp({
         const hitsList = [];
         pages.forEach((pageEl) => {
           if (!pageEl) return;
-          const hits = collectCitationHitsForPage(pageEl);
+          const hits = collectCitationHitsForPage(pageEl, {
+            citationStyle,
+            maxReferenceIndex,
+            bibliographyStartPage,
+          });
           hits.forEach((hit) => hitsList.push(hit));
           let layer = pageEl.querySelector(".reader-citation-layer");
           if (!layer) {
@@ -2056,7 +3824,8 @@ export default function ReaderApp({
               const hitEl = document.createElement("div");
               hitEl.className = "citation-hit";
               hitEl.dataset.citationId = hit.id;
-              hitEl.dataset.citationRefs = hit.numbers.join(",");
+              hitEl.dataset.citationKind = hit.kind || "numeric";
+              hitEl.dataset.citationRefs = (hit.numbers || []).join(",");
               hitEl.style.left = `${rect.left}px`;
               hitEl.style.top = `${rect.top}px`;
               hitEl.style.width = `${rect.width}px`;
@@ -2077,7 +3846,9 @@ export default function ReaderApp({
         if (currentActive && !newMap.has(currentActive.id)) {
           setActiveCitation(null);
         }
-        const nextKey = hitsList.map((hit) => hit.id).join("|");
+        const nextKey = hitsList
+          .map((hit) => `${hit.id}:${(hit.numbers || []).join(",")}`)
+          .join("|");
         if (inlineCitationsKeyRef.current !== nextKey) {
           inlineCitationsKeyRef.current = nextKey;
           setInlineCitations(hitsList);
@@ -2101,7 +3872,13 @@ export default function ReaderApp({
       resizeObserver.disconnect();
       window.removeEventListener("resize", schedule);
     };
-  }, [resolvedPdfUrl]);
+  }, [
+    resolvedPdfUrl,
+    visualCitationMentions.length,
+    citationStyle,
+    maxReferenceIndex,
+    bibliographyStartPage,
+  ]);
 
   useEffect(() => {
     const viewerEl = viewerRef.current;
@@ -2190,17 +3967,139 @@ export default function ReaderApp({
     }
   };
 
+  const scrollReferenceRowToTop = useCallback((refId) => {
+    if (!refId) return false;
+    const el = referenceElements.current.get(refId);
+    if (!el) return false;
+    const scrollContainer = el.closest(".reader-panel");
+    const topPadding = 14;
+    if (scrollContainer && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = el.getBoundingClientRect();
+      const nextTop =
+        scrollContainer.scrollTop +
+        (elementRect.top - containerRect.top) -
+        topPadding;
+      scrollContainer.scrollTo({
+        top: Math.max(0, Math.round(nextTop)),
+        behavior: "smooth",
+      });
+      return true;
+    }
+    if (el.scrollIntoView) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return true;
+    }
+    return false;
+  }, []);
+
   const jumpToReference = (refKey) => {
     if (!refKey) return;
-    setActiveTab("references");
-    setActiveReferenceKey(refKey);
-    setTimeout(() => {
-      const el = referenceElements.current.get(refKey);
-      if (el && el.scrollIntoView) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+    let resolvedRefId = String(refKey || "");
+    if (resolvedRefId.startsWith("idx:")) {
+      const indexValue = Number(resolvedRefId.slice(4));
+      if (Number.isFinite(indexValue) && indexValue > 0) {
+        resolvedRefId = `ref-${indexValue}`;
       }
+    } else if (resolvedRefId.startsWith("doi:")) {
+      const doiValue = normalizeDoi(resolvedRefId.slice(4));
+      const matchedRow = referenceRows.find(
+        (row) => normalizeDoi(row.doi || "") === doiValue
+      );
+      if (matchedRow?.ref_id) {
+        resolvedRefId = matchedRow.ref_id;
+      }
+    }
+    setActiveTab("references");
+    setSelectedReferenceId(resolvedRefId);
+    setActiveReferenceKey(resolvedRefId);
+    setTimeout(() => {
+      scrollReferenceRowToTop(resolvedRefId);
     }, 150);
   };
+
+  const scrollReferenceTargetToTop = useCallback((target, fallbackPage = null) => {
+    const viewerEl = viewerRef.current;
+    const fallbackIndex = Number(fallbackPage);
+    const rawPage = Number(target?.page);
+    const pageIndex = Number.isFinite(rawPage)
+      ? rawPage
+      : (Number.isFinite(fallbackIndex) ? fallbackIndex : null);
+    if (!Number.isFinite(pageIndex) || pageIndex < 0) {
+      return false;
+    }
+    if (!viewerEl) {
+      scrollToPdfPageIndex(pageIndex);
+      return true;
+    }
+    const pageEl = viewerEl.querySelector(
+      `.pdf-reader__page[data-page-number="${pageIndex + 1}"]`
+    );
+    if (!pageEl) {
+      scrollToPdfPageIndex(pageIndex);
+      return true;
+    }
+
+    const pageRect = pageEl.getBoundingClientRect();
+    const viewerRect = viewerEl.getBoundingClientRect();
+    const normalizedBox = normalizeOverlayBox(target?.box);
+    const boxTopOffset = normalizedBox ? normalizedBox[1] * pageEl.clientHeight : 0;
+    const topPadding = 28;
+    const nextTop =
+      viewerEl.scrollTop +
+      (pageRect.top - viewerRect.top) +
+      boxTopOffset -
+      topPadding;
+    viewerEl.scrollTo({
+      top: Math.max(0, Math.round(nextTop)),
+      behavior: "smooth",
+    });
+    return true;
+  }, [viewerRef]);
+
+  const resolveReferenceBlockAnchor = useCallback((target, refId) => {
+    if (!target) return target;
+    const contexts = citationContextsByRefId.get(refId) || [];
+    if (!contexts.length) return target;
+
+    const targetPage = Number(target?.page);
+    const targetBox = normalizeOverlayBox(target?.box);
+    const samePageContexts = Number.isFinite(targetPage)
+      ? contexts.filter((ctx) => Number(ctx?.page) === targetPage)
+      : contexts;
+
+    const candidateContexts = samePageContexts.length ? samePageContexts : contexts;
+    if (!candidateContexts.length) return target;
+
+    if (targetBox) {
+      const targetTop = Number(targetBox[1]);
+      const targetBottom = targetTop + Number(targetBox[3]);
+      const overlapCandidate = candidateContexts.find((ctx) => {
+        const ctxBox = normalizeOverlayBox(ctx?.box);
+        if (!ctxBox) return false;
+        const ctxTop = Number(ctxBox[1]);
+        const ctxBottom = ctxTop + Number(ctxBox[3]);
+        return !(ctxBottom < targetTop || ctxTop > targetBottom);
+      });
+      if (overlapCandidate) {
+        return overlapCandidate;
+      }
+    }
+
+    const ordered = [...candidateContexts].sort((a, b) => {
+      const pageA = Number(a?.page);
+      const pageB = Number(b?.page);
+      if (Number.isFinite(pageA) && Number.isFinite(pageB) && pageA !== pageB) {
+        return pageA - pageB;
+      }
+      const boxA = normalizeOverlayBox(a?.box);
+      const boxB = normalizeOverlayBox(b?.box);
+      const topA = boxA ? Number(boxA[1]) : Number.MAX_SAFE_INTEGER;
+      const topB = boxB ? Number(boxB[1]) : Number.MAX_SAFE_INTEGER;
+      return topA - topB;
+    });
+    return ordered[0] || target;
+  }, [citationContextsByRefId]);
 
   const copyToClipboard = (value) => {
     if (!value) return;
@@ -2259,6 +4158,17 @@ export default function ReaderApp({
       : [];
     const baseStats =
       payload?.stats && typeof payload.stats === "object" ? payload.stats : {};
+    const payloadCitationStyle = String(
+      baseStats.citation_style || payload?.citation_style || ""
+    )
+      .trim()
+      .toLowerCase();
+    const payloadMaxReferenceIndex = Number(
+      baseStats.max_reference_index ?? payload?.max_reference_index
+    );
+    const payloadBibliographyStartPage = Number(
+      baseStats.bibliography_start_page ?? payload?.bibliography_start_page
+    );
     const stats = {
       pages_total: Number(baseStats.pages_total || 0),
       snippets_total:
@@ -2272,27 +4182,377 @@ export default function ReaderApp({
         ? Number(baseStats.time_ms)
         : (Number.isFinite(Number(payload?.time_ms)) ? Number(payload.time_ms) : null),
       references_numbered: Boolean(baseStats.references_numbered),
+      citation_style: payloadCitationStyle,
+      max_reference_index:
+        Number.isFinite(payloadMaxReferenceIndex) && payloadMaxReferenceIndex > 0
+          ? payloadMaxReferenceIndex
+          : 0,
+      bibliography_start_page:
+        Number.isFinite(payloadBibliographyStartPage) && payloadBibliographyStartPage > 0
+          ? payloadBibliographyStartPage
+          : null,
     };
-    return { snippets, references, stats };
+    const rawLayers =
+      payload?.layers && typeof payload.layers === "object"
+        ? payload.layers
+        : (payload?.reader_data?.layers && typeof payload.reader_data.layers === "object"
+          ? payload.reader_data.layers
+          : null);
+    const normalizedLayers = {};
+    if (rawLayers) {
+      Object.keys(rawLayers).forEach((layerKey) => {
+        if (Array.isArray(rawLayers[layerKey])) {
+          normalizedLayers[layerKey] = rawLayers[layerKey];
+        }
+      });
+    }
+    if (
+      !Object.keys(normalizedLayers).length &&
+      Array.isArray(payload?.items)
+    ) {
+      normalizedLayers.tokens = payload.items;
+    }
+    const pagesSource = Array.isArray(payload?.pages)
+      ? payload.pages
+      : (Array.isArray(payload?.reader_data?.pages) ? payload.reader_data.pages : []);
+    const readerData = {
+      pages: pagesSource,
+      layers: normalizedLayers,
+    };
+
+    const toRefId = (rawItem, fallbackIndex) => {
+      const explicit = String(
+        rawItem?.ref_id || rawItem?.reference_id || rawItem?.refId || ""
+      ).trim();
+      if (explicit) return explicit;
+      const indexValue = Number(rawItem?.index);
+      if (Number.isFinite(indexValue) && indexValue > 0) {
+        return `ref-${indexValue}`;
+      }
+      return `ref-${fallbackIndex + 1}`;
+    };
+    const normalizeReferenceItems = (source, itemType) => {
+      if (!Array.isArray(source)) return [];
+      return source.map((item, index) => {
+        const resolvedPageCandidate =
+          item?.resolved_page !== undefined && item?.resolved_page !== null
+            ? item.resolved_page
+            : item?.page;
+        const resolvedBoxCandidate =
+          Array.isArray(item?.resolved_box) && item.resolved_box.length >= 4
+            ? item.resolved_box
+            : item?.box;
+        const page = normalizeOverlayPage(resolvedPageCandidate);
+        const box = normalizeOverlayBox(resolvedBoxCandidate);
+        const refId = toRefId(item, index);
+        return {
+          id: String(item?.id || `${itemType}-${index + 1}-${refId}`),
+          ref_id: refId,
+          index:
+            Number.isFinite(Number(item?.index)) && Number(item.index) > 0
+              ? Number(item.index)
+              : null,
+          text: String(item?.text || item?.raw || ""),
+          page,
+          box,
+          structure_source: String(item?.structure_source || "").trim(),
+          item_type: itemType,
+        };
+      });
+    };
+    const rawReferencesData =
+      payload?.references_data && typeof payload.references_data === "object"
+        ? payload.references_data
+        : {};
+    const referencesVisual = {
+      references: normalizeReferenceItems(
+        rawReferencesData.references,
+        "reference-entry"
+      ),
+      citations: normalizeReferenceItems(
+        rawReferencesData.citations,
+        "citation-mention"
+      ),
+      contexts: normalizeReferenceItems(
+        rawReferencesData.contexts,
+        "citation-context"
+      ),
+      citation_style: String(rawReferencesData.citation_style || "")
+        .trim()
+        .toLowerCase(),
+      max_reference_index: Number.isFinite(Number(rawReferencesData.max_reference_index))
+        ? Number(rawReferencesData.max_reference_index)
+        : null,
+      bibliography_start_page: Number.isFinite(
+        Number(rawReferencesData.bibliography_start_page)
+      )
+        ? Number(rawReferencesData.bibliography_start_page)
+        : null,
+    };
+    if (!referencesVisual.references.length && Array.isArray(references)) {
+      referencesVisual.references = references.map((ref, index) => {
+        const refIndex =
+          Number.isFinite(Number(ref?.index)) && Number(ref.index) > 0
+            ? Number(ref.index)
+            : index + 1;
+        return {
+          id: `reference-entry-ref-${refIndex}`,
+          ref_id: `ref-${refIndex}`,
+          index: refIndex,
+          text: String(ref?.raw || ""),
+          page: null,
+          box: null,
+          item_type: "reference-entry",
+        };
+      });
+    }
+    if (!stats.citation_style && referencesVisual.citation_style) {
+      stats.citation_style = referencesVisual.citation_style;
+    }
+    if (
+      (!Number.isFinite(Number(stats.max_reference_index)) ||
+        Number(stats.max_reference_index) <= 0) &&
+      Number.isFinite(Number(referencesVisual.max_reference_index))
+    ) {
+      stats.max_reference_index = Number(referencesVisual.max_reference_index);
+    }
+    if (
+      !Number.isFinite(Number(stats.bibliography_start_page)) &&
+      Number.isFinite(Number(referencesVisual.bibliography_start_page))
+    ) {
+      stats.bibliography_start_page = Number(referencesVisual.bibliography_start_page);
+    }
+
+    return { snippets, references, stats, readerData, referencesVisual };
+  };
+
+  const buildNestedReferencesForExport = (references, citations, contexts) => {
+    const safeReferences = Array.isArray(references) ? references : [];
+    const safeCitations = Array.isArray(citations) ? citations : [];
+    const safeContexts = Array.isArray(contexts) ? contexts : [];
+    const CONTEXT_ID_PREFIX = "citation-context-";
+
+    const contextByCitationId = new Map();
+    safeContexts.forEach((contextItem) => {
+      const contextId = String(contextItem?.id || "").trim();
+      if (!contextId.startsWith(CONTEXT_ID_PREFIX)) return;
+      const citationId = contextId.slice(CONTEXT_ID_PREFIX.length).trim();
+      if (!citationId) return;
+      contextByCitationId.set(citationId, contextItem);
+    });
+
+    const citationsByRefId = new Map();
+    safeCitations.forEach((citationItem) => {
+      const refId = String(citationItem?.ref_id || "").trim();
+      if (!refId) return;
+      const citationId = String(citationItem?.id || "").trim();
+      const linkedContext = citationId ? (contextByCitationId.get(citationId) || null) : null;
+      const citationWithContext = {
+        ...citationItem,
+        context: linkedContext,
+      };
+      if (!citationsByRefId.has(refId)) {
+        citationsByRefId.set(refId, []);
+      }
+      citationsByRefId.get(refId).push(citationWithContext);
+    });
+
+    const nestedReferences = safeReferences.map((referenceItem) => {
+      const refId = String(referenceItem?.ref_id || "").trim();
+      return {
+        ...referenceItem,
+        citations: refId ? (citationsByRefId.get(refId) || []) : [],
+      };
+    });
+
+    const existingRefIds = new Set(
+      nestedReferences
+        .map((item) => String(item?.ref_id || "").trim())
+        .filter(Boolean)
+    );
+    citationsByRefId.forEach((groupedCitations, refId) => {
+      if (existingRefIds.has(refId)) return;
+      nestedReferences.push({
+        id: `reference-entry-${refId}`,
+        ref_id: refId,
+        index: null,
+        text: "",
+        page: null,
+        box: null,
+        doi: null,
+        citations: groupedCitations,
+      });
+    });
+
+    return nestedReferences;
+  };
+
+  const buildExtractionExportData = (payload, result, file) => {
+    const rawReferencesData =
+      payload?.references_data && typeof payload.references_data === "object"
+        ? payload.references_data
+        : {};
+    const references = Array.isArray(rawReferencesData.references)
+      ? rawReferencesData.references
+      : result?.referencesVisual?.references || [];
+    const citations = Array.isArray(rawReferencesData.citations)
+      ? rawReferencesData.citations
+      : result?.referencesVisual?.citations || [];
+    const contexts = Array.isArray(rawReferencesData.contexts)
+      ? rawReferencesData.contexts
+      : result?.referencesVisual?.contexts || [];
+    const nestedReferences = buildNestedReferencesForExport(
+      references,
+      citations,
+      contexts
+    );
+    const resolvedCitationStyle = String(
+      rawReferencesData.citation_style ||
+        result?.stats?.citation_style ||
+        payload?.citation_style ||
+        ""
+    )
+      .trim()
+      .toLowerCase();
+    const maxReferenceIndexCandidate =
+      rawReferencesData.max_reference_index ??
+      result?.stats?.max_reference_index ??
+      payload?.max_reference_index;
+    const bibliographyStartPageCandidate =
+      rawReferencesData.bibliography_start_page ??
+      result?.stats?.bibliography_start_page ??
+      payload?.bibliography_start_page;
+    const maxReferenceIndex = Number(maxReferenceIndexCandidate);
+    const bibliographyStartPage = Number(bibliographyStartPageCandidate);
+    const statsForExport =
+      result?.stats && typeof result.stats === "object"
+        ? result.stats
+        : (payload?.stats && typeof payload.stats === "object" ? payload.stats : {});
+    const fileName = String(file?.name || payload?.file_name || payload?.filename || "document.pdf");
+    const engine = String(
+      statsForExport?.engine_used || payload?.engine_used || PREVIEW_EXTRACT_ENGINE
+    ).trim();
+    const exportArticleInfo = normalizeArticleInfo(payload?.article_info);
+    const exportEnrichment =
+      payload?.enrichment && typeof payload.enrichment === "object"
+        ? payload.enrichment
+        : null;
+    return {
+      file_name: fileName,
+      engine: engine || PREVIEW_EXTRACT_ENGINE,
+      citation_style: resolvedCitationStyle,
+      max_reference_index: Number.isFinite(maxReferenceIndex) ? maxReferenceIndex : null,
+      bibliography_start_page: Number.isFinite(bibliographyStartPage)
+        ? bibliographyStartPage
+        : null,
+      stats: statsForExport,
+      article_info: exportArticleInfo,
+      enrichment: exportEnrichment,
+      references: nestedReferences,
+    };
+  };
+
+  const downloadExtractionJson = (exportData) => {
+    if (!exportData || typeof exportData !== "object") return;
+    const jsonData = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const rawFileName = String(exportData.file_name || "document.pdf");
+    const baseName = rawFileName.replace(/\.[^./\\]+$/, "").trim() || "document";
+    const safeBaseName = baseName.replace(/[<>:"/\\|?*\u0000-\u001F]+/g, "_").replace(/\s+/g, "_");
+    const downloadName = `${safeBaseName}_refs_citations_contexts.json`;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  };
+
+  const downloadReferenceDebugJson = (downloadInfo) => {
+    const downloadUrl = String(downloadInfo?.url || "").trim();
+    if (!downloadUrl) return;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    if (downloadInfo?.filename) {
+      link.download = downloadInfo.filename;
+    }
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const describeExtractionOutcome = (result, nextLayer, nextItems) => {
+    const referencesCount = Math.max(
+      Number(result?.references?.length || 0),
+      Number(result?.referencesVisual?.references?.length || 0)
+    );
+    const mentionCount = Number(result?.referencesVisual?.citations?.length || 0);
+    const contextCount = Number(result?.referencesVisual?.contexts?.length || 0);
+    const layerItemsCount = countLayerItems(result?.readerData?.layers);
+    const hasPages = Array.isArray(result?.readerData?.pages) && result.readerData.pages.length > 0;
+    const layerLabel = nextLayer
+      ? (READER_V2_LAYER_LABELS[nextLayer] || nextLayer)
+      : "sin capa activa";
+    const layerCountLabel =
+      nextLayer && Array.isArray(nextItems) ? nextItems.length : layerItemsCount;
+
+    const baseMessage = `Extraccion completada. Referencias: ${referencesCount}. Citas enlazadas: ${mentionCount}. Contextos: ${contextCount}. Capas (${layerLabel}): ${layerCountLabel}.`;
+
+    if (!referencesCount && !layerItemsCount && !hasPages) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada con datos insuficientes.",
+        hint: "No se detecto texto seleccionable o la extraccion del PDF fue insuficiente para preparar Capas y Referencias.",
+      };
+    }
+    if (!referencesCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada sin referencias detectadas.",
+        hint: "Se han generado capas basicas, pero no se detectaron referencias bibliograficas en este PDF.",
+      };
+    }
+    if (!mentionCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada.",
+        hint: "Se detectaron referencias, pero no citas enlazables en el cuerpo del texto.",
+      };
+    }
+    if (!layerItemsCount) {
+      return {
+        tone: "warning",
+        message: "Extraccion completada.",
+        hint: "No se detectaron capas visuales utilizables. Revisa si el PDF tiene texto seleccionable.",
+      };
+    }
+    return {
+      tone: "success",
+      message: baseMessage,
+      hint: "",
+    };
   };
 
   const handleExtract = async () => {
-    if (!engineValue) {
-      setExtractStatus({
-        loading: false,
-        error: "Selecciona un motor antes de extraer.",
-        message: "",
-      });
-      return;
-    }
-
-    setExtractStatus({ loading: true, error: "", message: "" });
+    setExtractEnrichment(null);
+    setReferenceDebugDownload(null);
+    setExtractStatus({
+      loading: true,
+      error: "",
+      message: "Extraccion en curso. Esto puede tardar unos segundos...",
+      hint: "",
+      tone: "loading",
+    });
     const file = await ensurePdfFile();
     if (!file) {
       setExtractStatus({
         loading: false,
         error: "No hay PDF disponible para extraer.",
         message: "",
+        hint: "",
+        tone: "error",
       });
       return;
     }
@@ -2300,124 +4560,238 @@ export default function ReaderApp({
     try {
       const fd = new FormData();
       fd.append("manuscript", file);
-      fd.append("engine", engineValue);
+      fd.append("engine", PREVIEW_EXTRACT_ENGINE);
+      fd.append(
+        "debug_reference_detection",
+        debugReferenceDetection ? "1" : "0"
+      );
+      fd.append("debug", debugReferenceDetection ? "1" : "0");
+      const normalizedArticleDoi = String(articleDoiInput || "").trim();
+      if (normalizedArticleDoi) {
+        fd.append("article_doi", normalizedArticleDoi);
+      }
 
       const res = await fetch(EXTRACT_ENDPOINT, { method: "POST", body: fd });
-      const payload = await res.json();
-      if (!payload?.ok) {
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload?.ok) {
+        const rawError =
+          payload?.error ||
+          (res.status >= 500
+            ? "Error interno durante la extraccion."
+            : "No se pudo completar la extraccion.");
         setExtractStatus({
           loading: false,
-          error: payload?.error || "No se pudo extraer citas.",
+          error: rawError,
           message: "",
+          hint: "",
+          tone: "error",
         });
         return;
       }
 
       const result = buildExtractionResult(payload);
+      const enrichmentPayload =
+        payload?.enrichment && typeof payload.enrichment === "object"
+          ? payload.enrichment
+          : null;
+      const nextArticleInfo = normalizeArticleInfo(payload?.article_info);
+      const payloadArticleDoi = normalizeDoi(
+        payload?.article_doi || nextArticleInfo?.doi || ""
+      );
+      const referenceDebugMeta =
+        payload?.reference_debug && typeof payload.reference_debug === "object"
+          ? payload.reference_debug
+          : null;
+      const referenceDebugPath = String(
+        referenceDebugMeta?.output_path || ""
+      ).trim();
+      const referenceDebugDownloadUrl = String(
+        referenceDebugMeta?.download_url || ""
+      ).trim();
+      const referenceDebugFilename = String(
+        referenceDebugMeta?.filename || ""
+      ).trim();
       setSnippetsData(result.snippets);
       setReferencesData(result.references);
+      setReferencesVisualData(result.referencesVisual);
+      setExtractionExportData(buildExtractionExportData(payload, result, file));
+      setReferenceDebugDownload(
+        referenceDebugDownloadUrl
+          ? {
+              url: referenceDebugDownloadUrl,
+              filename: referenceDebugFilename || "reference_debug.json",
+            }
+          : null
+      );
+      setExtractEnrichment(enrichmentPayload);
+      setArticleInfo(nextArticleInfo);
+      if (payloadArticleDoi) {
+        setArticleDoiInput(payloadArticleDoi);
+      }
+      setSelectedReferenceId("");
+      setHoveredReferenceId("");
+      setSelectedCitationId("");
+      setHoveredCitationId("");
       setStats(result.stats);
-      setActiveTab("snippets");
-      setExtractStatus({
-        loading: false,
-        error: "",
-        message: "Extraccion completada.",
-      });
-    } catch (err) {
-      setExtractStatus({
-        loading: false,
-        error: "Error de red al extraer.",
-        message: "",
-      });
-    }
-  };
-
-  const handleGenerateReaderV2 = async () => {
-    setReaderV2Status({ loading: true, error: "", message: "" });
-    const file = await ensurePdfFile();
-    if (!file) {
-      setReaderV2Status({
-        loading: false,
-        error: "No hay PDF disponible para generar V2.",
-        message: "",
-      });
-      return;
-    }
-
-    try {
-      const fd = new FormData();
-      fd.append("pdf_file", file);
-
-      const res = await fetch(READER_V2_ENDPOINT, { method: "POST", body: fd });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok || !payload?.ok) {
-        setReaderV2Status({
-          loading: false,
-          error: payload?.error || "No se pudo generar el reader V2.",
-          message: "",
-        });
-        return;
-      }
-
-      const rawLayers =
-        payload?.layers && typeof payload.layers === "object"
-          ? payload.layers
-          : null;
-      const normalizedLayers = {};
-      if (rawLayers) {
-        Object.keys(rawLayers).forEach((layerKey) => {
-          if (Array.isArray(rawLayers[layerKey])) {
-            normalizedLayers[layerKey] = rawLayers[layerKey];
-          }
-        });
-      }
-      if (
-        !Object.keys(normalizedLayers).length &&
-        Array.isArray(payload?.items)
-      ) {
-        normalizedLayers.tokens = payload.items;
-      }
-
-      const nextData = {
-        pages: Array.isArray(payload?.pages) ? payload.pages : [],
-        layers: normalizedLayers,
-      };
+      const nextData = result.readerData;
       const nextLayer = pickDefaultReaderV2Layer(nextData);
       const nextItems =
         nextLayer && Array.isArray(nextData.layers?.[nextLayer])
           ? nextData.layers[nextLayer]
           : [];
-
       setReaderV2Data(nextData);
       setReaderV2Layer(nextLayer);
       setHoveredItemId(null);
       setSelectedItemId(null);
-      setShowReaderV2(true);
-      setReaderV2Status({
+      setShowReaderV2(Boolean(nextLayer));
+      setReaderV2Opacity(1);
+      const nextDebugSteps = Array.isArray(payload?.reference_debug_steps)
+        ? payload.reference_debug_steps
+        : [];
+      setRefDebugSteps(nextDebugSteps);
+      setActiveRefDebugKeys(new Set());
+      setShowRefDebug(false);
+      setActiveTab("references");
+      const outcome = describeExtractionOutcome(result, nextLayer, nextItems);
+      const enrichmentHint =
+        enrichmentPayload?.paper_resolved &&
+        Number(enrichmentPayload?.references_enriched) > 0
+          ? `Referencias enriquecidas mediante DOI: ${Number(
+              enrichmentPayload.references_enriched
+            )}.`
+          : (enrichmentPayload?.warning === "invalid_doi"
+            ? "DOI no valido; se uso extraccion local."
+            : "");
+      const debugHint = referenceDebugPath
+        ? `Debug JSON: ${referenceDebugPath}.`
+        : "";
+      setExtractStatus({
         loading: false,
         error: "",
-        message: nextLayer
-          ? `V2 generada. Capa activa: ${
-              READER_V2_LAYER_LABELS[nextLayer] || nextLayer
-            } (${nextItems.length} cajas, ${nextData.pages.length} paginas).`
-          : `V2 generada sin capas disponibles (${nextData.pages.length} paginas).`,
+        message: outcome.message,
+        hint: [outcome.hint, enrichmentHint, debugHint].filter(Boolean).join(" "),
+        tone: outcome.tone,
       });
+      if (payloadArticleDoi) {
+        setArticleDoiLookup({
+          loading: false,
+          message: nextArticleInfo?.resolved
+            ? "DOI del articulo confirmado y metadatos cargados."
+            : "DOI del articulo disponible para esta extraccion.",
+          tone: nextArticleInfo?.resolved ? "success" : "info",
+        });
+      }
     } catch (err) {
-      setReaderV2Status({
+      setExtractStatus({
         loading: false,
-        error: "Error de red al generar V2.",
+        error: "Error de red al extraer.",
         message: "",
+        hint: "Comprueba la conexion e intentalo de nuevo.",
+        tone: "error",
+      });
+    }
+  };
+
+  const handleArticleDoiInputChange = (event) => {
+    const nextValue = event.target.value;
+    const normalized = normalizeDoi(nextValue);
+    setArticleDoiInput(nextValue);
+    setArticleInfo((current) => {
+      const currentInfo = normalizeArticleInfo(current);
+      if (currentInfo?.doi && currentInfo.doi === normalized) {
+        return currentInfo;
+      }
+      return null;
+    });
+    setArticleDoiLookup((current) =>
+      current.loading
+        ? current
+        : {
+            loading: false,
+            message: "",
+            tone: "idle",
+          }
+    );
+  };
+
+  const detectArticleDoiFromPdf = async (file) => {
+    if (!file) return;
+    const requestId = articleDoiRequestIdRef.current + 1;
+    articleDoiRequestIdRef.current = requestId;
+    setArticleDoiLookup({
+      loading: true,
+      message: "Buscando DOI del articulo en el PDF...",
+      tone: "info",
+    });
+
+    try {
+      const fd = new FormData();
+      fd.append("manuscript", file);
+      const res = await fetch(DETECT_ARTICLE_DOI_ENDPOINT, {
+        method: "POST",
+        body: fd,
+      });
+      const payload = await res.json().catch(() => null);
+      if (articleDoiRequestIdRef.current !== requestId) {
+        return;
+      }
+      if (!res.ok || !payload?.ok) {
+        setArticleDoiLookup({
+          loading: false,
+          message: "No se pudo detectar automaticamente el DOI del articulo.",
+          tone: "warning",
+        });
+        return;
+      }
+
+      const nextArticleInfo = normalizeArticleInfo(payload?.article_info);
+      const detectedDoi = normalizeDoi(
+        payload?.article_doi || nextArticleInfo?.doi || ""
+      );
+      setArticleInfo(nextArticleInfo);
+      if (detectedDoi) {
+        setArticleDoiInput(detectedDoi);
+        setArticleDoiLookup({
+          loading: false,
+          message: nextArticleInfo?.resolved
+            ? "DOI detectado automaticamente y metadatos listos."
+            : "DOI detectado automaticamente al cargar el PDF.",
+          tone: "success",
+        });
+        return;
+      }
+
+      setArticleDoiLookup({
+        loading: false,
+        message: "No se detecto DOI automaticamente en este PDF.",
+        tone: "warning",
+      });
+    } catch (error) {
+      if (articleDoiRequestIdRef.current !== requestId) {
+        return;
+      }
+      setArticleDoiLookup({
+        loading: false,
+        message: "No se pudo comprobar el DOI automaticamente.",
+        tone: "warning",
       });
     }
   };
 
   const handleViewReference = (ref) => {
-    const key = referenceKey(ref);
-    if (key) {
-      jumpToReference(key);
+    const numericIndex = Number(ref?.index);
+    const refId =
+      String(ref?.ref_id || "").trim() ||
+      (Number.isFinite(numericIndex) && numericIndex > 0
+        ? `ref-${numericIndex}`
+        : "");
+    if (refId) {
+      jumpToReference(refId);
+      setActiveReferenceId(numericIndex || null);
+      setHighlightReferenceId(numericIndex || null);
+      setSelectedReferenceId(refId);
+      setSelectedCitationId("");
     }
-    setActiveReferenceId(ref.index);
-    setHighlightReferenceId(ref.index);
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
     const linkedSnippet = extractorSnippet || inlineSnippet;
@@ -2440,9 +4814,23 @@ export default function ReaderApp({
   };
 
   const handleReferenceSelect = (ref) => {
-    setActiveReferenceKey(referenceKey(ref));
-    setActiveReferenceId(ref.index);
-    setHighlightReferenceId(ref.index);
+    const numericIndex = Number(ref?.index);
+    const refId =
+      String(ref?.ref_id || "").trim() ||
+      (Number.isFinite(numericIndex) && numericIndex > 0
+        ? `ref-${numericIndex}`
+        : "");
+    setActiveReferenceKey(refId || referenceKey(ref));
+    setActiveReferenceId(numericIndex || null);
+    setHighlightReferenceId(numericIndex || null);
+    if (refId) {
+      setSelectedReferenceId(refId);
+    }
+    setSelectedCitationId("");
+    const visualReference = refId ? referencesByRefId.get(refId) : null;
+    if (visualReference) {
+      scrollReferenceTargetToTop(visualReference);
+    }
     const extractorSnippet = referenceSnippetByIndex.get(ref.index);
     const inlineSnippet = inlineSnippetByIndex.get(ref.index);
     const linkedSnippet = extractorSnippet || inlineSnippet;
@@ -2461,18 +4849,63 @@ export default function ReaderApp({
         highlightMode: "paragraph",
       });
       setSelectedSnippetAnchor(null);
-      const targetPage = inlineSnippet?.page || linkedSnippet.page;
-      if (Number.isFinite(Number(targetPage))) {
-        scrollToPdfPageIndex(Number(targetPage) - 1);
-        return;
-      }
     }
     const statsEntry = citationStatsByReference.get(ref.index);
-    if (statsEntry && statsEntry.pages.size) {
+    if (!visualReference && statsEntry && statsEntry.pages.size) {
       const pages = Array.from(statsEntry.pages).sort((a, b) => a - b);
       if (pages[0]) {
-        scrollToPdfPageIndex(pages[0] - 1);
+        scrollReferenceTargetToTop(null, pages[0] - 1);
       }
+    }
+  };
+
+  const handleReferenceOverlayHover = (item) => {
+    if (!item) {
+      setHoveredReferenceId("");
+      setHoveredCitationId("");
+      return;
+    }
+    setHoveredReferenceId(String(item.refId || item.ref_id || ""));
+    setHoveredCitationId(
+      String(item.itemType || item.item_type) === "citation-mention"
+        ? String(item.id || "")
+        : ""
+    );
+  };
+
+  const handleReferenceOverlaySelect = (item) => {
+    if (!item) return;
+    const refId = String(item.refId || item.ref_id || "");
+    if (!refId) return;
+    setSelectedReferenceId(refId);
+    setActiveReferenceKey(refId);
+    if (String(item.itemType || item.item_type) === "citation-mention") {
+      setSelectedCitationId(String(item.id || ""));
+    } else {
+      setSelectedCitationId("");
+    }
+    const indexFromRefId = parseRefIndex(refId);
+    if (Number.isFinite(indexFromRefId)) {
+      setActiveReferenceId(indexFromRefId);
+      setHighlightReferenceId(indexFromRefId);
+    }
+    jumpToReference(refId);
+  };
+
+  const handleReferenceMentionSelect = (mention, refId) => {
+    const resolvedRefId = String(refId || mention?.ref_id || "").trim();
+    if (!resolvedRefId) return;
+    setSelectedReferenceId(resolvedRefId);
+    setActiveReferenceKey(resolvedRefId);
+    setHoveredReferenceId(resolvedRefId);
+    setSelectedCitationId(String(mention?.id || ""));
+    const indexFromRefId = parseRefIndex(resolvedRefId);
+    if (Number.isFinite(indexFromRefId)) {
+      setActiveReferenceId(indexFromRefId);
+      setHighlightReferenceId(indexFromRefId);
+    }
+    if (mention) {
+      scrollReferenceTargetToTop(mention);
     }
   };
 
@@ -2501,6 +4934,40 @@ export default function ReaderApp({
     }
   };
 
+  useEffect(() => {
+    if (!selectedReferenceId) return;
+    const sideTimer = window.setTimeout(() => {
+      scrollReferenceRowToTop(selectedReferenceId);
+    }, 120);
+    const mentions = citationMentionsByRefId.get(selectedReferenceId) || [];
+    const contexts = citationContextsByRefId.get(selectedReferenceId) || [];
+    const refRow = referencesByRefId.get(selectedReferenceId) || null;
+    const selectedMention = mentions.find(
+      (mention) => String(mention?.id || "") === String(selectedCitationId || "")
+    );
+    if (selectedMention) {
+      scrollReferenceTargetToTop(selectedMention);
+    } else if (refRow) {
+      scrollReferenceTargetToTop(refRow);
+    } else {
+      const fallbackTarget = contexts[0] || mentions[0] || null;
+      if (fallbackTarget) {
+        scrollReferenceTargetToTop(fallbackTarget);
+      }
+    }
+    return () => {
+      window.clearTimeout(sideTimer);
+    };
+  }, [
+    selectedReferenceId,
+    selectedCitationId,
+    citationMentionsByRefId,
+    citationContextsByRefId,
+    referencesByRefId,
+    scrollReferenceRowToTop,
+    scrollReferenceTargetToTop,
+  ]);
+
   const applyPdfFile = (file) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
@@ -2508,6 +4975,8 @@ export default function ReaderApp({
         loading: false,
         error: "Selecciona un PDF valido.",
         message: "",
+        hint: "",
+        tone: "error",
       });
       return;
     }
@@ -2520,6 +4989,28 @@ export default function ReaderApp({
     });
     setSnippetsData([]);
     setReferencesData([]);
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
+    setExtractEnrichment(null);
+    setArticleInfo(null);
+    setArticleDoiInput("");
+    setArticleDoiLookup({
+      loading: true,
+      message: "Buscando DOI del articulo en el PDF...",
+      tone: "info",
+    });
+    setExtractionExportData(null);
+    setReferenceDebugDownload(null);
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setStats(null);
     setSelectedSnippet(null);
     setSelectedSnippetAnchor(null);
@@ -2530,8 +5021,15 @@ export default function ReaderApp({
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
-    setExtractStatus({ loading: false, error: "", message: "PDF actualizado." });
+    setReaderV2Opacity(1);
+    setExtractStatus({
+      loading: false,
+      error: "",
+      message: "PDF cargado correctamente.",
+      hint: 'Pulsa "Extraer" para preparar Capas y Referencias.',
+      tone: "idle",
+    });
+    detectArticleDoiFromPdf(file);
   };
 
   const handlePdfChange = (event) => {
@@ -2549,6 +5047,7 @@ export default function ReaderApp({
   };
 
   const handleClearPdf = () => {
+    articleDoiRequestIdRef.current += 1;
     setActiveFile(null);
     setPreviewUrl((current) => {
       if (current) {
@@ -2560,12 +5059,40 @@ export default function ReaderApp({
       fileInputRef.current.value = "";
     }
     setReaderV2Data(null);
+    setReferencesVisualData({
+      references: [],
+      citations: [],
+      contexts: [],
+      citation_style: "",
+      max_reference_index: null,
+      bibliography_start_page: null,
+    });
+    setExtractEnrichment(null);
+    setArticleInfo(null);
+    setArticleDoiInput(String(reportOriginalDoi || "").trim());
+    setArticleDoiLookup({
+      loading: false,
+      message: "",
+      tone: "idle",
+    });
+    setExtractionExportData(null);
+    setReferenceDebugDownload(null);
+    setSelectedReferenceId("");
+    setHoveredReferenceId("");
+    setSelectedCitationId("");
+    setHoveredCitationId("");
     setReaderV2Layer("");
     setHoveredItemId(null);
     setSelectedItemId(null);
     setShowReaderV2(false);
-    setReaderV2Status({ loading: false, error: "", message: "" });
-    setExtractStatus({ loading: false, error: "", message: "PDF eliminado." });
+    setReaderV2Opacity(1);
+    setExtractStatus({
+      loading: false,
+      error: "",
+      message: "PDF eliminado.",
+      hint: "",
+      tone: "idle",
+    });
   };
 
   const dropzoneLabel = useMemo(() => {
@@ -2578,14 +5105,9 @@ export default function ReaderApp({
 
   const readerV2Controls = (
     <div className="reader-v2-controls">
-      <button
-        type="button"
-        className="reader-tool-btn"
-        onClick={handleGenerateReaderV2}
-        disabled={!canGenerateReaderV2}
-      >
-        {readerV2Status.loading ? "Generando..." : "Generar V2"}
-      </button>
+      <div className={`reader-panel-status is-${layersPanelNotice.tone}`}>
+        {layersPanelNotice.text}
+      </div>
       <label className="reader-v2-layer">
         <span className="reader-v2-layer-label">Capa</span>
         <select
@@ -2610,7 +5132,7 @@ export default function ReaderApp({
           <span className="reader-v2-items-count">{currentLayerItems.length}</span>
         </div>
         {!currentLayerItems.length ? (
-          <div className="reader-muted">No hay elementos para la capa seleccionada.</div>
+          <div className="reader-empty-inline">No hay elementos para la capa seleccionada.</div>
         ) : (
           <div className="reader-v2-items-list">
             {currentLayerItems.map((item, index) => {
@@ -2678,20 +5200,72 @@ export default function ReaderApp({
       />
       {readerV2Data && (
         <div className="reader-muted">
-          Paginas: {readerV2PagesTotal} | Cajas ({activeReaderV2Layer || "-"}):{" "}
-          {readerV2ItemsTotal}
+          Paginas: {readerV2PagesTotal} | Capa activa: {readerV2ItemsTotal} | Total capas:{" "}
+          {readerV2AllItemsTotal}
         </div>
       )}
 
-      {(readerV2Status.error || readerV2Status.message) && (
-        <div
-          className={
-            readerV2Status.error
-              ? "reader-extract-status is-error"
-              : "reader-extract-status"
-          }
-        >
-          {readerV2Status.error || readerV2Status.message}
+      {refDebugSteps.length > 0 && (
+        <div className="ref-debug-section">
+          <div className="ref-debug-header">
+            <span className="ref-debug-title">Reference Debug</span>
+            <label className="ref-debug-master-toggle">
+              <input
+                type="checkbox"
+                checked={showRefDebug}
+                onChange={(event) => setShowRefDebug(event.target.checked)}
+              />
+              Mostrar
+            </label>
+          </div>
+          <div className="ref-debug-steps">
+            {refDebugSteps.map((step) => {
+              const color = REF_DEBUG_STEP_COLORS[step.key] || REF_DEBUG_STEP_DEFAULT_COLOR;
+              const isActive = activeRefDebugKeys.has(step.key);
+              const itemCount = (step.items || []).length;
+              return (
+                <label
+                  key={step.key}
+                  className={`ref-debug-step${isActive ? " is-active" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(event) => {
+                      setActiveRefDebugKeys((prev) => {
+                        const next = new Set(prev);
+                        if (event.target.checked) next.add(step.key);
+                        else next.delete(step.key);
+                        return next;
+                      });
+                    }}
+                  />
+                  <span
+                    className="ref-debug-swatch"
+                    style={{ background: color.stroke }}
+                  />
+                  <span className="ref-debug-step-label">{step.label}</span>
+                  <span className="ref-debug-step-count">{itemCount}</span>
+                </label>
+              );
+            })}
+          </div>
+          {showRefDebug && activeRefDebugKeys.size > 0 && (
+            <>
+              <div className="reader-v2-opacity">
+                Opacidad debug: {Math.round(refDebugOpacity * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                className="reader-v2-slider"
+                value={refDebugOpacity}
+                onChange={(event) => setRefDebugOpacity(Number(event.target.value))}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
@@ -2737,42 +5311,123 @@ export default function ReaderApp({
         className="reader-file-input"
         onChange={handlePdfChange}
       />
-      <select
-        className="reader-engine-select"
-        value={engineValue}
-        onChange={(event) => setEngineValue(event.target.value)}
-      >
-        <option value="" disabled>
-          Selecciona herramienta...
-        </option>
-        {engineOptions.map((engine) => (
-          <option
-            key={engine.key}
-            value={engine.key}
-            disabled={engine.available === false}
-          >
-            {engine.label || engine.key}
-            {engine.available === false ? " (Proximamente)" : ""}
-          </option>
-        ))}
-      </select>
-      <button
-        type="button"
-        className="reader-tool-btn"
-        onClick={handleExtract}
-        disabled={!canExtract}
-      >
-        {extractStatus.loading ? "Extrayendo..." : "Extraer"}
-      </button>
-      {(extractStatus.error || extractStatus.message) && (
+      <div className="reader-muted">Motor: PaperMage (unificado)</div>
+      <label className="reader-v2-layer">
+        <span className="reader-v2-layer-label">DOI del articulo</span>
+        <input
+          type="text"
+          className="reader-engine-select"
+          value={articleDoiInput}
+          onChange={handleArticleDoiInputChange}
+          placeholder="10.xxxx/xxxxx"
+        />
+      </label>
+      <div className="reader-muted">
+        Opcional: anade el DOI del articulo para mejorar la precision de las referencias.
+      </div>
+      {(articleDoiLookup.loading || articleDoiLookup.message) && (
+        <div
+          className={
+            articleDoiLookup.loading
+              ? "reader-panel-status"
+              : articleDoiLookup.tone === "warning"
+                ? "reader-panel-status is-warning"
+                : articleDoiLookup.tone === "success"
+                  ? "reader-panel-status is-success"
+                  : "reader-panel-status"
+          }
+        >
+          {articleDoiLookup.loading
+            ? "Buscando DOI del articulo en el PDF..."
+            : articleDoiLookup.message}
+        </div>
+      )}
+      {extractEnrichment?.paper_resolved &&
+        Number(extractEnrichment?.references_enriched) > 0 && (
+          <div className="reader-muted">
+            Referencias enriquecidas mediante DOI ({Number(
+              extractEnrichment.references_enriched
+            )}).
+          </div>
+        )}
+      <div className="reader-extract-actions">
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={handleExtract}
+          disabled={!canExtract}
+        >
+          {extractStatus.loading
+            ? `Extrayendo... ${Math.round(extractProgress.value || 0)}%`
+            : "Extraer"}
+        </button>
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={() => downloadExtractionJson(extractionExportData)}
+          disabled={!canDownloadExtraction}
+        >
+          Descargar
+        </button>
+        <button
+          type="button"
+          className="reader-tool-btn"
+          onClick={() => downloadReferenceDebugJson(referenceDebugDownload)}
+          disabled={!canDownloadDebug}
+        >
+          Descargar depuracion
+        </button>
+      </div>
+      <label className="reader-extract-debug-toggle">
+        <input
+          type="checkbox"
+          checked={debugReferenceDetection}
+          onChange={(event) => setDebugReferenceDetection(event.target.checked)}
+        />
+        <span>Guardar JSON de depuracion de referencias</span>
+      </label>
+      {extractStatus.loading && (
+        <div className="reader-extract-progress" role="status" aria-live="polite">
+          <div className="reader-extract-progress-head">
+            <span className="reader-extract-progress-spinner" aria-hidden="true" />
+            <div className="reader-extract-progress-copy">
+              <div className="reader-extract-progress-label">
+                {extractProgress.label || "Preparando extraccion..."}
+              </div>
+              <div className="reader-extract-progress-meta">
+                Progreso aproximado
+              </div>
+            </div>
+            <div className="reader-extract-progress-value">
+              {Math.round(extractProgress.value || 0)}%
+            </div>
+          </div>
+          <div className="reader-extract-progress-track" aria-hidden="true">
+            <div
+              className="reader-extract-progress-fill"
+              style={{
+                width: `${Math.max(4, Math.round(extractProgress.value || 0))}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {(extractStatus.error || extractStatus.message || extractStatus.hint) && (
         <div
           className={
             extractStatus.error
               ? "reader-extract-status is-error"
-              : "reader-extract-status"
+              : extractStatus.tone === "warning"
+                ? "reader-extract-status is-warning"
+                : extractStatus.tone === "success"
+                  ? "reader-extract-status is-success"
+                  : "reader-extract-status"
           }
         >
-          {extractStatus.error || extractStatus.message}
+          <div>{extractStatus.error || extractStatus.message}</div>
+          {extractStatus.hint && (
+            <div className="reader-extract-status-hint">{extractStatus.hint}</div>
+          )}
         </div>
       )}
     </div>
@@ -2783,13 +5438,37 @@ export default function ReaderApp({
       <button
         type="button"
         className={
-          activeTab === "snippets"
+          activeTab === "extract"
             ? "reader-tab is-active"
             : "reader-tab"
         }
-        onClick={() => setActiveTab("snippets")}
+        onClick={() => setActiveTab("extract")}
       >
-        Snippets
+        Extraer
+      </button>
+      {hasArticleInfoTab && (
+        <button
+          type="button"
+          className={
+            activeTab === "info"
+              ? "reader-tab is-active"
+              : "reader-tab"
+          }
+          onClick={() => setActiveTab("info")}
+        >
+          Info
+        </button>
+      )}
+      <button
+        type="button"
+        className={
+          activeTab === "v2"
+            ? "reader-tab is-active"
+            : "reader-tab"
+        }
+        onClick={() => setActiveTab("v2")}
+      >
+        Capas
       </button>
       <button
         type="button"
@@ -2800,40 +5479,7 @@ export default function ReaderApp({
         }
         onClick={() => setActiveTab("references")}
       >
-        References
-      </button>
-      <button
-        type="button"
-        className={
-          activeTab === "stats"
-            ? "reader-tab is-active"
-            : "reader-tab"
-        }
-        onClick={() => setActiveTab("stats")}
-      >
-        Stats
-      </button>
-      <button
-        type="button"
-        className={
-          activeTab === "v2"
-            ? "reader-tab is-active"
-            : "reader-tab"
-        }
-        onClick={() => setActiveTab("v2")}
-      >
-        V2
-      </button>
-      <button
-        type="button"
-        className={
-          activeTab === "extract"
-            ? "reader-tab is-active"
-            : "reader-tab"
-        }
-        onClick={() => setActiveTab("extract")}
-      >
-        Extraer
+        Referencias
       </button>
     </div>
   );
@@ -2957,86 +5603,273 @@ export default function ReaderApp({
         {activeTab === "references" && (
           <div className="reader-card reader-panel">
             {tabsBar}
-            <div className="reader-card-title">References</div>
+            <div className="reader-ref-header">
+              <div className="reader-card-title">Referencias</div>
+              <div className="reader-muted">{referenceRows.length} total</div>
+            </div>
+            <div className="reader-ref-metrics">
+              <span className="reader-pill">Refs: {visualReferenceTotal || referenceRows.length}</span>
+              <span className="reader-pill">Citas: {visualCitationTotal}</span>
+              <span className="reader-pill">Contextos: {visualContextTotal}</span>
+            </div>
+            <div className={`reader-panel-status is-${referencesPanelNotice.tone}`}>
+              {referencesPanelNotice.text}
+            </div>
             <div className="reader-search">
               <input
                 type="search"
                 value={referenceQuery}
                 onChange={(event) => setReferenceQuery(event.target.value)}
-                placeholder="Search references"
+                placeholder="Buscar referencias"
                 className="reader-search-input"
               />
             </div>
-            <div className="reader-chips">
-              {REFERENCE_FILTERS.map((filter) => (
-                <button
-                  type="button"
-                  key={filter.key}
-                  className={
-                    filter.key === referenceFilter
-                      ? "reader-chip is-active"
-                      : "reader-chip"
-                  }
-                  onClick={() => setReferenceFilter(filter.key)}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            {normalizedReferences.length === 0 ? (
-              <div className="reader-muted">No references available.</div>
-            ) : referencesWithStats.length === 0 ? (
-              <div className="reader-muted">No references match your filters.</div>
+            {referenceRows.length === 0 ? (
+              <div className="reader-empty-inline">
+                No hay referencias disponibles para mostrar.
+              </div>
+            ) : filteredReferenceRows.length === 0 ? (
+              <div className="reader-empty-inline">
+                No hay referencias que coincidan con la busqueda.
+              </div>
             ) : (
-              referencesWithStats.map((ref) => {
-                const key = referenceKey(ref);
-                const isActive = key === activeReferenceKey;
-                const pageLabel = Number.isFinite(ref.display_page)
-                  ? `p. ${ref.display_page}`
+              filteredReferenceRows.map((row) => {
+                const isActive = row.ref_id === selectedReferenceId;
+                const rowMentions = isActive ? selectedReferenceMentions : [];
+                const pageLabel = Number.isFinite(Number(row.page))
+                  ? `p. ${Number(row.page) + 1}`
                   : "p. -";
-                const snippetText = ref.display_snippet || "";
-                const footerAuthor = ref.display_author || (ref.index ? `Ref #${ref.index}` : "Reference");
-                const footerTitle = ref.display_title || "";
                 return (
-                  <button
-                    type="button"
-                    key={key}
-                    ref={registerReference(key)}
+                  <div
+                    key={row.ref_id}
+                    ref={registerReference(row.ref_id)}
+                    role="button"
+                    tabIndex={0}
                     className={
                       isActive
                         ? "reader-ref-row is-active"
                         : "reader-ref-row"
                     }
-                    onClick={() => handleReferenceSelect(ref)}
+                    onMouseEnter={() => setHoveredReferenceId(row.ref_id)}
+                    onMouseLeave={() => {
+                      setHoveredReferenceId("");
+                      setHoveredCitationId("");
+                    }}
+                    onClick={() =>
+                      handleReferenceSelect({
+                        ...(referenceByIndex.get(row.index) || {}),
+                        ref_id: row.ref_id,
+                        index: row.index,
+                        raw: row.text,
+                        display_page:
+                          Number.isFinite(Number(row.page)) ? Number(row.page) + 1 : null,
+                      })
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleReferenceSelect({
+                          ...(referenceByIndex.get(row.index) || {}),
+                          ref_id: row.ref_id,
+                          index: row.index,
+                          raw: row.text,
+                          display_page:
+                            Number.isFinite(Number(row.page)) ? Number(row.page) + 1 : null,
+                        });
+                      }
+                    }}
                   >
                     <div className="reader-ref-top">
                       <span className="reader-ref-index">
-                        {ref.index ? `#${ref.index}` : "-"}
+                        {row.index ? `#${row.index}` : "-"}
                       </span>
-                      <span className="reader-ref-page">{pageLabel}</span>
+                      <span className="reader-ref-page">
+                        {pageLabel} | menciones: {row.mentions_total}
+                      </span>
                     </div>
                     <div
                       className={
-                        snippetText ? "reader-ref-snippet" : "reader-ref-snippet is-muted"
+                        row.text
+                          ? "reader-ref-snippet"
+                          : "reader-ref-snippet is-muted"
                       }
                     >
-                      <span className="reader-ref-snippet-text">
-                        {snippetText ? `"${snippetText}"` : "\"No snippet linked yet.\""}
+                      <span
+                        className={
+                          isActive
+                            ? "reader-ref-snippet-text is-expanded"
+                            : "reader-ref-snippet-text"
+                        }
+                      >
+                        {row.text ? `"${row.text}"` : "\"Sin texto de referencia.\""}
                       </span>
                     </div>
                     <div className="reader-ref-footer">
                       <div className="reader-ref-footer-main">
-                        <span className="reader-ref-title">{footerTitle || "Sin titulo"}</span>
-                        {footerAuthor && (
-                          <span className="reader-ref-author"> - {footerAuthor}</span>
+                        <span className="reader-ref-title">
+                          {row.title || "Sin titulo"}
+                        </span>
+                        {row.author && (
+                          <span className="reader-ref-author"> - {row.author}</span>
                         )}
                       </div>
-                      {ref.doi && <div className="reader-ref-doi">DOI: {ref.doi}</div>}
+                      {row.structure_source && (
+                        <div className="reader-ref-meta">
+                          structure_source: {row.structure_source}
+                        </div>
+                      )}
+                      {row.doi && <div className="reader-ref-doi">DOI: {row.doi}</div>}
                     </div>
-                  </button>
+                    {isActive && rowMentions.length > 0 && (
+                      <div className="reader-ref-mentions">
+                        <div className="reader-ref-mentions-title">
+                          Menciones ({rowMentions.length})
+                        </div>
+                        {rowMentions.map((mention, mentionIndex) => {
+                          const mentionId = String(mention?.id || "");
+                          const mentionPageValue = Number(mention?.page);
+                          const mentionPageLabel = Number.isFinite(mentionPageValue)
+                            ? `p. ${mentionPageValue + 1}`
+                            : "p. -";
+                          const mentionText = String(mention?.text || "").trim();
+                          const isSelectedMention =
+                            mentionId &&
+                            mentionId === String(selectedCitationId || "");
+                          return (
+                            <button
+                              type="button"
+                              key={mentionId || `${row.ref_id}-mention-${mentionIndex}`}
+                              className={
+                                isSelectedMention
+                                  ? "reader-ref-mention is-active"
+                                  : "reader-ref-mention"
+                              }
+                              onMouseEnter={() => {
+                                setHoveredReferenceId(row.ref_id);
+                                setHoveredCitationId(mentionId);
+                              }}
+                              onMouseLeave={() => setHoveredCitationId("")}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleReferenceMentionSelect(mention, row.ref_id);
+                              }}
+                            >
+                              <span className="reader-ref-mention-meta">
+                                {mentionPageLabel}
+                              </span>
+                              <span className="reader-ref-mention-text">
+                                {mentionText || "Cita sin texto disponible."}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })
+            )}
+          </div>
+        )}
+
+        {activeTab === "info" && hasArticleInfoTab && (
+          <div className="reader-card reader-panel">
+            {tabsBar}
+            <div className="reader-ref-header">
+              <div className="reader-card-title">Info del articulo</div>
+              <div className="reader-muted">
+                {effectiveArticleInfo?.resolved ? "DOI resuelto" : "DOI disponible"}
+              </div>
+            </div>
+            <div
+              className={
+                effectiveArticleInfo?.resolved
+                  ? "reader-panel-status is-success"
+                  : "reader-panel-status"
+              }
+            >
+              {effectiveArticleInfo?.resolved
+                ? "Metadatos del articulo cargados a partir del DOI."
+                : "Hay DOI del articulo, pero no se han recuperado mas metadatos todavia."}
+            </div>
+            <div className="reader-info-grid">
+              <div className="reader-info-card reader-info-card--wide">
+                <div className="reader-info-label">DOI</div>
+                <div className="reader-info-value reader-info-value--doi">
+                  {effectiveArticleInfo?.doi || "-"}
+                </div>
+                <div className="reader-info-actions">
+                  <a
+                    className="reader-action"
+                    href={effectiveArticleInfo?.url || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir DOI
+                  </a>
+                  <button
+                    type="button"
+                    className="reader-action"
+                    onClick={() => copyToClipboard(effectiveArticleInfo?.doi || "")}
+                  >
+                    Copiar DOI
+                  </button>
+                </div>
+              </div>
+              <div className="reader-info-card reader-info-card--wide">
+                <div className="reader-info-label">Titulo</div>
+                <div className="reader-info-title">
+                  {effectiveArticleInfo?.title || "Sin titulo resuelto"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Autores</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.authors?.length
+                    ? effectiveArticleInfo.authors.join(", ")
+                    : "Sin autores resueltos"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Venue</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.venue || "Sin venue resuelto"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Ano</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.year || "-"}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Referencias DOI</div>
+                <div className="reader-info-value">
+                  {Number(effectiveArticleInfo?.references_count || 0)}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Citado por</div>
+                <div className="reader-info-value">
+                  {Number(effectiveArticleInfo?.cited_by_count || 0)}
+                </div>
+              </div>
+              <div className="reader-info-card">
+                <div className="reader-info-label">Fuente principal</div>
+                <div className="reader-info-value">
+                  {effectiveArticleInfo?.source || "doi"}
+                </div>
+              </div>
+            </div>
+            {effectiveArticleInfo?.sources_used?.length > 0 && (
+              <div className="reader-ref-metrics">
+                {effectiveArticleInfo.sources_used.map((source) => (
+                  <span className="reader-pill" key={source}>
+                    {source}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -3082,7 +5915,7 @@ export default function ReaderApp({
         {activeTab === "v2" && (
           <div className="reader-card reader-panel">
             {tabsBar}
-            <div className="reader-card-title">Reader V2</div>
+            <div className="reader-card-title">Capas</div>
             {readerV2Controls}
           </div>
         )}
@@ -3106,51 +5939,32 @@ export default function ReaderApp({
         <div className="reader-viewer-shell" ref={viewerShellRef}>
           <PdfViewer
             pdfUrl={resolvedPdfUrl}
+            evidenceUrl={evidenceUrl}
             selectedMention={selectedSnippet}
             onHighlight={handleHighlight}
             viewerRef={viewerRef}
             readerV2Data={readerV2Data}
             readerV2Layer={activeReaderV2Layer}
-            readerV2LayerItems={currentLayerItems}
+            readerV2LayerItems={currentLayerOverlayItems}
             showReaderV2={showReaderV2}
             readerV2Opacity={readerV2Opacity}
             hoveredItemId={hoveredItemId}
             selectedItemId={selectedItemId}
             onHoverItemChange={handleReaderV2ItemHover}
             onSelectItem={handleReaderV2ItemSelect}
+            referenceOverlayVisible={activeTab === "references"}
+            referenceOverlayItems={referencesOverlayItems}
+            selectedReferenceId={selectedReferenceId}
+            hoveredReferenceId={hoveredReferenceId}
+            selectedCitationId={selectedCitationId}
+            hoveredCitationId={hoveredCitationId}
+            onReferenceOverlayHover={handleReferenceOverlayHover}
+            onReferenceOverlaySelect={handleReferenceOverlaySelect}
+            refDebugSteps={refDebugSteps}
+            activeRefDebugKeys={activeRefDebugKeys}
+            showRefDebug={showRefDebug}
+            refDebugOpacity={refDebugOpacity}
           />
-
-          {selectedSnippet && (
-            <div
-              ref={snippetPopoverRef}
-              className="reader-popover"
-              style={selectedSnippetPopoverStyle || undefined}
-            >
-              <div className="reader-popover-title">Snippet</div>
-              <div className="reader-popover-item">
-                <strong>Type:</strong> {selectedSnippet.type}
-              </div>
-              <div className="reader-popover-item">
-                <strong>Page:</strong> {selectedSnippet.page || "?"}
-              </div>
-              {Number.isFinite(Number(selectedSnippet.confidence)) && (
-                <div className="reader-popover-item">
-                  <strong>Confidence:</strong>{" "}
-                  {Number(selectedSnippet.confidence).toFixed(2)}
-                </div>
-              )}
-              <div className="reader-popover-snippet">{selectedSnippet.snippet}</div>
-              <div className="reader-popover-actions">
-                <button
-                  type="button"
-                  className="reader-action"
-                  onClick={handleCreateReport}
-                >
-                  Crear reporte
-                </button>
-              </div>
-            </div>
-          )}
 
           {activeCitation && citationPopoverStyle && (
             <div

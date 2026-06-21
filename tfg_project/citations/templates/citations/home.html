@@ -3,17 +3,13 @@
 {% load i18n %}
 {% block title %}{% trans "Inicio - CiteCheck" %}{% endblock %}
 {% block content %}
-<div class="relative min-h-screen overflow-hidden">
-  <!-- blobs de fondo ocupando toda la pantalla -->
-  <div class="pointer-events-none absolute -top-64 -left-40 -z-10 h-96 w-96 rounded-full bg-blue-400/30 blur-[100px]"></div>
-  <div class="pointer-events-none absolute top-1/3 -right-40 -z-10 h-[28rem] w-[28rem] rounded-full bg-purple-400/25 blur-[110px]"></div>
-  <div class="pointer-events-none absolute bottom-[-10rem] left-1/4 -z-10 h-[26rem] w-[26rem] rounded-full bg-indigo-400/20 blur-[120px]"></div>
+<div class="home-page relative overflow-hidden">
 
-  <div class="container py-5">
+  <div class="container py-4">
     <div class="row justify-content-center">
       <div class="col-xl-10">
         <!-- Hero -->
-        <section class="min-h-[60vh] flex flex-col justify-center text-center md:text-left">
+        <section class="home-screen-layout flex flex-col justify-center text-center md:text-left">
           <p class="text-sm font-semibold uppercase tracking-wide text-primary mb-2">
             {% trans "Plataforma para mejorar la calidad de las citas científicas" %}
           </p>
@@ -52,40 +48,40 @@
           </div>
 
           <!-- Grid de cards estilo SaaS -->
-          <div class="grid gap-6 md:grid-cols-3 mt-6">
+          <div class="home-actions-grid grid gap-6 md:grid-cols-3 mt-6">
             <!-- Card 1: Crear reporte -->
             <div class="group relative block h-full" id="home-reportes-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
               <!-- Card -->
-              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110 mx-auto">
-                  <i class="fa-solid fa-keyboard"></i>
+              <div class="glass-card home-card-shell hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+                <div class="home-card-icon bg-blue-50 text-blue-600">
+                  <i class="fa-solid fa-pen-to-square"></i>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">
+                <h3 class="home-card-title text-xl font-bold text-slate-900 mb-2">
                   {% trans "Reportes" %}
                 </h3>
-                <p class="text-slate-500 text-sm mb-6">
+                <p class="home-card-copy text-slate-500 text-sm mb-6">
                   {% trans "Crea un reporte de cita incorrecta o consulta los reportes existentes." %}
                 </p>
 
-                <div class="w-100 mt-auto">
+                <div class="home-card-actions w-100 mt-auto">
                   <div class="d-flex flex-column gap-2">
-                    <button class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-cyan-600 transition-colors d-flex align-items-center justify-content-center gap-2"
+                    <button class="home-card-btn w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-cyan-600 transition-colors d-flex align-items-center justify-content-center gap-2"
                             type="button"
                             data-bs-toggle="modal"
                             data-bs-target="#reportModal">
-                      <i class="fa-solid fa-pen-to-square text-xs"></i>
-                      <span>{% trans "Manual" %}</span>
+                      <i class="fa-solid fa-bolt text-xs"></i>
+                      <span>{% trans "Rapido" %}</span>
                     </button>
                     <a href="{% url 'create_report_wizard' %}"
-                       class="w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
-                      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                       class="home-card-btn w-100 btn btn-outline-primary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                      <i class="fa-solid fa-file-lines text-xs"></i>
                       <span>{% trans "Pagina completa" %}</span>
                     </a>
                     <a href="{% url 'citation_list' %}"
-                       class="w-100 btn btn-outline-secondary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                       class="home-card-btn w-100 btn btn-outline-secondary font-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
                       <i class="fa-solid fa-list-ul text-xs"></i>
                       <span>{% trans "Ver reportes" %}</span>
                     </a>
@@ -103,7 +99,7 @@
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-purple-500 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
               <!-- Card -->
-              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+              <div class="glass-card home-card-shell hover-lift relative z-10 p-6 flex flex-col h-full text-center">
 
                   <!-- Badge recomendado -->
                   <div class="position-absolute top-3 end-4">
@@ -113,51 +109,36 @@
                   </div>
 
                   <!-- Icono -->
-                  <div class="flex items-center justify-center mx-auto mb-4 h-14 w-14 rounded-2xl bg-purple-50 text-purple-600 transition-transform duration-300 group-hover:scale-110">
+                  <div class="home-card-icon bg-purple-50 text-purple-600">
                     <i class="fa-solid fa-file-pdf text-xl"></i>
                   </div>
 
                   <!-- Título -->
-                  <h2 class="text-lg fw-semibold text-slate-900 mb-1">
+                  <h2 class="home-card-title text-lg fw-bold text-slate-900 mb-1">
                     {% trans "Subir PDF" %}
                   </h2>
 
                   <!-- Descripción -->
-                  <p class="text-sm text-slate-600 mb-4">
+                  <p class="home-card-copy text-sm text-slate-600 mb-4">
                     {% trans "Sube el documento completo. Extraeremos y analizaremos todas las referencias." %}
                   </p>
 
-                  <!-- Dropzone + CTA -->
-                  <div class="mt-auto">
-
-                    <div
-                      id="pdf-card-dropzone"
-                      class="w-100 rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/40
-                             py-2 text-xs text-purple-500 font-medium text-center position-relative">
-                      <span id="pdf-card-dropzone-text" class="d-block w-100">{% trans "Arrastra un PDF aqui o haz clic para seleccionarlo" %}</span>
-                      <button type="button"
-                              id="pdf-card-dropzone-clear"
-                              class="dropzone-clear d-none position-absolute top-50 end-0 translate-middle-y me-3"
-                              aria-label="{% trans 'Quitar PDF' %}">
-                        &times;
-                      </button>
-                    </div>
-                    <div id="pdf-card-file-summary" class="small text-muted mt-2 d-none"></div>
-
+                  <!-- CTA -->
+                  <div class="home-card-actions mt-auto">
                     <button
                       type="button"
                       id="pdf-process-btn"
-                      class="mt-3 w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
+                      class="home-card-btn home-card-btn--pdf-primary w-100 rounded-2xl bg-slate-900 text-white fw-semibold py-2 text-sm
                              d-flex align-items-center justify-content-center gap-2
-                             hover:bg-slate-800 transition-colors">
-                      <span>{% trans "Procesar PDF" %}</span>
+                             transition-colors">
+                      <span>{% trans "Extraer citas" %}</span>
                       <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
                     </button>
                     <button
                       type="button"
                       id="pdf-open-reader-btn"
-                      class="mt-2 w-100 btn btn-outline-secondary fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2">
-                      <span>{% trans "Abrir visor" %}</span>
+                      class="home-card-btn home-card-btn--pdf-outline mt-2 w-100 fw-semibold py-2 text-sm d-flex align-items-center justify-content-center gap-2">
+                      <span>{% trans "Visualizar PDF" %}</span>
                       <i class="fa-solid fa-book-open-reader text-xs"></i>
                     </button>
 
@@ -171,56 +152,34 @@
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
 
               <!-- Card -->
-              <div class="glass-card hover-lift relative z-10 p-6 flex flex-col h-full text-center">
-                  <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 transition-transform duration-300 group-hover:scale-110 mx-auto">
+              <div class="glass-card home-card-shell hover-lift relative z-10 p-6 flex flex-col h-full text-center">
+                  <div class="home-card-icon bg-emerald-50 text-emerald-600">
                       <i class="fa-solid fa-database"></i>
                   </div>
 
-                  <h3 class="text-xl font-bold text-slate-900 mb-2">
+                  <h3 class="home-card-title text-xl font-bold text-slate-900 mb-2">
                       {% trans "Búsqueda en DBLP" %}
                   </h3>
-                  <p class="text-slate-500 text-sm mb-6">
+                  <p class="home-card-copy text-slate-500 text-sm mb-6">
                       {% trans "Explora tus artículos en DBLP y revisa cómo han sido citados por otros trabajos." %}
                   </p>
 
-                  <div class="w-100 mt-auto">
-                      <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 mb-3 transition-colors group-hover:border-emerald-300">
-                          {% if user.is_authenticated %}
-                            <form method="post" class="d-flex flex-column gap-2">
-                              {% csrf_token %}
-                              {{ dblp_form.dblp_url }}
-                              {% if dblp_form.dblp_url.errors %}
-                                <div class="text-danger small">{{ dblp_form.dblp_url.errors }}</div>
-                              {% endif %}
-                              <button type="submit" name="update_dblp_home" class="btn btn-sm btn-outline-success">
-                                {% trans "Guardar DBLP" %}
-                              </button>
-                            </form>
-                          {% else %}
-                            <span class="text-xs text-slate-400 block">
-                              {% trans "Inicia sesión para añadir tu DBLP." %}
-                            </span>
-                            <button type="button" class="btn btn-sm btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                              {% trans "Iniciar sesión" %}
-                            </button>
-                          {% endif %}
-                      </div>
-
+                  <div class="home-card-actions w-100 mt-auto">
                       <div class="d-flex flex-column gap-2">
-                          <a href="{% url 'dblp_articles' %}" class="w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
+                          <a href="{% url 'dblp_articles' %}" class="home-card-btn w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
                               <span>{% trans "Explorar DBLP" %}</span>
                               <i class="fa-solid fa-arrow-right-long text-xs"></i>
                           </a>
-                          <a href="{% url 'citation_review_papers' %}" class="w-100 btn btn-outline-success fw-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
-                              <span>{% trans "Revisión de citas (DBLP)" %}</span>
-                              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                          <a href="{% url 'doi_search' %}" class="home-card-btn w-100 btn btn-outline-secondary fw-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
+                              <span>{% trans "Buscar citadores" %}</span>
+                              <i class="fa-solid fa-search text-xs"></i>
                           </a>
                       </div>
                   </div>
               </div>
             </div>
           </div>
-          <div class="mt-20 text-center">
+          <div class="home-powered-section mt-12 text-center">
               <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-6">
                   {% trans "Potenciado por" %}
               </p>
@@ -268,6 +227,19 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const updateHomeScreenLock = () => {
+      if (window.innerWidth < 992) {
+        document.body.classList.remove('home-screen-lock');
+        return;
+      }
+      const hasOverflow = document.documentElement.scrollHeight > (window.innerHeight + 1);
+      document.body.classList.toggle('home-screen-lock', !hasOverflow);
+    };
+    updateHomeScreenLock();
+    window.addEventListener('resize', updateHomeScreenLock);
+    window.addEventListener('orientationchange', updateHomeScreenLock);
+    setTimeout(updateHomeScreenLock, 150);
+
     const card = document.getElementById('pdf-upload-card');
     if (!card) return;
 
@@ -276,48 +248,17 @@
     const extractFileInput = document.getElementById('extract-file');
     const processBtn = document.getElementById('pdf-process-btn');
     const openReaderBtn = document.getElementById('pdf-open-reader-btn');
-    const cardSummary = document.getElementById('pdf-card-file-summary');
-    const cardDropzoneText = document.getElementById('pdf-card-dropzone-text');
-    const cardDropzoneClear = document.getElementById('pdf-card-dropzone-clear');
-    const cardDropzone = document.getElementById('pdf-card-dropzone');
     const READER_PREVIEW = '/citations/reader/preview/';
+    const READER_PAYLOAD_DB = 'citecheck-reader-payloads';
+    const READER_PAYLOAD_STORE = 'payloads';
+    const READER_PAYLOAD_SESSION_KEY = 'citecheck.reader.payload';
     let pendingFile = null;
-
-    const pickerInput = document.createElement('input');
-    pickerInput.type = 'file';
-    pickerInput.accept = 'application/pdf';
-    pickerInput.className = 'd-none';
-    card.appendChild(pickerInput);
 
     function setHighlight(active) {
       if (!innerCard) return;
       innerCard.classList.toggle('border-2', active);
       innerCard.classList.toggle('border-purple-300', active);
       innerCard.classList.toggle('bg-purple-50/40', active);
-    }
-
-    function setCardSummary(file) {
-      if (!cardSummary) return;
-      if (!file) {
-        cardSummary.classList.add('d-none');
-        cardSummary.textContent = '';
-        if (cardDropzoneText) {
-          cardDropzoneText.textContent = 'Arrastra un PDF aqui o haz clic para seleccionarlo';
-        }
-        if (cardDropzoneClear) {
-          cardDropzoneClear.classList.add('d-none');
-        }
-        return;
-      }
-      const sizeKb = Math.round(file.size / 1024);
-      cardSummary.textContent = `${file.name} - ${sizeKb} KB`;
-      if (cardDropzoneText) {
-        cardDropzoneText.textContent = `${file.name} - ${sizeKb} KB`;
-      }
-      if (cardDropzoneClear) {
-        cardDropzoneClear.classList.remove('d-none');
-      }
-      cardSummary.classList.add('d-none');
     }
 
     function clearModalSelection() {
@@ -337,58 +278,65 @@
       extractFileInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    function openReaderPreview(file) {
-      const previewWin = window.open(READER_PREVIEW, '_blank');
-      if (!previewWin || !file) return;
+    function openPayloadDb() {
+      return new Promise((resolve, reject) => {
+        const req = window.indexedDB.open(READER_PAYLOAD_DB, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(READER_PAYLOAD_STORE)) {
+            db.createObjectStore(READER_PAYLOAD_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error('indexeddb_open_failed'));
+      });
+    }
 
-      const payload = {
-        type: 'reader:payload',
+    function writePayloadToDb(db, key, payload) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(READER_PAYLOAD_STORE, 'readwrite');
+        tx.objectStore(READER_PAYLOAD_STORE).put(payload, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error('indexeddb_write_failed'));
+      });
+    }
+
+    async function persistReaderPayload(file, dataPayload) {
+      const payloadKey = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      const db = await openPayloadDb();
+      await writePayloadToDb(db, payloadKey, {
         file,
+        createdAt: Date.now(),
+      });
+      db.close();
+      try {
+        sessionStorage.setItem(
+          `${READER_PAYLOAD_SESSION_KEY}:${payloadKey}`,
+          JSON.stringify(dataPayload)
+        );
+      } catch (e) {
+        // noop
+      }
+      return payloadKey;
+    }
+
+    async function openReaderPreview(file) {
+      if (!file) {
+        window.location.assign(READER_PREVIEW);
+        return;
+      }
+      const dataPayload = {
         snippets: [],
         references: [],
         stats: null,
       };
-      const targetOrigin = window.location.origin;
-      let attempts = 0;
-      let timerId = null;
-
-      const sendPayload = () => {
-        try {
-          previewWin.postMessage(payload, targetOrigin);
-        } catch (e) {
-          // noop
-        }
-      };
-
-      const cleanup = () => {
-        if (timerId) {
-          clearInterval(timerId);
-          timerId = null;
-        }
-        window.removeEventListener('message', onReady);
-      };
-
-      const onReady = (event) => {
-        if (event.origin !== targetOrigin) return;
-        if (!event.data || event.data.type !== 'reader:ready') return;
-        sendPayload();
-        cleanup();
-      };
-
-      window.addEventListener('message', onReady);
-      sendPayload();
-      timerId = setInterval(() => {
-        if (!previewWin || previewWin.closed) {
-          cleanup();
-          return;
-        }
-        attempts += 1;
-        if (attempts > 10) {
-          cleanup();
-          return;
-        }
-        sendPayload();
-      }, 800);
+      try {
+        const payloadKey = await persistReaderPayload(file, dataPayload);
+        const readerUrl = `${READER_PREVIEW}?payload=${encodeURIComponent(payloadKey)}`;
+        window.location.assign(readerUrl);
+      } catch (e) {
+        window.location.assign(READER_PREVIEW);
+      }
     }
 
     ['dragenter', 'dragover'].forEach((evt) => {
@@ -409,38 +357,11 @@
       const file = event.dataTransfer?.files?.[0];
       if (!file) return;
       if (file.type !== 'application/pdf') {
-        setCardSummary(null);
-        return;
-      }
-      pendingFile = file;
-      setCardSummary(file);
-    });
-
-    if (cardDropzone) {
-      cardDropzone.addEventListener('click', () => {
-        pickerInput.click();
-      });
-    }
-
-    pickerInput.addEventListener('change', () => {
-      const file = pickerInput.files?.[0];
-      if (!file || file.type !== 'application/pdf') {
-        setCardSummary(null);
-        return;
-      }
-      pendingFile = file;
-      setCardSummary(file);
-    });
-
-    if (cardDropzoneClear) {
-      cardDropzoneClear.addEventListener('click', (event) => {
-        event.stopPropagation();
         pendingFile = null;
-        pickerInput.value = '';
-        setCardSummary(null);
-        clearModalSelection();
-      });
-    }
+        return;
+      }
+      pendingFile = file;
+    });
 
     if (processBtn) {
       processBtn.addEventListener('click', () => {

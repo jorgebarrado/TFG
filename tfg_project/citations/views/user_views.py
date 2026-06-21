@@ -1,13 +1,13 @@
+# Vistas de usuario: perfil público, configuración de cuenta, mis reportes, comentarios y guardados.
 """Views related to user profiles and personalized content."""
 
-from itertools import chain
+import json
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import activate
@@ -20,7 +20,15 @@ from ..models import (
     UserProfile,
     Vote,
 )
-from ..utils import check_doi_has_citations, get_articles_from_dblp
+from ..services.dblp_client import DBLPClientError, get_author_papers
+from ..services.evidence import normalize_evidence_items
+from ..services.semantic_scholar_client import (
+    SemanticScholarError,
+    get_citation_counts_for_dois,
+    get_citing_papers_for_doi_paginated,
+    get_paper_metadata_by_doi,
+)
+from ..utils import get_citation_count
 
 User = get_user_model()
 
@@ -37,10 +45,9 @@ def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
 
-    latest_reports = (
-        IncorrectCitation.objects.filter(author=profile_user)
-        .order_by("-created_at")[:5]
-    )
+    latest_reports = IncorrectCitation.objects.filter(author=profile_user).order_by(
+        "-created_at"
+    )[:5]
 
     context = {
         "profile_user": profile_user,
@@ -159,43 +166,198 @@ def my_saved(request):
     return render(request, "citations/my_saved.html", {"saved": saved})
 
 
-@login_required
 def dblp_articles_view(request):
     """
     Muestra los artículos de un usuario obtenidos de DBLP.
+
+    Este flujo usa la misma fuente de datos que la revisión de citantes para
+    que el paper_id sea consistente y podamos lanzar la revisión directamente
+    desde la búsqueda en DBLP.
     """
-    user = request.user
-    profile = UserProfile.objects.get(user=user)
-    all_articles = get_articles_from_dblp(profile.dblp_url) if profile.dblp_url else []
+    has_dblp_url_param = "dblp_url" in request.GET
+    dblp_url = request.GET.get("dblp_url", "").strip()
+    include_without_citations_raw = request.GET.get("include_without_citations")
+    if include_without_citations_raw is None:
+        include_without_citations = True
+    else:
+        include_without_citations = include_without_citations_raw.lower() in {
+            "1",
+            "true",
+            "on",
+            "yes",
+        }
+
+    saved_dblp_url = ""
+    if request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        saved_dblp_url = profile.dblp_url or ""
+
+    if not has_dblp_url_param:
+        return render(
+            request,
+            "citations/dblp_articles.html",
+            {
+                "dblp_url": saved_dblp_url,
+                "show_dblp_form": True,
+                "include_without_citations": include_without_citations,
+            },
+        )
+
+    if not dblp_url:
+        return render(
+            request,
+            "citations/dblp_articles.html",
+            {
+                "dblp_url": "",
+                "show_dblp_form": True,
+                "include_without_citations": include_without_citations,
+            },
+        )
+
+    try:
+        all_articles = get_author_papers(dblp_url)
+    except DBLPClientError as exc:
+        messages.error(request, str(exc))
+        all_articles = []
+
+    for idx, article in enumerate(all_articles):
+        article["paper_id"] = idx
 
     tipo = request.GET.get("tipo", "").strip()
     busqueda = request.GET.get("q", "").strip().lower()
-    tipos_disponibles = sorted(set(a["type"] for a in all_articles))
+    tipos_disponibles = sorted({a.get("type") for a in all_articles if a.get("type")})
+
+    citation_filter_error = None
+
+    def _attach_citation_data(article, citation_counts=None):
+        doi = article.get("doi")
+        article["can_review_citers"] = bool(doi)
+        if not doi:
+            article["citation_count"] = 0
+        elif citation_counts is not None:
+            article["citation_count"] = citation_counts.get(str(doi).strip(), 0)
+        else:
+            article["citation_count"] = get_citation_count(doi)
 
     articles = all_articles
     if tipo:
-        articles = [a for a in articles if a["type"] == tipo]
+        articles = [a for a in articles if a.get("type") == tipo]
     if busqueda:
-        articles = [a for a in articles if busqueda in a["title"].lower()]
+        articles = [a for a in articles if busqueda in (a.get("title") or "").lower()]
+    if not include_without_citations:
+        citation_counts = {}
+        try:
+            citation_counts = get_citation_counts_for_dois(
+                [a.get("doi") for a in articles if a.get("doi")]
+            )
+        except SemanticScholarError as exc:
+            citation_filter_error = str(exc)
+
+        filtered_articles = []
+        for article in articles:
+            _attach_citation_data(article, citation_counts)
+            if article["citation_count"] > 0:
+                filtered_articles.append(article)
+        articles = filtered_articles
 
     paginator = Paginator(articles, 10)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
 
     for article in page:
-        if article.get("doi"):
-            article["has_citations"] = check_doi_has_citations(article["doi"])
-        else:
-            article["has_citations"] = False
+        if "citation_count" not in article or "can_review_citers" not in article:
+            _attach_citation_data(article)
 
     context = {
         "articles": page,
-        "dblp_url": profile.dblp_url,
+        "dblp_url": dblp_url,
         "tipo_actual": tipo,
         "tipos_disponibles": tipos_disponibles,
         "busqueda": busqueda,
+        "include_without_citations": include_without_citations,
+        "citation_filter_error": citation_filter_error,
     }
     return render(request, "citations/dblp_articles.html", context)
+
+
+def doi_search_view(request):
+    """Busca citadores de un artículo introducido por DOI."""
+    doi = request.GET.get("doi", "").strip()
+
+    if not doi:
+        return render(request, "citations/doi_search.html", {"doi": ""})
+
+    paper = None
+    citing_papers = []
+    next_page_offset = None
+    error_message = None
+    limit = 10
+    offset = 0
+    offset_raw = request.GET.get("offset")
+    if offset_raw and offset_raw.isdigit():
+        offset = int(offset_raw)
+
+    paper_metadata_json = ""
+    try:
+        paper = get_paper_metadata_by_doi(doi)
+        if paper is None:
+            error_message = (
+                f"No se encontró ningún artículo con DOI '{doi}' en Semantic Scholar."
+            )
+        else:
+            paper_metadata_json = json.dumps(
+                {
+                    "title": paper.get("title"),
+                    "doi": paper.get("doi") or doi,
+                    "year": paper.get("year"),
+                    "authors": paper.get("authors"),
+                    "venue": paper.get("venue"),
+                    "source": "semantic_scholar",
+                },
+                ensure_ascii=True,
+            )
+            citing_papers, next_page_offset = get_citing_papers_for_doi_paginated(
+                paper.get("doi") or doi, limit=limit, offset=offset
+            )
+    except SemanticScholarError as exc:
+        error_message = str(exc)
+
+    for citing in citing_papers:
+        citing_metadata = {
+            "title": citing.get("title"),
+            "doi": citing.get("doi"),
+            "year": citing.get("year"),
+            "authors": citing.get("authors"),
+            "url": citing.get("url"),
+            "source": "semantic_scholar",
+        }
+        citing["metadata_json"] = json.dumps(citing_metadata, ensure_ascii=True)
+        evidence_items = normalize_evidence_items(
+            citing.get("contexts") or [],
+            default_source="semantic_scholar",
+            default_article="citing",
+            default_kind="citation_context",
+            default_doi=citing.get("doi") or "",
+        )
+        citing["evidence_items"] = evidence_items
+        citing["evidence_json"] = json.dumps(evidence_items, ensure_ascii=True)
+
+    range_start = offset + 1 if citing_papers else 0
+    range_end = offset + len(citing_papers)
+
+    context = {
+        "doi": doi,
+        "paper": paper,
+        "paper_metadata_json": paper_metadata_json,
+        "citing_papers": citing_papers,
+        "error_message": error_message,
+        "offset": offset,
+        "limit": limit,
+        "next_offset": next_page_offset,
+        "range_start": range_start,
+        "range_end": range_end,
+    }
+    return render(request, "citations/doi_search.html", context)
 
 
 @login_required
@@ -218,9 +380,15 @@ def my_profile(request):
     }
 
     # Última actividad (simple pero efectiva)
+    # OPTIMIZATION: Slice querysets at the database level to avoid loading all objects
+    # into memory, and use select_related to avoid N+1 queries when accessing citation fields
     activities = []
 
-    for r in reports_qs:
+    # Get up to 20 most recent of each type, since we only need 20 max for the feed
+    # No select_related needed for reports_qs because the report IS the citation object,
+    # and we only access r.doi_original, but adding author just in case the template uses it
+    recent_reports = reports_qs.select_related("author").order_by("-created_at")[:20]
+    for r in recent_reports:
         activities.append(
             {
                 "type": "report",
@@ -230,7 +398,10 @@ def my_profile(request):
             }
         )
 
-    for c in comments_qs:
+    recent_comments = comments_qs.select_related("citation").order_by("-created_at")[
+        :20
+    ]
+    for c in recent_comments:
         activities.append(
             {
                 "type": "comment",
@@ -240,7 +411,8 @@ def my_profile(request):
             }
         )
 
-    for s in saved_qs:
+    recent_saves = saved_qs.select_related("citation").order_by("-created_at")[:20]
+    for s in recent_saves:
         activities.append(
             {
                 "type": "saved",
@@ -250,7 +422,11 @@ def my_profile(request):
             }
         )
 
-    for v in votes_qs:
+    # Vote doesn't have created_at, using citation.created_at as fallback
+    recent_votes = votes_qs.select_related("citation").order_by(
+        "-citation__created_at"
+    )[:20]
+    for v in recent_votes:
         label = "Votó positivo" if v.value == 1 else "Votó negativo"
         activities.append(
             {
@@ -269,9 +445,13 @@ def my_profile(request):
         "stats": stats,
         "activities": activities,
         "reports_list": reports_qs.order_by("-created_at")[:20],
-        "comments_list": comments_qs.select_related("citation").order_by("-created_at")[:20],
+        "comments_list": comments_qs.select_related("citation").order_by("-created_at")[
+            :20
+        ],
         "saved_list": saved_qs.select_related("citation").order_by("-created_at")[:20],
-        "votes_list": votes_qs.select_related("citation").order_by("citation__created_at")[:20],
+        "votes_list": votes_qs.select_related("citation").order_by(
+            "citation__created_at"
+        )[:20],
         "avatar_initial": get_avatar_initial(user),
     }
 
