@@ -12,22 +12,22 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 import requests
 
-from citations.services.grobid_client import (  # noqa: E402
+from citations.experimental.grobid.grobid_client import (  # noqa: E402
     check_service_ready,
     get_base_url,
     get_timeout,
     process_fulltext_document,
     process_references,
 )
-from citations.services.grobid_parser import (  # noqa: E402
+from citations.experimental.grobid.grobid_parser import (  # noqa: E402
     GrobidParseError,
     parse_fulltext_tei,
     parse_references_tei,
 )
-from citations.services.reference_parsing_experiments.input_common import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.input_common import (  # noqa: E402
     build_common_input,
 )
-from citations.services.reference_parsing_experiments.runners import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.runners import (  # noqa: E402
     run_refextract_parser,
 )
 

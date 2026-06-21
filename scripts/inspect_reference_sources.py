@@ -19,22 +19,22 @@ from citations.services.doi_enrichment_service import (  # noqa: E402
     is_valid_doi,
     normalize_doi,
 )
-from citations.services.grobid_client import (  # noqa: E402
+from citations.experimental.grobid.grobid_client import (  # noqa: E402
     check_service_ready,
     get_base_url,
     get_timeout,
     process_header_document,
     process_references,
 )
-from citations.services.grobid_parser import (  # noqa: E402
+from citations.experimental.grobid.grobid_parser import (  # noqa: E402
     parse_header_tei,
     parse_references_tei,
 )
 from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
-from citations.services.reference_parsing_experiments.input_common import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.input_common import (  # noqa: E402
     build_common_input,
 )
-from citations.services.reference_parsing_experiments.runners import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.runners import (  # noqa: E402
     run_refextract_parser,
 )
 from citations.services.references_data import (  # noqa: E402
