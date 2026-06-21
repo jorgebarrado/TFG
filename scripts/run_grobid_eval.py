@@ -1,3 +1,7 @@
+# Evalúa GROBID sobre PDFs problemáticos y de control seleccionados del corpus.
+# Responde tres preguntas: ¿processReferences rescata fallos del extractor?,
+# ¿processFulltextDocument aporta valor?, ¿processCitationList mejora a refextract?
+# Requiere GROBID corriendo en localhost:8070. Salida en tmp/grobid_eval/<run-id>/.
 from __future__ import annotations
 
 import argparse

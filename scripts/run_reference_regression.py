@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Runner de regresión del extractor de referencias sobre el corpus de PDFs reales.
+# Ejecuta el pipeline completo paper a paper y clasifica cada resultado en OK/WARN/FAIL.
+# Salida en tmp/reference_regression/<run-id>/. Limpia automáticamente runs obsoletos.
 from __future__ import annotations
 
 import argparse

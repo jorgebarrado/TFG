@@ -1,3 +1,5 @@
+# Inspecciona un PDF con todos los parsers disponibles (extractor propio, GROBID y refextract)
+# y vuelca los artefactos individuales en tmp/parser_inspection/<pdf_stem>/.
 from __future__ import annotations
 
 import argparse

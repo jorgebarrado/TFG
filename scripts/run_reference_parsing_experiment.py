@@ -1,3 +1,6 @@
+# Lanza experimentos de parsing de referencias sobre PDFs ya segmentados,
+# comparando múltiples parsers (refextract, GROBID citation list, LLM…).
+# Salida en tmp/reference_parser_experiments/<run-id>/.
 from __future__ import annotations
 
 import argparse
