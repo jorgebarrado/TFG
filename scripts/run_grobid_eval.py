@@ -14,29 +14,29 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 import requests
 
-from citations.services.grobid_client import (  # noqa: E402
+from citations.experimental.grobid.grobid_client import (  # noqa: E402
     GrobidError,
     process_fulltext_document,
     process_references,
 )
-from citations.services.grobid_parser import (  # noqa: E402
+from citations.experimental.grobid.grobid_parser import (  # noqa: E402
     GrobidParseError,
     parse_fulltext_tei,
     parse_references_tei,
 )
-from citations.services.reference_parsing_experiments.comparison import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.comparison import (  # noqa: E402
     summarize_entries,
 )
-from citations.services.reference_parsing_experiments.input_common import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.input_common import (  # noqa: E402
     build_common_input,
     resolve_pdf_paths,
     slugify_pdf_name,
 )
-from citations.services.reference_parsing_experiments.normalization import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.normalization import (  # noqa: E402
     build_normalized_entry,
     clean_text,
 )
-from citations.services.reference_parsing_experiments.runners import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments.runners import (  # noqa: E402
     run_refextract_parser,
 )
 

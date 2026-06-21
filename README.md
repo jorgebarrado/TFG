@@ -82,7 +82,7 @@ Los directorios `tmp/` y `docs/superpowers/` contienen artefactos de pruebas, ex
 
 ```powershell
 python tfg_project/manage.py check
-python tfg_project/manage.py test citations.tests_reference_pipeline_baseline
+python tfg_project/manage.py test citations.tests.test_reference_pipeline_baseline
 ```
 
 El segundo comando ejecuta una línea base pesada sobre PDFs reales. Úsalo cuando toques extracción, referencias o el reader.

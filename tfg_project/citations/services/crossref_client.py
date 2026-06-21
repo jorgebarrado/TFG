@@ -21,6 +21,7 @@ logger = logging.getLogger("citations.doi_enrichment")
 
 
 def _headers() -> Dict[str, str]:
+    """Cabeceras HTTP comunes para todas las peticiones a Crossref."""
     return {
         "Accept": "application/json",
         "User-Agent": DEFAULT_USER_AGENT,
@@ -28,6 +29,7 @@ def _headers() -> Dict[str, str]:
 
 
 def _safe_json_response(response: requests.Response) -> Optional[Dict[str, Any]]:
+    """Parsea la respuesta como JSON; devuelve None si falla o no es un dict."""
     try:
         payload = response.json()
     except ValueError:
@@ -46,6 +48,7 @@ def _first_non_empty_text(value: Any) -> str:
 
 
 def _normalize_doi(value: Any) -> str:
+    """Limpia un DOI eliminando prefijos URL, 'doi:' y puntuación final; devuelve minúsculas."""
     candidate = str(value or "").strip()
     if not candidate:
         return ""
@@ -56,6 +59,7 @@ def _normalize_doi(value: Any) -> str:
 
 
 def _extract_year(message: Dict[str, Any]) -> Optional[int]:
+    """Extrae el año de publicación probando campos de fecha en orden de preferencia."""
     for key in ("issued", "published-print", "published-online", "created"):
         candidate = message.get(key)
         if not isinstance(candidate, dict):
@@ -93,6 +97,7 @@ def _normalize_authors(raw_authors: Any) -> List[str]:
 
 
 def _normalize_work_item(message: Dict[str, Any], *, source: str) -> Dict[str, Any]:
+    """Convierte un item 'message' de Crossref al formato interno del proyecto."""
     return {
         "doi": _normalize_doi(message.get("DOI")),
         "title": _first_non_empty_text(message.get("title")),
@@ -105,6 +110,7 @@ def _normalize_work_item(message: Dict[str, Any], *, source: str) -> Dict[str, A
 
 
 def _normalize_reference_item(reference: Dict[str, Any]) -> Dict[str, Any]:
+    """Convierte una referencia bibliográfica de Crossref al formato interno; devuelve {} si está vacía."""
     if not isinstance(reference, dict):
         return {}
     unstructured = str(reference.get("unstructured") or "").strip()
@@ -149,6 +155,7 @@ def _request_json(
     params: Optional[Dict[str, Any]] = None,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> Optional[Dict[str, Any]]:
+    """Hace GET a la API de Crossref y devuelve el JSON; None en error de red, 404, 429 o 5xx."""
     url = f"{CROSSREF_API_BASE}{path}"
     try:
         response = requests.get(
@@ -180,6 +187,12 @@ def _request_json(
 def fetch_work_by_doi(
     doi: str, *, timeout: int = DEFAULT_TIMEOUT
 ) -> Optional[Dict[str, Any]]:
+    """Obtiene los metadatos completos de un artículo por DOI, incluyendo su lista de referencias.
+
+    Returns:
+        Dict con doi, title, authors, year, venue, url, references, reference_count,
+        citation_count; o None si el DOI no existe o la petición falla.
+    """
     normalized_doi = _normalize_doi(doi)
     if not normalized_doi:
         return None
@@ -206,6 +219,15 @@ def search_works_by_bibliographic_text(
     rows: int = 5,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> List[Dict[str, Any]]:
+    """Busca artículos en Crossref por texto bibliográfico libre (título, autores, etc.).
+
+    Args:
+        query_text: Texto de búsqueda; puede ser una referencia completa o un fragmento.
+        rows: Número máximo de resultados (entre 1 y 10).
+
+    Returns:
+        Lista de dicts con doi, title, authors, year, venue, url, crossref_score.
+    """
     query = str(query_text or "").strip()
     if not query:
         return []
@@ -235,6 +257,15 @@ def fetch_cited_by_for_doi(
     rows: int = 25,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> List[Dict[str, Any]]:
+    """Devuelve artículos que citan al DOI dado, usando el filtro reference.doi de Crossref.
+
+    Args:
+        doi: DOI del artículo original (se normaliza internamente).
+        rows: Número máximo de resultados (entre 1 y 100).
+
+    Returns:
+        Lista de dicts con doi, title, authors, year, venue, url de los artículos citantes.
+    """
     normalized_doi = _normalize_doi(doi)
     if not normalized_doi:
         return []

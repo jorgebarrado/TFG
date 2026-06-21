@@ -8,7 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-from citations.services.reference_parsing_experiments import (  # noqa: E402
+from citations.experimental.reference_parsing_experiments import (  # noqa: E402
     DEFAULT_PDFS,
     discover_all_pdf_paths,
     run_reference_parsing_experiment,
