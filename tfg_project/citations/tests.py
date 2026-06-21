@@ -15,7 +15,7 @@ from .models import Comment, Conversation, IncorrectCitation, SavedCitation
 @override_settings(
     SITE_ID=1,
     LANGUAGE_CODE="en-us",
-    ROOT_URLCONF="tfg_project.urls",
+    ROOT_URLCONF="config.urls",
 )
 class SocialAppTestCase(TestCase):
     def setUp(self):
