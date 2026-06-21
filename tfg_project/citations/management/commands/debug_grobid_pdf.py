@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 
 from django.core.management.base import BaseCommand, CommandError
 
-from citations.services.grobid_client import (
+from citations.experimental.grobid.grobid_client import (
     GrobidError,
     GrobidHTTPError,
     GrobidInvalidResponseError,
@@ -33,7 +33,7 @@ from citations.services.grobid_client import (
     process_header_document,
     process_references,
 )
-from citations.services.grobid_parser import (
+from citations.experimental.grobid.grobid_parser import (
     GrobidParseError,
     parse_fulltext_tei,
     parse_header_tei,

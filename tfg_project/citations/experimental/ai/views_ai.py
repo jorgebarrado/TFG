@@ -3,10 +3,11 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
-from .models import IncorrectCitation
-from .services.ai_citation_detector import ai_detect_citations_for_report
-from .services.ai_report_evaluator import analyze_report_with_ai
-from .services.evidence import normalize_evidence_items
+from citations.models import IncorrectCitation
+from citations.services.evidence import normalize_evidence_items
+
+from .ai_citation_detector import ai_detect_citations_for_report
+from .ai_report_evaluator import analyze_report_with_ai
 
 
 @require_POST

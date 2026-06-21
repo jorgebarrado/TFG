@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 from citations.models import IncorrectCitation
 
-from .papermage_extractor import pm_extract_paragraphs_with_positions
+from citations.services.papermage_extractor import pm_extract_paragraphs_with_positions
 
 
 @dataclass
