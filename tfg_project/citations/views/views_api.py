@@ -22,6 +22,7 @@ from citations.logging_utils import get_logger
 from ..models import IncorrectCitation
 from ..services.citation_extractor import process_manuscript
 from ..services.doi_enrichment_service import enrich_extraction_with_doi, normalize_doi
+from ..services.ai_extractor import AI_ENGINES, extract_with_ai
 from ..services.engines import ALLOWED_ENGINES, list_extractor_engines
 from ..services.papermage_extractor import ContextHit, extract_pdf_data
 from ..services.pdf_citation_analyzer import (
@@ -413,6 +414,100 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
 
     start_time = time.time()
     try:
+        # ── Rama de motores IA ──────────────────────────────────────────────────
+        if engine in AI_ENGINES:
+            ai_result = extract_with_ai(engine, temp_path)
+            elapsed_ms = int((time.time() - start_time) * 1000)
+
+            if not ai_result.get("ok"):
+                return JsonResponse(
+                    {"ok": False, "error": ai_result.get("error", "Error en extracción IA")},
+                    status=422,
+                )
+
+            ai_references = ai_result["references"]
+            ai_results = ai_result["results"]
+            ai_pages_total = ai_result.get("pages_total", 0)
+            ai_citation_style = ai_result.get("citation_style", "non_numeric")
+            ai_references_numbered = ai_result.get("references_numbered", False)
+            ai_max_ref_idx = ai_result.get("max_reference_index", len(ai_references))
+
+            snippets = build_snippets_from_results(ai_results)
+
+            ai_data: dict = {
+                "ok": True,
+                "engine_used": engine,
+                "results": ai_results,
+                "time_ms": elapsed_ms,
+                "references": ai_references,
+                "snippets": snippets,
+                "citation_style": ai_citation_style,
+                "max_reference_index": ai_max_ref_idx,
+                "bibliography_start_page": None,
+                "stats": {
+                    "pages_total": ai_pages_total,
+                    "snippets_total": len(snippets),
+                    "references_total": len(ai_references),
+                    "dois_total": sum(1 for r in ai_references if r.get("doi")),
+                    "engine_used": engine,
+                    "time_ms": elapsed_ms,
+                    "references_numbered": ai_references_numbered,
+                    "citation_style": ai_citation_style,
+                    "max_reference_index": ai_max_ref_idx,
+                    "bibliography_start_page": None,
+                },
+            }
+
+            # Capas del reader (best-effort, requiere PaperMage)
+            try:
+                reader_data = extract_pdf_data(temp_path)
+                ai_data["pages"] = reader_data.get("pages", []) if isinstance(reader_data, dict) else []
+                ai_data["layers"] = reader_data.get("layers", {}) if isinstance(reader_data, dict) else {}
+            except Exception:
+                ai_data["pages"] = []
+                ai_data["layers"] = {}
+
+            # DOI enrichment
+            try:
+                enrichment_result = enrich_extraction_with_doi(
+                    doi_input=article_doi,
+                    local_references=ai_references,
+                    references_data_references=ai_references,
+                )
+            except Exception as exc:
+                logger.warning("doi enrichment failed doi=%s error=%s", article_doi, exc)
+                enrichment_result = {
+                    "local_references": ai_references,
+                    "references_data_references": ai_references,
+                    "cited_by": [],
+                    "enrichment": {
+                        "doi_provided": bool(article_doi),
+                        "doi_normalized": "",
+                        "paper_resolved": False,
+                        "references_enriched": 0,
+                        "cited_by_count": 0,
+                        "sources_used": [],
+                    },
+                }
+
+            if isinstance(enrichment_result.get("local_references"), list):
+                ai_data["references"] = enrichment_result["local_references"]
+            ai_data["cited_by"] = enrichment_result.get("cited_by") or []
+            ai_data["enrichment"] = enrichment_result.get("enrichment") or {}
+            ai_data["article_info"] = _build_article_info_payload(
+                article_doi=article_doi,
+                enrichment=ai_data.get("enrichment"),
+                cited_by=ai_data.get("cited_by"),
+            )
+            # Actualizar totales tras enriquecimiento
+            ai_data["stats"]["references_total"] = len(ai_data["references"])
+            ai_data["stats"]["dois_total"] = sum(
+                1 for r in ai_data["references"] if isinstance(r, dict) and r.get("doi")
+            )
+
+            return JsonResponse(ai_data, status=200, safe=True)
+        # ── Fin rama IA ─────────────────────────────────────────────────────────
+
         references = []
         ref_stats = {
             "pages_total": 0,

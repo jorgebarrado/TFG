@@ -1,6 +1,7 @@
 # Registro de motores de extracción de PDF disponibles y función run_engine que despacha al motor seleccionado.
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Tuple
 
 try:
@@ -19,9 +20,23 @@ EngineAttempt = Dict[str, Any]
 
 ENGINE_LABELS = {
     "papermage": "PaperMage",
+    "ai_claude": "IA · Claude (Haiku)",
+    "ai_openai": "IA · OpenAI (GPT-4.1 mini)",
+    "ai_gemini": "IA · Gemini (3.5 Flash)",
 }
 
 ALLOWED_ENGINES = set(ENGINE_LABELS.keys())
+
+_AI_ENGINE_ENV_KEYS = {
+    "ai_claude": "ANTHROPIC_API_KEY",
+    "ai_openai": "OPENAI_API_KEY",
+    "ai_gemini": "GOOGLE_API_KEY",
+}
+
+
+def _ai_engine_available(engine_key: str) -> bool:
+    env_var = _AI_ENGINE_ENV_KEYS.get(engine_key, "")
+    return bool(env_var and os.environ.get(env_var))
 
 
 def list_extractor_engines() -> List[Dict[str, Any]]:
@@ -30,6 +45,21 @@ def list_extractor_engines() -> List[Dict[str, Any]]:
             "key": "papermage",
             "label": ENGINE_LABELS["papermage"],
             "available": PM_AVAILABLE,
+        },
+        {
+            "key": "ai_claude",
+            "label": ENGINE_LABELS["ai_claude"],
+            "available": _ai_engine_available("ai_claude"),
+        },
+        {
+            "key": "ai_openai",
+            "label": ENGINE_LABELS["ai_openai"],
+            "available": _ai_engine_available("ai_openai"),
+        },
+        {
+            "key": "ai_gemini",
+            "label": ENGINE_LABELS["ai_gemini"],
+            "available": _ai_engine_available("ai_gemini"),
         },
     ]
 
@@ -77,11 +107,12 @@ def _attempt(
 def run_engine(
     engine_requested: str, pdf_path: str
 ) -> Tuple[str | None, List[str], List[EngineAttempt], str | None, List[dict]]:
+    """Despacha al motor de extracción de párrafos. Solo para motores no-IA."""
     engine = (engine_requested or "papermage").lower().strip()
     attempts: List[EngineAttempt] = []
 
     if engine != "papermage":
-        return None, [], attempts, f"Motor no soportado: {engine}", []
+        return None, [], attempts, f"Motor no soportado en run_engine: {engine}", []
 
     paragraphs, with_positions, attempt, error = _attempt(
         "papermage",

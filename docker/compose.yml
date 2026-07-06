@@ -11,6 +11,8 @@ services:
       - "8000:8000"
     volumes:
       - ..:/app
+    env_file:
+      - ../tfg_project/.env
     environment:
       DJANGO_DEBUG: "1"
       PYTHONDONTWRITEBYTECODE: "1"
