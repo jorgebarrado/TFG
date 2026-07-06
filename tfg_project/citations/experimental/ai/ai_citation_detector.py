@@ -90,7 +90,7 @@ def call_llm_for_detection(prompt: str) -> Dict[str, Any]:
         raise RuntimeError(missing_config_msg)
 
     configure(api_key=api_key)
-    model = GenerativeModel("gemini-1.5-flash")
+    model = GenerativeModel("gemini-1.5-flash-8b")
 
     response = model.generate_content(prompt, generation_config={"temperature": 0})
     text = (response.text or "").strip()
