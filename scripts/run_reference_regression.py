@@ -17,8 +17,32 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = ROOT / "tfg_project"
+DATASET_DIR = ROOT / "tfg_project/citations/static/citations/PDFs-Reales"
+DEFAULT_OUTPUT_ROOT = ROOT / "tmp/reference_regression"
+DATASET_TYPE_VALUES = ("exploratory",)
+DATASET_SOURCE_LABEL = "directory_scan"
+
+
+def _load_env_file(env_path: Path) -> None:
+    try:
+        from dotenv import load_dotenv
+    except Exception:
+        return
+    load_dotenv(dotenv_path=env_path, override=False)
+
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+_load_env_file(PROJECT_ROOT / ".env")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+os.environ.setdefault("TRANSFORMERS_CACHE", str(ROOT / ".cache" / "transformers"))
+
 import django  # noqa: E402
 
+from citations.services.ai_extractor import AI_ENGINES, extract_with_ai  # noqa: E402
 from citations.services.citation_extractor import process_manuscript  # noqa: E402
 from citations.services.engines import ALLOWED_ENGINES  # noqa: E402
 from citations.services.papermage_extractor import extract_pdf_data  # noqa: E402
@@ -27,19 +51,6 @@ from citations.services.reader_data import (  # noqa: E402
     extract_pdf_references,
 )
 from citations.services.references_data import build_references_data  # noqa: E402
-
-ROOT = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = ROOT / "tfg_project"
-DATASET_DIR = ROOT / "tfg_project/citations/static/citations/PDFs-Reales"
-DEFAULT_OUTPUT_ROOT = ROOT / "tmp/reference_regression"
-DATASET_TYPE_VALUES = ("exploratory",)
-DATASET_SOURCE_LABEL = "directory_scan"
-
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tfg_project.settings")
-os.environ.setdefault("TRANSFORMERS_CACHE", str(ROOT / ".cache" / "transformers"))
 
 
 django.setup()
@@ -485,6 +496,75 @@ def _resolve_reference_context(
     }
 
 
+def _build_ai_reference_stats(
+    *,
+    ai_result: Dict[str, Any],
+    references: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    references_numbered = bool(ai_result.get("references_numbered"))
+    citation_style = (
+        str(
+            ai_result.get("citation_style")
+            or ("numeric" if references_numbered else "non_numeric")
+        )
+        .strip()
+        .lower()
+    )
+    if citation_style == "non-numeric":
+        citation_style = "non_numeric"
+    if citation_style not in {"numeric", "non_numeric"}:
+        citation_style = "numeric" if references_numbered else "non_numeric"
+
+    max_reference_index = _safe_int(ai_result.get("max_reference_index"))
+    if max_reference_index is None or max_reference_index <= 0:
+        max_reference_index = max(
+            (_safe_int(item.get("index")) or 0 for item in references),
+            default=0,
+        )
+    if max_reference_index <= 0:
+        max_reference_index = len(references)
+
+    return {
+        "pages_total": _safe_int(ai_result.get("pages_total")) or 0,
+        "references_total": len(references),
+        "dois_total": sum(
+            1 for item in references if str(item.get("doi") or "").strip()
+        ),
+        "references_numbered": references_numbered,
+        "citation_style": citation_style,
+        "max_reference_index": max_reference_index,
+        "bibliography_start_page": None,
+        "reference_source": "ai_extractor",
+    }
+
+
+def _build_ai_manuscript_payload(
+    *,
+    engine: str,
+    ai_result: Dict[str, Any],
+    reference_context: Dict[str, Any],
+) -> Dict[str, Any]:
+    results = _coerce_list(ai_result.get("results"))
+    references = _coerce_list(ai_result.get("references"))
+    return {
+        "ok": True,
+        "engine_requested": engine,
+        "engine_used": str(ai_result.get("engine_used") or engine),
+        "summary": {"paragraphs": 0, "count": len(results)},
+        "results": results,
+        "citation_style": reference_context["citation_style"],
+        "total_references": reference_context["total_references_for_validation"],
+        "max_reference_index": reference_context["max_reference_index"],
+        "trace": {
+            "ai_extractor": {
+                "pages_total": _safe_int(ai_result.get("pages_total")) or 0,
+                "references_total": len(references),
+                "results_total": len(results),
+            }
+        },
+    }
+
+
 def _extract_reader_layers(
     *,
     pdf_path: Path,
@@ -530,24 +610,49 @@ def _run_single_extraction(
     article_doi = str(paper_entry.get("article_doi") or "").strip()
     started_at = time.perf_counter()
 
-    base_references, base_stats = extract_pdf_references(str(pdf_path))
-    reference_context = _resolve_reference_context(base_references, base_stats)
-
-    manuscript_data = process_manuscript(
-        str(pdf_path),
-        engine=engine,
-        debug=True,
-        references=base_references,
-        citation_style=reference_context["citation_style"],
-        total_references=reference_context["total_references_for_validation"],
-    )
-    if not manuscript_data.get("ok"):
-        raise RuntimeError(
-            "process_manuscript fallo con engine='{engine}': {error}".format(
-                engine=engine,
-                error=str(manuscript_data.get("error") or "sin detalle"),
+    if engine in AI_ENGINES:
+        ai_result = extract_with_ai(engine, str(pdf_path))
+        if not ai_result.get("ok", False):
+            raise RuntimeError(
+                "extract_with_ai fallo con engine='{engine}': {error}".format(
+                    engine=engine,
+                    error=str(ai_result.get("error") or "sin detalle"),
+                )
             )
+        base_references = [
+            item
+            for item in _coerce_list(ai_result.get("references"))
+            if isinstance(item, dict)
+        ]
+        base_stats = _build_ai_reference_stats(
+            ai_result=ai_result,
+            references=base_references,
         )
+        reference_context = _resolve_reference_context(base_references, base_stats)
+        manuscript_data = _build_ai_manuscript_payload(
+            engine=engine,
+            ai_result=ai_result,
+            reference_context=reference_context,
+        )
+    else:
+        base_references, base_stats = extract_pdf_references(str(pdf_path))
+        reference_context = _resolve_reference_context(base_references, base_stats)
+
+        manuscript_data = process_manuscript(
+            str(pdf_path),
+            engine=engine,
+            debug=True,
+            references=base_references,
+            citation_style=reference_context["citation_style"],
+            total_references=reference_context["total_references_for_validation"],
+        )
+        if not manuscript_data.get("ok"):
+            raise RuntimeError(
+                "process_manuscript fallo con engine='{engine}': {error}".format(
+                    engine=engine,
+                    error=str(manuscript_data.get("error") or "sin detalle"),
+                )
+            )
 
     snippets = build_snippets_from_results(manuscript_data.get("results"))
     reader_data = _extract_reader_layers(
