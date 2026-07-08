@@ -11,6 +11,7 @@
   data-evidence-url="{{ evidence_add_url|default:'' }}"
   data-original-doi="{{ citation.doi_original|default:'' }}"
   data-incorrect-doi="{{ citation.doi_incorrect|default:'' }}"
+  data-debug-enabled="{{ debug_tools_enabled|yesno:'true,false' }}"
 ></div>
 {% endblock %}
 

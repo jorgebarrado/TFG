@@ -7,6 +7,7 @@
   class="reader-root-fullscreen"
   data-api-url=""
   data-pdf-url="{{ pdf_url|default:'' }}"
+  data-debug-enabled="{{ debug_tools_enabled|yesno:'true,false' }}"
 ></div>
 {% endblock %}
 

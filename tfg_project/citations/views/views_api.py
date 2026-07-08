@@ -65,6 +65,10 @@ context_logger = logging.getLogger("citations.context")
 INCLUDE_TRACE_FLAG = os.getenv("INCLUDE_TRACE_IN_RESPONSE", "0") == "1"
 
 
+def _can_access_debug_tools(user) -> bool:
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
 def _build_article_info_payload(
     *,
     article_doi: str,
@@ -140,6 +144,11 @@ def _build_article_info_payload(
 
 @require_GET
 def api_reference_debug_download(request: HttpRequest):
+    if not _can_access_debug_tools(request.user):
+        return JsonResponse(
+            {"ok": False, "error": "Debug access restricted."}, status=403
+        )
+
     raw_relative_path = str(request.GET.get("file") or "").strip()
     if not raw_relative_path:
         return JsonResponse(
@@ -394,8 +403,17 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             {"ok": False, "error": "Herramienta no valida."},
             status=400,
         )
-    debug = request.POST.get("debug") in ("1", "true", "True", "yes", "on")
-    debug_reference_detection = request.POST.get("debug_reference_detection") in (
+    debug_tools_enabled = _can_access_debug_tools(request.user)
+    debug = debug_tools_enabled and request.POST.get("debug") in (
+        "1",
+        "true",
+        "True",
+        "yes",
+        "on",
+    )
+    debug_reference_detection = debug_tools_enabled and request.POST.get(
+        "debug_reference_detection"
+    ) in (
         "1",
         "true",
         "True",
@@ -466,7 +484,6 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
             except Exception:
                 ai_data["pages"] = []
                 ai_data["layers"] = {}
-
             # DOI enrichment
             try:
                 enrichment_result = enrich_extraction_with_doi(
@@ -809,6 +826,9 @@ def api_extract_citations(request: HttpRequest) -> JsonResponse:
                     "filename": debug_filename,
                     "download_url": debug_download_url,
                 }
+            if not debug_tools_enabled:
+                data.pop("reference_debug", None)
+                data.pop("reference_debug_steps", None)
         else:
             data["cited_by"] = []
             data["enrichment"] = {

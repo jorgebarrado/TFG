@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialApp
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.sites.models import Site
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -48,9 +49,48 @@ class HomePageTests(SocialAppTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Extraer citas")
-        self.assertContains(response, "Explorar DBLP")
+        self.assertContains(response, "Explorar con Perfil DBLP")
+        self.assertContains(response, "Explorar con DOI")
         self.assertNotContains(response, "Arrastra un PDF")
         self.assertNotContains(response, "Inicia sesión para añadir tu DBLP")
+
+    def test_extract_modal_hides_debug_controls_for_non_admin(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-debug-enabled="false"')
+        self.assertNotContains(response, "Guardar JSON de depuración de referencias")
+        self.assertNotContains(response, "Descargar depuración")
+
+    def test_extract_modal_shows_debug_controls_for_admin(self):
+        admin = User.objects.create_user(
+            username="admin", password="password", is_staff=True
+        )
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-debug-enabled="true"')
+        self.assertContains(response, "Guardar JSON de depuración de referencias")
+        self.assertContains(response, "Descargar depuración")
+
+    def test_reader_marks_debug_tools_disabled_for_non_admin(self):
+        response = self.client.get(reverse("citation_reader_preview"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-debug-enabled="false"')
+
+    def test_reader_marks_debug_tools_enabled_for_admin(self):
+        admin = User.objects.create_user(
+            username="reader-admin", password="password", is_staff=True
+        )
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("citation_reader_preview"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-debug-enabled="true"')
 
 
 class LoggedInTestCase(SocialAppTestCase):
@@ -666,7 +706,28 @@ class ContextLoggingTests(TestCase):
 
 
 class ReferenceDebugDownloadTests(TestCase):
-    def test_download_reference_debug_serves_json_attachment(self):
+    def test_download_reference_debug_requires_admin(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            debug_root = Path(temp_dir)
+            target_dir = debug_root / "paper"
+            target_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_dir / "debug-123.json"
+            target_file.write_text('{"ok": true}', encoding="utf-8")
+
+            with patch("citations.views.views_api.REFERENCE_DEBUG_DIR", debug_root):
+                response = self.client.get(
+                    reverse("api_reference_debug_download"),
+                    {"file": "paper/debug-123.json"},
+                )
+
+            self.assertEqual(response.status_code, 403)
+
+    def test_download_reference_debug_serves_json_attachment_for_admin(self):
+        admin = User.objects.create_user(
+            username="debug-admin", password="password", is_staff=True
+        )
+        self.client.force_login(admin)
+
         with tempfile.TemporaryDirectory() as temp_dir:
             debug_root = Path(temp_dir)
             target_dir = debug_root / "paper"
@@ -689,6 +750,11 @@ class ReferenceDebugDownloadTests(TestCase):
             self.assertEqual(b"".join(response.streaming_content), b'{"ok": true}')
 
     def test_download_reference_debug_rejects_path_traversal(self):
+        admin = User.objects.create_user(
+            username="debug-path-admin", password="password", is_staff=True
+        )
+        self.client.force_login(admin)
+
         with tempfile.TemporaryDirectory() as temp_dir:
             debug_root = Path(temp_dir)
 
@@ -699,6 +765,137 @@ class ReferenceDebugDownloadTests(TestCase):
                 )
 
             self.assertEqual(response.status_code, 404)
+
+
+class ExtractDebugAccessTests(TestCase):
+    @staticmethod
+    def _reference_stats():
+        return {
+            "pages_total": 1,
+            "references_total": 0,
+            "dois_total": 0,
+            "references_numbered": False,
+            "citation_style": "non_numeric",
+            "max_reference_index": 0,
+            "bibliography_start_page": None,
+        }
+
+    @staticmethod
+    def _reconciliation_payload():
+        return {
+            "reconciliation_summary": {},
+            "final_structured_references": [],
+            "final_references_total": 0,
+            "final_citation_style": "non_numeric",
+            "final_max_reference_index": 0,
+            "final_references": [],
+        }
+
+    @staticmethod
+    def _enrichment_payload():
+        return {
+            "local_references": [],
+            "references_data_references": [],
+            "cited_by": [],
+            "enrichment": {
+                "doi_provided": False,
+                "doi_normalized": "",
+                "paper_resolved": False,
+                "references_enriched": 0,
+                "cited_by_count": 0,
+                "sources_used": [],
+            },
+        }
+
+    @patch("citations.views.views_api.write_reference_detection_debug_json")
+    @patch("citations.views.views_api.finalize_reference_detection_debug_payload")
+    @patch("citations.views.views_api.enrich_extraction_with_doi")
+    @patch("citations.views.views_api.reconcile_reference_sources")
+    @patch("citations.views.views_api.build_references_data")
+    @patch("citations.views.views_api.extract_pdf_data")
+    @patch("citations.views.views_api.process_manuscript")
+    @patch("citations.views.views_api.extract_pdf_references")
+    def test_extract_ignores_reference_debug_request_for_non_admin(
+        self,
+        mock_extract_pdf_references,
+        mock_process_manuscript,
+        mock_extract_pdf_data,
+        mock_build_references_data,
+        mock_reconcile_reference_sources,
+        mock_enrich_extraction_with_doi,
+        mock_finalize_reference_detection_debug_payload,
+        mock_write_reference_detection_debug_json,
+    ):
+        def build_references_data_side_effect(**kwargs):
+            if kwargs.get("debug_reference_detection"):
+                return {
+                    "references": [],
+                    "debug_payload": {"metadata": {"pipeline_version": "test"}},
+                    "reference_debug_steps": [{"key": "rows", "items": []}],
+                }
+            return {"references": []}
+
+        mock_extract_pdf_references.return_value = ([], self._reference_stats())
+        mock_process_manuscript.return_value = {
+            "ok": True,
+            "results": [],
+            "engine_used": "papermage",
+        }
+        mock_extract_pdf_data.return_value = {
+            "pages": [{"page": 0}],
+            "layers": {"tokens": [{"text": "sample", "page": 0}]},
+        }
+        mock_build_references_data.side_effect = build_references_data_side_effect
+        mock_reconcile_reference_sources.return_value = self._reconciliation_payload()
+        mock_enrich_extraction_with_doi.return_value = self._enrichment_payload()
+        mock_finalize_reference_detection_debug_payload.return_value = {
+            "metadata": {"pipeline_version": "test"}
+        }
+        mock_write_reference_detection_debug_json.return_value = "debug.json"
+        upload = SimpleUploadedFile(
+            "paper.pdf", b"%PDF-1.4\n%%EOF", content_type="application/pdf"
+        )
+
+        response = self.client.post(
+            reverse("api_extract_citations"),
+            {
+                "manuscript": upload,
+                "engine": "papermage",
+                "debug": "1",
+                "debug_reference_detection": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            mock_build_references_data.call_args.kwargs["debug_reference_detection"]
+        )
+        mock_write_reference_detection_debug_json.assert_not_called()
+        payload = response.json()
+        self.assertNotIn("reference_debug", payload)
+        self.assertNotIn("reference_debug_steps", payload)
+        self.assertEqual(payload.get("layers"), {"tokens": [{"text": "sample", "page": 0}]})
+        self.assertEqual(payload.get("pages"), [{"page": 0}])
+
+    @patch("citations.views.views_api.extract_pdf_data")
+    def test_reader_layers_upload_is_available_for_non_admin(self, mock_extract_pdf_data):
+        mock_extract_pdf_data.return_value = {
+            "pages": [{"page": 0}],
+            "layers": {"tokens": [{"text": "sample", "page": 0}]},
+        }
+        upload = SimpleUploadedFile(
+            "paper.pdf", b"%PDF-1.4\n%%EOF", content_type="application/pdf"
+        )
+
+        response = self.client.post(
+            reverse("api_pdf_reader_v2_upload"),
+            {"pdf_file": upload},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["pages"], [{"page": 0}])
+        self.assertEqual(payload["layers"], {"tokens": [{"text": "sample", "page": 0}]})
 
 
 class MessageSystemTests(SocialAppTestCase):

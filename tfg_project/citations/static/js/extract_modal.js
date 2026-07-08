@@ -30,6 +30,7 @@
 
   if (!form) return; // por si la modal no está en esta vista
 
+  const debugEnabled = form.dataset.debugEnabled === 'true';
   let extractionResult = null;
   let progressTimer = null;
   let progressPercent = 0;
@@ -139,6 +140,7 @@
   }
 
   function enableDebugDownload(referenceDebug) {
+    if (!debugEnabled) return;
     if (!debugDownloadBtn) return;
     const downloadUrl = String(referenceDebug?.download_url || '').trim();
     const filename = String(referenceDebug?.filename || 'reference_debug.json').trim();
@@ -484,8 +486,9 @@
       const fd = new FormData();
       fd.append('manuscript', file);
       fd.append('engine', engineSel.value);
-      fd.append('debug', debugChk.checked ? '1' : '0');
-      fd.append('debug_reference_detection', debugChk.checked ? '1' : '0');
+      const debugRequested = debugEnabled && Boolean(debugChk?.checked);
+      fd.append('debug', debugRequested ? '1' : '0');
+      fd.append('debug_reference_detection', debugRequested ? '1' : '0');
 
       const res  = await fetch(ENDPOINT, { method: 'POST', body: fd });
       const data = await res.json();
@@ -507,7 +510,7 @@
       renderResults(data);
       extractionResult = buildExtractionResult(data);
       completeProgress();
-      if (data.reference_debug?.output_path) {
+      if (debugEnabled && data.reference_debug?.output_path) {
         summaryBox.textContent = `${summaryBox.textContent} · debug: ${data.reference_debug.output_path}`;
       }
       enableDebugDownload(data.reference_debug);

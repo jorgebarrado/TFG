@@ -2,10 +2,12 @@
 {% load static %}
 <form id="extract-form" onsubmit="event.preventDefault(); uploadAndExtract(EXTRACT_URL);">
   <input type="file" id="manuscript" name="manuscript" accept=".pdf,.txt" required />
-  <label class="d-block mt-2">
-    <input type="checkbox" id="debug-reference-detection" />
-    Guardar JSON de depuracion de referencias
-  </label>
+  {% if user.is_staff or user.is_superuser %}
+    <label class="d-block mt-2">
+      <input type="checkbox" id="debug-reference-detection" />
+      Guardar JSON de depuracion de referencias
+    </label>
+  {% endif %}
   <button type="submit" class="btn btn-primary">Extraer citas / Extract citations</button>
 </form>
 

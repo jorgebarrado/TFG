@@ -2366,6 +2366,7 @@ export default function ReaderApp({
   evidenceUrl = "",
   reportOriginalDoi = "",
   reportIncorrectDoi = "",
+  debugEnabled = false,
   previewFile,
   previewSnippets = [],
   previewStats = null,
@@ -3078,7 +3079,7 @@ export default function ReaderApp({
   const resolvedPdfUrl = previewUrl || data?.pdf_url || pdfUrl || "";
   const canExtract = !extractStatus.loading && Boolean(activeFile || resolvedPdfUrl);
   const canDownloadExtraction = Boolean(extractionExportData);
-  const canDownloadDebug = Boolean(referenceDebugDownload?.url);
+  const canDownloadDebug = Boolean(debugEnabled && referenceDebugDownload?.url);
   const readerV2LayerOptions = useMemo(
     () => getReaderV2LayerKeys(readerV2Data),
     [readerV2Data]
@@ -4471,6 +4472,7 @@ export default function ReaderApp({
   };
 
   const downloadReferenceDebugJson = (downloadInfo) => {
+    if (!debugEnabled) return;
     const downloadUrl = String(downloadInfo?.url || "").trim();
     if (!downloadUrl) return;
     const link = document.createElement("a");
@@ -4561,11 +4563,12 @@ export default function ReaderApp({
       const fd = new FormData();
       fd.append("manuscript", file);
       fd.append("engine", PREVIEW_EXTRACT_ENGINE);
+      const debugRequested = debugEnabled && debugReferenceDetection;
       fd.append(
         "debug_reference_detection",
-        debugReferenceDetection ? "1" : "0"
+        debugRequested ? "1" : "0"
       );
-      fd.append("debug", debugReferenceDetection ? "1" : "0");
+      fd.append("debug", debugRequested ? "1" : "0");
       const normalizedArticleDoi = String(articleDoiInput || "").trim();
       if (normalizedArticleDoi) {
         fd.append("article_doi", normalizedArticleDoi);
@@ -4599,7 +4602,9 @@ export default function ReaderApp({
         payload?.article_doi || nextArticleInfo?.doi || ""
       );
       const referenceDebugMeta =
-        payload?.reference_debug && typeof payload.reference_debug === "object"
+        debugEnabled &&
+        payload?.reference_debug &&
+        typeof payload.reference_debug === "object"
           ? payload.reference_debug
           : null;
       const referenceDebugPath = String(
@@ -4616,7 +4621,7 @@ export default function ReaderApp({
       setReferencesVisualData(result.referencesVisual);
       setExtractionExportData(buildExtractionExportData(payload, result, file));
       setReferenceDebugDownload(
-        referenceDebugDownloadUrl
+        debugEnabled && referenceDebugDownloadUrl
           ? {
               url: referenceDebugDownloadUrl,
               filename: referenceDebugFilename || "reference_debug.json",
@@ -4645,7 +4650,7 @@ export default function ReaderApp({
       setSelectedItemId(null);
       setShowReaderV2(Boolean(nextLayer));
       setReaderV2Opacity(1);
-      const nextDebugSteps = Array.isArray(payload?.reference_debug_steps)
+      const nextDebugSteps = debugEnabled && Array.isArray(payload?.reference_debug_steps)
         ? payload.reference_debug_steps
         : [];
       setRefDebugSteps(nextDebugSteps);
@@ -4662,7 +4667,7 @@ export default function ReaderApp({
           : (enrichmentPayload?.warning === "invalid_doi"
             ? "DOI no valido; se uso extraccion local."
             : "");
-      const debugHint = referenceDebugPath
+      const debugHint = debugEnabled && referenceDebugPath
         ? `Debug JSON: ${referenceDebugPath}.`
         : "";
       setExtractStatus({
@@ -5205,7 +5210,7 @@ export default function ReaderApp({
         </div>
       )}
 
-      {refDebugSteps.length > 0 && (
+      {debugEnabled && refDebugSteps.length > 0 && (
         <div className="ref-debug-section">
           <div className="ref-debug-header">
             <span className="ref-debug-title">Reference Debug</span>
@@ -5369,23 +5374,27 @@ export default function ReaderApp({
         >
           Descargar
         </button>
-        <button
-          type="button"
-          className="reader-tool-btn"
-          onClick={() => downloadReferenceDebugJson(referenceDebugDownload)}
-          disabled={!canDownloadDebug}
-        >
-          Descargar depuracion
-        </button>
+        {debugEnabled && (
+          <button
+            type="button"
+            className="reader-tool-btn"
+            onClick={() => downloadReferenceDebugJson(referenceDebugDownload)}
+            disabled={!canDownloadDebug}
+          >
+            Descargar depuracion
+          </button>
+        )}
       </div>
-      <label className="reader-extract-debug-toggle">
-        <input
-          type="checkbox"
-          checked={debugReferenceDetection}
-          onChange={(event) => setDebugReferenceDetection(event.target.checked)}
-        />
-        <span>Guardar JSON de depuracion de referencias</span>
-      </label>
+      {debugEnabled && (
+        <label className="reader-extract-debug-toggle">
+          <input
+            type="checkbox"
+            checked={debugReferenceDetection}
+            onChange={(event) => setDebugReferenceDetection(event.target.checked)}
+          />
+          <span>Guardar JSON de depuracion de referencias</span>
+        </label>
+      )}
       {extractStatus.loading && (
         <div className="reader-extract-progress" role="status" aria-live="polite">
           <div className="reader-extract-progress-head">
@@ -5960,9 +5969,9 @@ export default function ReaderApp({
             hoveredCitationId={hoveredCitationId}
             onReferenceOverlayHover={handleReferenceOverlayHover}
             onReferenceOverlaySelect={handleReferenceOverlaySelect}
-            refDebugSteps={refDebugSteps}
-            activeRefDebugKeys={activeRefDebugKeys}
-            showRefDebug={showRefDebug}
+            refDebugSteps={debugEnabled ? refDebugSteps : []}
+            activeRefDebugKeys={debugEnabled ? activeRefDebugKeys : new Set()}
+            showRefDebug={debugEnabled && showRefDebug}
             refDebugOpacity={refDebugOpacity}
           />
 
