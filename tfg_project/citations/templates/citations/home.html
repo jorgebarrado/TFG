@@ -146,7 +146,7 @@
               </div>
             </div>
 
-            <!-- Card 3: Búsqueda en DBLP -->
+            <!-- Card 3: Buscar citadores -->
             <div class="group relative block h-full" id="home-dblp-card">
               <!-- Glow -->
               <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-20 group-hover:opacity-70 transition duration-300 -z-10"></div>
@@ -154,24 +154,24 @@
               <!-- Card -->
               <div class="glass-card home-card-shell hover-lift relative z-10 p-6 flex flex-col h-full text-center">
                   <div class="home-card-icon bg-emerald-50 text-emerald-600">
-                      <i class="fa-solid fa-database"></i>
+                      <i class="fa-solid fa-magnifying-glass"></i>
                   </div>
 
                   <h3 class="home-card-title text-xl font-bold text-slate-900 mb-2">
-                      {% trans "Búsqueda en DBLP" %}
+                      {% trans "Buscar citadores" %}
                   </h3>
                   <p class="home-card-copy text-slate-500 text-sm mb-6">
-                      {% trans "Explora tus artículos en DBLP y revisa cómo han sido citados por otros trabajos." %}
+                      {% trans "Explora tus artículos y  revisa cómo han sido citados por otros trabajos." %}
                   </p>
 
                   <div class="home-card-actions w-100 mt-auto">
                       <div class="d-flex flex-column gap-2">
                           <a href="{% url 'dblp_articles' %}" class="home-card-btn w-100 bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition-colors d-flex align-items-center justify-content-center gap-2">
-                              <span>{% trans "Explorar DBLP" %}</span>
+                              <span>{% trans "Explorar con Perfil DBLP" %}</span>
                               <i class="fa-solid fa-arrow-right-long text-xs"></i>
                           </a>
                           <a href="{% url 'doi_search' %}" class="home-card-btn w-100 btn btn-outline-secondary fw-semibold py-3 rounded-xl d-flex align-items-center justify-content-center gap-2">
-                              <span>{% trans "Buscar citadores" %}</span>
+                              <span>{% trans "Explorar con DOI" %}</span>
                               <i class="fa-solid fa-search text-xs"></i>
                           </a>
                       </div>

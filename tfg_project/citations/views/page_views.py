@@ -79,6 +79,10 @@ def _can_edit_report(user, citation) -> bool:
     return user.is_authenticated and (user == citation.author or user.is_superuser)
 
 
+def _can_access_debug_tools(user) -> bool:
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
 def _build_comment_threads(comments):
     """
     Build a nested comment tree in-memory.
@@ -1266,6 +1270,7 @@ def citation_reader(request, report_id: int):
         "pdf_url": pdf_url or "",
         "report_id": report_id,
         "evidence_add_url": reverse("citation_add_evidence", kwargs={"pk": report_id}),
+        "debug_tools_enabled": _can_access_debug_tools(request.user),
         "reader_build": _reader_build_stamp(),
         "reader_vite_url": _reader_vite_dev_server(),
     }
@@ -1276,6 +1281,7 @@ def citation_reader_preview(request):
     pdf_url = request.GET.get("pdf_url", "")
     context = {
         "pdf_url": pdf_url or "",
+        "debug_tools_enabled": _can_access_debug_tools(request.user),
         "reader_build": _reader_build_stamp(),
         "reader_vite_url": _reader_vite_dev_server(),
     }

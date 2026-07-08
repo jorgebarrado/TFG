@@ -201,6 +201,7 @@ function renderReaderApp() {
   const evidenceUrl = mount.dataset.evidenceUrl || "";
   const reportOriginalDoi = mount.dataset.originalDoi || "";
   const reportIncorrectDoi = mount.dataset.incorrectDoi || "";
+  const debugEnabled = mount.dataset.debugEnabled === "true";
   ReactDOM.render(
     <ReaderApp
       apiUrl={apiUrl}
@@ -209,6 +210,7 @@ function renderReaderApp() {
       evidenceUrl={evidenceUrl}
       reportOriginalDoi={reportOriginalDoi}
       reportIncorrectDoi={reportIncorrectDoi}
+      debugEnabled={debugEnabled}
       previewFile={previewFile}
       previewSnippets={previewSnippets}
       previewStats={previewStats}

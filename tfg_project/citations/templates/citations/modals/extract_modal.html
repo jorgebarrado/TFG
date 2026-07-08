@@ -17,7 +17,10 @@
 
       <!-- Body -->
       <div class="modal-body cc-extract-body">
-        <form id="extract-form">
+        <form
+          id="extract-form"
+          data-debug-enabled="{% if user.is_staff or user.is_superuser %}true{% else %}false{% endif %}"
+        >
 
           <section class="cc-section">
             <div class="cc-section-title" data-step="1">{% trans "Archivo PDF" %}</div>
@@ -36,14 +39,16 @@
                   <option value="" selected disabled>{% trans "Selecciona una herramienta..." %}</option>
                 </select>
               </div>
-              <div class="col-md-5">
-                <div class="form-check form-switch pb-2">
-                  <input class="form-check-input" type="checkbox" id="extract-debug">
-                  <label class="form-check-label text-secondary" for="extract-debug">
-                    {% trans "Guardar JSON de depuración de referencias" %}
-                  </label>
+              {% if user.is_staff or user.is_superuser %}
+                <div class="col-md-5">
+                  <div class="form-check form-switch pb-2">
+                    <input class="form-check-input" type="checkbox" id="extract-debug">
+                    <label class="form-check-label text-secondary" for="extract-debug">
+                      {% trans "Guardar JSON de depuración de referencias" %}
+                    </label>
+                  </div>
                 </div>
-              </div>
+              {% endif %}
             </div>
           </section>
 
@@ -55,16 +60,18 @@
             <button id="extract-reader-btn" type="button" class="btn btn-outline-secondary">
               <i class="fa-solid fa-book me-1" aria-hidden="true"></i> {% trans "Abrir visor" %}
             </button>
-            <button
-              id="extract-debug-download-btn"
-              type="button"
-              class="btn btn-outline-secondary d-none"
-              disabled
-              data-download-url=""
-              data-filename="reference_debug.json"
-            >
-              <i class="fa-solid fa-download me-1" aria-hidden="true"></i> {% trans "Descargar depuración" %}
-            </button>
+            {% if user.is_staff or user.is_superuser %}
+              <button
+                id="extract-debug-download-btn"
+                type="button"
+                class="btn btn-outline-secondary d-none"
+                disabled
+                data-download-url=""
+                data-filename="reference_debug.json"
+              >
+                <i class="fa-solid fa-download me-1" aria-hidden="true"></i> {% trans "Descargar depuración" %}
+              </button>
+            {% endif %}
             <button type="button" class="btn btn-light ms-auto border" data-bs-dismiss="modal">
               {% trans "Cerrar" %}
             </button>
