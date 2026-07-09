@@ -29,12 +29,40 @@ DOI_REGEX = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 DOI_URL_REGEX = re.compile(r"https?://(?:dx\.)?doi\.org/([^\s]+)", re.IGNORECASE)
 NUMERIC_REF_INLINE_REGEX = re.compile(r"(?:^|\s{2,}|\t)(\[(\d+)\]|(\d+)[\.\)])\s*")
 LEADING_REFERENCE_LABEL_REGEX = re.compile(r"^\s*(\[(\d{1,4})\]|(\d{1,4})[\.\)])\s*")
-REFERENCE_HEADERS = (
+REFERENCE_HEADER_MAX_LENGTH = 90
+REFERENCE_HEADER_MAX_WORDS = 8
+LONG_DOCUMENT_FALLBACK_PAGE_THRESHOLD = 30
+REFERENCE_HEADING_KEYWORDS = (
     "references",
     "bibliography",
     "referencias",
     "bibliografia",
     "works cited",
+)
+TABLE_OF_CONTENTS_MARKERS = (
+    "indice general",
+    "indice de contenido",
+    "tabla de contenidos",
+    "table of contents",
+    "contents",
+)
+REFERENCE_HEADER_REGEX = re.compile(
+    r"""
+    ^\s*
+    (?:
+        (?:(?:capitulo|chapter)\s+\d+\s*[:.\-]\s*)|
+        (?:\d+(?:\.\d+)*\s*[:.)\-]?\s*)
+    )?
+    (?:
+        references?|
+        bibliography|
+        works\s+cited|
+        referencias(?:\s+bibliograficas)?|
+        bibliografia(?:\s+y\s+referencias)?
+    )
+    \s*$
+    """,
+    re.IGNORECASE | re.VERBOSE,
 )
 
 
@@ -79,7 +107,16 @@ def resolve_pdf_url(
 
 
 def _normalize_text(value: str) -> str:
-    stripped = unicodedata.normalize("NFKD", value)
+    cleaned = str(value or "")
+    cleaned = (
+        cleaned.replace("\u0131", "i")
+        .replace("\u0130", "I")
+        .replace("\u00b4", "")
+        .replace("\u02ca", "")
+        .replace("\u2019", "'")
+    )
+    stripped = unicodedata.normalize("NFKD", cleaned)
+    stripped = re.sub(r"[\u0300-\u036f]", "", stripped)
     stripped = stripped.encode("ascii", "ignore").decode("ascii")
     return re.sub(r"\s+", " ", stripped).strip().lower()
 
@@ -88,23 +125,58 @@ def _is_reference_header(line: str) -> bool:
     normalized = _normalize_text(line)
     if not normalized:
         return False
-    return any(normalized.startswith(header) for header in REFERENCE_HEADERS)
+    if len(normalized) > REFERENCE_HEADER_MAX_LENGTH:
+        return False
+    if len(normalized.split()) > REFERENCE_HEADER_MAX_WORDS:
+        return False
+    return bool(REFERENCE_HEADER_REGEX.fullmatch(normalized))
+
+
+def _looks_like_reference_heading_candidate(normalized: str) -> bool:
+    if not normalized:
+        return False
+    return any(keyword in normalized for keyword in REFERENCE_HEADING_KEYWORDS)
+
+
+def _is_table_of_contents_page(text: str) -> bool:
+    normalized_lines = [
+        _normalize_text(line)
+        for line in (text or "").splitlines()[:8]
+        if _normalize_text(line)
+    ]
+    return any(
+        any(marker == line or marker in line for marker in TABLE_OF_CONTENTS_MARKERS)
+        for line in normalized_lines
+    )
 
 
 def _extract_reference_section(
     page_texts: List[str],
-) -> Tuple[str, bool, Optional[int]]:
+) -> Tuple[str, bool, Optional[int], List[str], List[str]]:
+    reference_heading_candidates: List[str] = []
+    normalized_heading_candidates: List[str] = []
     for page_idx, text in enumerate(page_texts):
+        is_table_of_contents = _is_table_of_contents_page(text)
         lines = text.splitlines()
         for line_idx, line in enumerate(lines):
-            if _is_reference_header(line):
+            normalized = _normalize_text(line)
+            if _looks_like_reference_heading_candidate(normalized):
+                reference_heading_candidates.append(line.strip())
+                normalized_heading_candidates.append(normalized)
+            if normalized and _is_reference_header(line) and not is_table_of_contents:
                 remaining_lines = lines[line_idx + 1 :]
                 tail_pages = page_texts[page_idx + 1 :]
                 section = "\n".join(remaining_lines)
                 if tail_pages:
                     section = "\n".join([section] + tail_pages)
-                return section, True, page_idx
-    return "", False, None
+                return (
+                    section,
+                    True,
+                    page_idx,
+                    reference_heading_candidates,
+                    normalized_heading_candidates,
+                )
+    return "", False, None, reference_heading_candidates, normalized_heading_candidates
 
 
 def _fallback_reference_section(page_texts: List[str]) -> str:
@@ -114,6 +186,35 @@ def _fallback_reference_section(page_texts: List[str]) -> str:
     tail_count = max(2, int(page_count * 0.25))
     start_idx = max(0, page_count - tail_count)
     return "\n\n".join(page_texts[start_idx:])
+
+
+def _find_numbered_reference_sequence_section(
+    page_texts: List[str],
+) -> Tuple[str, Optional[int]]:
+    if not page_texts:
+        return "", None
+
+    search_start_idx = max(0, len(page_texts) - 12)
+    for page_idx in range(search_start_idx, len(page_texts)):
+        page_lines = page_texts[page_idx].splitlines()
+        for line_idx, line in enumerate(page_lines):
+            line_index, _ = parse_reference_leading_label(line)
+            if line_index != 1:
+                continue
+            current_page_tail = "\n".join(page_lines[line_idx:])
+            tail_pages = page_texts[page_idx + 1 :]
+            section = "\n".join([current_page_tail] + tail_pages)
+            labels = [
+                label
+                for label in (
+                    parse_reference_leading_label(candidate.strip())[0]
+                    for candidate in section.splitlines()
+                )
+                if isinstance(label, int)
+            ]
+            if labels[:3] == [1, 2, 3]:
+                return section, page_idx
+    return "", None
 
 
 def _normalize_doi(value: str) -> str:
@@ -260,6 +361,12 @@ def extract_pdf_references(
             "citation_style": "non_numeric",
             "max_reference_index": 0,
             "bibliography_start_page": None,
+            "references_header_found": False,
+            "fallback_used": False,
+            "fallback_reason": "fitz_unavailable_or_missing_pdf_path",
+            "reference_heading_candidates": [],
+            "normalized_heading_candidates": [],
+            "warnings": ["fitz_unavailable_or_missing_pdf_path"],
         }
 
     page_texts: List[str] = []
@@ -280,16 +387,57 @@ def extract_pdf_references(
                 "citation_style": "non_numeric",
                 "max_reference_index": 0,
                 "bibliography_start_page": None,
+                "references_header_found": False,
+                "fallback_used": False,
+                "fallback_reason": "pdf_read_error",
+                "reference_heading_candidates": [],
+                "normalized_heading_candidates": [],
+                "warnings": ["pdf_read_error"],
             }
 
-    section, found_header, bibliography_start_page = _extract_reference_section(
-        page_texts
-    )
-    if not section:
-        logger.warning(
-            f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas."
+    (
+        section,
+        found_header,
+        bibliography_start_page,
+        reference_heading_candidates,
+        normalized_heading_candidates,
+    ) = _extract_reference_section(page_texts)
+    fallback_used = False
+    fallback_reason = ""
+    warnings: List[str] = []
+
+    if not section and not found_header:
+        numbered_section, numbered_start_page = _find_numbered_reference_sequence_section(
+            page_texts
         )
-        section = _fallback_reference_section(page_texts)
+        if numbered_section:
+            logger.warning(
+                "No se detectó heading de referencias; usando fallback por secuencia numerada."
+            )
+            section = numbered_section
+            bibliography_start_page = numbered_start_page
+            fallback_used = True
+            fallback_reason = "missing_header_numbered_sequence"
+        elif page_count > LONG_DOCUMENT_FALLBACK_PAGE_THRESHOLD:
+            fallback_reason = "missing_header_no_coherent_numbered_sequence"
+            warnings.append(fallback_reason)
+            logger.warning(
+                "No se detectó heading de referencias ni secuencia numerada coherente "
+                f"en el documento largo de {page_count} páginas; se devuelven referencias vacías."
+            )
+        else:
+            logger.warning(
+                f"No se detectó sección de referencias, usando fallback de texto en el documento de {page_count} páginas."
+            )
+            section = _fallback_reference_section(page_texts)
+            fallback_used = True
+            fallback_reason = "missing_header_tail_25_percent"
+    elif not section and found_header:
+        fallback_reason = "reference_header_found_empty_section"
+        warnings.append(fallback_reason)
+        logger.warning(
+            "Se detectó heading de referencias pero no se encontró texto posterior de bibliografía."
+        )
 
     logger.debug(f"Bibliografía detectada en la página {bibliography_start_page}")
     refs_raw, numbered = _split_references(section)
@@ -334,6 +482,8 @@ def extract_pdf_references(
         "dois_total": dois_total,
         "references_numbered": bool(numbered),
         "references_header_found": bool(found_header),
+        "fallback_used": bool(fallback_used),
+        "fallback_reason": fallback_reason,
         "citation_style": "numeric" if numbered else "non_numeric",
         "max_reference_index": max_reference_index or len(references),
         "bibliography_start_page": (
@@ -341,6 +491,9 @@ def extract_pdf_references(
             if isinstance(bibliography_start_page, int)
             else None
         ),
+        "reference_heading_candidates": reference_heading_candidates,
+        "normalized_heading_candidates": normalized_heading_candidates,
+        "warnings": warnings,
     }
     return references, stats
 
@@ -357,6 +510,12 @@ def extract_pdf_references_from_url(
             "citation_style": "non_numeric",
             "max_reference_index": 0,
             "bibliography_start_page": None,
+            "references_header_found": False,
+            "fallback_used": False,
+            "fallback_reason": "missing_pdf_url",
+            "reference_heading_candidates": [],
+            "normalized_heading_candidates": [],
+            "warnings": ["missing_pdf_url"],
         }
     tmp_path = download_pdf_to_temp(pdf_url)
     if not tmp_path:
@@ -368,6 +527,12 @@ def extract_pdf_references_from_url(
             "citation_style": "non_numeric",
             "max_reference_index": 0,
             "bibliography_start_page": None,
+            "references_header_found": False,
+            "fallback_used": False,
+            "fallback_reason": "pdf_download_failed",
+            "reference_heading_candidates": [],
+            "normalized_heading_candidates": [],
+            "warnings": ["pdf_download_failed"],
         }
     try:
         return extract_pdf_references(tmp_path)
