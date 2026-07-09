@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.sites.models import Site
 from django.test import Client, TestCase, override_settings
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 from ..models import Comment, Conversation, IncorrectCitation, SavedCitation
 
@@ -251,6 +251,34 @@ class ReportTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(IncorrectCitation.objects.count(), 1)
         self.assertEqual(IncorrectCitation.objects.first().author, self.user)
+
+
+class ReportDraftCreationTests(TestCase):
+    def test_full_page_create_link_uses_report_draft_route(self):
+        user = User.objects.create_user(username="draft-user", password="password")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("create_report_draft"))
+
+        draft = IncorrectCitation.objects.get()
+        self.assertEqual(draft.author, user)
+        self.assertEqual(draft.doi_original, "")
+        self.assertEqual(draft.doi_incorrect, "")
+        self.assertRedirects(
+            response,
+            f"{reverse('citation_detail', args=[draft.pk])}?edit=1",
+            fetch_redirect_response=False,
+        )
+
+    def test_legacy_full_page_report_routes_are_not_available(self):
+        old_create_name = "create_report_" + "wiz" + "ard"
+        old_ajax_name = "ajax_submit_" + "report"
+
+        with self.assertRaises(NoReverseMatch):
+            reverse(old_create_name)
+
+        with self.assertRaises(NoReverseMatch):
+            reverse(old_ajax_name)
 
 
 class UserViewsTests(LoggedInTestCase):

@@ -5,7 +5,7 @@ from allauth.socialaccount.models import SocialApp
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 from citations.models import UserProfile
 
@@ -59,85 +59,22 @@ class DBLPLoadingIndicatorTests(TestCase):
         self.assertNotContains(response, "<strong>Perfil DBLP:</strong>")
         mock_get_author_papers.assert_not_called()
 
-    def test_citation_review_papers_redirects_to_dblp_selector(self):
-        response = self.client.get(reverse("citation_review_papers"))
-
-        self.assertRedirects(
-            response,
-            reverse("dblp_articles"),
-            fetch_redirect_response=False,
-        )
-
-    def test_citation_review_papers_preserves_query_redirect(self):
-        user = User.objects.create_user(username="grace", password="test-pass")
-        self.client.force_login(user)
-        UserProfile.objects.update_or_create(
-            user=user,
-            defaults={"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
-        )
-
-        response = self.client.get(
-            reverse("citation_review_papers"),
-            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("dblp_articles")
-            + "?dblp_url=https%3A%2F%2Fdblp.org%2Fpid%2Ft%2FTestAuthor.html",
-            fetch_redirect_response=False,
-        )
-
-    @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_citers_redirects_to_official_doi_search(
-        self,
-        mock_get_author_papers,
-    ):
-        mock_get_author_papers.return_value = [
-            {"title": "Without citers", "type": "article", "doi": "10.1000/none"},
-            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
+    def test_legacy_dblp_review_routes_are_removed(self):
+        old_prefix = "citation_" + "review_"
+        removed_route_names = [
+            old_prefix + "papers",
+            old_prefix + "citers",
+            old_prefix + "random",
+            old_prefix + "create_report",
         ]
 
-        response = self.client.get(
-            reverse("citation_review_citers", args=[1]),
-            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("doi_search") + "?doi=10.1000%2Fwith",
-            fetch_redirect_response=False,
-        )
-
-    @patch("citations.views.tutor_views.get_citation_counts_for_dois")
-    @patch("citations.views.tutor_views.get_author_papers")
-    def test_citation_review_random_redirects_to_official_doi_search(
-        self,
-        mock_get_author_papers,
-        mock_get_citation_counts_for_dois,
-    ):
-        mock_get_author_papers.return_value = [
-            {"title": "Without citers", "type": "article", "doi": "10.1000/none"},
-            {"title": "Has citers", "type": "article", "doi": "10.1000/with"},
-        ]
-        mock_get_citation_counts_for_dois.return_value = {
-            "10.1000/none": 0,
-            "10.1000/with": 3,
-        }
-
-        response = self.client.get(
-            reverse("citation_review_random"),
-            {"dblp_url": "https://dblp.org/pid/t/TestAuthor.html"},
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("doi_search") + "?doi=10.1000%2Fwith",
-            fetch_redirect_response=False,
-        )
-        mock_get_citation_counts_for_dois.assert_called_once_with(
-            ["10.1000/none", "10.1000/with"]
-        )
+        for route_name in removed_route_names:
+            with self.subTest(route_name=route_name):
+                with self.assertRaises(NoReverseMatch):
+                    if route_name == old_prefix + "citers":
+                        reverse(route_name, args=[1])
+                    else:
+                        reverse(route_name)
 
     @patch("citations.views.user_views.get_citation_count")
     @patch("citations.views.user_views.get_author_papers")

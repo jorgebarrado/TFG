@@ -115,8 +115,8 @@ def ai_detect_citations_for_report(citation: IncorrectCitation) -> List[Dict[str
     if not citation_pdf:
         raise RuntimeError(
             "Este reporte todavía no tiene asociado el PDF del artículo que cita (B). "
-            "Cuando añadamos ese campo en el modelo o usemos CitationReport, "
-            "podremos activar la detección automática."
+            "Cuando ese PDF esté disponible en IncorrectCitation, podremos activar "
+            "la detección automática."
         )
 
     pdf_path = citation_pdf.path
