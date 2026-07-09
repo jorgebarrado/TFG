@@ -62,6 +62,13 @@ class HomePageTests(SocialAppTestCase):
         self.assertNotContains(response, "Guardar JSON de depuración de referencias")
         self.assertNotContains(response, "Descargar depuración")
 
+    def test_extract_modal_assets_are_cache_busted(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "css/custom.css?v=extract-ref-modal")
+        self.assertContains(response, "js/extract_modal.js?v=extract-ref-modal")
+
     def test_extract_modal_shows_debug_controls_for_admin(self):
         admin = User.objects.create_user(
             username="admin", password="password", is_staff=True
