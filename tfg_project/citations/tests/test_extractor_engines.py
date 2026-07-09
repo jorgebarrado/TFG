@@ -2,6 +2,7 @@
 from unittest import TestCase
 
 from citations.services.ai_extractor import AI_ENGINES
+from citations.management.commands.debug_grobid import Command as DebugGrobidCommand
 from citations.services.engines import (
     ALLOWED_ENGINES,
     list_extractor_engines,
@@ -28,3 +29,11 @@ class ExtractorEngineContractTests(TestCase):
             self.assertEqual(attempts, [])
             self.assertEqual(paragraphs_with_positions, [])
             self.assertIn("no soportado", error)
+
+    def test_debug_grobid_cli_does_not_offer_removed_engines(self):
+        parser = DebugGrobidCommand().create_parser("manage.py", "debug_grobid")
+        engine_action = next(
+            action for action in parser._actions if "--engine" in action.option_strings
+        )
+
+        self.assertEqual(engine_action.choices, ["auto", "papermage"])
