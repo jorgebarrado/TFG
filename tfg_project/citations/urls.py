@@ -8,7 +8,6 @@ from .views import (
     auth_views,
     message_views,
     page_views,
-    tutor_views,
     user_views,
 )
 
@@ -43,16 +42,10 @@ urlpatterns = [
         page_views.citation_discard_draft,
         name="citation_discard_draft",
     ),
-    # Flujo avanzado de CitationReport reservado; el flujo estable usa IncorrectCitation.
     path(
-        "report/wizard/",
-        views_reports.create_report_wizard,
-        name="create_report_wizard",
-    ),
-    path(
-        "reports/create/ajax/",
-        views_reports.ajax_submit_report,
-        name="ajax_submit_report",
+        "report/create/",
+        views_reports.create_report_draft,
+        name="create_report_draft",
     ),
     path(
         "reports/<int:pk>/ai-detect/",
@@ -85,26 +78,6 @@ urlpatterns = [
     path("perfil/guardados/", user_views.my_saved, name="my_saved"),
     path("perfil/", user_views.my_profile, name="my_profile"),
     path("perfil/ajustes/", user_views.account_settings, name="account_settings"),
-    path(
-        "revision-citas/",
-        tutor_views.citation_review_papers,
-        name="citation_review_papers",
-    ),
-    path(
-        "revision-citas/<int:paper_id>/citers/",
-        tutor_views.citation_review_citers,
-        name="citation_review_citers",
-    ),
-    path(
-        "revision-citas/create-report/",
-        tutor_views.citation_review_create_report,
-        name="citation_review_create_report",
-    ),
-    path(
-        "revision-citas/aleatorio/",
-        tutor_views.citation_review_random,
-        name="citation_review_random",
-    ),
     path(
         "reader/preview/",
         page_views.citation_reader_preview,
