@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import unicodedata
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -135,8 +136,35 @@ REFERENCE_NOISE_RE = re.compile(
     re.IGNORECASE,
 )
 REFERENCE_SECTION_HEADING_RE = re.compile(
-    r"^\s*(?:references|bibliography|referencias|bibliografia|works cited)\s*$",
+    r"""
+    ^\s*
+    (?:
+        (?:(?:\d+(?:\.\d+)*|[ivxlcdm]+)\.?\s+)?
+        (?:
+            references
+            | bibliography
+            | works\s+cited
+            | referencias(?:\s+bibliograficas)?
+            | bibliografia(?:\s+y\s+referencias)?
+        )
+        |
+        capitulo\s+\d+\s*:\s*
+        (?:
+            referencias(?:\s+bibliograficas)?
+            | bibliografia(?:\s+y\s+referencias)?
+        )
+    )
+    \s*$
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+REFERENCE_SECTION_FRAGMENT_RE = re.compile(
+    r"^(?:references|bibliography|works\s+cited|referencias(?:\s+bibliograficas)?|bibliografia(?:\s+y\s+referencias)?)\s+(?:\[\s*\d{1,4}\s*\]|\d{1,4}\.)",
     re.IGNORECASE,
+)
+REFERENCE_BRACKET_MARKER_RE = re.compile(r"\[\s*(\d{1,4})\s*\]")
+REFERENCE_FRAGMENT_AUTHOR_START_RE = re.compile(
+    r"^\s*(?:(?:[A-Z]\.\s*){0,6})[A-Z][A-Za-zÀ-ÿ\u00b4\u02ca\u0131'`-]+"
 )
 REFERENCE_DEBUG_FILE_PREFIX = "debug-"
 REFERENCE_DEBUG_FILE_EXTENSION = ".json"
@@ -623,8 +651,75 @@ def _serialize_layer_item(item: Dict[str, Any]) -> Dict[str, Any]:
     return serialized
 
 
+def _normalize_reference_heading_text(value: str) -> str:
+    cleaned = str(value or "")
+    cleaned = (
+        cleaned.replace("\u0131", "i")
+        .replace("\u0130", "I")
+        .replace("\u00b4", "")
+        .replace("\u02ca", "")
+        .replace("\u2019", "'")
+    )
+    stripped = unicodedata.normalize("NFKD", cleaned)
+    stripped = re.sub(r"[\u0300-\u036f]", "", stripped)
+    stripped = stripped.encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"\s+", " ", stripped).strip().lower()
+
+
 def _is_reference_heading_text(value: str) -> bool:
-    return bool(REFERENCE_SECTION_HEADING_RE.match(str(value or "").strip()))
+    normalized = _normalize_reference_heading_text(value)
+    if not normalized:
+        return False
+    if len(normalized) > 80 or len(normalized.split()) > 8:
+        return False
+    return bool(REFERENCE_SECTION_HEADING_RE.match(normalized))
+
+
+def _looks_like_reference_section_snippet(value: str) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+
+    normalized_head = _normalize_reference_heading_text(text[:220])
+    if REFERENCE_SECTION_FRAGMENT_RE.match(normalized_head):
+        return True
+
+    marker_matches = list(REFERENCE_BRACKET_MARKER_RE.finditer(text[:1000]))
+    if not marker_matches:
+        return False
+
+    marker_numbers: List[int] = []
+    for match in marker_matches:
+        try:
+            marker_numbers.append(int(match.group(1)))
+        except (TypeError, ValueError):
+            continue
+
+    sequential_pairs = sum(
+        1
+        for left, right in zip(marker_numbers, marker_numbers[1:])
+        if right == left + 1
+    )
+    authorish_after_marker = any(
+        REFERENCE_FRAGMENT_AUTHOR_START_RE.match(text[match.end() : match.end() + 90])
+        for match in marker_matches
+    )
+
+    if len(marker_numbers) >= 3 and sequential_pairs >= 2 and authorish_after_marker:
+        return True
+    if len(marker_numbers) >= 2 and sequential_pairs >= 1 and authorish_after_marker:
+        return True
+
+    first_match = marker_matches[0]
+    before_first_marker = text[: first_match.start()]
+    after_first_marker = text[first_match.end() : first_match.end() + 120]
+    if (
+        REFERENCE_YEAR_RE.search(before_first_marker)
+        and REFERENCE_FRAGMENT_AUTHOR_START_RE.match(after_first_marker)
+    ):
+        return True
+
+    return False
 
 
 def _has_bibliographic_lead_signal(text: str) -> bool:
@@ -11477,6 +11572,12 @@ def build_references_data(
             continue
         snippet_text = str(snippet.get("snippet") or snippet.get("text") or "")
         if not snippet_text:
+            continue
+        if _looks_like_reference_section_snippet(snippet_text):
+            if TRACE_REFERENCES:
+                logger.debug(
+                    f"Descartando snippet {snippet_idx}: parece fragmento de bibliografía."
+                )
             continue
 
         ref_ids: List[str] = []

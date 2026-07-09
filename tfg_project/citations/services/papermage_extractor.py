@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,6 +76,9 @@ class ReaderItem(TypedDict):
     type: str
     token_id: NotRequired[str]
     fragment_index: NotRequired[int]
+    source: NotRequired[str]
+    block_no: NotRequired[int]
+    line_no: NotRequired[int]
 
 
 class ReaderData(TypedDict):
@@ -381,6 +385,9 @@ def _extract_visual_words_with_fitz(
                             "type": "token",
                             "token_id": token_id,
                             "fragment_index": 0,
+                            "source": "fitz",
+                            "block_no": block_no,
+                            "line_no": line_no,
                         }
                     )
     except Exception:
@@ -873,15 +880,37 @@ def _drop_overlapping_duplicate_items(items: List[ReaderItem]) -> List[ReaderIte
 
 
 _SECTION_NUMBERED_RE = re.compile(r"^(?:\d+(?:\.\d+)*|[IVXLCM]+)\.?\s+\S+")
-_BIBLIO_HEADER_RE = re.compile(r"^(references|bibliography)\b", re.IGNORECASE)
+_BIBLIO_HEADER_RE = re.compile(
+    r"^(references|bibliography|referencias|bibliografia|works cited)\b",
+    re.IGNORECASE,
+)
 _BIBLIO_ENTRY_START_RE = re.compile(
     r"^(?:\[\d+\]|\d+\.\s|[A-Z][A-Za-z'`-]+,\s*(?:[A-Z]\.|[A-Z][a-z]))"
 )
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+_FITZ_TOKEN_ID_RE = re.compile(r"^token_(\d+)_(\d+)_(\d+)_(\d+)$")
 
 
 def _normalize_whitespace(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _normalize_heading_text(text: str) -> str:
+    cleaned = str(text or "")
+    cleaned = (
+        cleaned.replace("\u0131", "i")
+        .replace("\u0130", "I")
+        .replace("\u00b4", "")
+        .replace("\u02ca", "")
+    )
+    stripped = unicodedata.normalize("NFKD", cleaned)
+    stripped = re.sub(r"[\u0300-\u036f]", "", stripped)
+    stripped = stripped.encode("ascii", "ignore").decode("ascii")
+    return _normalize_whitespace(stripped).lower()
+
+
+def _is_bibliography_header_text(text: str) -> bool:
+    return bool(_BIBLIO_HEADER_RE.match(_normalize_heading_text(text)))
 
 
 def _box_right(box: Sequence[float]) -> float:
@@ -906,6 +935,141 @@ def _union_boxes(boxes: Sequence[Sequence[float]]) -> List[float] | None:
     if width <= 0 or height <= 0:
         return None
     return [left, top, width, height]
+
+
+def _parse_fitz_token_position(token: ReaderItem) -> tuple[int, int, int] | None:
+    token_id = str(token.get("token_id") or "")
+    match = _FITZ_TOKEN_ID_RE.match(token_id)
+    if not match:
+        return None
+    try:
+        return int(match.group(2)), int(match.group(3)), int(match.group(4))
+    except (TypeError, ValueError):
+        return None
+
+
+def _fallback_token_line_bucket(token: ReaderItem) -> int:
+    box = token.get("box") or [0.0, 0.0, 0.0, 0.0]
+    y_center = _num(box[1]) + _num(box[3]) / 2.0
+    height = max(_num(box[3]), 0.004)
+    return int(round(y_center / max(height * 0.85, 0.004)))
+
+
+def _token_line_key(token: ReaderItem) -> tuple[int, int, int]:
+    page = int(token.get("page", 0))
+    position = _parse_fitz_token_position(token)
+    if position is not None:
+        block_no, line_no, _ = position
+        return page, block_no, line_no
+    return page, -1, _fallback_token_line_bucket(token)
+
+
+def _token_word_sort_key(token: ReaderItem) -> tuple[int, float]:
+    position = _parse_fitz_token_position(token)
+    word_no = position[2] if position is not None else 0
+    box = token.get("box") or [0.0, 0.0, 0.0, 0.0]
+    return word_no, _num(box[0])
+
+
+def _join_token_texts(tokens: Sequence[ReaderItem]) -> str:
+    text = ""
+    no_space_before = set(".,;:!?%)]}")
+    no_space_after = set("([{\u00bf\u00a1")
+    for token in tokens:
+        value = _normalize_whitespace(str(token.get("text") or ""))
+        if not value:
+            continue
+        if not text:
+            text = value
+        elif value[0] in no_space_before:
+            text += value
+        elif text[-1:] in no_space_after:
+            text += value
+        else:
+            text += " " + value
+    return text.strip()
+
+
+def _infer_rows_from_tokens(tokens: Sequence[ReaderItem]) -> List[ReaderItem]:
+    grouped: dict[tuple[int, int, int], list[ReaderItem]] = defaultdict(list)
+    for token in tokens:
+        page = token.get("page")
+        box = token.get("box")
+        text = str(token.get("text") or "").strip()
+        if not isinstance(page, int) or page < 0 or not text:
+            continue
+        if not isinstance(box, list) or len(box) < 4:
+            continue
+        grouped[_token_line_key(token)].append(token)
+
+    records: list[tuple[tuple[int, float, float], ReaderItem]] = []
+    for (page, block_no, line_no), line_tokens in grouped.items():
+        ordered_tokens = sorted(line_tokens, key=_token_word_sort_key)
+        merged_box = _union_boxes(
+            [token["box"] for token in ordered_tokens if token.get("box")]
+        )
+        if not merged_box:
+            continue
+        text = _join_token_texts(ordered_tokens)
+        if not text:
+            continue
+        sort_key = (page, float(merged_box[1]), float(merged_box[0]))
+        records.append(
+            (
+                sort_key,
+                {
+                    "id": "",
+                    "text": text,
+                    "page": page,
+                    "box": merged_box,
+                    "type": "row",
+                    "source": "fitz",
+                    "block_no": block_no,
+                    "line_no": line_no,
+                },
+            )
+        )
+
+    rows: List[ReaderItem] = []
+    for row_index, (_, row) in enumerate(sorted(records, key=lambda item: item[0])):
+        next_row = dict(row)
+        next_row["id"] = f"row_fitz_{row_index}"
+        rows.append(next_row)  # type: ignore[arg-type]
+    return rows
+
+
+def _max_item_page(items: Sequence[ReaderItem]) -> int | None:
+    pages = [item.get("page") for item in items if isinstance(item.get("page"), int)]
+    return max(pages) if pages else None
+
+
+def _should_rebuild_layout_layers_from_tokens(
+    *,
+    raw_pages_total: int,
+    real_pages_total: int,
+    token_items: Sequence[ReaderItem],
+    row_items: Sequence[ReaderItem],
+) -> bool:
+    if not token_items:
+        return False
+    if not row_items:
+        return True
+
+    token_max_page = _max_item_page(token_items)
+    row_max_page = _max_item_page(row_items)
+    if token_max_page is None:
+        return False
+    if row_max_page is None:
+        return True
+    if token_max_page > row_max_page:
+        return True
+    if (
+        raw_pages_total > 0
+        and real_pages_total > 0
+        and raw_pages_total != real_pages_total
+    ):
+        return True
+    return False
 
 
 def _horizontal_overlap_ratio(box_a: Sequence[float], box_b: Sequence[float]) -> float:
@@ -1050,7 +1214,7 @@ def _looks_like_section_heading(text: str, box: Sequence[float]) -> bool:
         return False
 
     lowered = cleaned.lower()
-    if _BIBLIO_HEADER_RE.match(lowered):
+    if _is_bibliography_header_text(lowered):
         return True
 
     if len(cleaned) < 2 or len(cleaned) > 120:
@@ -1128,16 +1292,16 @@ def _find_bibliography_anchor(
     sections: Sequence[ReaderItem],
 ) -> tuple[int, float] | None:
     for section in sections:
-        text = _normalize_whitespace(section.get("text", "")).lower()
-        if _BIBLIO_HEADER_RE.match(text):
+        text = _normalize_whitespace(section.get("text", ""))
+        if _is_bibliography_header_text(text):
             return section["page"], section["box"][1]
 
     sorted_rows = sorted(
         rows, key=lambda row: (row["page"], row["box"][1], row["box"][0])
     )
     for row in sorted_rows:
-        text = _normalize_whitespace(row.get("text", "")).lower()
-        if _BIBLIO_HEADER_RE.match(text):
+        text = _normalize_whitespace(row.get("text", ""))
+        if _is_bibliography_header_text(text):
             return row["page"], row["box"][1]
 
     return None
@@ -1203,7 +1367,7 @@ def _infer_bibliographies_from_rows(
         row_text = _normalize_whitespace(row.get("text", ""))
         if not row_text:
             continue
-        if _BIBLIO_HEADER_RE.match(row_text.lower()):
+        if _is_bibliography_header_text(row_text):
             continue
 
         if not current_rows:
@@ -1261,7 +1425,9 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
     pages: List[ReaderPage] = []
     raw_pages = list(getattr(document, "pages", []) or [])
     real_pdf_dims = _extract_real_pdf_page_dimensions(pdf_path)
-    pages_total = len(raw_pages) if raw_pages else len(real_pdf_dims)
+    raw_pages_total = len(raw_pages)
+    real_pages_total = len(real_pdf_dims)
+    pages_total = real_pages_total if real_pages_total else raw_pages_total
 
     for page_index in range(pages_total):
         width = 0.0
@@ -1362,6 +1528,30 @@ def extract_pdf_data(pdf_path: str) -> ReaderData:
             layer_items = _drop_top_clamped_duplicate_items(layer_items)
         if layer_items:
             layers[layer_name] = layer_items
+
+    if _should_rebuild_layout_layers_from_tokens(
+        raw_pages_total=raw_pages_total,
+        real_pages_total=real_pages_total,
+        token_items=token_items,
+        row_items=layers.get("rows", []),
+    ):
+        fitz_rows = _infer_rows_from_tokens(token_items)
+        if fitz_rows:
+            old_row_max = _max_item_page(layers.get("rows", []))
+            token_max = _max_item_page(token_items)
+            logger.warning(
+                "PaperMage layout pages do not align with PDF words "
+                "(raw_pages=%s, real_pages=%s, row_max=%s, token_max=%s). "
+                "Rebuilding layout layers from PyMuPDF words.",
+                raw_pages_total,
+                real_pages_total,
+                old_row_max,
+                token_max,
+            )
+            layers["rows"] = fitz_rows
+            layers.pop("paragraphs", None)
+            layers.pop("sections", None)
+            layers.pop("bibliographies", None)
 
     rows_layer = layers.get("rows", [])
     if rows_layer:
