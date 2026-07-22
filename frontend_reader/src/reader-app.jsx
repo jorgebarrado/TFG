@@ -5316,7 +5316,7 @@ export default function ReaderApp({
         className="reader-file-input"
         onChange={handlePdfChange}
       />
-      <div className="reader-muted">Motor: PaperMage (unificado)</div>
+      <div className="reader-muted">Motor: PaperMage</div>
       <label className="reader-v2-layer">
         <span className="reader-v2-layer-label">DOI del articulo</span>
         <input
@@ -5488,7 +5488,7 @@ export default function ReaderApp({
         }
         onClick={() => setActiveTab("references")}
       >
-        Referencias
+        Citas
       </button>
     </div>
   );
@@ -5613,7 +5613,7 @@ export default function ReaderApp({
           <div className="reader-card reader-panel">
             {tabsBar}
             <div className="reader-ref-header">
-              <div className="reader-card-title">Referencias</div>
+              <div className="reader-card-title">Citas</div>
               <div className="reader-muted">{referenceRows.length} total</div>
             </div>
             <div className="reader-ref-metrics">
@@ -5847,7 +5847,7 @@ export default function ReaderApp({
                 </div>
               </div>
               <div className="reader-info-card">
-                <div className="reader-info-label">Ano</div>
+                <div className="reader-info-label">Año</div>
                 <div className="reader-info-value">
                   {effectiveArticleInfo?.year || "-"}
                 </div>
