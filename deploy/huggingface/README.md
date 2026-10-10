@@ -15,5 +15,8 @@ incorrectas, con lector de PDF y extracción de referencias.
 
 Código: https://github.com/jorgebarrado/TFG
 
+Puedes registrarte o entrar con el usuario de prueba `demo` / `demo-citecheck`.
+Los reportes de ejemplo usan artículos ficticios (DOI de prueba de Crossref).
+
 Es una demo: los datos (cuentas, reportes, PDFs subidos) se borran cada vez que
 el Space se reinicia.

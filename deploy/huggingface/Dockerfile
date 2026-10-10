@@ -32,4 +32,4 @@ EXPOSE 7860
 
 # Un solo worker: la caché (LocMemCache) y la SECRET_KEY autogenerada viven en el proceso.
 # Timeout alto porque la extracción de PDFs es síncrona.
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:7860 --workers 1 --threads 4 --timeout 300"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py seed_demo && gunicorn config.wsgi --bind 0.0.0.0:7860 --workers 1 --threads 4 --timeout 300"]

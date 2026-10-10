@@ -63,6 +63,23 @@ ACCOUNT_FORMS = {
     "signup": "citations.forms.RegisterForm",
 }
 
+# Login social: credenciales OAuth por variables de entorno (p. ej. los Secrets
+# del hosting). Si no se definen, se usan los SocialApp creados en el admin; no
+# configures el mismo proveedor en los dos sitios o allauth fallará por duplicado.
+SOCIALACCOUNT_PROVIDERS = {
+    provider: {
+        "APP": {
+            "client_id": os.environ[f"{prefix}_CLIENT_ID"],
+            "secret": os.getenv(f"{prefix}_CLIENT_SECRET", ""),
+        }
+    }
+    for provider, prefix in (("google", "GOOGLE_OAUTH"), ("orcid", "ORCID"))
+    if os.getenv(f"{prefix}_CLIENT_ID")
+}
+# Tras el proxy HTTPS del hosting Django ve HTTP: fuerza https en las URLs de callback OAuth.
+if not DEBUG:
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
 MIDDLEWARE = [
     "citations.middleware.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
