@@ -45,14 +45,21 @@
 
           <hr class="my-3">
 
+          {# Solo los proveedores con credenciales configuradas: sin SocialApp, provider_login_url lanza un 500. #}
+          {% get_providers as socialaccount_providers %}
+          {% for provider in socialaccount_providers %}
+            {% if provider.id == 'google' %}
           <a href="{% provider_login_url 'google' %}"
              class="btn btn-outline-danger w-100 mb-2">
             <i class="bi bi-google me-2"></i> Iniciar sesión con Google
           </a>
+            {% elif provider.id == 'orcid' %}
           <a href="{% provider_login_url 'orcid' %}"
              class="btn btn-outline-success w-100">
             <i class="bi bi-person-vcard me-2"></i> Iniciar sesión con ORCID
           </a>
+            {% endif %}
+          {% endfor %}
         </form>
       </div>
 

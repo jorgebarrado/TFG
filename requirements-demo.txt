@@ -1,0 +1,21 @@
+# Dependencias mínimas para la demo pública (deploy/huggingface/Dockerfile).
+# El flujo principal solo usa el PDFPlumberParser de PaperMage, así que no hacen
+# falta PyTorch ni los modelos de requirements.txt. Los motores de IA quedan
+# desactivados: para activarlos añade anthropic/openai y su API key.
+Django==5.1.7
+django-allauth==65.8.1
+python-dotenv==1.2.1
+requests==2.32.3
+PyJWT==2.10.1
+cryptography==45.0.3
+pdfplumber==0.7.4
+pdfminer.six==20220524
+PyMuPDF==1.26.5
+pypdf==5.9.0
+PyPDF2==3.0.1
+numpy==2.3.3
+pillow==11.3.0
+ncls==0.0.68
+setuptools<81  # ncls importa pkg_resources
+gunicorn==23.0.0
+whitenoise==6.9.0

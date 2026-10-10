@@ -163,7 +163,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-]
+] + [o for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+
+# En producción (demo pública) WhiteNoise sirve los estáticos directamente
+# desde los finders, sin necesidad de collectstatic.
+if not DEBUG:
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+    )
+    WHITENOISE_USE_FINDERS = True
 
 # Endurecer cookies en producción automáticamente
 SESSION_COOKIE_SECURE = not DEBUG
